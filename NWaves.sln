@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWaves", "NWaves\NWaves.csproj", "{3FBF1B3A-3BED-4F2F-8008-871ACF83E352}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWaves.DemoForms", "NWaves.DemoForms\NWaves.DemoForms.csproj", "{E4BDD4FB-2EA6-42BE-A72E-7D0905948EED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWaves.Tests", "NWaves.Tests\NWaves.Tests.csproj", "{8EDF4429-251A-416D-BB68-93F227191BCF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3FBF1B3A-3BED-4F2F-8008-871ACF83E352}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FBF1B3A-3BED-4F2F-8008-871ACF83E352}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FBF1B3A-3BED-4F2F-8008-871ACF83E352}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FBF1B3A-3BED-4F2F-8008-871ACF83E352}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4BDD4FB-2EA6-42BE-A72E-7D0905948EED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4BDD4FB-2EA6-42BE-A72E-7D0905948EED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4BDD4FB-2EA6-42BE-A72E-7D0905948EED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4BDD4FB-2EA6-42BE-A72E-7D0905948EED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EDF4429-251A-416D-BB68-93F227191BCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EDF4429-251A-416D-BB68-93F227191BCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EDF4429-251A-416D-BB68-93F227191BCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EDF4429-251A-416D-BB68-93F227191BCF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

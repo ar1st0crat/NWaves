@@ -1,7 +1,7 @@
 # NWaves
 
 This will be a .NET library for 1d signal processing focused specifically on audio processing.
-I'm only starting working on it. It's not tested, not refactored, sometimes not working ))))).
+I'm only starting working on it. It's not! tested, not! refactored, sometimes simply not! working ))))).
 
 ## Main features 
 
@@ -129,7 +129,7 @@ DiscreteSignal noisy = SinusoidBuilder()
 
 using (var stream = new FileStream("sample.wav", FileMode.Open))
 {
-        IAudioContainer waveFile = new WaveFile(stream);
+    IAudioContainer waveFile = new WaveFile(stream);
 
 	// address with enum (Left, Right, Interleave):
 
@@ -156,10 +156,10 @@ IAudioPlayer player = new MciAudioPlayer();
 player.Volume = 0.4f;
 
 await player.PlayAsync("temp.wav");
-
+// or
 await player.PlayAsync("temp.wav", 16000, 32000);
 
-// the following functionality is implied by design
+// playing audio from buffers in memory is implied by design
 // but it's not implemented in MCIAudioPlayer
 // (seems that it's simply impossible to do...):
 
@@ -190,9 +190,9 @@ recorder.StopRecording();
 ### Transforms:
 
 ```C#
-var spectrogram = Transform.Stft(signal, 512, WindowTypes.Hamming);
+var spectrogram = Transform.Stft(signal, 512, 256, WindowTypes.Hamming);
 
-var spectrum = Transform.MagnitudeSpectrum(signal[1000:1512]);
+var spectrum = Transform.MagnitudeSpectrum(signal[1000, 1512]);
 ```
 
 
@@ -218,7 +218,7 @@ var filtered = signal.ApplyFilter(filter.CombineWith(new Reverb())
 
 var distortion = new DistortionEffect();
 var echo = new EchoEffect(delay: 20);
-var reverb = new ReverbEffect(wet: 1.9f);
+var reverb = new ReverbEffect(1.9f);
 
 var filtered = signal.ApplyFilter(distortion + echo + reverb);
 
@@ -236,3 +236,6 @@ var lpcExtractor = new LpcFeatureExtractor();
 var lpcVector = lpcExtractor.ComputeFrom(signal, 1000, 512);
 ```
 
+### Demos
+
+![winforms](https://github.com/ar1st0crat/MusCat/blob/master/screenshots/WinForms.png)

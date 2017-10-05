@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3FBF1B3A-3BED-4F2F-8008-871ACF83E352}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NWaves</RootNamespace>
+    <AssemblyName>NWaves</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile111</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- A reference to the entire .NET Framework is automatically included -->
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Audio\Channels.cs" />
+    <Compile Include="Audio\Interfaces\IAudioContainer.cs" />
+    <Compile Include="Audio\Interfaces\IAudioPlayer.cs" />
+    <Compile Include="Audio\Interfaces\IAudioRecorder.cs" />
+    <Compile Include="Audio\Mci\Mci.cs" />
+    <Compile Include="Audio\Mci\MciAudioPlayer.cs" />
+    <Compile Include="Audio\Mci\MciAudioRecorder.cs" />
+    <Compile Include="Effects\Chorus.cs" />
+    <Compile Include="Effects\Distortion.cs" />
+    <Compile Include="Effects\Flanger.cs" />
+    <Compile Include="Effects\Reverb.cs" />
+    <Compile Include="Effects\Wahwah.cs" />
+    <Compile Include="FeatureExtractors\Base\FeatureVector.cs" />
+    <Compile Include="FeatureExtractors\Base\IFeatureExtractor.cs" />
+    <Compile Include="FeatureExtractors\LpccExtractor.cs" />
+    <Compile Include="FeatureExtractors\LpcExtractor.cs" />
+    <Compile Include="FeatureExtractors\MfccExtractor.cs" />
+    <Compile Include="FeatureExtractors\PnccExtractor.cs" />
+    <Compile Include="Filters\Base\FirFilter.cs" />
+    <Compile Include="Filters\Base\IFilter.cs" />
+    <Compile Include="Filters\Base\IirFilter.cs" />
+    <Compile Include="Filters\BiQuadFilter.cs" />
+    <Compile Include="Filters\ButterworthFilter.cs" />
+    <Compile Include="Filters\MedianFilter.cs" />
+    <Compile Include="Filters\MovingAverageFilter.cs" />
+    <Compile Include="Operations\AdaptiveFiltering.cs" />
+    <Compile Include="Operations\Convolution.cs" />
+    <Compile Include="Operations\Resampling.cs" />
+    <Compile Include="Operations\SpectralSubtraction.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Audio\WaveFile.cs" />
+    <Compile Include="Audio\WaveFormat.cs" />
+    <Compile Include="Signals\Builders\SawtoothBuilder.cs" />
+    <Compile Include="Signals\Builders\SignalBuilder.cs" />
+    <Compile Include="Signals\Builders\SinusoidBuilder.cs" />
+    <Compile Include="Signals\DiscreteSignal.cs" />
+    <Compile Include="Signals\DiscreteSignalExtensions.cs" />
+    <Compile Include="Transforms\Dct.cs" />
+    <Compile Include="Transforms\Fft.cs" />
+    <Compile Include="Transforms\Stft.cs" />
+    <Compile Include="Transforms\Windows\BlackmanWindow.cs" />
+    <Compile Include="Transforms\Windows\HammingWindow.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
