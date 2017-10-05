@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.Audio.Interfaces;
 using NWaves.Audio.Mci;
+using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Signals.Builders;
 using NWaves.Transforms;
@@ -19,15 +19,39 @@ namespace NWaves.DemoForms
         private DiscreteSignal _signal2;
         private DiscreteSignal _signal3;
 
-        private readonly MciAudioPlayer _player = new MciAudioPlayer();
         private string _waveFileName;
+
+        private readonly MciAudioPlayer _player = new MciAudioPlayer();
+        private bool _isPaused;
+
+        private readonly MciAudioRecorder _recorder = new MciAudioRecorder();
+        private bool _isRecording;
 
         public Form1()
         {
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void openToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            OpenSignal();
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var stream = new FileStream(@"d:\test.wav", FileMode.Create))
+            {
+                var waveFile = new WaveFile(_signal2);
+                waveFile.SaveTo(stream);
+            }
+        }
+
+        private void OpenSignal()
         {
             var ofd = new OpenFileDialog();
             if (ofd.ShowDialog() != DialogResult.OK)
@@ -38,7 +62,7 @@ namespace NWaves.DemoForms
             textBox1.Text = ofd.FileName;
             _waveFileName = ofd.FileName;
 
-            using (var stream = new FileStream(ofd.FileName, FileMode.Open))
+            using (var stream = new FileStream(_waveFileName, FileMode.Open))
             {
                 IAudioContainer waveFile = new WaveFile(stream);
                 _signal1 = waveFile[Channels.Left];
@@ -47,55 +71,24 @@ namespace NWaves.DemoForms
             DrawSignal(panel1, _signal1, 53);
         }
 
-        private void DrawSignal(Control panel, DiscreteSignal signal, int step = 1)
+        private void button1_Click(object sender, EventArgs e)
         {
-            var g = panel.CreateGraphics();
+            listBox1.Items.Add("Convolution demo:");
+            listBox1.Items.Add("[1, 5, 3, 2, 6]");
+            listBox1.Items.Add("    *");
+            listBox1.Items.Add("[2, 3, 1]");
 
-            g.Clear(Color.White);
+            var s1 = new DiscreteSignal(16000, new[] { 1.0, 5, 3, 2, 6, 0 });
+            var s2 = new DiscreteSignal(16000, new[] { 2.0, 3, 1 });
 
-            var offset = panel.Height / 2;
+            var conv = Operation.Convolve(s1, s2);
 
-            Pen pen;
-
-            if (panel == panel1)
+            foreach (var sample in conv.Samples)
             {
-                pen = new Pen(Color.Blue);
-            }
-            else if (panel == panel2)
-            {
-                pen = new Pen(Color.Red);
-            }
-            else
-            {
-                pen = new Pen(Color.DarkGreen);
+                listBox1.Items.Add(sample + "");
             }
 
-            var i = 0;
-            var x = 0;
-
-            while (i < signal.Samples.Length)
-            {
-                if (Math.Abs(signal[i]*200) < panel.Height)
-                {
-                    g.DrawLine(pen, x, offset, x, (float) -signal[i]*200 + offset);
-                    g.DrawEllipse(pen, x - 1, (int) (-signal[i]*200) + offset - 1, 3, 3);
-                }
-                x++;
-                i += step;
-                
-            }
-
-            pen.Dispose();
-        }
-
-        private void panel1_MouseDown(object sender, MouseEventArgs e)
-        {
-
-        }
-
-        private void panel1_MouseUp(object sender, MouseEventArgs e)
-        {
-
+            OpenSignal();
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -140,7 +133,8 @@ namespace NWaves.DemoForms
             DrawSignal(panel3, _signal3, 53);
 
             var spectrum = Transform.MagnitudeSpectrum(_signal2[0, 512].Samples);
-            var signal4 = new DiscreteSignal(spectrum.Select(s => s / 100), _signal2.SamplingRate);
+
+            var signal4 = new DiscreteSignal(_signal2.SamplingRate, spectrum.Select(s => s / 100));
 
             DrawSignal(panel4, signal4);
         }
@@ -177,6 +171,9 @@ namespace NWaves.DemoForms
             DrawSignal(panel3, _signal3, 53);
         }
 
+
+        #region playback demo
+
         private async void playToolStripMenuItem_Click(object sender, EventArgs e)
         {
             await _player.PlayAsync(_waveFileName);
@@ -184,7 +181,20 @@ namespace NWaves.DemoForms
 
         private void pauseToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _player.Pause();
+            var menuItem = sender as ToolStripMenuItem;
+
+            if (_isPaused)
+            {
+                _player.Resume();
+                menuItem.Text = "Pause";
+            }
+            else
+            {
+                _player.Pause();
+                menuItem.Text = "Resume";
+            }
+
+            _isPaused = !_isPaused;
         }
 
         private void stopToolStripMenuItem_Click(object sender, EventArgs e)
@@ -194,11 +204,92 @@ namespace NWaves.DemoForms
 
         private void recordToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using (var stream = new FileStream(@"d:\test.wav", FileMode.Create))
+            var menuItem = sender as ToolStripMenuItem;
+
+            if (_isRecording)
             {
-                var waveFile = new WaveFile(_signal2);
-                waveFile.SaveTo(stream);
+                menuItem.Text = "Record";
+
+                _waveFileName = @"d:\recorded.wav";
+
+                // save to recorded.wav
+                _recorder.StopRecording(_waveFileName);
+                
+                // open it right away and load its audio contents to _signal1
+                using (var stream = new FileStream(_waveFileName, FileMode.Open))
+                {
+                    IAudioContainer waveFile = new WaveFile(stream);
+                    _signal1 = waveFile[Channels.Left];
+                }
+
+                DrawSignal(panel1, _signal1, 53);
             }
+            else
+            {
+                menuItem.Text = "Stop rec";
+
+                // start recording with sampling rate 16 kHz
+                _recorder.StartRecording(16000);
+            }
+
+            _isRecording = !_isRecording;
         }
+
+        #endregion
+
+        #region drawing
+
+        private void DrawSignal(Control panel, DiscreteSignal signal, int step = 1)
+        {
+            var g = panel.CreateGraphics();
+
+            g.Clear(Color.White);
+
+            var offset = panel.Height / 2;
+
+            Pen pen;
+
+            if (panel == panel1)
+            {
+                pen = new Pen(Color.Blue);
+            }
+            else if (panel == panel2)
+            {
+                pen = new Pen(Color.Red);
+            }
+            else
+            {
+                pen = new Pen(Color.DarkGreen);
+            }
+
+            var i = 0;
+            var x = 0;
+
+            while (i < signal.Samples.Length)
+            {
+                if (Math.Abs(signal[i] * 200) < panel.Height)
+                {
+                    g.DrawLine(pen, x, offset, x, (float)-signal[i] * 200 + offset);
+                    g.DrawEllipse(pen, x - 1, (int)(-signal[i] * 200) + offset - 1, 3, 3);
+                }
+                x++;
+                i += step;
+
+            }
+
+            pen.Dispose();
+        }
+
+        private void panel1_MouseDown(object sender, MouseEventArgs e)
+        {
+
+        }
+
+        private void panel1_MouseUp(object sender, MouseEventArgs e)
+        {
+
+        }
+
+        #endregion
     }
 }

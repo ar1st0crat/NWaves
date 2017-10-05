@@ -27,28 +27,30 @@ In the beginning... there were interfaces and factories here and there, and NWav
 
 ```C#
 
-var constant = new DiscreteSignal(44100, 10, 0.75f);
-// 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75
+var constants = new DiscreteSignal(8000, 10, 0.75f);
+// {0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75} sampled at 8 kHz
 
-var range = new DiscreteSignal(22050, Enumerable<double>.Range(0, 100));
-// 0.0, 1.0, 2.0, ..., 99.0
+var linear = new DiscreteSignal(22050, Enumerable.Range(0, 100));
+// {0.0, 1.0, 2.0, ..., 99.0} sampled at 22050 Hz
 
 var bits = new DiscreteSignal(44100, new double [] {1, 0});
-// 1, 0
+// {1.0, 0.0}
 
 
-// repeat signal 100 times (1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, ...)
+// repeat signal 100 times {1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, ...}
 
 var bitStream = bits * 100;
 // or
 var bitStream = signal.Repeat(100);
 
 
-// DiscreteSignals are mutable by design:
+// Samples in DiscreteSignals are mutable by design:
 
-var signal = new DiscreteSignal(samples);
+var samples = new double[] {0.5, 0.2, -0.3, 1.2, 1.6, -1.8, 0.3, -0.2};
 
-signal[2] = 35.27;
+var signal = new DiscreteSignal(16000, samples).Repeat(3);
+
+signal[2] = 1.27;
 signal[3] += 0.5;
 
 var sample = signal[10];
@@ -93,7 +95,7 @@ var delayed = signal1 + 1000;
 var copy = signal.Copy();
 
 // equivalent to:
-var copy = new Signal(signal.Samples)
+var copy = new Signal(signal.SamplingRate, signal.Samples)
 
 ```
 
@@ -106,11 +108,13 @@ DiscreteSignal sinusoid = SinusoidBuilder()
 				.SetParameter("amplitude", 12)
 				.SetParameter("frequency", 0.25)
 				.OfLength(1000)
+				.SampledAt(44100)
 				.Build();
 
 DiscreteSignal noise = WhiteNoiseBuilder()
 				.SetParameter("amp", 2.5)
 				.OfLength(800)
+				.SampledAt(44100)
 				.DelayedBy(200)
 				.Build();
 
@@ -123,13 +127,15 @@ DiscreteSignal noisy = SinusoidBuilder()
 ```
 
 
-### Loading signals from wave files:
+### Loading/saving signals from/in wave files:
 
 ```C#
 
+// load
+
 using (var stream = new FileStream("sample.wav", FileMode.Open))
 {
-    IAudioContainer waveFile = new WaveFile(stream);
+	IAudioContainer waveFile = new WaveFile(stream);
 
 	// address with enum (Left, Right, Interleave):
 
@@ -141,6 +147,15 @@ using (var stream = new FileStream("sample.wav", FileMode.Open))
 
 	var signal = waveFile.Signals[0];
 	var signalRight = waveFile.Signals[1];
+}
+
+
+// save
+
+using (var stream = new FileStream(@"saved.wav", FileMode.Create))
+{
+	var waveFile = new WaveFile(signal);
+	waveFile.SaveTo(stream);
 }
 
 ```
@@ -155,8 +170,10 @@ MciAudioPlayer and MciAudioRecorder work only with Windows, since they use winmm
 IAudioPlayer player = new MciAudioPlayer();
 player.Volume = 0.4f;
 
+// play entire file
 await player.PlayAsync("temp.wav");
-// or
+
+// play from 16000th sample to 32000th sample
 await player.PlayAsync("temp.wav", 16000, 32000);
 
 // playing audio from buffers in memory is implied by design
@@ -176,10 +193,13 @@ player.Resume();
 // in some event handler
 player.Stop();
 
+
+// recording
+
 IAudioRecorder = new MciAudioRecorder();
 
 // in some event handler
-recorder.StartRecording();
+recorder.StartRecording("temp.wav", 16000);
 
 // in some event handler
 recorder.StopRecording();
@@ -190,31 +210,36 @@ recorder.StopRecording();
 ### Transforms:
 
 ```C#
+
 var spectrogram = Transform.Stft(signal, 512, 256, WindowTypes.Hamming);
 
 var spectrum = Transform.MagnitudeSpectrum(signal[1000, 1512]);
+
 ```
 
 
 ### Operations:
 
 ```C#
+
 var filteredSignal = Operation.Convolve(signal, kernel);
 
 var correlated = Operation.CrossCorrelate(signal1, signal2);
 
 var resampled = Operation.Resample(signal, 22050);
+
 ```
 
 
 ### Filters and effects (that are filters as well):
 
 ```C#
+
 var filter = new MovingAverageFilter(7);
 var filteredSignal = filter.ApplyTo(signal);
 
-var filtered = signal.ApplyFilter(filter.CombineWith(new Reverb())
-					.CombineWith(new FirFilter()));
+var filtered = signal.ApplyFilter(filter.CombineWith(new Reverb(params))
+										.CombineWith(new FirFilter(coeffs)));
 
 var distortion = new DistortionEffect();
 var echo = new EchoEffect(delay: 20);
@@ -223,19 +248,22 @@ var reverb = new ReverbEffect(1.9f);
 var filtered = signal.ApplyFilter(distortion + echo + reverb);
 
 var freqz = filter.Freqz();
+
 ```
 
 
 ### Feature extractors
 
 ```C#
+
 var mfccExtractor = new MfccFeatureExtractor();
 var mfccVectors = mfccExtractor.ComputeFrom(signal).Take(3);
 
 var lpcExtractor = new LpcFeatureExtractor();
 var lpcVector = lpcExtractor.ComputeFrom(signal, 1000, 512);
+
 ```
 
 ### Demos
 
-![winforms](https://github.com/ar1st0crat/MusCat/blob/master/screenshots/WinForms.png)
+![winforms](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/WinForms.png)

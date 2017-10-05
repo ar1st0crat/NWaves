@@ -7,7 +7,7 @@ namespace NWaves.Transforms
     public static partial class Transform
     {
         /// <summary>
-        /// STFT (spectrogram) yields the list of spectra in time
+        /// STFT (spectrogram) is essentially the list of spectra in time
         /// </summary>
         /// <param name="samples">The samples of signal</param>
         /// <param name="fftSize">Size of FFT</param>

@@ -252,7 +252,7 @@ namespace NWaves.Audio
                     }
                 }
 
-                return new DiscreteSignal(samples, WaveFmt.SamplingRate);
+                return new DiscreteSignal(WaveFmt.SamplingRate, samples);
             }
         }
     }

@@ -39,7 +39,7 @@ namespace NWaves.Signals.Builders
             var samples = Enumerable.Range(0, Length)
                                     .Select(i => _low + (_high - _low) * ((i*_frequency + _phase) - Math.Floor(i*_frequency + _phase)));
 
-            return new DiscreteSignal(samples, SamplingRate);
+            return new DiscreteSignal(SamplingRate, samples);
         }
     }
 }

@@ -8,9 +8,9 @@ namespace NWaves.Transforms
         /// <summary>
         /// Fast Fourier Transform algorithm
         /// </summary>
-        /// <param name="re"></param>
-        /// <param name="im"></param>
-        /// <param name="n"></param>
+        /// <param name="re">Array of real parts</param>
+        /// <param name="im">Array of imaginary parts</param>
+        /// <param name="n">FFT size (must be the power of two)</param>
         public static void Fft(double[] re, double[] im, int n)
         {
             double t1, t2;
@@ -73,9 +73,9 @@ namespace NWaves.Transforms
         /// <summary>
         /// Inverse Fast Fourier Transform algorithm
         /// </summary>
-        /// <param name="re"></param>
-        /// <param name="im"></param>
-        /// <param name="n"></param>
+        /// <param name="re">Array of real parts</param>
+        /// <param name="im">Array of imaginary parts</param>
+        /// <param name="n">FFT size (must be the power of two)</param>
         public static void Ifft(double[] re, double[] im, int n)
         {
             double t1, t2;
