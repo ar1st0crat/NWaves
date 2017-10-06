@@ -5,7 +5,6 @@ using System.Linq;
 namespace NWaves.Signals
 {
     /// <summary>
-    /// 
     /// Base class for finite real-valued discrete-time signals.
     /// 
     /// In general, any finite DT signal is simply an array of data sampled at certain sampling rate.
@@ -13,21 +12,51 @@ namespace NWaves.Signals
     /// See also DiscreteSignalExtensions for additional functionality of DT signals.
     /// 
     /// Note. 
+    /// Method implementations are LINQ-less for better performance.
+    /// 
     /// In the earliest versions of NWaves there was also an ISignal interface, however it was refactored out.
     /// If there's a need, just inherit from this base class, all methods are virtual.
-    /// 
     /// </summary>
     public class DiscreteSignal
     {
+        /// <summary>
+        /// Number of samples per unit of time (1 second)
+        /// </summary>
+        public virtual int SamplingRate { get; }
+
         /// <summary>
         /// Real-valued array of samples
         /// </summary>
         public virtual double[] Samples { get; }
 
         /// <summary>
-        /// Number of samples per unit of time (1 second)
+        /// The most efficient constructor for initializing discrete signals
         /// </summary>
-        public virtual int SamplingRate { get; }
+        /// <param name="samplingRate"></param>
+        /// <param name="samples"></param>
+        public DiscreteSignal(int samplingRate, double[] samples)
+        {
+            if (samplingRate <= 0)
+            {
+                throw new ArgumentException("Sampling rate must be positive!");
+            }
+
+            SamplingRate = samplingRate;
+
+            var doubleSamples = new double[samples.Length];
+            Buffer.BlockCopy(samples, 0, doubleSamples, 0, samples.Length * 8);
+            Samples = doubleSamples;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="samplingRate"></param>
+        /// <param name="samples"></param>
+        public DiscreteSignal(int samplingRate, IEnumerable<double> samples)
+            : this(samplingRate, samples?.ToArray())
+        {
+        }
 
         /// <summary>
         /// 
@@ -43,23 +72,14 @@ namespace NWaves.Signals
             }
 
             SamplingRate = samplingRate;
-            Samples = Enumerable.Repeat(value, length).ToArray();
-        }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="samples"></param>
-        public DiscreteSignal(int samplingRate, IEnumerable<double> samples)
-        {
-            if (samplingRate <= 0)
+            var samples = new double[length];
+            for (var i = 0; i < length; i++)
             {
-                throw new ArgumentException("Sampling rate must be positive!");
+                samples[i] = value;
             }
 
-            SamplingRate = samplingRate;
-            Samples = samples.ToArray();
+            Samples = samples;
         }
 
         /// <summary>
@@ -76,7 +96,15 @@ namespace NWaves.Signals
             }
 
             SamplingRate = samplingRate;
-            Samples = samples.Select(s => s / normalizeFactor).ToArray();
+            
+            var intSamples = samples.ToArray();
+            var doubleSamples = new double[intSamples.Length];
+            for (var i = 0; i < intSamples.Length; i++)
+            {
+                doubleSamples[i] = intSamples[i] / normalizeFactor;
+            }
+
+            Samples = doubleSamples;
         }
 
         /// <summary>
@@ -104,7 +132,9 @@ namespace NWaves.Signals
         /// 
         ///     var middle = signal[900, 1200];
         /// 
-        /// Implementaion is LINQ-less, since Skip() would be less efficient.
+        /// Implementaion is LINQ-less, since Skip() would be less efficient:
+        ///     return new DiscreteSignal(SamplingRate, Samples.Skip(startPos).Take(endPos - startPos));
+        /// 
         /// </summary>
         /// <param name="startPos"></param>
         /// <param name="endPos"></param>
@@ -115,13 +145,16 @@ namespace NWaves.Signals
             get
             {
                 var rangeLength = endPos - startPos;
+
+                if (rangeLength <= 0)
+                {
+                    throw new ArgumentException("Wrong index range!");
+                }
+
                 var samples = new double[rangeLength];
-                Array.Copy(Samples, startPos, samples, 0, rangeLength);
+                Buffer.BlockCopy(Samples, startPos * 8, samples, 0, rangeLength * 8);
 
                 return new DiscreteSignal(SamplingRate, samples);
-
-                // less efficient:
-                // return new DiscreteSignal(SamplingRate, Samples.Skip(startPos).Take(endPos - startPos));
             }
         }
 

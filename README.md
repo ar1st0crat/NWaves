@@ -76,6 +76,7 @@ var samples = signal.Samples;
 // concatenate
 
 var concat = signal1 + signal2;
+// or
 var concat = signal1.Concatenate(signal2);
 
 
@@ -176,13 +177,6 @@ await player.PlayAsync("temp.wav");
 // play from 16000th sample to 32000th sample
 await player.PlayAsync("temp.wav", 16000, 32000);
 
-// playing audio from buffers in memory is implied by design
-// but it's not implemented in MCIAudioPlayer
-// (seems that it's simply impossible to do...):
-
-// await player.PlayAsync(signalLeft);
-// await player.PlayAsync(signalRight, 16000, 32000);
-
 
 // in some event handler
 player.Pause();
@@ -199,13 +193,39 @@ player.Stop();
 IAudioRecorder = new MciAudioRecorder();
 
 // in some event handler
-recorder.StartRecording("temp.wav", 16000);
+recorder.StartRecording(16000);
 
 // in some event handler
-recorder.StopRecording();
+recorder.StopRecording("temp.wav");
 
 ```
 
+Playing audio from buffers in memory is implied by design but it's not implemented in MCIAudioPlayer (seems that it's simply impossible to do...). Still there's some workaround: in the calling code the signal can be saved to a temporary wave file, and then player can play this file.
+
+```C#
+
+// this won't work:
+
+// await player.PlayAsync(signal);
+// await player.PlayAsync(signal, 16000, 32000);
+
+
+// looks not so cool, but at least it works:
+
+// create temporary file
+var filename = string.format("{0}.wav", Guid.NewGuid());
+using (var stream = new FileStream(filename, FileMode.Create))
+{
+	var waveFile = new WaveFile(signal);
+	waveFile.SaveTo(stream);
+}
+
+await player.PlayAsync(filename);
+
+// cleanup temporary file
+File.Delete(filename);
+
+```
 
 ### Transforms:
 
@@ -226,7 +246,10 @@ var filteredSignal = Operation.Convolve(signal, kernel);
 
 var correlated = Operation.CrossCorrelate(signal1, signal2);
 
+var deconvolved = Operation.Deconvolve(filteredSignal, kernel);
+
 var resampled = Operation.Resample(signal, 22050);
+var decimated = Operation.Decimate(signal, 3);
 
 ```
 

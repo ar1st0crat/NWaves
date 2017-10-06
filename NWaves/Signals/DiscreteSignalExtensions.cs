@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace NWaves.Signals
 {
     /// <summary>
-    /// 
     /// In general, any finite DT signal is simply an array of data sampled at certain sampling rate.
     /// 
     /// This array of samples can be:
@@ -13,7 +10,9 @@ namespace NWaves.Signals
     ///     - superimposed with another array of samples (another signal)
     ///     - concatenated with another array of samples (another signal)
     ///     - repeated N times
-    /// 
+    ///
+    /// Note.
+    /// Method implementations are LINQ-less and do Buffer.BlockCopy() for better performance.
     /// </summary>
     public static class DiscreteSignalExtensions
     {
@@ -25,20 +24,27 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal Delay(this DiscreteSignal signal, int delay)
         {
+            var length = signal.Samples.Length;
+
+            double[] delayed;
+
             if (delay <= 0)
             {
                 delay = -delay;
 
-                if (delay >= signal.Samples.Length)
+                if (delay >= length)
                 {
                     throw new ArgumentException("Delay should not exceed the length of the signal!");
                 }
-                return new DiscreteSignal(signal.SamplingRate, signal.Samples.Skip(delay));
-            }
 
-            var delayed = new List<double>();
-            delayed.AddRange(Enumerable.Repeat(0.0, delay));
-            delayed.AddRange(signal.Samples);
+                delayed = new double[length - delay];
+                Buffer.BlockCopy(signal.Samples, delay * 8, delayed, 0, (length - delay) * 8);
+            }
+            else
+            {
+                delayed = new double[length + delay];
+                Buffer.BlockCopy(signal.Samples, 0, delayed, delay * 8, length * 8);
+            }
 
             return new DiscreteSignal(signal.SamplingRate, delayed);
         }
@@ -60,7 +66,7 @@ namespace NWaves.Signals
 
             if (signal1.Samples.Length > signal2.Samples.Length)
             {
-                superimposed = new DiscreteSignal(signal1.SamplingRate, signal1.Samples);
+                superimposed = signal1.Copy();
 
                 for (var i = 0; i < signal2.Samples.Length; i++)
                 {
@@ -69,7 +75,7 @@ namespace NWaves.Signals
             }
             else
             {
-                superimposed = new DiscreteSignal(signal2.SamplingRate, signal2.Samples);
+                superimposed = signal2.Copy();
 
                 for (var i = 0; i < signal1.Samples.Length; i++)
                 {
@@ -93,9 +99,9 @@ namespace NWaves.Signals
                 throw new ArgumentException("Sampling rates should be the same!");
             }
 
-            var concatenated = new List<double>();
-            concatenated.AddRange(signal1.Samples);
-            concatenated.AddRange(signal2.Samples);
+            var concatenated = new double[signal1.Samples.Length + signal2.Samples.Length];
+            Buffer.BlockCopy(signal1.Samples, 0, concatenated, 0, signal1.Samples.Length * 8);
+            Buffer.BlockCopy(signal2.Samples, 0, concatenated, signal1.Samples.Length * 8, signal2.Samples.Length * 8);
 
             return new DiscreteSignal(signal1.SamplingRate, concatenated);
         }
@@ -108,10 +114,18 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal Repeat(this DiscreteSignal signal, int times)
         {
-            var repeated = new List<double>();
+            if (times <= 0)
+            {
+                throw new ArgumentException("Number of repeat times must be at least once");
+            }
+
+            var repeated = new double[signal.Samples.Length * times];
+
+            var offset = 0;
             for (var i = 0; i < times; i++)
             {
-                repeated.AddRange(signal.Samples);
+                Buffer.BlockCopy(signal.Samples, 0, repeated, offset * 8, signal.Samples.Length * 8);
+                offset += signal.Samples.Length;
             }
 
             return new DiscreteSignal(signal.SamplingRate, repeated);
@@ -125,7 +139,15 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal First(this DiscreteSignal signal, int sampleCount)
         {
-            return new DiscreteSignal(signal.SamplingRate, signal.Samples.Take(sampleCount));
+            if (sampleCount <= 0 || sampleCount >= signal.Samples.Length)
+            {
+                throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
+            }
+
+            var samples = new double[sampleCount];
+            Buffer.BlockCopy(signal.Samples, 0, samples, 0, sampleCount * 8);
+
+            return new DiscreteSignal(signal.SamplingRate, samples);
         }
 
         /// <summary>
@@ -137,11 +159,13 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal Last(this DiscreteSignal signal, int sampleCount)
         {
+            if (sampleCount <= 0 || sampleCount >= signal.Samples.Length)
+            {
+                throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
+            }
+
             var samples = new double[sampleCount];
-            
-            Array.Copy(signal.Samples, signal.Samples.Length - sampleCount,
-                       samples, 0, 
-                       sampleCount);
+            Buffer.BlockCopy(signal.Samples, (signal.Samples.Length - sampleCount) * 8, samples, 0, sampleCount * 8);
 
             return new DiscreteSignal(signal.SamplingRate, samples);
         }

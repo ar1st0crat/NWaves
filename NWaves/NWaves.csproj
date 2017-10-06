@@ -72,6 +72,8 @@
     <Compile Include="Signals\Builders\SawtoothBuilder.cs" />
     <Compile Include="Signals\Builders\SignalBuilder.cs" />
     <Compile Include="Signals\Builders\SinusoidBuilder.cs" />
+    <Compile Include="Signals\ComplexDiscreteSignal.cs" />
+    <Compile Include="Signals\ComplexDiscreteSignalExtensions.cs" />
     <Compile Include="Signals\DiscreteSignal.cs" />
     <Compile Include="Signals\DiscreteSignalExtensions.cs" />
     <Compile Include="Transforms\Dct.cs" />

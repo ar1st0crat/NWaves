@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -282,7 +283,6 @@ namespace NWaves.DemoForms
 
         private void panel1_MouseDown(object sender, MouseEventArgs e)
         {
-
         }
 
         private void panel1_MouseUp(object sender, MouseEventArgs e)
