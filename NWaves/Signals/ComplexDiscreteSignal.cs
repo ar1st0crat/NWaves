@@ -13,7 +13,15 @@ namespace NWaves.Signals
     /// See also ComplexDiscreteSignalExtensions for additional functionality of complex DT signals.
     /// 
     /// Note.
-    /// Method implementations are LINQ-less for better performance.
+    /// 1) I intentionally do not implement reusable code mechanisms (like generics or inheritance) 
+    ///    for coding DiscreteSignals and ComplexDiscreteSignals. I also did not use Complex type 
+    ///    for better performance (instead we just work with 2 plain arrays).
+    ///    The reason is that currently ComplexDiscreteSignal is more like a helper class used in DSP internals.
+    ///    For all tasks users will most likely use real-valued DiscreteSignal.
+    ///    However they can switch between complex and real-valued signals anytime.
+    /// 
+    /// 2) Method implementations are LINQ-less for better performance.
+    /// 
     /// </summary>
     public class ComplexDiscreteSignal
     {
@@ -31,6 +39,48 @@ namespace NWaves.Signals
         /// Array or imaginary parts of samples
         /// </summary>
         public virtual double[] Imag { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public DiscreteSignal Magnitude
+        {
+            get
+            {
+                var real = Real;
+                var imag = Imag;
+
+                var magnitude = new double[Real.Length];
+
+                for (var i = 0; i < magnitude.Length; i++)
+                {
+                    magnitude[i] = Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]);
+                }
+
+                return new DiscreteSignal(SamplingRate, magnitude);
+            }
+        }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        public DiscreteSignal Phase
+        {
+            get
+            {
+                var real = Real;
+                var imag = Imag;
+
+                var magnitude = new double[Real.Length];
+
+                for (var i = 0; i < magnitude.Length; i++)
+                {
+                    magnitude[i] = Math.Atan(imag[i] / real[i]);
+                }
+
+                return new DiscreteSignal(SamplingRate, magnitude);
+            }
+        }
 
         /// <summary>
         /// The most efficient constructor for initializing complex signals
@@ -130,7 +180,7 @@ namespace NWaves.Signals
             Real = realSamples;
             Imag = new double[intSamples.Length];
         }
-
+        
         /// <summary>
         /// Create a copy of complex signal
         /// </summary>

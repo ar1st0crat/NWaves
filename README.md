@@ -262,7 +262,7 @@ var filter = new MovingAverageFilter(7);
 var filteredSignal = filter.ApplyTo(signal);
 
 var filtered = signal.ApplyFilter(filter.CombineWith(new Reverb(params))
-										.CombineWith(new FirFilter(coeffs)));
+                                        .CombineWith(new FirFilter(coeffs)));
 
 var distortion = new DistortionEffect();
 var echo = new EchoEffect(delay: 20);

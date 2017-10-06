@@ -9,6 +9,7 @@
         /// <param name="dctSize"></param>
         public static void Dct1(double[] samples, int dctSize = 512)
         {
+
         }
 
         /// <summary>
