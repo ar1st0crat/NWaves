@@ -27,7 +27,7 @@ In the beginning... there were interfaces and factories here and there, and NWav
 
 ```C#
 
-var constants = new DiscreteSignal(8000, 10, 0.75f);
+var constants = new DiscreteSignal(8000, 10, 0.75);
 // {0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75} sampled at 8 kHz
 
 var linear = new DiscreteSignal(22050, Enumerable.Range(0, 100));

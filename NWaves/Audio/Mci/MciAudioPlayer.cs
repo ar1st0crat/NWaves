@@ -156,7 +156,7 @@ namespace NWaves.Audio.Mci
         /// </summary>
         public void Resume()
         {
-            if (_alias == null)
+            if (_alias == null || !_isPaused)
             {
                 return;
             }

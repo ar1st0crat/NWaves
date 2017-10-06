@@ -23,6 +23,7 @@ namespace NWaves.DemoForms
         private string _waveFileName;
 
         private readonly MciAudioPlayer _player = new MciAudioPlayer();
+        private bool _hasStartedPlaying;
         private bool _isPaused;
 
         private readonly MciAudioRecorder _recorder = new MciAudioRecorder();
@@ -177,11 +178,25 @@ namespace NWaves.DemoForms
 
         private async void playToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (_waveFileName == null || _isPaused)
+            {
+                return;
+            }
+
+            _hasStartedPlaying = true;
+
             await _player.PlayAsync(_waveFileName);
+
+            _hasStartedPlaying = false;
         }
 
         private void pauseToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (_waveFileName == null || _hasStartedPlaying == false)
+            {
+                return;
+            }
+
             var menuItem = sender as ToolStripMenuItem;
 
             if (_isPaused)
@@ -201,6 +216,7 @@ namespace NWaves.DemoForms
         private void stopToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _player.Stop();
+            _hasStartedPlaying = false;
         }
 
         private void recordToolStripMenuItem_Click(object sender, EventArgs e)
