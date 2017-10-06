@@ -180,6 +180,11 @@ namespace NWaves.Audio.Mci
                 return;
             }
 
+            if (_isPaused)
+            {
+                Resume();
+            }
+
             var mciCommand = string.Format("stop {0}", _alias);
             Mci.SendString(mciCommand, null, 0, 0);
 
