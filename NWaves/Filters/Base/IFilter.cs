@@ -16,12 +16,12 @@ namespace NWaves.Filters.Base
         DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringOptions filteringOptions);
         
         /// <summary>
-        /// Returns (if possible) the complex frequency response of a filter
+        /// Returns the complex frequency response of a filter
         /// </summary>
         ComplexDiscreteSignal FrequencyResponse { get; }
 
         /// <summary>
-        /// Returns (if possible) the real-valued impulse response of a filter
+        /// Returns the real-valued impulse response of a filter
         /// </summary>
         DiscreteSignal ImpulseResponse { get; }
     }

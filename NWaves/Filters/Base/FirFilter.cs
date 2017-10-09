@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using NWaves.Signals;
 using NWaves.Transforms;
 
@@ -7,7 +9,7 @@ namespace NWaves.Filters.Base
     /// <summary>
     /// Class representing Finite Impulse Response filters
     /// </summary>
-    public class FirFilter : IFilter
+    public class FirFilter : FilterBase
     {
         /// <summary>
         /// Filter's kernel.
@@ -18,21 +20,68 @@ namespace NWaves.Filters.Base
         public double[] Kernel { get; set; }
 
         /// <summary>
-        /// 
+        /// Parameterless constructor
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="filteringOptions"></param>
-        /// <returns></returns>
-        public virtual DiscreteSignal ApplyTo(DiscreteSignal signal, 
-                                              FilteringOptions filteringOptions = FilteringOptions.OverlapAdd)
+        public FirFilter()
         {
-            return signal;
+            ImpulseResponseLength = DefaultImpulseResponseLength;
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public ComplexDiscreteSignal FrequencyResponse
+        /// <param name="kernel"></param>
+        /// <param name="impulseResponseLength"></param>
+        public FirFilter(IEnumerable<double> kernel, int impulseResponseLength = DefaultImpulseResponseLength)
+        {
+            Kernel = kernel.ToArray();
+            ImpulseResponseLength = impulseResponseLength;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="filteringOptions"></param>
+        /// <returns></returns>
+        public override DiscreteSignal ApplyTo(DiscreteSignal signal, 
+                                               FilteringOptions filteringOptions = FilteringOptions.OverlapAdd)
+        {
+            switch (filteringOptions)
+            {
+                case FilteringOptions.Custom:
+                case FilteringOptions.DifferenceEquation:
+                    {
+                        var start = Kernel.Length;
+
+                        var input = signal.Samples;
+                        var length = input.Length;
+                        var samples = new double[length];
+
+                        for (var i = start; i < length; i++)
+                        {
+                            for (var j = 0; j < Kernel.Length; j++)
+                            {
+                                samples[i] += Kernel[j] * input[i - j];
+                            }
+                        }
+
+                        return new DiscreteSignal(signal.SamplingRate, samples);
+                    }
+                // Currently just return copy for any other options
+                case FilteringOptions.OverlapAdd:
+                    return signal.Copy();
+                case FilteringOptions.OverlapSave:
+                    return signal.Copy();
+                default:
+                    return signal.Copy();
+            }
+        }
+
+        /// <summary>
+        /// Frequency response of an FIR filter is the FT of its impulse response
+        /// </summary>
+        public override ComplexDiscreteSignal FrequencyResponse
         {
             get
             {
@@ -43,13 +92,13 @@ namespace NWaves.Filters.Base
 
                 Transform.Fft(real, imag, 512);
 
-                return new ComplexDiscreteSignal(ImpulseResponse.SamplingRate, real, imag);
+                return new ComplexDiscreteSignal(1, real, imag);
             }
         }
 
         /// <summary>
-        /// 
+        /// Impulse response of an FIR filter is its kernel
         /// </summary>
-        public DiscreteSignal ImpulseResponse => new DiscreteSignal(1, Kernel);
+        public override DiscreteSignal ImpulseResponse => new DiscreteSignal(1, Kernel);
     }
 }

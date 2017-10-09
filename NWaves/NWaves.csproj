@@ -55,6 +55,7 @@
     <Compile Include="FeatureExtractors\LpcExtractor.cs" />
     <Compile Include="FeatureExtractors\MfccExtractor.cs" />
     <Compile Include="FeatureExtractors\PnccExtractor.cs" />
+    <Compile Include="Filters\Base\FilterBase.cs" />
     <Compile Include="Filters\Base\FilteringOptions.cs" />
     <Compile Include="Filters\Base\FirFilter.cs" />
     <Compile Include="Filters\Base\IFilter.cs" />

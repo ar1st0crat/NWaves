@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -14,7 +13,7 @@ using NWaves.Transforms;
 
 namespace NWaves.DemoForms
 {
-    public partial class Form1 : Form
+    public partial class SignalsForm : Form
     {
         private DiscreteSignal _signal1;
         private DiscreteSignal _signal2;
@@ -29,7 +28,7 @@ namespace NWaves.DemoForms
         private readonly MciAudioRecorder _recorder = new MciAudioRecorder();
         private bool _isRecording;
 
-        public Form1()
+        public SignalsForm()
         {
             InitializeComponent();
         }
@@ -51,6 +50,12 @@ namespace NWaves.DemoForms
                 var waveFile = new WaveFile(_signal2);
                 waveFile.SaveTo(stream);
             }
+        }
+
+        private void filtersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var form = new FiltersForm();
+            form.ShowDialog();
         }
 
         private void OpenSignal()
