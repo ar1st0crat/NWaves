@@ -55,7 +55,7 @@
     <Compile Include="FeatureExtractors\LpcExtractor.cs" />
     <Compile Include="FeatureExtractors\MfccExtractor.cs" />
     <Compile Include="FeatureExtractors\PnccExtractor.cs" />
-    <Compile Include="Filters\Base\FilterBase.cs" />
+    <Compile Include="Filters\Base\LtiFilter.cs" />
     <Compile Include="Filters\Base\FilteringOptions.cs" />
     <Compile Include="Filters\Base\FirFilter.cs" />
     <Compile Include="Filters\Base\IFilter.cs" />
@@ -65,6 +65,7 @@
     <Compile Include="Filters\MedianFilter.cs" />
     <Compile Include="Filters\MovingAverageFilter.cs" />
     <Compile Include="Operations\AdaptiveFiltering.cs" />
+    <Compile Include="Operations\BlockConvolution.cs" />
     <Compile Include="Operations\Convolution.cs" />
     <Compile Include="Operations\Resampling.cs" />
     <Compile Include="Operations\SpectralSubtraction.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="Transforms\Stft.cs" />
     <Compile Include="Transforms\Windows\BlackmanWindow.cs" />
     <Compile Include="Transforms\Windows\HammingWindow.cs" />
+    <Compile Include="Utils\FastCopy.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

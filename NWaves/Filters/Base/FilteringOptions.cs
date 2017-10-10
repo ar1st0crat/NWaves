@@ -6,9 +6,9 @@
     public enum FilteringOptions
     {
         /// <summary>
-        /// Defined fully in code by user
+        /// Filtering strategy is dynamically defined by NWaves library
         /// </summary>
-        Custom,
+        Auto,
 
         /// <summary>
         /// Filtering in time domain based on difference equations
@@ -23,6 +23,11 @@
         /// <summary>
         /// Filtering in frequency domain based on OLS algorithm
         /// </summary>
-        OverlapSave
+        OverlapSave,
+
+        /// <summary>
+        /// Filtering strategy is defined fully in code by user
+        /// </summary>
+        Custom
     }
 }

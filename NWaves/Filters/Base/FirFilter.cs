@@ -9,7 +9,7 @@ namespace NWaves.Filters.Base
     /// <summary>
     /// Class representing Finite Impulse Response filters
     /// </summary>
-    public class FirFilter : FilterBase
+    public class FirFilter : LtiFilter
     {
         /// <summary>
         /// Filter's kernel.
@@ -45,10 +45,14 @@ namespace NWaves.Filters.Base
         /// <param name="filteringOptions"></param>
         /// <returns></returns>
         public override DiscreteSignal ApplyTo(DiscreteSignal signal, 
-                                               FilteringOptions filteringOptions = FilteringOptions.OverlapAdd)
+                                               FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
             switch (filteringOptions)
             {
+                case FilteringOptions.Auto:
+                case FilteringOptions.OverlapAdd:
+                    return signal.Copy();
+
                 case FilteringOptions.Custom:
                 case FilteringOptions.DifferenceEquation:
                     {
@@ -68,11 +72,8 @@ namespace NWaves.Filters.Base
 
                         return new DiscreteSignal(signal.SamplingRate, samples);
                     }
+                
                 // Currently just return copy for any other options
-                case FilteringOptions.OverlapAdd:
-                    return signal.Copy();
-                case FilteringOptions.OverlapSave:
-                    return signal.Copy();
                 default:
                     return signal.Copy();
             }
@@ -85,12 +86,12 @@ namespace NWaves.Filters.Base
         {
             get
             {
-                var real = new double[512];
-                var imag = new double[512];
+                var real = new double[ImpulseResponseLength];
+                var imag = new double[ImpulseResponseLength];
 
-                Buffer.BlockCopy(Kernel, 0, real, 0, 512 * 8);
+                Buffer.BlockCopy(Kernel, 0, real, 0, Kernel.Length * 8);
 
-                Transform.Fft(real, imag, 512);
+                Transform.Fft(real, imag, ImpulseResponseLength);
 
                 return new ComplexDiscreteSignal(1, real, imag);
             }

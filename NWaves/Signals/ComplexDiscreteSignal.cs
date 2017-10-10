@@ -14,8 +14,8 @@ namespace NWaves.Signals
     /// 
     /// Note.
     /// 1) I intentionally do not implement reusable code mechanisms (like generics or inheritance) 
-    ///    for coding DiscreteSignals and ComplexDiscreteSignals. I also did not use Complex type 
-    ///    for better performance (instead we just work with 2 plain arrays).
+    ///    for coding DiscreteSignals and ComplexDiscreteSignals. Also for better performance 
+    ///    I did not use Complex type (instead we just work with 2 plain arrays).
     ///    The reason is that currently ComplexDiscreteSignal is more like a helper class used in DSP internals.
     ///    For all tasks users will most likely use real-valued DiscreteSignal.
     ///    However they can switch between complex and real-valued signals anytime.
@@ -41,7 +41,7 @@ namespace NWaves.Signals
         public virtual double[] Imag { get; }
 
         /// <summary>
-        /// 
+        /// Get real-valued signal containing magnitudes of complex-valued samples
         /// </summary>
         public DiscreteSignal Magnitude
         {
@@ -50,7 +50,7 @@ namespace NWaves.Signals
                 var real = Real;
                 var imag = Imag;
 
-                var magnitude = new double[Real.Length];
+                var magnitude = new double[real.Length];
 
                 for (var i = 0; i < magnitude.Length; i++)
                 {
@@ -60,9 +60,9 @@ namespace NWaves.Signals
                 return new DiscreteSignal(SamplingRate, magnitude);
             }
         }
-        
+
         /// <summary>
-        /// 
+        /// Get real-valued signal containing phases of complex-valued samples
         /// </summary>
         public DiscreteSignal Phase
         {
@@ -71,7 +71,7 @@ namespace NWaves.Signals
                 var real = Real;
                 var imag = Imag;
 
-                var magnitude = new double[Real.Length];
+                var magnitude = new double[real.Length];
 
                 for (var i = 0; i < magnitude.Length; i++)
                 {

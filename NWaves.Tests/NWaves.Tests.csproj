@@ -37,6 +37,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FilterTests\TestIirFilter.cs" />
     <Compile Include="SignalTests\TestComplexDiscreteSignal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SignalTests\TestDiscreteSignal.cs" />

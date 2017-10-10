@@ -6,8 +6,22 @@ namespace NWaves.Filters
     /// <summary>
     /// Nonlinear median filter
     /// </summary>
-    class MedianFilter : IFilter
+    public class MedianFilter : IFilter
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Size { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="size"></param>
+        public MedianFilter(int size = 9)
+        {
+            Size = size;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -19,15 +33,5 @@ namespace NWaves.Filters
         {
             return signal;
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public ComplexDiscreteSignal FrequencyResponse => null;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public DiscreteSignal ImpulseResponse => null;
     }
 }
