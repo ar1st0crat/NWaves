@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NWaves.Utils;
 
 namespace NWaves.Signals
 {
@@ -42,10 +43,7 @@ namespace NWaves.Signals
             }
 
             SamplingRate = samplingRate;
-
-            var doubleSamples = new double[samples.Length];
-            Buffer.BlockCopy(samples, 0, doubleSamples, 0, samples.Length * 8);
-            Samples = doubleSamples;
+            Samples = FastCopy.EntireArray(samples);
         }
 
         /// <summary>
@@ -151,10 +149,7 @@ namespace NWaves.Signals
                     throw new ArgumentException("Wrong index range!");
                 }
 
-                var samples = new double[rangeLength];
-                Buffer.BlockCopy(Samples, startPos * 8, samples, 0, rangeLength * 8);
-
-                return new DiscreteSignal(SamplingRate, samples);
+                return new DiscreteSignal(SamplingRate, FastCopy.ArrayFragment(Samples, rangeLength, startPos));
             }
         }
 

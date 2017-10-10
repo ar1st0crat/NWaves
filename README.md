@@ -200,7 +200,7 @@ recorder.StopRecording("temp.wav");
 
 ```
 
-Playing audio from buffers in memory is implied by design but it's not implemented in MCIAudioPlayer (seems that it's simply impossible to do...). Still there's some workaround: in the calling code the signal can be saved to a temporary wave file, and then player can play this file.
+Playing audio from buffers in memory is implied by design but it's not implemented in MciAudioPlayer (seems that it's simply impossible to do...). Still there's some workaround: in the calling code the signal can be saved to a temporary wave file, and then player can play this file.
 
 ```C#
 

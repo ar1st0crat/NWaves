@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NWaves.Utils;
 
 namespace NWaves.Signals
 {
@@ -85,9 +86,9 @@ namespace NWaves.Signals
         /// <summary>
         /// The most efficient constructor for initializing complex signals
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="real"></param>
-        /// <param name="imag"></param>
+        /// <param name="samplingRate">Sampling rate of the signal</param>
+        /// <param name="real">Array of real parts of the complex-valued signal</param>
+        /// <param name="imag">Array of imaginary parts of the complex-valued signal</param>
         public ComplexDiscreteSignal(int samplingRate, double[] real, double[] imag = null)
         {
             if (samplingRate <= 0)
@@ -96,11 +97,9 @@ namespace NWaves.Signals
             }
 
             SamplingRate = samplingRate;
+            Real = FastCopy.EntireArray(real);
 
-            var realSamples = new double[real.Length];
-            var imagSamples = new double[real.Length];
-
-            Buffer.BlockCopy(real, 0, realSamples, 0, real.Length * 8);
+            // some additional logic for imaginary part initialization
 
             if (imag != null)
             {
@@ -109,11 +108,12 @@ namespace NWaves.Signals
                     throw new ArgumentException("Arrays of real and imaginary parts have different size!");
                 }
 
-                Buffer.BlockCopy(imag, 0, imagSamples, 0, imag.Length * 8);
+                Imag = FastCopy.EntireArray(imag);
             }
-
-            Real = realSamples;
-            Imag = imagSamples;
+            else
+            {
+                Imag = new double[real.Length];
+            }
         }
 
         /// <summary>
@@ -225,13 +225,9 @@ namespace NWaves.Signals
                     throw new ArgumentException("Wrong index range!");
                 }
 
-                var realSamples = new double[rangeLength];
-                Buffer.BlockCopy(Real, startPos * 8, realSamples, 0, rangeLength * 8);
-
-                var imagSamples = new double[rangeLength];
-                Buffer.BlockCopy(Imag, startPos * 8, imagSamples, 0, rangeLength * 8);
-
-                return new ComplexDiscreteSignal(SamplingRate, realSamples, imagSamples);
+                return new ComplexDiscreteSignal(SamplingRate,
+                                    FastCopy.ArrayFragment(Real, rangeLength, startPos),
+                                    FastCopy.ArrayFragment(Imag, rangeLength, startPos));
             }
         }
 

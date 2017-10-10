@@ -1,4 +1,5 @@
 ﻿using System;
+using NWaves.Utils;
 
 namespace NWaves.Signals
 {
@@ -27,34 +28,25 @@ namespace NWaves.Signals
         {
             var length = signal.Real.Length;
 
-            double[] realDelayed;
-            double[] imagDelayed;
-
             if (delay <= 0)
             {
                 delay = -delay;
 
                 if (delay >= length)
                 {
-                    throw new ArgumentException("Delay should not exceed the length of the signal!");
+                    throw new ArgumentException("Delay can not exceed the length of the signal!");
                 }
 
-                realDelayed = new double[length - delay];
-                Buffer.BlockCopy(signal.Real, delay * 8, realDelayed, 0, (length - delay) * 8);
-
-                imagDelayed = new double[length - delay];
-                Buffer.BlockCopy(signal.Imag, delay * 8, imagDelayed, 0, (length - delay) * 8);
-            }
-            else
-            {
-                realDelayed = new double[length + delay];
-                Buffer.BlockCopy(signal.Real, 0, realDelayed, delay * 8, length * 8);
-
-                imagDelayed = new double[length + delay];
-                Buffer.BlockCopy(signal.Imag, 0, imagDelayed, delay * 8, length * 8);
+                return new ComplexDiscreteSignal(
+                                signal.SamplingRate,
+                                FastCopy.ArrayFragment(signal.Real, length - delay, delay),
+                                FastCopy.ArrayFragment(signal.Imag, length - delay, delay));
             }
 
-            return new ComplexDiscreteSignal(signal.SamplingRate, realDelayed, imagDelayed);
+            return new ComplexDiscreteSignal(
+                            signal.SamplingRate,
+                            FastCopy.ArrayFragment(signal.Real, length, destinationOffset: delay),
+                            FastCopy.ArrayFragment(signal.Imag, length, destinationOffset: delay));
         }
 
         /// <summary>
@@ -69,7 +61,7 @@ namespace NWaves.Signals
         {
             if (signal1.SamplingRate != signal2.SamplingRate)
             {
-                throw new ArgumentException("Sampling rates should be the same!");
+                throw new ArgumentException("Sampling rates must be the same!");
             }
 
             ComplexDiscreteSignal superimposed;
@@ -108,20 +100,13 @@ namespace NWaves.Signals
         {
             if (signal1.SamplingRate != signal2.SamplingRate)
             {
-                throw new ArgumentException("Sampling rates should be the same!");
+                throw new ArgumentException("Sampling rates must be the same!");
             }
 
-            var length = signal1.Real.Length + signal2.Real.Length;
-
-            var realConcatenated = new double[length];
-            Buffer.BlockCopy(signal1.Real, 0, realConcatenated, 0, signal1.Real.Length * 8);
-            Buffer.BlockCopy(signal2.Real, 0, realConcatenated, signal1.Real.Length * 8, signal2.Real.Length * 8);
-
-            var imagConcatenated = new double[length];
-            Buffer.BlockCopy(signal1.Imag, 0, imagConcatenated, 0, signal1.Imag.Length * 8);
-            Buffer.BlockCopy(signal2.Imag, 0, imagConcatenated, signal1.Imag.Length * 8, signal2.Imag.Length * 8);
-
-            return new ComplexDiscreteSignal(signal1.SamplingRate, realConcatenated, imagConcatenated);
+            return new ComplexDiscreteSignal(
+                            signal1.SamplingRate,
+                            FastCopy.MergeArrays(signal1.Real, signal2.Real),
+                            FastCopy.MergeArrays(signal1.Imag, signal2.Imag));
         }
 
         /// <summary>
@@ -137,18 +122,10 @@ namespace NWaves.Signals
                 throw new ArgumentException("Number of repeat times must be at least once");
             }
 
-            var realRepeated = new double[signal.Real.Length * times];
-            var imagRepeated = new double[signal.Real.Length * times];
-
-            var offset = 0;
-            for (var i = 0; i < times; i++)
-            {
-                Buffer.BlockCopy(signal.Real, 0, realRepeated, offset * 8, signal.Real.Length * 8);
-                Buffer.BlockCopy(signal.Imag, 0, imagRepeated, offset * 8, signal.Imag.Length * 8);
-                offset += signal.Real.Length;
-            }
-
-            return new ComplexDiscreteSignal(signal.SamplingRate, realRepeated, imagRepeated);
+            return new ComplexDiscreteSignal(
+                            signal.SamplingRate,
+                            FastCopy.RepeatArray(signal.Real, times),
+                            FastCopy.RepeatArray(signal.Imag, times));
         }
 
         /// <summary>
@@ -163,19 +140,15 @@ namespace NWaves.Signals
             {
                 throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
             }
-
-            var realSamples = new double[sampleCount];
-            Buffer.BlockCopy(signal.Real, 0, realSamples, 0, sampleCount * 8);
-
-            var imagSamples = new double[sampleCount];
-            Buffer.BlockCopy(signal.Imag, 0, imagSamples, 0, sampleCount * 8);
             
-            return new ComplexDiscreteSignal(signal.SamplingRate, realSamples, imagSamples);
+            return new ComplexDiscreteSignal(
+                            signal.SamplingRate,
+                            FastCopy.ArrayFragment(signal.Real, sampleCount),
+                            FastCopy.ArrayFragment(signal.Imag, sampleCount));
         }
 
         /// <summary>
         /// More or less efficient LINQ-less version.
-        /// Skip() would require unnecessary enumeration.
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="sampleCount"></param>
@@ -187,13 +160,10 @@ namespace NWaves.Signals
                 throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
             }
 
-            var realSamples = new double[sampleCount];
-            Buffer.BlockCopy(signal.Real, (signal.Real.Length - sampleCount) * 8, realSamples, 0, sampleCount * 8);
-
-            var imagSamples = new double[sampleCount];
-            Buffer.BlockCopy(signal.Imag, (signal.Imag.Length - sampleCount) * 8, imagSamples, 0, sampleCount * 8);
-
-            return new ComplexDiscreteSignal(signal.SamplingRate, realSamples, imagSamples);
+            return new ComplexDiscreteSignal(
+                            signal.SamplingRate,
+                            FastCopy.ArrayFragment(signal.Real, sampleCount, signal.Real.Length - sampleCount),
+                            FastCopy.ArrayFragment(signal.Imag, sampleCount, signal.Imag.Length - sampleCount));
         }
     }
 }

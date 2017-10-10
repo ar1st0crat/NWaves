@@ -1,4 +1,5 @@
 ﻿using System;
+using NWaves.Utils;
 
 namespace NWaves.Signals
 {
@@ -26,27 +27,23 @@ namespace NWaves.Signals
         {
             var length = signal.Samples.Length;
 
-            double[] delayed;
-
             if (delay <= 0)
             {
                 delay = -delay;
 
                 if (delay >= length)
                 {
-                    throw new ArgumentException("Delay should not exceed the length of the signal!");
+                    throw new ArgumentException("Delay can not exceed the length of the signal!");
                 }
 
-                delayed = new double[length - delay];
-                Buffer.BlockCopy(signal.Samples, delay * 8, delayed, 0, (length - delay) * 8);
+                return new DiscreteSignal(
+                                signal.SamplingRate,
+                                FastCopy.ArrayFragment(signal.Samples, length - delay, delay));
             }
-            else
-            {
-                delayed = new double[length + delay];
-                Buffer.BlockCopy(signal.Samples, 0, delayed, delay * 8, length * 8);
-            }
-
-            return new DiscreteSignal(signal.SamplingRate, delayed);
+            
+            return new DiscreteSignal(
+                            signal.SamplingRate, 
+                            FastCopy.ArrayFragment(signal.Samples, length, destinationOffset: delay));
         }
 
         /// <summary>
@@ -59,7 +56,7 @@ namespace NWaves.Signals
         {
             if (signal1.SamplingRate != signal2.SamplingRate)
             {
-                throw new ArgumentException("Sampling rates should be the same!");
+                throw new ArgumentException("Sampling rates must be the same!");
             }
 
             DiscreteSignal superimposed;
@@ -96,14 +93,12 @@ namespace NWaves.Signals
         {
             if (signal1.SamplingRate != signal2.SamplingRate)
             {
-                throw new ArgumentException("Sampling rates should be the same!");
+                throw new ArgumentException("Sampling rates must be the same!");
             }
 
-            var concatenated = new double[signal1.Samples.Length + signal2.Samples.Length];
-            Buffer.BlockCopy(signal1.Samples, 0, concatenated, 0, signal1.Samples.Length * 8);
-            Buffer.BlockCopy(signal2.Samples, 0, concatenated, signal1.Samples.Length * 8, signal2.Samples.Length * 8);
-
-            return new DiscreteSignal(signal1.SamplingRate, concatenated);
+            return new DiscreteSignal(
+                            signal1.SamplingRate, 
+                            FastCopy.MergeArrays(signal1.Samples, signal2.Samples));
         }
 
         /// <summary>
@@ -119,16 +114,9 @@ namespace NWaves.Signals
                 throw new ArgumentException("Number of repeat times must be at least once");
             }
 
-            var repeated = new double[signal.Samples.Length * times];
-
-            var offset = 0;
-            for (var i = 0; i < times; i++)
-            {
-                Buffer.BlockCopy(signal.Samples, 0, repeated, offset * 8, signal.Samples.Length * 8);
-                offset += signal.Samples.Length;
-            }
-
-            return new DiscreteSignal(signal.SamplingRate, repeated);
+            return new DiscreteSignal(
+                            signal.SamplingRate,
+                            FastCopy.RepeatArray(signal.Samples, times));
         }
 
         /// <summary>
@@ -143,11 +131,10 @@ namespace NWaves.Signals
             {
                 throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
             }
-
-            var samples = new double[sampleCount];
-            Buffer.BlockCopy(signal.Samples, 0, samples, 0, sampleCount * 8);
-
-            return new DiscreteSignal(signal.SamplingRate, samples);
+            
+            return new DiscreteSignal(
+                            signal.SamplingRate,
+                            FastCopy.ArrayFragment(signal.Samples, sampleCount));
         }
 
         /// <summary>
@@ -164,10 +151,9 @@ namespace NWaves.Signals
                 throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
             }
 
-            var samples = new double[sampleCount];
-            Buffer.BlockCopy(signal.Samples, (signal.Samples.Length - sampleCount) * 8, samples, 0, sampleCount * 8);
-
-            return new DiscreteSignal(signal.SamplingRate, samples);
+            return new DiscreteSignal(
+                            signal.SamplingRate, 
+                            FastCopy.ArrayFragment(signal.Samples, sampleCount, signal.Samples.Length - sampleCount));
         }
     }
 }
