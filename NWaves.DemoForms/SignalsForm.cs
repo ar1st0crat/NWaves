@@ -6,7 +6,6 @@ using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.Audio.Interfaces;
 using NWaves.Audio.Mci;
-using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Signals.Builders;
 using NWaves.Transforms;
@@ -80,21 +79,6 @@ namespace NWaves.DemoForms
 
         private void button1_Click(object sender, EventArgs e)
         {
-            listBox1.Items.Add("Convolution demo:");
-            listBox1.Items.Add("[1, 5, 3, 2, 6]");
-            listBox1.Items.Add("    *");
-            listBox1.Items.Add("[2, 3, 1]");
-
-            var s1 = new DiscreteSignal(16000, new[] { 1.0, 5, 3, 2, 6, 0 });
-            var s2 = new DiscreteSignal(16000, new[] { 2.0, 3, 1 });
-
-            var conv = Operation.Convolve(s1, s2);
-
-            foreach (var sample in conv.Samples)
-            {
-                listBox1.Items.Add(sample + "");
-            }
-
             OpenSignal();
         }
 
@@ -220,6 +204,11 @@ namespace NWaves.DemoForms
 
         private void stopToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (_isPaused)
+            {
+                pauseToolStripMenuItem_Click(this.menuStrip1.Items[2], null);
+            }
+
             _player.Stop();
             _hasStartedPlaying = false;
         }

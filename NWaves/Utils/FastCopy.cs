@@ -69,5 +69,23 @@ namespace NWaves.Utils
 
             return repeated;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="zeroCount"></param>
+        /// <returns></returns>
+        public static double[] PadZeros(double[] source, int zeroCount = 0)
+        {
+            if (zeroCount <= 0)
+            {
+                zeroCount = MathUtils.NextPowerOfTwo(source.Length);
+            }
+
+            var zeroPadded = new double[zeroCount];
+            Buffer.BlockCopy(source, 0, zeroPadded, 0, source.Length * 8);
+            return zeroPadded;
+        }
     }
 }

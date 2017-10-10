@@ -2,6 +2,7 @@
 using System.Linq;
 using NWaves.Signals;
 using NWaves.Transforms;
+using NWaves.Utils;
 
 namespace NWaves.Operations
 {
@@ -17,36 +18,32 @@ namespace NWaves.Operations
         {
             if (signal1.SamplingRate != signal2.SamplingRate)
             {
-                throw new ArgumentException("Sampling rates should be the same!");
+                throw new ArgumentException("Sampling rates must be the same!");
             }
 
-            var fftSize = signal1.Samples.Length + signal2.Samples.Length - 1;
+            var length = signal1.Samples.Length + signal2.Samples.Length - 1;
 
-            var real1 = new double[fftSize];
-            signal1.Samples.CopyTo(real1, 0);
-            var imag1 = new double[fftSize];
+            var fftSize = MathUtils.NextPowerOfTwo(length);
 
-            var real2 = new double[fftSize];
-            signal2.Samples.CopyTo(real2, 0);
-            var imag2 = new double[fftSize];
+            var complex1 = signal1.ToComplex(fftSize);
+            var complex2 = signal2.ToComplex(fftSize);
+            
+            // 1) do FFT of both signals
 
-            Transform.Fft(real1, imag1, fftSize);
-            Transform.Fft(real2, imag2, fftSize);
+            Transform.Fft(complex1.Real, complex1.Imag, fftSize);
+            Transform.Fft(complex2.Real, complex2.Imag, fftSize);
 
-            // TODO: refactor ComplexMultiply()
+            // 2) do complex multiplication of spectra
 
-            var real = new double[fftSize];
-            var imag = new double[fftSize];
+            var spectrum = complex1.Multiply(complex2);
+            
+            // 3) do inverse FFT of resulting spectrum
 
-            for (var i = 0; i < fftSize; i++)
-            {
-                real[i] = (real1[i] * real2[i] - imag1[i] * imag2[i]) / fftSize;
-                imag[i] = (real1[i] * imag2[i] + imag1[i] * real2[i]) / fftSize;
-            }
+            Transform.Ifft(spectrum.Real, spectrum.Imag, fftSize);
 
-            Transform.Ifft(real, imag, fftSize);
+            // 4) return resulting real-valued part of the signal (truncate size to N + M - 1)
 
-            return new DiscreteSignal(signal1.SamplingRate, real);
+            return new DiscreteSignal(signal1.SamplingRate, FastCopy.ArrayFragment(spectrum.Real, length));
         }
 
         /// <summary>
@@ -57,11 +54,33 @@ namespace NWaves.Operations
         /// <returns></returns>
         public static DiscreteSignal ConvolveDirect(DiscreteSignal signal1, DiscreteSignal signal2)
         {
-            return Convolve(signal1, signal2);
+            if (signal1.SamplingRate != signal2.SamplingRate)
+            {
+                throw new ArgumentException("Sampling rates must be the same!");
+            }
+
+            var a = signal1.Samples;
+            var b = signal2.Samples;
+            var length = a.Length + b.Length - 1;
+            
+            var conv = new double[length];
+            
+            for (var n = 0; n < length; n++)
+            {
+                for (var k = 0; k < b.Length; k++)
+                {
+                    if (n >= k && n - k < a.Length)
+                    {
+                        conv[n] += a[n - k]*b[k];
+                    }
+                }
+            }
+
+            return new DiscreteSignal(signal1.SamplingRate, conv);
         }
 
         /// <summary>
-        /// Fast correlation via FFT
+        /// Fast cross-correlation via FFT
         /// </summary>
         /// <param name="signal1"></param>
         /// <param name="signal2"></param>
@@ -81,7 +100,31 @@ namespace NWaves.Operations
         /// <returns></returns>
         public static DiscreteSignal CrossCorrelateDirect(DiscreteSignal signal1, DiscreteSignal signal2)
         {
-            return CrossCorrelate(signal1, signal2);
+            if (signal1.SamplingRate != signal2.SamplingRate)
+            {
+                throw new ArgumentException("Sampling rates must be the same!");
+            }
+
+            var a = signal1.Samples;
+            var b = signal2.Samples;
+            var length = a.Length + b.Length - 1;
+
+            var corr = new double[length];
+
+            for (var n = 0; n < length; n++)
+            {
+                var pos = b.Length - 1;
+                for (var k = 0; k < b.Length; k++)
+                {
+                    if (n >= k && n - k < a.Length)
+                    {
+                        corr[n] += a[n - k] * b[pos];
+                    }
+                    pos--;
+                }
+            }
+
+            return new DiscreteSignal(signal1.SamplingRate, corr);
         }
     }
 }

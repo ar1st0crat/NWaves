@@ -38,6 +38,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FilterTests\TestIirFilter.cs" />
+    <Compile Include="Misc\TestMiscFunctions.cs" />
+    <Compile Include="Operations\TestConvolution.cs" />
     <Compile Include="SignalTests\TestComplexDiscreteSignal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SignalTests\TestDiscreteSignal.cs" />

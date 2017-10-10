@@ -85,6 +85,7 @@
     <Compile Include="Transforms\Windows\BlackmanWindow.cs" />
     <Compile Include="Transforms\Windows\HammingWindow.cs" />
     <Compile Include="Utils\FastCopy.cs" />
+    <Compile Include="Utils\MathUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

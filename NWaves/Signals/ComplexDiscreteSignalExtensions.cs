@@ -165,5 +165,33 @@ namespace NWaves.Signals
                             FastCopy.ArrayFragment(signal.Real, sampleCount, signal.Real.Length - sampleCount),
                             FastCopy.ArrayFragment(signal.Imag, sampleCount, signal.Imag.Length - sampleCount));
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="signal1"></param>
+        /// <param name="signal2"></param>
+        /// <returns></returns>
+        public static ComplexDiscreteSignal Multiply(
+            this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
+        {
+            var length = signal1.Real.Length;
+
+            var real = new double[length];
+            var imag = new double[length];
+
+            var real1 = signal1.Real;
+            var imag1 = signal1.Imag;
+            var real2 = signal2.Real;
+            var imag2 = signal2.Imag;
+
+            for (var i = 0; i < length; i++)
+            {
+                real[i] = (real1[i] * real2[i] - imag1[i] * imag2[i]) / length;
+                imag[i] = (real1[i] * imag2[i] + imag1[i] * real2[i]) / length;
+            }
+
+            return new ComplexDiscreteSignal(signal1.SamplingRate, real, imag);
+        }
     }
 }

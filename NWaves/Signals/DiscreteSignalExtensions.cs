@@ -155,5 +155,18 @@ namespace NWaves.Signals
                             signal.SamplingRate, 
                             FastCopy.ArrayFragment(signal.Samples, sampleCount, signal.Samples.Length - sampleCount));
         }
+
+        /// <summary>
+        /// Returns own complex-valued copy
+        /// </summary>
+        /// <param name="signal">Real-valued signal</param>
+        /// <param name="size">New size of complex-valued signal</param>
+        /// <returns>Corresponding complex-valued signal</returns>
+        public static ComplexDiscreteSignal ToComplex(this DiscreteSignal signal, int size = -1)
+        {
+            return size == -1 ? 
+                new ComplexDiscreteSignal(signal.SamplingRate, FastCopy.EntireArray(signal.Samples)) : 
+                new ComplexDiscreteSignal(signal.SamplingRate, FastCopy.PadZeros(signal.Samples, size));
+        }
     }
 }
