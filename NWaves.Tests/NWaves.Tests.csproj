@@ -43,6 +43,7 @@
     <Compile Include="SignalTests\TestComplexDiscreteSignal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SignalTests\TestDiscreteSignal.cs" />
+    <Compile Include="Transforms\TestDct.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
