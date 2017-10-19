@@ -14,6 +14,11 @@ namespace NWaves.FeatureExtractors.Base
         public double[] Features { get; set; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        public double TimePosition { get; set; }
+
+        /// <summary>
         /// TODO: this Dictionary is going to be a standalone class for statistics
         /// </summary>
         public Dictionary<string, double> Statistics => new Dictionary<string, double>

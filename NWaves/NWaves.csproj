@@ -64,6 +64,7 @@
     <Compile Include="Filters\ButterworthFilter.cs" />
     <Compile Include="Filters\MedianFilter.cs" />
     <Compile Include="Filters\MovingAverageFilter.cs" />
+    <Compile Include="Filters\PreEmphasisFilter.cs" />
     <Compile Include="Operations\AdaptiveFiltering.cs" />
     <Compile Include="Operations\BlockConvolution.cs" />
     <Compile Include="Operations\Convolution.cs" />

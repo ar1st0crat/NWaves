@@ -57,6 +57,12 @@ namespace NWaves.DemoForms
             form.ShowDialog();
         }
 
+        private void mfccToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var mfccForm = new MfccForm();
+            mfccForm.ShowDialog();
+        }
+
         private void OpenSignal()
         {
             var ofd = new OpenFileDialog();

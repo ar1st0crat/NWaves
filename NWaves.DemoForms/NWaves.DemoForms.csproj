@@ -52,6 +52,12 @@
     <Compile Include="FiltersForm.Designer.cs">
       <DependentUpon>FiltersForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MfccForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MfccForm.Designer.cs">
+      <DependentUpon>MfccForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="SignalsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -62,6 +68,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FiltersForm.resx">
       <DependentUpon>FiltersForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MfccForm.resx">
+      <DependentUpon>MfccForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SignalsForm.resx">
       <DependentUpon>SignalsForm.cs</DependentUpon>
