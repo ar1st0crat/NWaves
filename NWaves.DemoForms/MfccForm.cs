@@ -8,6 +8,7 @@ using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Signals;
+using NWaves.Transforms.Windows;
 
 namespace NWaves.DemoForms
 {
@@ -34,7 +35,13 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            var mfccExtractor = new MfccExtractor(13, _signal.SamplingRate);
+            var mfccExtractor = new MfccExtractor(13, _signal.SamplingRate, 
+                                                            fftSize: 512,
+                                                            hopSize: 256,
+                                                            melFilterbanks: 20,
+                                                            lifterSize: 22,
+                                                            preEmphasis: 0.97,
+                                                            window: WindowTypes.Hamming);
             
             var featureVectors = mfccExtractor.ComputeFrom(_signal);
 

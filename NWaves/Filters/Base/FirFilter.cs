@@ -50,33 +50,53 @@ namespace NWaves.Filters.Base
             switch (filteringOptions)
             {
                 case FilteringOptions.Auto:
-                case FilteringOptions.OverlapAdd:
-                    return signal.Copy();
-
                 case FilteringOptions.Custom:
                 case FilteringOptions.DifferenceEquation:
-                    {
-                        var start = Kernel.Length;
-
-                        var input = signal.Samples;
-                        var length = input.Length;
-                        var samples = new double[length];
-
-                        for (var i = start; i < length; i++)
-                        {
-                            for (var j = 0; j < Kernel.Length; j++)
-                            {
-                                samples[i] += Kernel[j] * input[i - j];
-                            }
-                        }
-
-                        return new DiscreteSignal(signal.SamplingRate, samples);
-                    }
+                    return ApplyFilterCircularBuffer(signal);
                 
                 // Currently just return copy for any other options
                 default:
                     return signal.Copy();
             }
+        }
+
+        /// <summary>
+        /// More efficient implementation of filtering in time domain:
+        /// use circular buffers for recursive and non-recursive delay lines.
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>        
+        public DiscreteSignal ApplyFilterCircularBuffer(DiscreteSignal signal)
+        {
+            var input = signal.Samples;
+            var kernel = Kernel;
+
+            var samples = new double[input.Length];
+
+            // buffers for delay lines:
+            var wb = new double[kernel.Length];
+            
+            var wbpos = wb.Length - 1;
+            
+            for (var n = 0; n < input.Length; n++)
+            {
+                wb[wbpos] = input[n];
+
+                var pos = 0;
+                for (var k = wbpos; k < kernel.Length; k++)
+                {
+                    samples[n] += kernel[pos++] * wb[k];
+                }
+                for (var k = 0; k < wbpos; k++)
+                {
+                    samples[n] += kernel[pos++] * wb[k];
+                }
+
+                wbpos--;
+                if (wbpos < 0) wbpos = wb.Length - 1;
+            }
+
+            return new DiscreteSignal(signal.SamplingRate, samples);
         }
 
         /// <summary>

@@ -83,8 +83,9 @@
     <Compile Include="Transforms\Dct.cs" />
     <Compile Include="Transforms\Fft.cs" />
     <Compile Include="Transforms\Stft.cs" />
-    <Compile Include="Transforms\Windows\BlackmanWindow.cs" />
-    <Compile Include="Transforms\Windows\HammingWindow.cs" />
+    <Compile Include="Transforms\Windows\Window.cs" />
+    <Compile Include="Transforms\Windows\WindowExtensions.cs" />
+    <Compile Include="Transforms\Windows\WindowTypes.cs" />
     <Compile Include="Utils\FastCopy.cs" />
     <Compile Include="Utils\MathUtils.cs" />
   </ItemGroup>
