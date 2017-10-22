@@ -123,6 +123,19 @@ namespace NWaves.Signals
         /// 
         /// </summary>
         /// <param name="signal"></param>
+        /// <param name="coeff"></param>
+        public static void Amplify(this DiscreteSignal signal, double coeff)
+        {
+            for (var i = 0; i < signal.Samples.Length; i++)
+            {
+                signal[i] *= coeff;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="signal"></param>
         /// <param name="sampleCount"></param>
         /// <returns></returns>
         public static DiscreteSignal First(this DiscreteSignal signal, int sampleCount)

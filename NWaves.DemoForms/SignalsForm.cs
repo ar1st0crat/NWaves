@@ -63,6 +63,12 @@ namespace NWaves.DemoForms
             mfccForm.ShowDialog();
         }
 
+        private void lpcToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var lpcForm = new LpcForm();
+            lpcForm.ShowDialog();
+        }
+
         private void OpenSignal()
         {
             var ofd = new OpenFileDialog();

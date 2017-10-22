@@ -59,7 +59,7 @@ namespace NWaves.Filters.Base
             get
             {
                 var impulse = new DiscreteSignal(1, ImpulseResponseLength) { [0] = 1.0 };
-                return ApplyTo(impulse).First(ImpulseResponseLength);
+                return ApplyTo(impulse);
             }
         }
     }

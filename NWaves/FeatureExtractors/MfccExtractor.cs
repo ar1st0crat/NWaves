@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Filters;
-using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Transforms.Windows;

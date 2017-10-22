@@ -35,6 +35,8 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
+            _signal.Amplify(100);
+
             var mfccExtractor = new MfccExtractor(13, _signal.SamplingRate, 
                                                             fftSize: 512,
                                                             hopSize: 256,

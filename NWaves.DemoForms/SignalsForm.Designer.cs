@@ -59,6 +59,7 @@
             this.recordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.filtersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mfccToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.lpcToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -245,7 +246,8 @@
             this.stopToolStripMenuItem,
             this.recordToolStripMenuItem,
             this.filtersToolStripMenuItem,
-            this.mfccToolStripMenuItem});
+            this.mfccToolStripMenuItem,
+            this.lpcToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1675, 28);
@@ -331,6 +333,13 @@
             this.mfccToolStripMenuItem.Text = "&Mfcc";
             this.mfccToolStripMenuItem.Click += new System.EventHandler(this.mfccToolStripMenuItem_Click);
             // 
+            // lpcToolStripMenuItem
+            // 
+            this.lpcToolStripMenuItem.Name = "lpcToolStripMenuItem";
+            this.lpcToolStripMenuItem.Size = new System.Drawing.Size(44, 24);
+            this.lpcToolStripMenuItem.Text = "&Lpc";
+            this.lpcToolStripMenuItem.Click += new System.EventHandler(this.lpcToolStripMenuItem_Click);
+            // 
             // SignalsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -399,6 +408,7 @@
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem filtersToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mfccToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem lpcToolStripMenuItem;
     }
 }
 
