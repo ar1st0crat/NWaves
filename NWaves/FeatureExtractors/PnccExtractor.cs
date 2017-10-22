@@ -8,18 +8,18 @@ namespace NWaves.FeatureExtractors
     /// <summary>
     /// 
     /// </summary>
-    public class PnccExtractor : IFeatureExtractor
+    public class PnccExtractor : FeatureExtractor
     {
         /// <summary>
         /// 
         /// </summary>
-        public int FeatureCount { get; }
+        public override int FeatureCount { get; }
 
         /// <summary>
         /// 
         /// </summary>
-        public IEnumerable<string> FeatureDescriptions => 
-            Enumerable.Range(0, FeatureCount).Select(i => "Coefficient pncc" + i);
+        public override IEnumerable<string> FeatureDescriptions => 
+            Enumerable.Range(0, FeatureCount).Select(i => "pncc" + i);
 
         /// <summary>
         /// 
@@ -35,36 +35,9 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <param name="signal"></param>
         /// <returns></returns>
-        public IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
+        public override IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
         {
-            return ComputeFrom(signal.Samples);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <returns></returns>
-        public IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal, int startPos, int endPos)
-        {
-            return ComputeFrom(signal.Samples);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="samples"></param>
-        /// <returns></returns>
-        public IEnumerable<FeatureVector> ComputeFrom(IEnumerable<double> samples)
-        {
-            var vector = new FeatureVector
-            {
-                Features = Enumerable.Repeat(0.0, FeatureCount).ToArray()
-            };
-
-            return new[] {vector};
+            return null;
         }
     }
 }

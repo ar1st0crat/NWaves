@@ -1,67 +1,86 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Signals;
+using NWaves.Transforms.Windows;
 
 namespace NWaves.FeatureExtractors
 {
-    public class LpccExtractor : IFeatureExtractor
+    public class LpccExtractor : FeatureExtractor
     {
         /// <summary>
-        /// 
+        /// Number of LPCC coefficients
         /// </summary>
-        public int FeatureCount { get; }
+        public override int FeatureCount { get; }
 
         /// <summary>
-        /// 
+        /// Descriptions (simply "lpcc0", "lpcc1", etc.)
         /// </summary>
-        public IEnumerable<string> FeatureDescriptions =>
-            Enumerable.Range(0, FeatureCount).Select(i => "Coefficient lpcc" + i);
+        public override IEnumerable<string> FeatureDescriptions =>
+            Enumerable.Range(0, FeatureCount).Select(i => "lpcc" + i);
 
         /// <summary>
-        /// 
+        /// Helper LPC extractor (basically, does all the heavy-lifting)
+        /// </summary>
+        private readonly LpcExtractor _lpcExtractor;
+
+        /// <summary>
+        /// Main constructor
         /// </summary>
         /// <param name="featureCount"></param>
-        public LpccExtractor(int featureCount = 12)
+        /// <param name="windowSize"></param>
+        /// <param name="hopSize"></param>
+        /// <param name="preEmphasis"></param>
+        /// <param name="window"></param>
+        public LpccExtractor(int featureCount, int windowSize = 512, int hopSize = 256,
+                            double preEmphasis = 0.0, WindowTypes window = WindowTypes.Rectangular)
         {
             FeatureCount = featureCount;
+
+            _lpcExtractor = new LpcExtractor(featureCount, windowSize, hopSize, preEmphasis, window);
         }
 
         /// <summary>
-        /// 
+        /// Method for computing LPCC features.
+        /// It essentially delegates all the work to LPC extractor 
+        /// and then post-processes LPC vectors to obtain LPCC coefficients.
         /// </summary>
         /// <param name="signal"></param>
         /// <returns></returns>
-        public IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
+        public override IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
         {
-            return ComputeFrom(signal.Samples);
+            var lpc = _lpcExtractor.ComputeFrom(signal);
+            return lpc.Select(LpcToLpcc).ToList();
         }
 
         /// <summary>
-        /// 
+        /// Simple algorithm for obtaining LPCC coefficients from LPC
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <returns></returns>
-        public IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal, int startPos, int endPos)
+        /// <param name="lp">LPC feature vector</param>
+        /// <returns>LPCC feature vector</returns>
+        public FeatureVector LpcToLpcc(FeatureVector lp)
         {
-            return ComputeFrom(signal.Samples);
-        }
+            var lpc = lp.Features;
+            var lpcc = new double[FeatureCount];
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="samples"></param>
-        /// <returns></returns>
-        public IEnumerable<FeatureVector> ComputeFrom(IEnumerable<double> samples)
-        {
-            var vector = new FeatureVector
+            lpcc[0] = Math.Log(Math.Sqrt(lpc[0]));
+            
+            for (var n = 1; n < FeatureCount; n++)
             {
-                Features = Enumerable.Repeat(0.0, FeatureCount).ToArray()
-            };
+                var acc = lpc[n];
+                for (var k = 1; k < n; k++)
+                {
+                    acc += k * lpcc[k] * lpc[n - k];
+                }
+                lpcc[n] = acc / n;
+            }
 
-            return new[] { vector };
+            return new FeatureVector
+            {
+                Features = lpcc,
+                TimePosition = lp.TimePosition
+            };
         }
     }
 }

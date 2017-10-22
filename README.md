@@ -1,25 +1,33 @@
 # NWaves
 
-This will be a .NET library for 1d signal processing focused specifically on audio processing.
-I'm only starting working on it. It's not! tested, not! refactored, sometimes simply not! working ))))).
+NWaves is a .NET library for 1d signal processing focused specifically on audio processing.
 
 ## Main features 
 
-Some of them are already available, others are planned:
+Already available:
 
-- major DSP transforms (FFT, DCT, STFT, CQT, DWT, Mellin, LogPolar, Haar, Hadamard)
-- various kinds of digital filters (FIR, IIR, Nonlinear)
-- basic operations (convolution, cross-correlation, resampling, spectral subtraction, adaptive filtering)
-- sound effects (WahWah, Reverb, Vibrato, Chorus, Flanger, PitchShift, etc.)
-- feature extraction (MFCC, PNCC, LPC, LPCC, spectral features, phonological features)
-- sound synthesis and signal builders (noises, sinusoids, sawtooth, triangular, periodic pulse)
+- major DSP transforms (FFT, DCT, STFT)
+- basic LTI digital filters (FIR, IIR, moving average, pre-emphasis filter)
+- basic operations (convolution, cross-correlation)
+- feature extraction (MFCC, LPC, LPCC, spectral features)
+- sound synthesis and signal builders (sinusoids, sawtooth, triangular)
 - simple audio playback and recording (Windows only)
+
+Planned:
+
+- [ ] more transforms (CQT, DWT, Mellin, LogPolar, Haar, Hadamard)
+- [ ] more operations (resampling, spectral subtraction, adaptive filtering)
+- [ ] more feature extraction (PNCC, phonological features)
+- [ ] more sound synthesis and signal builders (noises, periodic pulse, ADSR, etc.)
+- [ ] filter design
+- [ ] sound effects (WahWah, Reverb, Vibrato, Chorus, Flanger, PitchShift, etc.)
+
 
 ## Philosophy of NWaves
 
-NWaves was initially intended for teaching basics of DSP and sound programming. The algorithms are mostly non-optimized, however I'm planning to work on optimized versions and add them to the project separately.
+NWaves was initially intended for teaching basics of DSP and sound programming. All algorithms are coded in C#. Perhaps, in the future I'll work on optimized versions and add them to the project separately.
 
-In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOP-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in static classes, so that you wouldn't get lost in object-oriented labyrinths. Although you may suddenly find a little bit of fluent syntax (e.g., SignalBuilders) and some Strategy patterns (e.g. IFeatureExtractor) in the project.
+In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOD-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in static classes, so that you wouldn't get lost in object-oriented labyrinths. Although you may suddenly find a little bit of fluent syntax (e.g., SignalBuilders) and some Strategy patterns (e.g. FeatureExtractor) in the project.
 
 ## Quickstart
 
@@ -279,14 +287,18 @@ var freqz = filter.Freqz();
 
 ```C#
 
-var mfccExtractor = new MfccFeatureExtractor();
+var mfccExtractor = new MfccFeatureExtractor(13, signal.SamplingRate, melFilterbanks: 24, preEmphasis: 0.95);
 var mfccVectors = mfccExtractor.ComputeFrom(signal).Take(3);
 
-var lpcExtractor = new LpcFeatureExtractor();
-var lpcVector = lpcExtractor.ComputeFrom(signal, 1000, 512);
+var lpcExtractor = new LpcFeatureExtractor(16);
+var lpcVectors = lpcExtractor.ComputeFrom(signal);
 
 ```
 
 ### Demos
 
 ![winforms](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/WinForms.png)
+
+![features](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/FeatureExtractors.png)
+
+![filters](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/Filters.png)

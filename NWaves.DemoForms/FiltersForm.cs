@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using NWaves.Filters;
 using NWaves.Filters.Base;
-using NWaves.Signals;
 
 namespace NWaves.DemoForms
 {
@@ -27,57 +25,64 @@ namespace NWaves.DemoForms
                     break;
                 case "Custom FIR":
                     _filter = new FirFilter(new[] {1, 0.95});
+                    listBox1.DataSource = (_filter as FirFilter).Kernel;
+                    listBox2.Items.Add("1.0");
                     break;
                 case "BiQuad":
                     _filter = new BiQuadFilter(freq: 0.2, width: 0.3);
                     break;
                 case "Moving average":
-                    _filter = new MovingAverageFilter(11);
+                    _filter = new MovingAverageFilter(5);
+                    listBox1.DataSource = (_filter as FirFilter).Kernel;
+                    listBox2.Items.Add("1.0");
+                    dataGridView1.Rows[0].Cells[0].Value = "size";
+                    dataGridView1.Rows[0].Cells[1].Value = "5";
                     break;
             }
 
             DrawFrequencyResponse();
 
-            var r = new Random();
-            var kernel = new double[231];
-            for (var i = 0; i < kernel.Length; i++)
-                kernel[i] = r.NextDouble() - 0.5;
 
-            var filter = new IirFilter(kernel,
-                                       new[] { 1, -0.6, 0.2, -0.3, 0.5, -0.1, 0.7, -0.6, 0.3, -0.4, 0.5, 0.2, 0.3, 0.6, -0.9, 0.4 });
+            //var r = new Random();
+            //var kernel = new double[231];
+            //for (var i = 0; i < kernel.Length; i++)
+            //    kernel[i] = r.NextDouble() - 0.5;
 
-            var signal = new DiscreteSignal(22050, 22050 * 30);
+            //var filter = new IirFilter(kernel,
+            //                           new[] { 1, -0.6, 0.2, -0.3, 0.5, -0.1, 0.7, -0.6, 0.3, -0.4, 0.5, 0.2, 0.3, 0.6, -0.9, 0.4 });
 
-            var summary = "";
+            //var signal = new DiscreteSignal(22050, 22050 * 30);
 
-            var sw1 = new Stopwatch();
-            var sw2 = new Stopwatch();
-            var sw3 = new Stopwatch();
+            //var summary = "";
+
+            //var sw1 = new Stopwatch();
+            //var sw2 = new Stopwatch();
+            //var sw3 = new Stopwatch();
 
             
 
-            sw2.Start();
-            for (var i = 0; i < 2; i++)
-                filter.ApplyFilterLinearBuffer(signal);
-            sw2.Stop();
+            //sw2.Start();
+            //for (var i = 0; i < 2; i++)
+            //    filter.ApplyFilterLinearBuffer(signal);
+            //sw2.Stop();
 
-            summary += "Linear buffer: " + sw2.ElapsedTicks + "\n";
+            //summary += "Linear buffer: " + sw2.ElapsedTicks + "\n";
             
-            sw3.Start();
-            for (var i = 0; i < 2; i++)
-                filter.ApplyFilterDirectly(signal);
-            sw3.Stop();
+            //sw3.Start();
+            //for (var i = 0; i < 2; i++)
+            //    filter.ApplyFilterDirectly(signal);
+            //sw3.Stop();
 
-            summary += "Directly: " + sw3.ElapsedTicks + "\n";
+            //summary += "Directly: " + sw3.ElapsedTicks + "\n";
 
-            sw1.Start();
-            for (var i = 0; i < 2; i++)
-                filter.ApplyFilterCircularBuffer(signal);
-            sw1.Stop();
+            //sw1.Start();
+            //for (var i = 0; i < 2; i++)
+            //    filter.ApplyFilterCircularBuffer(signal);
+            //sw1.Stop();
 
-            summary += "Circular buffer: " + sw1.ElapsedTicks + "\n";
+            //summary += "Circular buffer: " + sw1.ElapsedTicks + "\n";
 
-            MessageBox.Show(summary);
+            //MessageBox.Show(summary);
         }
 
         private void DrawFrequencyResponse(int step = 2)
@@ -114,7 +119,7 @@ namespace NWaves.DemoForms
 
             var phaseResponse = _filter.FrequencyResponse.Phase;
 
-            offset = 20;
+            offset = panel2.Height / 2;
 
             i = 0;
             x = 0;
@@ -123,8 +128,8 @@ namespace NWaves.DemoForms
             {
                 if (Math.Abs(phaseResponse[i] * 80) < panel1.Height)
                 {
-                    g.DrawLine(pen, x, offset, x, (float)-phaseResponse[i] * 80 + offset);
-                    g.DrawEllipse(pen, x - 1, (int)(-phaseResponse[i] * 80) + offset - 1, 3, 3);
+                    g.DrawLine(pen, x, offset, x, (float)-phaseResponse[i] * 50 + offset);
+                    g.DrawEllipse(pen, x - 1, (int)(-phaseResponse[i] * 50) + offset - 1, 3, 3);
                 }
                 x += step;
                 i++;

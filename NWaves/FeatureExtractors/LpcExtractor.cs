@@ -11,22 +11,22 @@ namespace NWaves.FeatureExtractors
     /// <summary>
     /// Linear Predictive Coding coefficients extractor
     /// </summary>
-    public class LpcExtractor : IFeatureExtractor
+    public class LpcExtractor : FeatureExtractor
     {
         /// <summary>
         /// Number of features coincides with the order of LPC
         /// </summary>
-        public int FeatureCount => _order;
+        public override int FeatureCount => _order;
 
         /// <summary>
-        /// Descriptions ("error", "lp coefficient1", "lp coefficient2", etc.)
+        /// Descriptions ("error", "lpc1", "lpc2", etc.)
         /// </summary>
-        public IEnumerable<string> FeatureDescriptions
+        public override IEnumerable<string> FeatureDescriptions
         {
             get
             {
                 return new [] { "error" }.Concat(
-                    Enumerable.Range(1, FeatureCount).Select(i => "lp coefficient" + i));
+                    Enumerable.Range(1, FeatureCount).Select(i => "lpc" + i));
             }
         }
             
@@ -41,6 +41,21 @@ namespace NWaves.FeatureExtractors
         private readonly int _windowSize;
 
         /// <summary>
+        /// Size of overlap
+        /// </summary>
+        private readonly int _hopSize;
+
+        /// <summary>
+        /// Type of the window function
+        /// </summary>
+        private readonly WindowTypes _window;
+
+        /// <summary>
+        /// Samples of the window
+        /// </summary>
+        private readonly double[] _windowSamples;
+
+        /// <summary>
         /// Pre-emphasis filter (if needed)
         /// </summary>
         private readonly PreEmphasisFilter _preemphasisFilter;
@@ -48,19 +63,24 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Array used in andvanced Levinson-Durbin recursive algorithm
         /// </summary>
-        private readonly double[] _tmp;
+        private readonly double[] _tmpLevinsonBuffer;
 
         /// <summary>
         /// Main constructor
         /// </summary>
-        /// <param name="windowSize"></param>
         /// <param name="order"></param>
-        /// <param name="samplingRate"></param>
+        /// <param name="windowSize"></param>
+        /// <param name="hopSize"></param>
         /// <param name="preEmphasis"></param>
-        public LpcExtractor(int windowSize, int order = 0, int samplingRate = 16000, double preEmphasis = 0.0)
+        /// <param name="window"></param>
+        public LpcExtractor(int order, int windowSize = 512, int hopSize = 256,
+                            double preEmphasis = 0.0, WindowTypes window = WindowTypes.Rectangular)
         {
-            _order = (order > 0) ? order : 2 + samplingRate / 1000;
+            _order = order;
             _windowSize = windowSize;
+            _hopSize = hopSize;
+            _window = window;
+            _windowSamples = Window.OfType(window, windowSize);
 
             if (preEmphasis > 0.0)
             {
@@ -68,23 +88,76 @@ namespace NWaves.FeatureExtractors
             }
 
             // for advanced Levinson-Durbin
-            _tmp = new double[_order + 1];
+            _tmpLevinsonBuffer = new double[_order + 1];
         }
 
         /// <summary>
+        /// Standard method for computing LPC features.
+        /// 
+        /// Note:
+        ///     The first LP coefficient is always equal to 1.0.
+        ///     This method replaces it with the value of prediction error.
         /// 
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="order"></param>
-        /// <param name="a"></param>
-        /// <returns></returns>
-        public double LevinsonDurbin(double[] input, int order, double[] a)
+        /// <param name="signal"></param>
+        /// <returns>List of LPC vectors</returns>
+        public override IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
+        {
+            var featureVectors = new List<FeatureVector>();
+
+            // 0) pre-emphasis (if needed)
+
+            var filtered = (_preemphasisFilter != null) ? _preemphasisFilter.ApplyTo(signal) : signal;
+
+            var i = 0;
+            while (i + _windowSize < filtered.Samples.Length)
+            {
+                var x = filtered[i, i + _windowSize];
+
+                // 1) apply window
+
+                if (_window != WindowTypes.Rectangular)
+                {
+                    x.ApplyWindow(_windowSamples);
+                }
+
+                // 2) autocorrelation
+
+                var cc = Operation.CrossCorrelate(x, x).Last(_windowSize);
+
+                // 3) levinson-durbin
+
+                var a = new double[_order + 1];
+                var err = LevinsonDurbin(cc.Samples, a);
+                a[0] = err;
+
+                // add LPC vector to output sequence
+
+                featureVectors.Add(new FeatureVector
+                {
+                    Features = a,
+                    TimePosition = (double)i / signal.SamplingRate
+                });
+
+                i += _hopSize;
+            }
+
+            return featureVectors;
+        }
+        
+        /// <summary>
+        /// Levinson-Durbin algorithm for solving main LPC task
+        /// </summary>
+        /// <param name="input">Auto-correlation vector</param>
+        /// <param name="a">LP coefficients</param>
+        /// <returns>Prediction error</returns>
+        public double LevinsonDurbin(double[] input, double[] a)
         {
             var err = input[0];
 
             a[0] = 1.0;
 
-            for (var i = 1; i <= order; i++)
+            for (var i = 1; i <= _order; i++)
             {
                 var lambda = 0.0;
                 for (var j = 0; j < i; j++)
@@ -108,25 +181,25 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Advanced version of Levinson-Durbin recursion
+        /// Advanced version of Levinson-Durbin recursion:
+        /// it additionally calculates reflection coefficients and uses some temporary buffer
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="order"></param>
-        /// <param name="a"></param>
-        /// <param name="k"></param>
+        /// <param name="input">Auto-correlation vector</param>
+        /// <param name="a">LP coefficients</param>
+        /// <param name="k">Reflection coefficients</param>
         /// <returns></returns>
-        public double LevinsonDurbinAdvanced(double[] input, int order, double[] a, double[] k)
+        public double LevinsonDurbinAdvanced(double[] input, double[] a, double[] k)
         {
-            for (var i = 0; i <= order; i++)
+            for (var i = 0; i <= _order; i++)
             {
-                _tmp[i] = 0.0;
+                _tmpLevinsonBuffer[i] = 0.0;
             }
 
             var err = input[0];
 
             a[0] = 1.0;
 
-            for (var i = 1; i <= order; ++i)
+            for (var i = 1; i <= _order; ++i)
             {
                 var acc = input[i];
 
@@ -138,14 +211,14 @@ namespace NWaves.FeatureExtractors
                 k[i - 1] = -acc / err;
                 a[i] = k[i - 1];
 
-                for (var j = 0; j < order; ++j)
+                for (var j = 0; j < _order; ++j)
                 {
-                    _tmp[j] = a[j];
+                    _tmpLevinsonBuffer[j] = a[j];
                 }
 
                 for (var j = 1; j < i; ++j)
                 {
-                    a[j] += k[i - 1] * _tmp[i - j];
+                    a[j] += k[i - 1] * _tmpLevinsonBuffer[i - j];
                 }
 
                 err *= (1 - k[i - 1] * k[i - 1]);
@@ -155,67 +228,14 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// 
+        /// Method returns LPC order for a given sampling rate 
+        /// according to the best practices.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <returns>LPC order</returns>
+        public int EstimateOrder(int samplingRate)
         {
-            var featureVectors = new List<FeatureVector>();
-
-            // 0) pre-emphasis (if needed)
-
-            var filtered = (_preemphasisFilter != null) ? _preemphasisFilter.ApplyTo(signal) : signal;
-
-            var i = 0;
-            while (i + _windowSize < filtered.Samples.Length)
-            {
-                var x = filtered[i, i + _windowSize];
-
-                // 1) autocorr
-
-                var cc = Operation.CrossCorrelate(x, x).Last(_windowSize);
-
-                // 2) levinson-durbin
-
-                var a = new double[_order + 1];
-                var err = LevinsonDurbin(cc.Samples, _order, a);
-                a[0] = err;
-
-                // add LPC vector to output sequence
-
-                featureVectors.Add(new FeatureVector
-                {
-                    Features = a,
-                    TimePosition = (double)i / signal.SamplingRate
-                });
-
-                i += _windowSize;
-            }
-
-            return featureVectors;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <returns></returns>
-        public IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal, int startPos, int endPos)
-        {
-            return ComputeFrom(signal[startPos, endPos]);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="samples"></param>
-        /// <returns></returns>
-        public IEnumerable<FeatureVector> ComputeFrom(IEnumerable<double> samples)
-        {
-            return ComputeFrom(new DiscreteSignal(1, samples));
+            return 2 + samplingRate / 1000;
         }
     }
 }

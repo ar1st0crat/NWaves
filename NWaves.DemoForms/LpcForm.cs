@@ -36,7 +36,7 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
             
-            var lpcExtractor = new LpcExtractor(512, 18);
+            var lpcExtractor = new LpcExtractor(16, hopSize: 512);
 
             var featureVectors = lpcExtractor.ComputeFrom(_signal).ToList();
 

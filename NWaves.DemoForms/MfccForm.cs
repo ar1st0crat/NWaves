@@ -48,7 +48,7 @@ namespace NWaves.DemoForms
             var featureVectors = mfccExtractor.ComputeFrom(_signal);
 
             PlotMelFilterbanks(mfccExtractor.MelFilterBanks);
-            FillFeaturesList(featureVectors);
+            FillFeaturesList(featureVectors, mfccExtractor.FeatureDescriptions);
         }
 
         private void PlotMelFilterbanks(double[][] filterbanks)
@@ -80,15 +80,16 @@ namespace NWaves.DemoForms
             }
         }
 
-        private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors)
+        private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors,
+                                      IEnumerable<string> featureDescriptions)
         {
             listView1.Clear();
 
             listView1.Columns.Add("time", 50);
 
-            foreach (var feat in featureVectors.First().Features)
+            foreach (var feat in featureDescriptions)
             {
-                listView1.Columns.Add("coeff", 70);
+                listView1.Columns.Add(feat, 70);
             }
 
             foreach (var vector in featureVectors)

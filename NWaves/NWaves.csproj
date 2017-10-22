@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
+    <Folder Include="FeatureReconstructors\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\Channels.cs" />
@@ -50,7 +51,7 @@
     <Compile Include="Effects\Reverb.cs" />
     <Compile Include="Effects\Wahwah.cs" />
     <Compile Include="FeatureExtractors\Base\FeatureVector.cs" />
-    <Compile Include="FeatureExtractors\Base\IFeatureExtractor.cs" />
+    <Compile Include="FeatureExtractors\Base\FeatureExtractor.cs" />
     <Compile Include="FeatureExtractors\LpccExtractor.cs" />
     <Compile Include="FeatureExtractors\LpcExtractor.cs" />
     <Compile Include="FeatureExtractors\MfccExtractor.cs" />
