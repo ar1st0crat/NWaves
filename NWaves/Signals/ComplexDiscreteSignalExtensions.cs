@@ -167,7 +167,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Method performs the complex multiplication of two signals
         /// </summary>
         /// <param name="signal1"></param>
         /// <param name="signal2"></param>
