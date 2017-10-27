@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Transforms;
+using NWaves.Utils;
 
 namespace NWaves.Filters.Base
 {
@@ -49,15 +51,49 @@ namespace NWaves.Filters.Base
         {
             switch (filteringOptions)
             {
-                case FilteringOptions.Auto:
-                case FilteringOptions.Custom:
                 case FilteringOptions.DifferenceEquation:
-                    return ApplyFilterCircularBuffer(signal);
-                
-                // Currently just return copy for any other options
+                {
+                    return ApplyFilterDirectly(signal);
+                }
+                case FilteringOptions.OverlapAdd:
+                {
+                    var fftSize = MathUtils.NextPowerOfTwo(4 * Kernel.Length);
+                    return Operation.OverlapAdd(signal, new DiscreteSignal(signal.SamplingRate, Kernel), fftSize);
+                }
+                case FilteringOptions.OverlapSave:
+                {
+                    var fftSize = MathUtils.NextPowerOfTwo(4 * Kernel.Length);
+                    return Operation.OverlapSave(signal, new DiscreteSignal(signal.SamplingRate, Kernel), fftSize);
+                }
                 default:
-                    return signal.Copy();
+                {
+                    return ApplyFilterCircularBuffer(signal);
+                }
             }
+        }
+
+        /// <summary>
+        /// The most straightforward implementation of the difference equation:
+        /// code the difference equation as it is
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public DiscreteSignal ApplyFilterDirectly(DiscreteSignal signal)
+        {
+            var input = signal.Samples;
+            var kernel = Kernel;
+
+            var samples = new double[input.Length];
+
+            for (var n = 0; n < input.Length; n++)
+            {
+                for (var k = 0; k < kernel.Length; k++)
+                {
+                    if (n >= k) samples[n] += kernel[k] * input[n - k];
+                }
+            }
+
+            return new DiscreteSignal(signal.SamplingRate, samples);
         }
 
         /// <summary>
@@ -121,5 +157,46 @@ namespace NWaves.Filters.Base
         /// Impulse response of an FIR filter is its kernel
         /// </summary>
         public override DiscreteSignal ImpulseResponse => new DiscreteSignal(1, Kernel);
+
+        /// <summary>
+        /// Zeros of the transfer function
+        /// </summary>
+        public override ComplexDiscreteSignal Zeros
+        {
+            get
+            {
+                switch (Kernel.Length)
+                {
+                    case 1:
+                        return null;
+                    case 2:
+                        return new ComplexDiscreteSignal(1, new[] { -Kernel[1] }, new[] { 0.0 });
+                    case 3:
+                        var a = Kernel[0];
+                        var b = Kernel[1];
+                        var c = Kernel[2];
+                        var discriminant = b * b - 4 * a * c;
+                        if (discriminant > 0)
+                        {
+                            var x1 = (-b + Math.Sqrt(discriminant)) / (2 * a);  // a is never equal to 0
+                            var x2 = (-b - Math.Sqrt(discriminant)) / (2 * a);
+                            return new ComplexDiscreteSignal(1, new[] { x1, x2 }, new[] { 0.0, 0.0 });
+                        }
+                        else
+                        {
+                            var re = -b / (2 * a);
+                            var im = Math.Sqrt(-discriminant) / (2 * a);
+                            return new ComplexDiscreteSignal(1, new[] { re, re }, new[] { im, -im });
+                        }
+                }
+
+                throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// Poles of the transfer function
+        /// </summary>
+        public override ComplexDiscreteSignal Poles => null;
     }
 }

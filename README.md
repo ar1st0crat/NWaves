@@ -6,12 +6,13 @@ NWaves is a .NET library for 1d signal processing focused specifically on audio 
 
 Already available:
 
-- major DSP transforms (FFT, DCT, STFT)
-- basic LTI digital filters (FIR, IIR, moving average, pre-emphasis filter)
-- basic operations (convolution, cross-correlation)
-- feature extraction (MFCC, LPC, LPCC, spectral features)
-- sound synthesis and signal builders (sinusoids, sawtooth, triangular)
-- simple audio playback and recording (Windows only)
+- [x] major DSP transforms (FFT, DCT, STFT)
+- [x] basic LTI digital filters (FIR, IIR, moving average (non-recursive and recursive), pre-emphasis)
+- [x] basic operations (convolution, cross-correlation, overlap-add, overlap-save)
+- [x] windowing functions (Hamming, Blackman, Hann)
+- [x] feature extraction (MFCC, LPC, LPCC)
+- [x] sound synthesis and signal builders (sinusoids, sawtooth, triangular)
+- [x] simple audio playback and recording (Windows only)
 
 Planned:
 
@@ -297,8 +298,8 @@ var lpcVectors = lpcExtractor.ComputeFrom(signal);
 
 ### Demos
 
+![filters](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/Filters.png)
+
 ![winforms](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/WinForms.png)
 
 ![features](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/FeatureExtractors.png)
-
-![filters](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/Filters.png)

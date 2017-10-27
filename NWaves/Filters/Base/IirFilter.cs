@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NWaves.Operations;
 using NWaves.Signals;
+using NWaves.Utils;
 
 namespace NWaves.Filters.Base
 {
@@ -77,20 +79,26 @@ namespace NWaves.Filters.Base
             switch (filteringOptions)
             {
                 case FilteringOptions.Auto:
+                case FilteringOptions.Custom:
                 {
                     return _a.Length + _b.Length <= FilterSizeForOptimizedProcessing ?
                         ApplyFilterDirectly(signal) : 
                         ApplyFilterCircularBuffer(signal);
                 }
-                case FilteringOptions.DifferenceEquation:
+                case FilteringOptions.OverlapAdd:
+                {
+                    var fftSize = MathUtils.NextPowerOfTwo(4 * DefaultImpulseResponseLength);
+                    return Operation.OverlapAdd(signal, ImpulseResponse, fftSize);
+                }
+                case FilteringOptions.OverlapSave:
+                {
+                    var fftSize = MathUtils.NextPowerOfTwo(4 * DefaultImpulseResponseLength);
+                    return Operation.OverlapSave(signal, ImpulseResponse, fftSize);
+                }
+                default:
                 {
                     return ApplyFilterDirectly(signal);
                 }
-
-                // Currently just return copy for any other options
-                default:
-                    return signal.Copy();
-                    // Operation.OverlapAdd(signal, Transform.Fft(ImpulseResponse));
             }
         }
 
@@ -248,6 +256,78 @@ namespace NWaves.Filters.Base
             for (var i = 0; i < _b.Length; i++)
             {
                 _b[i] = _b[i] / first;
+            }
+        }
+
+        /// <summary>
+        /// Zeros of the transfer function (TODO: soooo refactor this)
+        /// </summary>
+        public override ComplexDiscreteSignal Zeros
+        {
+            get
+            {
+                switch (B.Length)
+                {
+                    case 1:
+                        return null;
+                    case 2:
+                        return new ComplexDiscreteSignal(1, new[] { -B[1] }, new[] { 0.0 });
+                    case 3:
+                        var a = B[0];
+                        var b = B[1];
+                        var c = B[2];
+                        var discriminant = b * b - 4 * a * c;
+                        if (discriminant > 0)
+                        {
+                            var x1 = (-b + Math.Sqrt(discriminant)) / (2 * a);  // a is never equal to 0
+                            var x2 = (-b - Math.Sqrt(discriminant)) / (2 * a);
+                            return new ComplexDiscreteSignal(1, new[] { x1, x2 }, new[] { 0.0, 0.0 });
+                        }
+                        else
+                        {
+                            var re = -b / (2 * a);
+                            var im = Math.Sqrt(-discriminant) / (2 * a);
+                            return new ComplexDiscreteSignal(1, new[] { re, re }, new[] { im, -im });
+                        }
+                }
+
+                throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// Poles of the transfer function
+        /// </summary>
+        public override ComplexDiscreteSignal Poles
+        {
+            get
+            {
+                switch (A.Length)
+                {
+                    case 1:
+                        return null;
+                    case 2:
+                        return new ComplexDiscreteSignal(1, new[] { -A[1] }, new[] { 0.0 });
+                    case 3:
+                        var a = A[0];
+                        var b = A[1];
+                        var c = A[2];
+                        var discriminant = b * b - 4 * a * c;
+                        if (discriminant > 0)
+                        {
+                            var x1 = (-b + Math.Sqrt(discriminant)) / (2 * a);  // a is never equal to 0
+                            var x2 = (-b - Math.Sqrt(discriminant)) / (2 * a);
+                            return new ComplexDiscreteSignal(1, new[] { x1, x2 }, new[] { 0.0, 0.0 });
+                        }
+                        else
+                        {
+                            var re = -b / (2 * a);
+                            var im = Math.Sqrt(-discriminant) / (2 * a);
+                            return new ComplexDiscreteSignal(1, new[] { re, re }, new[] { im, -im });
+                        }
+                }
+
+                throw new NotImplementedException();
             }
         }
     }

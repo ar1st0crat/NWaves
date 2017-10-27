@@ -173,8 +173,7 @@ namespace NWaves.DemoForms
             DrawSignal(panel2, _signal2, 53);
             DrawSignal(panel3, _signal3, 53);
         }
-
-
+        
         #region playback demo
 
         private async void playToolStripMenuItem_Click(object sender, EventArgs e)

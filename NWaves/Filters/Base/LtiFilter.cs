@@ -30,6 +30,16 @@ namespace NWaves.Filters.Base
         public int ImpulseResponseLength { get; set; }
 
         /// <summary>
+        /// Zeros of the transfer function (TODO: refactor class for zeros and poles summary)
+        /// </summary>
+        public abstract ComplexDiscreteSignal Zeros { get; }
+
+        /// <summary>
+        /// Poles of the transfer function
+        /// </summary>
+        public abstract ComplexDiscreteSignal Poles { get; }
+
+        /// <summary>
         /// Returns the complex frequency response of a filter.
         /// 
         /// Method calculates the Frequency Response of a filter

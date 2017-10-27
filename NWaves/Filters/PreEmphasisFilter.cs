@@ -5,7 +5,7 @@ namespace NWaves.Filters
     /// <summary>
     /// 
     /// </summary>
-    class PreEmphasisFilter : FirFilter
+    public class PreEmphasisFilter : FirFilter
     {
         /// <summary>
         /// 

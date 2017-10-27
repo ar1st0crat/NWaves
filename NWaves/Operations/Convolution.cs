@@ -16,11 +16,6 @@ namespace NWaves.Operations
         /// <returns></returns>
         public static DiscreteSignal Convolve(DiscreteSignal signal1, DiscreteSignal signal2)
         {
-            if (signal1.SamplingRate != signal2.SamplingRate)
-            {
-                throw new ArgumentException("Sampling rates must be the same!");
-            }
-
             var length = signal1.Samples.Length + signal2.Samples.Length - 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(length);
@@ -54,11 +49,6 @@ namespace NWaves.Operations
         /// <returns></returns>
         public static DiscreteSignal ConvolveDirect(DiscreteSignal signal1, DiscreteSignal signal2)
         {
-            if (signal1.SamplingRate != signal2.SamplingRate)
-            {
-                throw new ArgumentException("Sampling rates must be the same!");
-            }
-
             var a = signal1.Samples;
             var b = signal2.Samples;
             var length = a.Length + b.Length - 1;
@@ -100,11 +90,6 @@ namespace NWaves.Operations
         /// <returns></returns>
         public static DiscreteSignal CrossCorrelateDirect(DiscreteSignal signal1, DiscreteSignal signal2)
         {
-            if (signal1.SamplingRate != signal2.SamplingRate)
-            {
-                throw new ArgumentException("Sampling rates must be the same!");
-            }
-
             var a = signal1.Samples;
             var b = signal2.Samples;
             var length = a.Length + b.Length - 1;

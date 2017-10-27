@@ -14,11 +14,6 @@ namespace NWaves.Operations
         /// <returns></returns>
         public static DiscreteSignal OverlapAdd(DiscreteSignal signal, DiscreteSignal kernel, int fftSize)
         {
-            if (signal.SamplingRate != kernel.SamplingRate)
-            {
-                throw new ArgumentException("Sampling rates must be the same!");
-            }
-
             var m = kernel.Samples.Length;
 
             if (m > fftSize)
@@ -59,11 +54,6 @@ namespace NWaves.Operations
         /// <returns></returns>
         public static DiscreteSignal OverlapSave(DiscreteSignal signal, DiscreteSignal kernel, int fftSize)
         {
-            if (signal.SamplingRate != kernel.SamplingRate)
-            {
-                throw new ArgumentException("Sampling rates must be the same!");
-            }
-
             var m = kernel.Samples.Length;
 
             if (m > fftSize)
@@ -75,13 +65,13 @@ namespace NWaves.Operations
 
             var hopSize = fftSize - m + 1;
             var i = m - 1;
-            while (i + hopSize < signal.Samples.Length)
+            while (i + fftSize < signal.Samples.Length - m + 1)
             {
-                var res = Convolve(signal[i, i + hopSize], kernel);
+                var res = Convolve(signal[i, i + fftSize], kernel);
 
                 for (var j = m - 1; j < res.Samples.Length; j++)
                 {
-                    filtered[i + j] = res[j];
+                    filtered[i + j] = res.Samples[j];
                 }
 
                 i += hopSize;

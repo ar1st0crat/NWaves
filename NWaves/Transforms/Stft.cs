@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
+using NWaves.Transforms.Windows;
+using NWaves.Utils;
 
 namespace NWaves.Transforms
 {
@@ -12,24 +12,29 @@ namespace NWaves.Transforms
         /// <param name="samples">The samples of signal</param>
         /// <param name="fftSize">Size of FFT</param>
         /// <param name="hopSize">Hop (overlap) size</param>
+        /// <param name="window">Type of the window function to apply</param>
         /// <returns>Spectrogram of the signal</returns>
-        public static List<double[]> Stft(double[] samples, int fftSize = 512, int hopSize = 256)
+        public static List<double[]> Stft(double[] samples, int fftSize = 512, int hopSize = 256, WindowTypes window = WindowTypes.Rectangular)
         {
             var spectrogram = new List<double[]>();
 
             var start = 0;
             for (; start + fftSize < samples.Length; start += hopSize)
             {
-                var segment = samples.Skip(start).Take(fftSize).ToArray();
+                var segment = FastCopy.ArrayFragment(samples, fftSize, start);
+
+                if (window != WindowTypes.Rectangular)
+                {
+                    segment.ApplyWindow(window);
+                }
                 
                 spectrogram.Add(MagnitudeSpectrum(segment, fftSize));
             }
 
             // if we need to process the last (not full) portion of data, 
             // then we should pad it with zeros:
-
-            var lastSegment = samples.Skip(start).Take(fftSize).ToArray();
-            Array.Resize(ref lastSegment, fftSize);
+            var lastSegment = new double[fftSize];
+            FastCopy.ArrayFragment(samples, samples.Length - start, start);
 
             spectrogram.Add(MagnitudeSpectrum(lastSegment, fftSize));
 
