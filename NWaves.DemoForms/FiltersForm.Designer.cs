@@ -60,6 +60,11 @@
             this.label6 = new System.Windows.Forms.Label();
             this.playSignalButton = new System.Windows.Forms.Button();
             this.playFilteredSignalButton = new System.Windows.Forms.Button();
+            this.orderNumeratorTextBox = new System.Windows.Forms.TextBox();
+            this.orderDenominatorTextBox = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.changeOrderButton = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.filterParamsDataGrid)).BeginInit();
             this.SuspendLayout();
@@ -130,26 +135,26 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(142, 26);
             this.openToolStripMenuItem.Text = "&Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(142, 26);
             this.saveAsToolStripMenuItem.Text = "&Save as...";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(178, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(139, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(142, 26);
             this.exitToolStripMenuItem.Text = "&Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -186,9 +191,9 @@
             // 
             // analyzeFilterButton
             // 
-            this.analyzeFilterButton.Location = new System.Drawing.Point(13, 218);
+            this.analyzeFilterButton.Location = new System.Drawing.Point(13, 322);
             this.analyzeFilterButton.Name = "analyzeFilterButton";
-            this.analyzeFilterButton.Size = new System.Drawing.Size(189, 156);
+            this.analyzeFilterButton.Size = new System.Drawing.Size(189, 52);
             this.analyzeFilterButton.TabIndex = 6;
             this.analyzeFilterButton.Text = "Analyze filter";
             this.analyzeFilterButton.UseVisualStyleBackColor = true;
@@ -200,7 +205,14 @@
             this.filterTypesComboBox.Items.AddRange(new object[] {
             "Custom IIR",
             "Custom FIR",
-            "BiQuad",
+            "BiQuad LP",
+            "BiQuad HP",
+            "BiQuad BP",
+            "BiQuad notch",
+            "BiQuad allpass",
+            "BiQuad peaking",
+            "BiQuad lowshelf",
+            "BiQuad highshelf",
             "Moving average",
             "Moving average recursive",
             "Pre-emphasis",
@@ -211,17 +223,20 @@
             this.filterTypesComboBox.Size = new System.Drawing.Size(190, 24);
             this.filterTypesComboBox.TabIndex = 7;
             this.filterTypesComboBox.Text = "Custom IIR";
+            this.filterTypesComboBox.SelectedIndexChanged += new System.EventHandler(this.filterTypesComboBox_SelectedIndexChanged);
             // 
             // filterParamsDataGrid
             // 
+            this.filterParamsDataGrid.AllowUserToAddRows = false;
+            this.filterParamsDataGrid.AllowUserToDeleteRows = false;
             this.filterParamsDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.filterParamsDataGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Param,
             this.Value});
-            this.filterParamsDataGrid.Location = new System.Drawing.Point(13, 81);
+            this.filterParamsDataGrid.Location = new System.Drawing.Point(13, 108);
             this.filterParamsDataGrid.Name = "filterParamsDataGrid";
             this.filterParamsDataGrid.RowTemplate.Height = 24;
-            this.filterParamsDataGrid.Size = new System.Drawing.Size(189, 126);
+            this.filterParamsDataGrid.Size = new System.Drawing.Size(189, 208);
             this.filterParamsDataGrid.TabIndex = 8;
             // 
             // Param
@@ -345,11 +360,60 @@
             this.playFilteredSignalButton.UseVisualStyleBackColor = true;
             this.playFilteredSignalButton.Click += new System.EventHandler(this.playFilteredSignalButton_Click);
             // 
+            // orderNumeratorTextBox
+            // 
+            this.orderNumeratorTextBox.Location = new System.Drawing.Point(36, 80);
+            this.orderNumeratorTextBox.Name = "orderNumeratorTextBox";
+            this.orderNumeratorTextBox.Size = new System.Drawing.Size(29, 22);
+            this.orderNumeratorTextBox.TabIndex = 20;
+            this.orderNumeratorTextBox.Text = "2";
+            // 
+            // orderDenominatorTextBox
+            // 
+            this.orderDenominatorTextBox.Location = new System.Drawing.Point(92, 80);
+            this.orderDenominatorTextBox.Name = "orderDenominatorTextBox";
+            this.orderDenominatorTextBox.Size = new System.Drawing.Size(30, 22);
+            this.orderDenominatorTextBox.TabIndex = 21;
+            this.orderDenominatorTextBox.Text = "2";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(70, 81);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(16, 17);
+            this.label7.TabIndex = 22;
+            this.label7.Text = "a";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(16, 81);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(16, 17);
+            this.label8.TabIndex = 23;
+            this.label8.Text = "b";
+            // 
+            // changeOrderButton
+            // 
+            this.changeOrderButton.Location = new System.Drawing.Point(135, 79);
+            this.changeOrderButton.Name = "changeOrderButton";
+            this.changeOrderButton.Size = new System.Drawing.Size(67, 23);
+            this.changeOrderButton.TabIndex = 24;
+            this.changeOrderButton.Text = "Change";
+            this.changeOrderButton.UseVisualStyleBackColor = true;
+            this.changeOrderButton.Click += new System.EventHandler(this.changeOrderButton_Click);
+            // 
             // FiltersForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(968, 729);
+            this.Controls.Add(this.changeOrderButton);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.label7);
+            this.Controls.Add(this.orderDenominatorTextBox);
+            this.Controls.Add(this.orderNumeratorTextBox);
             this.Controls.Add(this.playFilteredSignalButton);
             this.Controls.Add(this.playSignalButton);
             this.Controls.Add(this.label6);
@@ -416,5 +480,10 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button playSignalButton;
         private System.Windows.Forms.Button playFilteredSignalButton;
+        private System.Windows.Forms.TextBox orderNumeratorTextBox;
+        private System.Windows.Forms.TextBox orderDenominatorTextBox;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Button changeOrderButton;
     }
 }

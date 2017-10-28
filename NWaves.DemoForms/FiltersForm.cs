@@ -9,6 +9,7 @@ using NWaves.Audio.Interfaces;
 using NWaves.Audio.Mci;
 using NWaves.Filters;
 using NWaves.Filters.Base;
+using NWaves.Filters.BiQuad;
 using NWaves.Transforms;
 
 namespace NWaves.DemoForms
@@ -37,64 +38,302 @@ namespace NWaves.DemoForms
             switch (filterTypesComboBox.Text)
             {
                 case "Custom IIR":
-                    _filter = new IirFilter(new[] { 1, 0.4 }, new[] { 1, -0.2, 0.6 });
-                    numeratorListBox.DataSource = (_filter as IirFilter).B;
-                    denominatorListBox.DataSource = (_filter as IirFilter).A;
-                    filterParamsDataGrid.RowCount = 4;
-                    filterParamsDataGrid.Rows[0].Cells[0].Value = "b0";
-                    filterParamsDataGrid.Rows[0].Cells[1].Value = "1";
-                    filterParamsDataGrid.Rows[1].Cells[0].Value = "b1";
-                    filterParamsDataGrid.Rows[1].Cells[1].Value = "0.4";
-                    filterParamsDataGrid.Rows[2].Cells[0].Value = "a1";
-                    filterParamsDataGrid.Rows[2].Cells[1].Value = "-0.6";
-                    filterParamsDataGrid.Rows[3].Cells[0].Value = "a2";
-                    filterParamsDataGrid.Rows[3].Cells[1].Value = "0.2";
+                    AnalyzeCustomIirFilter();
                     break;
                 case "Custom FIR":
-                    _filter = new FirFilter(new[] {1, 0.1, 0.7});
-                    numeratorListBox.DataSource = (_filter as FirFilter).Kernel;
-                    denominatorListBox.DataSource = new[] { 1.0 };
-                    filterParamsDataGrid.RowCount = 3;
-                    filterParamsDataGrid.Rows[0].Cells[0].Value = "b0";
-                    filterParamsDataGrid.Rows[0].Cells[1].Value = "1";
-                    filterParamsDataGrid.Rows[1].Cells[0].Value = "b1";
-                    filterParamsDataGrid.Rows[1].Cells[1].Value = "0.5";
-                    filterParamsDataGrid.Rows[2].Cells[0].Value = "b2";
-                    filterParamsDataGrid.Rows[2].Cells[1].Value = "-0.7";
+                    AnalyzeCustomFirFilter();
                     break;
-                case "BiQuad":
-                    _filter = new BiQuadFilter(freq: 0.2, width: 0.3);
+                case "BiQuad LP":
+                case "BiQuad HP":
+                case "BiQuad BP":
+                case "BiQuad notch":
+                case "BiQuad allpass":
+                case "BiQuad peaking":
+                case "BiQuad lowshelf":
+                case "BiQuad highshelf":
+                    AnalyzeBiQuadFilter(filterTypesComboBox.Text);
                     break;
                 case "Moving average":
-                    _filter = new MovingAverageFilter(5);
-                    numeratorListBox.DataSource = (_filter as FirFilter).Kernel;
-                    denominatorListBox.DataSource = new[] { 1.0 };
-                    filterParamsDataGrid.RowCount = 1;
-                    filterParamsDataGrid.Rows[0].Cells[0].Value = "size";
-                    filterParamsDataGrid.Rows[0].Cells[1].Value = "5";
+                    AnalyzeMovingAverageFilter();
                     break;
                 case "Moving average recursive":
-                    _filter = new MovingAverageRecursiveFilter(5);
-                    numeratorListBox.DataSource = (_filter as IirFilter).B;
-                    denominatorListBox.DataSource = (_filter as IirFilter).A;
-                    filterParamsDataGrid.RowCount = 1;
-                    filterParamsDataGrid.Rows[0].Cells[0].Value = "size";
-                    filterParamsDataGrid.Rows[0].Cells[1].Value = "5";
+                    AnalyzeRecursiveMovingAverageFilter();
                     break;
                 case "Pre-emphasis":
-                    _filter = new PreEmphasisFilter(0.95);
-                    numeratorListBox.DataSource = (_filter as FirFilter).Kernel;
-                    denominatorListBox.DataSource = new[] { 1.0 };
-                    filterParamsDataGrid.RowCount = 1;
-                    filterParamsDataGrid.Rows[0].Cells[0].Value = "a";
-                    filterParamsDataGrid.Rows[0].Cells[1].Value = "0.95";
+                    AnalyzePreemphasisFilter();
                     break;
             }
 
             DrawFrequencyResponse();
             DrawPoleZeroPlot();
         }
+
+        private void filterTypesComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch (filterTypesComboBox.Text)
+            {
+                case "Custom IIR":
+                    orderNumeratorTextBox.Enabled = true;
+                    orderDenominatorTextBox.Enabled = true;
+                    changeOrderButton.Enabled = true;
+                    break;
+                case "Custom FIR":
+                    orderNumeratorTextBox.Enabled = true;
+                    orderDenominatorTextBox.Enabled = false;
+                    changeOrderButton.Enabled = true;
+                    orderDenominatorTextBox.Text = "0";
+                    break;
+                default:
+                    orderNumeratorTextBox.Enabled = false;
+                    orderDenominatorTextBox.Enabled = false;
+                    changeOrderButton.Enabled = false;
+                    break;
+            }
+
+            filterParamsDataGrid.RowCount = 0;
+        }
         
+        private void AnalyzeCustomIirFilter()
+        {
+            var b = new List<double>();
+            var a = new List<double>();
+
+            if (filterParamsDataGrid.RowCount == 0)
+            {
+                b.AddRange(new[] { 1, -0.4, 0.6 });
+                a.AddRange(new[] { 1, 0.4, 0.2 });
+            }
+            else
+            {
+                for (var i = 0; i < filterParamsDataGrid.RowCount; i++)
+                {
+                    var param = filterParamsDataGrid.Rows[i].Cells[0].Value;
+                    if (param.ToString().StartsWith("b"))
+                    {
+                        b.Add(Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value));
+                    }
+                    else
+                    {
+                        a.Add(Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value));
+                    }
+                }
+            }
+
+            _filter = new IirFilter(b, a);
+
+            filterParamsDataGrid.RowCount = a.Count + b.Count;
+            var pos = 0;
+            for (var i = 0; i < b.Count; i++, pos++)
+            {
+                filterParamsDataGrid.Rows[pos].Cells[0].Value = "b" + i;
+                filterParamsDataGrid.Rows[pos].Cells[1].Value = b[i];
+            }
+            for (var i = 0; i < a.Count; i++, pos++)
+            {
+                filterParamsDataGrid.Rows[pos].Cells[0].Value = "a" + i;
+                filterParamsDataGrid.Rows[pos].Cells[1].Value = a[i];
+            }
+            numeratorListBox.DataSource = (_filter as IirFilter).B;
+            denominatorListBox.DataSource = (_filter as IirFilter).A;
+        }
+
+        private void AnalyzeCustomFirFilter()
+        {
+            var b = new List<double>();
+
+            var size = filterParamsDataGrid.RowCount;
+            if (size == 0)
+            {
+                b.AddRange(new []{ 1, 0.4, -0.6 });
+            }
+            else
+            {
+                for (var i = 0; i < filterParamsDataGrid.RowCount; i++)
+                {
+                    var param = filterParamsDataGrid.Rows[i].Cells[0].Value;
+                    if (param.ToString().StartsWith("b"))
+                    {
+                        b.Add(Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value));
+                    }
+                }
+            }
+
+            _filter = new FirFilter(b);
+
+            filterParamsDataGrid.RowCount = b.Count + 1;
+            for (var i = 0; i < b.Count; i++)
+            {
+                filterParamsDataGrid.Rows[i].Cells[0].Value = "b" + i;
+                filterParamsDataGrid.Rows[i].Cells[1].Value = b[i];
+            }
+            filterParamsDataGrid.Rows[b.Count].Cells[0].Value = "a0";
+            filterParamsDataGrid.Rows[b.Count].Cells[1].Value = 1.0;
+
+            numeratorListBox.DataSource = (_filter as FirFilter).Kernel;
+            denominatorListBox.DataSource = new[] { 1.0 };
+        }
+
+        private void AnalyzeBiQuadFilter(string filterType)
+        {
+            var freq = 0.1;
+            var q = 1.0;
+            var gain = 9.0;
+
+            for (var i = 0; i < filterParamsDataGrid.RowCount; i++)
+            {
+                if (filterParamsDataGrid.Rows[i].Cells[0].Value.ToString() == "freq")
+                {
+                    freq = Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value);
+                }
+                if (filterParamsDataGrid.Rows[i].Cells[0].Value.ToString() == "q")
+                {
+                    q = Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value);
+                }
+                if (filterParamsDataGrid.Rows[i].Cells[0].Value.ToString() == "gain")
+                {
+                    gain = Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value);
+                }
+            }
+            
+            string[] parameters = { "freq", "q" };
+            double[] values = { freq, q };
+
+            switch (filterType)
+            {
+                case "BiQuad LP":
+                    _filter = new LowPassFilter(freq, q);
+                    break;
+                case "BiQuad HP":
+                    _filter = new HighPassFilter(freq, q);
+                    break;
+                case "BiQuad BP":
+                    _filter = new BandPassFilter(freq, q);
+                    break;
+                case "BiQuad notch":
+                    _filter = new NotchFilter(freq, q);
+                    break;
+                case "BiQuad allpass":
+                    _filter = new AllPassFilter(freq, q);
+                    break;
+                case "BiQuad peaking":
+                    _filter = new PeakFilter(freq, q, gain);
+                    parameters = new[] { "freq", "q", "gain" };
+                    values = new[] { freq, q, gain };
+                    break;
+                case "BiQuad lowshelf":
+                    _filter = new LowShelfFilter(freq, q, gain);
+                    parameters = new[] { "freq", "q", "gain" };
+                    values = new[] { freq, q, gain };
+                    break;
+                case "BiQuad highshelf":
+                    _filter = new HighShelfFilter(freq, q, gain);
+                    parameters = new[] { "freq", "q", "gain" };
+                    values = new[] { freq, q, gain };
+                    break;
+            }
+
+            numeratorListBox.DataSource = (_filter as IirFilter).B;
+            denominatorListBox.DataSource = (_filter as IirFilter).A;
+            filterParamsDataGrid.RowCount = parameters.Length;
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                filterParamsDataGrid.Rows[i].Cells[0].Value = parameters[i];
+                filterParamsDataGrid.Rows[i].Cells[1].Value = values[i];
+            }
+            orderNumeratorTextBox.Text = "2";
+            orderDenominatorTextBox.Text = "2";
+        }
+
+        private void AnalyzeMovingAverageFilter()
+        {
+            var size = 3;
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                size = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (size - 1).ToString();
+            orderDenominatorTextBox.Text = "0";
+
+            _filter = new MovingAverageFilter(size);
+
+            numeratorListBox.DataSource = (_filter as FirFilter).Kernel;
+            denominatorListBox.DataSource = new[] { 1.0 };
+
+            filterParamsDataGrid.RowCount = 1;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "size";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = size;
+        }
+
+        private void AnalyzeRecursiveMovingAverageFilter()
+        {
+            var size = 3;
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                size = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (size - 1).ToString();
+            orderDenominatorTextBox.Text = "0";
+
+            _filter = new MovingAverageRecursiveFilter(size);
+
+            numeratorListBox.DataSource = (_filter as IirFilter).B;
+            denominatorListBox.DataSource = (_filter as IirFilter).A;
+
+            filterParamsDataGrid.RowCount = 1;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "size";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = size;
+        }
+
+        private void AnalyzePreemphasisFilter()
+        {
+            var pre = 0.95;
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                pre = Convert.ToDouble(filterParamsDataGrid.Rows[0].Cells[1].Value);
+            }
+
+            _filter = new PreEmphasisFilter(pre);
+
+            numeratorListBox.DataSource = (_filter as FirFilter).Kernel;
+            denominatorListBox.DataSource = new[] { 1.0 };
+
+            filterParamsDataGrid.RowCount = 1;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "a";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = pre.ToString("F2");
+            orderNumeratorTextBox.Text = "1";
+            orderDenominatorTextBox.Text = "0";
+        }
+
+        private void changeOrderButton_Click(object sender, EventArgs e)
+        {
+            var b = int.Parse(orderNumeratorTextBox.Text) + 1;
+            var a = int.Parse(orderDenominatorTextBox.Text) + 1;
+
+            filterParamsDataGrid.RowCount = b + a;
+
+            var pos = 0;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "b0";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = 1;
+            pos++;
+            for (var i = 1; i < b; i++, pos++)
+            {
+                filterParamsDataGrid.Rows[pos].Cells[0].Value = "b" + i;
+                filterParamsDataGrid.Rows[pos].Cells[1].Value = 0;
+            }
+            filterParamsDataGrid.Rows[pos].Cells[0].Value = "a0";
+            filterParamsDataGrid.Rows[pos].Cells[1].Value = 1;
+            pos++;
+            for (var i = 1; i < a; i++, pos++)
+            {
+                filterParamsDataGrid.Rows[pos].Cells[0].Value = "a" + i;
+                filterParamsDataGrid.Rows[pos].Cells[1].Value = 0;
+            }
+        }
+
+        #region filtering
+
         private void overlapAddToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (_signal == null) return;
@@ -128,7 +367,8 @@ namespace NWaves.DemoForms
             DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
         }
 
-
+        #endregion
+        
         #region File menu
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -254,8 +494,8 @@ namespace NWaves.DemoForms
             {
                 var x = cx + unitRadius * poles.Real[i];
                 var y = cy + unitRadius * poles.Imag[i];
-                g.DrawLine(redPen, (int)x - 4, (int)y - 4, (int)x + 4, (int)y + 4);
-                g.DrawLine(redPen, (int)x + 4, (int)y - 4, (int)x - 4, (int)y + 4);
+                g.DrawLine(redPen, (int)x - 6, (int)y - 6, (int)x + 6, (int)y + 6);
+                g.DrawLine(redPen, (int)x + 6, (int)y - 6, (int)x - 6, (int)y + 6);
             }
 
             redPen.Dispose();
@@ -285,7 +525,7 @@ namespace NWaves.DemoForms
             g.Clear(Color.White);
             var pen = new Pen(Color.Blue);
 
-            var offset = magnitudeResponsePanel.Height - 20;
+            var offset = magnitudeResponsePanel.Height - 2;
             
             var magnitudeResponse = _filter.FrequencyResponse.Magnitude;
 
@@ -394,3 +634,4 @@ namespace NWaves.DemoForms
 
             MessageBox.Show(summary);
             */
+            

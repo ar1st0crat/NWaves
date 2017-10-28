@@ -61,7 +61,14 @@
     <Compile Include="Filters\Base\FirFilter.cs" />
     <Compile Include="Filters\Base\IFilter.cs" />
     <Compile Include="Filters\Base\IirFilter.cs" />
-    <Compile Include="Filters\BiQuadFilter.cs" />
+    <Compile Include="Filters\BiQuad\AllPassFilter.cs" />
+    <Compile Include="Filters\BiQuad\BandPassFilter.cs" />
+    <Compile Include="Filters\BiQuad\HighPassFilter.cs" />
+    <Compile Include="Filters\BiQuad\HighShelfFilter.cs" />
+    <Compile Include="Filters\BiQuad\LowPassFilter.cs" />
+    <Compile Include="Filters\BiQuad\LowShelfFilter.cs" />
+    <Compile Include="Filters\BiQuad\NotchFilter.cs" />
+    <Compile Include="Filters\BiQuad\PeakFilter.cs" />
     <Compile Include="Filters\ButterworthFilter.cs" />
     <Compile Include="Filters\MedianFilter.cs" />
     <Compile Include="Filters\MovingAverageFilter.cs" />

@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using NWaves.Filters.Base;
 using NWaves.Signals;
 
 namespace NWaves.Filters
 {
     /// <summary>
+    /// Class providing non-recursive implementation of N-sample MA filter.
+    /// 
     /// Actually MA filter belongs to FIR filters (so it's inherited from FirFilter);
     /// however it can be realized also (and more efficiently) as a recursive filter (see below).
     /// </summary>
@@ -30,10 +33,28 @@ namespace NWaves.Filters
             Size = size;
             Kernel = Enumerable.Repeat(1.0 / size, size).ToArray();
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override ComplexDiscreteSignal Zeros
+        {
+            get
+            {
+                var re = new double[Size];
+                var im = new double[Size];
+                for (var i = 0; i < Size; i++)
+                {
+                    re[i] = Math.Cos(2 * Math.PI * i / Size);
+                    im[i] = Math.Sin(2 * Math.PI * i / Size);
+                }
+                return new ComplexDiscreteSignal(1, re, im);
+            }
+        }
     }
 
     /// <summary>
-    /// Recursive implementation of N-sample MA filter:
+    /// Class providing recursive implementation of N-sample MA filter:
     /// 
     ///     y[n] = x[n] / N - x[n - N] / N + y[n - 1]
     /// 
@@ -96,6 +117,24 @@ namespace NWaves.Filters
             }
 
             return new DiscreteSignal(signal.SamplingRate, samples);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override ComplexDiscreteSignal Zeros
+        {
+            get
+            {
+                var re = new double[Size];
+                var im = new double[Size];
+                for (var i = 0; i < Size; i++)
+                {
+                    re[i] = Math.Cos(2 * Math.PI * i / Size);
+                    im[i] = Math.Sin(2 * Math.PI * i / Size);
+                }
+                return new ComplexDiscreteSignal(1, re, im);
+            }
         }
     }
 }

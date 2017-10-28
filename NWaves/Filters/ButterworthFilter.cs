@@ -1,15 +1,20 @@
-﻿using System.Collections.Generic;
-using NWaves.Filters.Base;
+﻿using NWaves.Filters.Base;
 
 namespace NWaves.Filters
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class ButterworthFilter : IirFilter
     {
-        public ButterworthFilter(IEnumerable<double> b,
-                                 IEnumerable<double> a,
-                                 int impulseResponseLength = 512)
-            : base(b, a, impulseResponseLength)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="freq"></param>
+        /// <param name="order"></param>
+        public ButterworthFilter(double freq, int order)
         {
+
         }
     }
 }

@@ -234,18 +234,13 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Divide all filter coefficients by _a[0]
         /// </summary>
-        private void Normalize()
+        public void Normalize()
         {
             var first = _a[0];
 
             if (Math.Abs(first - 0.0) < 1e-12)
             {
                 throw new ArgumentException("The first A coefficient can not be zero!");
-            }
-
-            if (Math.Abs(first - 1.0) >= 1e-12)
-            {
-                return;
             }
 
             for (var i = 0; i < _a.Length; i++)
