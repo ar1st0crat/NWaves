@@ -6,6 +6,7 @@ using NWaves.Filters;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Transforms.Windows;
+using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors
 {

@@ -72,6 +72,7 @@
     <Compile Include="Filters\ButterworthFilter.cs" />
     <Compile Include="Filters\MedianFilter.cs" />
     <Compile Include="Filters\MovingAverageFilter.cs" />
+    <Compile Include="Filters\MovingAverageRecursiveFilter.cs" />
     <Compile Include="Filters\PreEmphasisFilter.cs" />
     <Compile Include="Operations\AdaptiveFiltering.cs" />
     <Compile Include="Operations\BlockConvolution.cs" />
@@ -91,9 +92,9 @@
     <Compile Include="Transforms\Dct.cs" />
     <Compile Include="Transforms\Fft.cs" />
     <Compile Include="Transforms\Stft.cs" />
-    <Compile Include="Transforms\Windows\Window.cs" />
-    <Compile Include="Transforms\Windows\WindowExtensions.cs" />
-    <Compile Include="Transforms\Windows\WindowTypes.cs" />
+    <Compile Include="Windows\Window.cs" />
+    <Compile Include="Windows\WindowExtensions.cs" />
+    <Compile Include="Windows\WindowTypes.cs" />
     <Compile Include="Utils\FastCopy.cs" />
     <Compile Include="Utils\MathUtils.cs" />
   </ItemGroup>

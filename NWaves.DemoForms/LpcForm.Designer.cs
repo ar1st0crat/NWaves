@@ -31,9 +31,9 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.listView1 = new System.Windows.Forms.ListView();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.lpcListView = new System.Windows.Forms.ListView();
+            this.lpcPanel = new System.Windows.Forms.Panel();
+            this.spectrumPanel = new System.Windows.Forms.Panel();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -59,45 +59,46 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(129, 26);
             this.openToolStripMenuItem.Text = "&Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
-            // listView1
+            // lpcListView
             // 
-            this.listView1.FullRowSelect = true;
-            this.listView1.GridLines = true;
-            this.listView1.Location = new System.Drawing.Point(12, 41);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(1004, 366);
-            this.listView1.TabIndex = 6;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
+            this.lpcListView.FullRowSelect = true;
+            this.lpcListView.GridLines = true;
+            this.lpcListView.Location = new System.Drawing.Point(12, 41);
+            this.lpcListView.Name = "lpcListView";
+            this.lpcListView.Size = new System.Drawing.Size(1004, 366);
+            this.lpcListView.TabIndex = 6;
+            this.lpcListView.UseCompatibleStateImageBehavior = false;
+            this.lpcListView.View = System.Windows.Forms.View.Details;
+            this.lpcListView.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.lpcListView_ItemSelectionChanged);
             // 
-            // panel2
+            // lpcPanel
             // 
-            this.panel2.BackColor = System.Drawing.Color.White;
-            this.panel2.Location = new System.Drawing.Point(605, 413);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(411, 210);
-            this.panel2.TabIndex = 5;
+            this.lpcPanel.BackColor = System.Drawing.Color.White;
+            this.lpcPanel.Location = new System.Drawing.Point(605, 413);
+            this.lpcPanel.Name = "lpcPanel";
+            this.lpcPanel.Size = new System.Drawing.Size(411, 210);
+            this.lpcPanel.TabIndex = 5;
             // 
-            // panel1
+            // spectrumPanel
             // 
-            this.panel1.BackColor = System.Drawing.Color.White;
-            this.panel1.Location = new System.Drawing.Point(11, 413);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(588, 210);
-            this.panel1.TabIndex = 4;
+            this.spectrumPanel.BackColor = System.Drawing.Color.White;
+            this.spectrumPanel.Location = new System.Drawing.Point(11, 413);
+            this.spectrumPanel.Name = "spectrumPanel";
+            this.spectrumPanel.Size = new System.Drawing.Size(588, 210);
+            this.spectrumPanel.TabIndex = 4;
             // 
             // LpcForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1030, 635);
-            this.Controls.Add(this.listView1);
-            this.Controls.Add(this.panel2);
-            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.lpcListView);
+            this.Controls.Add(this.lpcPanel);
+            this.Controls.Add(this.spectrumPanel);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "LpcForm";
@@ -114,8 +115,8 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
-        private System.Windows.Forms.ListView listView1;
-        private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.ListView lpcListView;
+        private System.Windows.Forms.Panel lpcPanel;
+        private System.Windows.Forms.Panel spectrumPanel;
     }
 }

@@ -44,7 +44,13 @@ namespace NWaves.DemoForms
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using (var stream = new FileStream(@"d:\test.wav", FileMode.Create))
+            var sfd = new SaveFileDialog();
+            if (sfd.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            using (var stream = new FileStream(sfd.FileName, FileMode.Create))
             {
                 var waveFile = new WaveFile(_signal2);
                 waveFile.SaveTo(stream);
@@ -77,7 +83,7 @@ namespace NWaves.DemoForms
                 return;
             }
 
-            textBox1.Text = ofd.FileName;
+            filenameTextBox.Text = ofd.FileName;
             _waveFileName = ofd.FileName;
 
             using (var stream = new FileStream(_waveFileName, FileMode.Open))
@@ -86,19 +92,19 @@ namespace NWaves.DemoForms
                 _signal1 = waveFile[Channels.Left];
             }
 
-            DrawSignal(panel1, _signal1, 53);
+            DrawSignal(signalPanel, _signal1, 53);
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void openFileButton_Click(object sender, EventArgs e)
         {
             OpenSignal();
         }
 
-        private void button2_Click(object sender, EventArgs e)
-        {
-            var sampleCount = int.Parse(textBox2.Text);
+        private void generateSignalButton_Click(object sender, EventArgs e)
+        { 
+            var sampleCount = int.Parse(durationTextBox.Text);
 
-            switch (comboBox1.Text)
+            switch (builderComboBox.Text)
             {
                 case "Sinusoid":
                     _signal2 = new SinusoidBuilder()
@@ -108,9 +114,9 @@ namespace NWaves.DemoForms
                                         .SampledAt(_signal1.SamplingRate)
                                         .Build();
 
-                    listBox1.Items.Clear();
-                    listBox1.Items.Add("Sinusoidal Builder:");
-                    listBox1.Items.AddRange(new SinusoidBuilder().GetParametersInfo());
+                    builderParametersListBox.Items.Clear();
+                    builderParametersListBox.Items.Add("Sinusoidal Builder:");
+                    builderParametersListBox.Items.AddRange(new SinusoidBuilder().GetParametersInfo());
 
                     break;
 
@@ -123,30 +129,27 @@ namespace NWaves.DemoForms
                                         .SampledAt(_signal1.SamplingRate)
                                         .Build();
 
-                    listBox1.Items.Clear();
-                    listBox1.Items.Add("Sawtooth Builder:");
-                    listBox1.Items.AddRange(new SawtoothBuilder().GetParametersInfo());
+                    builderParametersListBox.Items.Clear();
+                    builderParametersListBox.Items.Add("Sawtooth Builder:");
+                    builderParametersListBox.Items.AddRange(new SawtoothBuilder().GetParametersInfo());
 
                     break;
             }
 
             _signal3 = _signal1.Superimpose(_signal2);
 
-            DrawSignal(panel2, _signal2, 53);
-            DrawSignal(panel3, _signal3, 53);
+            DrawSignal(generatedSignalPanel, _signal2, 53);
+            DrawSignal(superimposedSignalPanel, _signal3, 53);
 
-            var spectrum = Transform.MagnitudeSpectrum(_signal2[0, 512].Samples);
-
-            var signal4 = new DiscreteSignal(_signal2.SamplingRate, spectrum.Select(s => s / 100));
-
-            DrawSignal(panel4, signal4);
+            var spectrum = Transform.PowerSpectrum(_signal2[0, 512].Samples);
+            DrawSignal(spectrumPanel, new DiscreteSignal(_signal2.SamplingRate, spectrum));
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private void signalOperationButton_Click(object sender, EventArgs e)
         {
-            var param = int.Parse(textBox3.Text);
+            var param = int.Parse(operationSamplesTextBox.Text);
 
-            switch (comboBox2.Text)
+            switch (operationComboBox.Text)
             {
                 case "Delay by":
                     _signal2 = _signal2 + param;
@@ -159,19 +162,19 @@ namespace NWaves.DemoForms
 
             _signal3 = _signal1.Superimpose(_signal2);
 
-            DrawSignal(panel2, _signal2, 53);
-            DrawSignal(panel3, _signal3, 53);
+            DrawSignal(generatedSignalPanel, _signal2, 53);
+            DrawSignal(superimposedSignalPanel, _signal3, 53);
         }
 
-        private void button4_Click(object sender, EventArgs e)
+        private void signalSliceButton_Click(object sender, EventArgs e)
         {
-            var from = int.Parse(textBox4.Text);
-            var to = int.Parse(textBox5.Text);
+            var from = int.Parse(leftSliceTextBox.Text);
+            var to = int.Parse(rightSliceTextBox.Text);
 
             _signal2 = _signal1[from, to];
 
-            DrawSignal(panel2, _signal2, 53);
-            DrawSignal(panel3, _signal3, 53);
+            DrawSignal(generatedSignalPanel, _signal2, 53);
+            DrawSignal(superimposedSignalPanel, _signal3, 53);
         }
         
         #region playback demo
@@ -244,7 +247,7 @@ namespace NWaves.DemoForms
                     _signal1 = waveFile[Channels.Left];
                 }
 
-                DrawSignal(panel1, _signal1, 53);
+                DrawSignal(signalPanel, _signal1, 53);
             }
             else
             {
@@ -271,11 +274,11 @@ namespace NWaves.DemoForms
 
             Pen pen;
 
-            if (panel == panel1)
+            if (panel == signalPanel)
             {
                 pen = new Pen(Color.Blue);
             }
-            else if (panel == panel2)
+            else if (panel == generatedSignalPanel)
             {
                 pen = new Pen(Color.Red);
             }
@@ -289,10 +292,10 @@ namespace NWaves.DemoForms
 
             while (i < signal.Samples.Length)
             {
-                if (Math.Abs(signal[i] * 200) < panel.Height)
+                if (Math.Abs(signal[i] * 150) < panel.Height)
                 {
-                    g.DrawLine(pen, x, offset, x, (float)-signal[i] * 200 + offset);
-                    g.DrawEllipse(pen, x - 1, (int)(-signal[i] * 200) + offset - 1, 3, 3);
+                    g.DrawLine(pen, x, offset, x, (float)-signal[i] * 150 + offset);
+                    g.DrawEllipse(pen, x - 1, (int)(-signal[i] * 150) + offset - 1, 3, 3);
                 }
                 x++;
                 i += step;
@@ -300,15 +303,6 @@ namespace NWaves.DemoForms
             }
 
             pen.Dispose();
-        }
-
-        private void panel1_MouseDown(object sender, MouseEventArgs e)
-        {
-        }
-
-        private void panel1_MouseUp(object sender, MouseEventArgs e)
-        {
-
         }
 
         #endregion

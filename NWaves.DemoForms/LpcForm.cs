@@ -15,7 +15,11 @@ namespace NWaves.DemoForms
 {
     public partial class LpcForm : Form
     {
+        private const int WindowSize = 512;
+        private const int HopSize = 512;
+
         private DiscreteSignal _signal;
+        private List<FeatureVector> _lpcVectors;
 
         public LpcForm()
         {
@@ -36,24 +40,31 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
             
-            var lpcExtractor = new LpcExtractor(16, hopSize: 512);
+            var lpcExtractor = new LpcExtractor(16, WindowSize, HopSize);
 
-            var featureVectors = lpcExtractor.ComputeFrom(_signal).ToList();
+            _lpcVectors = lpcExtractor.ComputeFrom(_signal).ToList();
 
-            FillFeaturesList(featureVectors, lpcExtractor.FeatureDescriptions);
+            FillFeaturesList(_lpcVectors, lpcExtractor.FeatureDescriptions);
+            lpcListView.Items[0].Selected = true;
 
+            var spectrum = ComputeSpectrum(0);
+            var lpcSpectrum = EstimateSpectrum(0);
+            PlotLpcSpectrum(spectrum, lpcSpectrum);
+            PlotLpc(_lpcVectors[0].Features);
+        }
 
-            // draw estimated spectrum
+        double[] ComputeSpectrum(int idx)
+        {
+            return Transform.LogPowerSpectrum(_signal[WindowSize * idx, WindowSize * (idx + 1)].Samples);
+        }
 
-            var pos = 70;
-
-            var spectrum = Transform.LogPowerSpectrum(_signal[512 * pos, 512 * (pos + 1)].Samples);
-
-            var vector = featureVectors[pos].Features;
+        double[] EstimateSpectrum(int idx)
+        {
+            var vector = _lpcVectors[idx].Features.ToArray();
             var gain = Math.Sqrt(vector[0]);
             vector[0] = 1.0;
 
-            var lpcFilter = new IirFilter(new [] { gain }, vector, 512);
+            var lpcFilter = new IirFilter(new[] { gain }, vector, WindowSize);
 
             var lpcSpectrum = lpcFilter.FrequencyResponse.Magnitude.Samples;
 
@@ -62,54 +73,19 @@ namespace NWaves.DemoForms
                 lpcSpectrum[i] = 20 * Math.Log10(lpcSpectrum[i] * lpcSpectrum[i]);
             }
 
-            PlotLpcSpectrum(spectrum, lpcSpectrum);
-        }
-
-        private void PlotLpcSpectrum(double[] spectrum, double[] lpcSpectrum)
-        {
-            var g = panel1.CreateGraphics();
-            g.Clear(Color.White);
-
-            var pen = new Pen(Color.Blue);
-
-            var offset = panel1.Height / 2 - 20;
-
-            var x = 2;
-            for (var j = 1; j < spectrum.Length; j++)
-            {
-                g.DrawLine(pen,
-                           x - 2, (float)-spectrum[j - 1] + offset,
-                           x,     (float)-spectrum[j] + offset);
-                x += 2;
-            }
-
-            pen.Dispose();
-            
-
-            pen = new Pen(Color.Red, 2);
-
-            x = 2;
-            for (var j = 1; j < lpcSpectrum.Length / 2; j++)
-            {
-                g.DrawLine(pen,
-                           x - 2, (float)-lpcSpectrum[j - 1] + offset,
-                           x,     (float)-lpcSpectrum[j] + offset);
-                x += 2;
-            }
-
-            pen.Dispose();
+            return lpcSpectrum;
         }
 
         private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors, 
                                       IEnumerable<string> featureDescriptions)
         {
-            listView1.Clear();
+            lpcListView.Clear();
 
-            listView1.Columns.Add("time", 50);
+            lpcListView.Columns.Add("time", 50);
 
             foreach (var name in featureDescriptions)
             {
-                listView1.Columns.Add(name, 70);
+                lpcListView.Columns.Add(name, 70);
             }
 
             foreach (var vector in featureVectors)
@@ -117,8 +93,70 @@ namespace NWaves.DemoForms
                 var item = new ListViewItem { Text = vector.TimePosition.ToString() };
                 item.SubItems.AddRange(vector.Features.Select(f => f.ToString("F4")).ToArray());
 
-                listView1.Items.Add(item);
+                lpcListView.Items.Add(item);
             }
+        }
+
+        private void lpcListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            var pos = e.ItemIndex;
+            PlotLpcSpectrum(ComputeSpectrum(pos), EstimateSpectrum(pos));
+            PlotLpc(_lpcVectors[pos].Features);
+        }
+
+        private void PlotLpcSpectrum(double[] spectrum, double[] lpcSpectrum)
+        {
+            var g = spectrumPanel.CreateGraphics();
+            g.Clear(Color.White);
+
+            var offset = spectrumPanel.Height / 2 - 20;
+
+            var pen = new Pen(Color.Blue);
+            var x = 2;
+            for (var j = 1; j < spectrum.Length; j++)
+            {
+                g.DrawLine(pen, x - 2, (float)-spectrum[j - 1] + offset, x, (float)-spectrum[j] + offset);
+                x += 2;
+            }
+            pen.Dispose();
+            
+            pen = new Pen(Color.Red, 2);
+            x = 2;
+            for (var j = 1; j < lpcSpectrum.Length / 2; j++)
+            {
+                g.DrawLine(pen, x - 2, (float)-lpcSpectrum[j - 1] + offset, x, (float)-lpcSpectrum[j] + offset);
+                x += 2;
+            }
+            pen.Dispose();
+        }
+
+        private void PlotLpc(double[] lpc, bool includeFirstCoeff = false)
+        {
+            var g = lpcPanel.CreateGraphics();
+            g.Clear(Color.White);
+
+            var xOffset = 30;
+            var yOffset = lpcPanel.Height / 2;
+
+            var stride = 20;
+
+            var blackPen = new Pen(Color.Black);
+            g.DrawLine(blackPen, xOffset, yOffset, xOffset + lpc.Length * stride, yOffset);
+            g.DrawLine(blackPen, xOffset, xOffset, xOffset, lpcPanel.Height - xOffset);
+            blackPen.Dispose();
+
+            var pen = new Pen(Color.Green, 3);
+
+            var i = includeFirstCoeff ? 1 : 2;
+            var x = xOffset + stride;
+
+            for (; i < lpc.Length; i++)
+            {
+                g.DrawLine(pen, x - stride, 50 * (float)-lpc[i - 1] * 1 + yOffset, x, 50 * (float)-lpc[i] * 1 + yOffset);
+                x += stride;
+            }
+
+            pen.Dispose();
         }
     }
 }

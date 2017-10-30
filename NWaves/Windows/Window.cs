@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
+using NWaves.Transforms.Windows;
 
-namespace NWaves.Transforms.Windows
+namespace NWaves.Windows
 {
     /// <summary>
     /// Factory class generating various types of window functions

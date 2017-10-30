@@ -31,9 +31,9 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.listView1 = new System.Windows.Forms.ListView();
+            this.melFilterBanksPanel = new System.Windows.Forms.Panel();
+            this.mfccPanel = new System.Windows.Forms.Panel();
+            this.mfccListView = new System.Windows.Forms.ListView();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -63,41 +63,42 @@
             this.openToolStripMenuItem.Text = "&Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
-            // panel1
+            // melFilterBanksPanel
             // 
-            this.panel1.BackColor = System.Drawing.Color.White;
-            this.panel1.Location = new System.Drawing.Point(12, 404);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(588, 160);
-            this.panel1.TabIndex = 1;
+            this.melFilterBanksPanel.BackColor = System.Drawing.Color.White;
+            this.melFilterBanksPanel.Location = new System.Drawing.Point(12, 404);
+            this.melFilterBanksPanel.Name = "melFilterBanksPanel";
+            this.melFilterBanksPanel.Size = new System.Drawing.Size(588, 160);
+            this.melFilterBanksPanel.TabIndex = 1;
             // 
-            // panel2
+            // mfccPanel
             // 
-            this.panel2.BackColor = System.Drawing.Color.White;
-            this.panel2.Location = new System.Drawing.Point(606, 404);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(411, 160);
-            this.panel2.TabIndex = 2;
+            this.mfccPanel.BackColor = System.Drawing.Color.White;
+            this.mfccPanel.Location = new System.Drawing.Point(606, 404);
+            this.mfccPanel.Name = "mfccPanel";
+            this.mfccPanel.Size = new System.Drawing.Size(411, 160);
+            this.mfccPanel.TabIndex = 2;
             // 
-            // listView1
+            // mfccListView
             // 
-            this.listView1.FullRowSelect = true;
-            this.listView1.GridLines = true;
-            this.listView1.Location = new System.Drawing.Point(13, 32);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(1004, 366);
-            this.listView1.TabIndex = 3;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
+            this.mfccListView.FullRowSelect = true;
+            this.mfccListView.GridLines = true;
+            this.mfccListView.Location = new System.Drawing.Point(13, 32);
+            this.mfccListView.Name = "mfccListView";
+            this.mfccListView.Size = new System.Drawing.Size(1004, 366);
+            this.mfccListView.TabIndex = 3;
+            this.mfccListView.UseCompatibleStateImageBehavior = false;
+            this.mfccListView.View = System.Windows.Forms.View.Details;
+            this.mfccListView.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.mfccListView_ItemSelectionChanged);
             // 
             // MfccForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1029, 576);
-            this.Controls.Add(this.listView1);
-            this.Controls.Add(this.panel2);
-            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.mfccListView);
+            this.Controls.Add(this.mfccPanel);
+            this.Controls.Add(this.melFilterBanksPanel);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MfccForm";
@@ -114,8 +115,8 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
-        private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.ListView listView1;
+        private System.Windows.Forms.Panel melFilterBanksPanel;
+        private System.Windows.Forms.Panel mfccPanel;
+        private System.Windows.Forms.ListView mfccListView;
     }
 }

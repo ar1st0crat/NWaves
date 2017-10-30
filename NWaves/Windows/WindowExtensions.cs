@@ -1,6 +1,7 @@
 ﻿using NWaves.Signals;
+using NWaves.Transforms.Windows;
 
-namespace NWaves.Transforms.Windows
+namespace NWaves.Windows
 {
     /// <summary>
     /// A few helper functions for applying windows to signals and arrays of samples

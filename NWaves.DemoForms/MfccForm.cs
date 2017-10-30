@@ -15,6 +15,7 @@ namespace NWaves.DemoForms
     public partial class MfccForm : Form
     {
         private DiscreteSignal _signal;
+        private List<FeatureVector> _mfccVectors;
 
         public MfccForm()
         {
@@ -35,30 +36,57 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            _signal.Amplify(100);
-
             var mfccExtractor = new MfccExtractor(13, _signal.SamplingRate, 
-                                                            fftSize: 512,
-                                                            hopSize: 256,
-                                                            melFilterbanks: 20,
-                                                            lifterSize: 22,
-                                                            preEmphasis: 0.97,
-                                                            window: WindowTypes.Hamming);
+                                                  fftSize: 512,
+                                                  hopSize: 256,
+                                                  melFilterbanks: 20,
+                                                  lifterSize: 22,
+                                                  preEmphasis: 0.95,
+                                                  window: WindowTypes.Hamming);
             
-            var featureVectors = mfccExtractor.ComputeFrom(_signal);
+            _mfccVectors = mfccExtractor.ComputeFrom(_signal).ToList();
+
+            FillFeaturesList(_mfccVectors, mfccExtractor.FeatureDescriptions);
+            mfccListView.Items[0].Selected = true;
 
             PlotMelFilterbanks(mfccExtractor.MelFilterBanks);
-            FillFeaturesList(featureVectors, mfccExtractor.FeatureDescriptions);
+            PlotMfcc(_mfccVectors[0].Features);
+        }
+
+        private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors,
+                                      IEnumerable<string> featureDescriptions)
+        {
+            mfccListView.Clear();
+
+            mfccListView.Columns.Add("time", 50);
+
+            foreach (var feat in featureDescriptions)
+            {
+                mfccListView.Columns.Add(feat, 70);
+            }
+
+            foreach (var vector in featureVectors)
+            {
+                var item = new ListViewItem { Text = vector.TimePosition.ToString() };
+                item.SubItems.AddRange(vector.Features.Select(f => f.ToString("F4")).ToArray());
+
+                mfccListView.Items.Add(item);
+            }
+        }
+
+        private void mfccListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            PlotMfcc(_mfccVectors[e.ItemIndex].Features);
         }
 
         private void PlotMelFilterbanks(double[][] filterbanks)
         {
-            var g = panel1.CreateGraphics();
+            var g = melFilterBanksPanel.CreateGraphics();
             g.Clear(Color.White);
 
             var rand = new Random();
 
-            var offset = panel1.Height - 20;
+            var offset = melFilterBanksPanel.Height - 20;
 
             for (var j = 0; j < filterbanks.Length; j++)
             {
@@ -80,25 +108,33 @@ namespace NWaves.DemoForms
             }
         }
 
-        private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors,
-                                      IEnumerable<string> featureDescriptions)
+        private void PlotMfcc(double[] mfcc, bool includeFirstCoeff = false)
         {
-            listView1.Clear();
+            var g = mfccPanel.CreateGraphics();
+            g.Clear(Color.White);
 
-            listView1.Columns.Add("time", 50);
+            var xOffset = 30;
+            var yOffset = mfccPanel.Height / 2;
 
-            foreach (var feat in featureDescriptions)
+            var stride = 20;
+
+            var blackPen = new Pen(Color.Black);
+            g.DrawLine(blackPen, xOffset, yOffset, xOffset + mfcc.Length * stride, yOffset);
+            g.DrawLine(blackPen, xOffset, xOffset, xOffset, mfccPanel.Height - xOffset);
+            blackPen.Dispose();
+
+            var pen = new Pen(Color.Green, 3);
+
+            var i = includeFirstCoeff ? 1 : 2;
+            var x = xOffset + stride;
+
+            for (; i < mfcc.Length; i++)
             {
-                listView1.Columns.Add(feat, 70);
+                g.DrawLine(pen, x - stride, (float)-mfcc[i - 1] * 1 + yOffset, x, (float)-mfcc[i] * 1 + yOffset);
+                x += stride;
             }
 
-            foreach (var vector in featureVectors)
-            {
-                var item = new ListViewItem { Text = vector.TimePosition.ToString() };
-                item.SubItems.AddRange(vector.Features.Select(f => f.ToString("F4")).ToArray());
-
-                listView1.Items.Add(item);
-            }
+            pen.Dispose();
         }
     }
 }

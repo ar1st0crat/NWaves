@@ -8,10 +8,11 @@ Already available:
 
 - [x] major DSP transforms (FFT, DCT, STFT)
 - [x] basic LTI digital filters (FIR, IIR, moving average (non-recursive and recursive), pre-emphasis)
-- [x] basic operations (convolution, cross-correlation, overlap-add, overlap-save)
+- [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
+- [x] basic operations and filtering (convolution, cross-correlation, overlap-add, overlap-save)
 - [x] windowing functions (Hamming, Blackman, Hann)
 - [x] feature extraction (MFCC, LPC, LPCC)
-- [x] sound synthesis and signal builders (sinusoids, sawtooth, triangular)
+- [x] sound synthesis and signal builders (sinusoids, sawtooth)
 - [x] simple audio playback and recording (Windows only)
 
 Planned:
@@ -19,7 +20,7 @@ Planned:
 - [ ] more transforms (CQT, DWT, Mellin, LogPolar, Haar, Hadamard)
 - [ ] more operations (resampling, spectral subtraction, adaptive filtering)
 - [ ] more feature extraction (PNCC, phonological features)
-- [ ] more sound synthesis and signal builders (noises, periodic pulse, ADSR, etc.)
+- [ ] more sound synthesis and signal builders (noises, triangular, periodic pulse, ADSR, etc.)
 - [ ] filter design
 - [ ] sound effects (WahWah, Reverb, Vibrato, Chorus, Flanger, PitchShift, etc.)
 
@@ -302,4 +303,6 @@ var lpcVectors = lpcExtractor.ComputeFrom(signal);
 
 ![winforms](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/WinForms.png)
 
-![features](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/FeatureExtractors.png)
+![lpc](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/lpc.png)
+
+![mfcc](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/mfcc.png)

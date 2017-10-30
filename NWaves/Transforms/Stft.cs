@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using NWaves.Transforms.Windows;
 using NWaves.Utils;
+using NWaves.Windows;
 
 namespace NWaves.Transforms
 {
@@ -31,8 +32,7 @@ namespace NWaves.Transforms
                 spectrogram.Add(MagnitudeSpectrum(segment, fftSize));
             }
 
-            // if we need to process the last (not full) portion of data, 
-            // then we should pad it with zeros:
+            // if we need to process the last (not full) portion of data, we should pad it with zeros:
             var lastSegment = new double[fftSize];
             FastCopy.ArrayFragment(samples, samples.Length - start, start);
 
