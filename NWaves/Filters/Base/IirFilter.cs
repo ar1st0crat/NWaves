@@ -263,6 +263,7 @@ namespace NWaves.Filters.Base
             {
                 switch (B.Length)
                 {
+                    case 0:
                     case 1:
                         return null;
                     case 2:

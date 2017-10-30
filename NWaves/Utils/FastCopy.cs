@@ -37,6 +37,19 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Method copies an array (or its fragment) to existing array (or its part)
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="destination"></param>
+        /// <param name="size"></param>
+        /// <param name="sourceOffset"></param>
+        /// <param name="destinationOffset"></param>
+        public static void ToExistingArray(double[] source, double[] destination, int size, int sourceOffset = 0, int destinationOffset = 0)
+        {
+            Buffer.BlockCopy(source, sourceOffset * 8, destination, destinationOffset * 8, size * 8);
+        }
+
+        /// <summary>
         /// Method does fast in-memory merge of two arrays
         /// </summary>
         /// <param name="source1">The first array for merging</param>
