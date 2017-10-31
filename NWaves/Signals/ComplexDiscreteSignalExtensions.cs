@@ -18,9 +18,9 @@ namespace NWaves.Signals
     /// </summary>
     public static class ComplexDiscreteSignalExtensions
     {
-        /// <summary>
-        /// 
-        /// </summary>
+        /// Method delays the signal
+        ///     either by shifting it to the right (positive, e.g. Delay(1000))
+        ///         or by shifting it to the left (negative, e.g. Delay(-1000))
         /// <param name="signal"></param>
         /// <param name="delay"></param>
         /// <returns></returns>
@@ -50,9 +50,9 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Method superimposes signal1 with signal2.
-        /// 
-        /// If the size of one of the arrays is smaller, then it's padded with zeros.
+        /// Method superimposes two signals.
+        /// If sizes are different then the smaller signal is broadcasted 
+        /// to fit the size of the larger signal.
         /// </summary>
         /// <param name="signal1">Object signal</param>
         /// <param name="signal2">Argument signal</param>
@@ -91,7 +91,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Method concatenates two signals.
         /// </summary>
         /// <param name="signal1"></param>
         /// <param name="signal2"></param>
@@ -110,7 +110,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Method returns repeated n times copy of the signal
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="times"></param>
@@ -167,7 +167,28 @@ namespace NWaves.Signals
         }
 
         /// <summary>
+        /// Method creates new zero-padded complex discrete signal from the current signal.
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="newLength">The length of a zero-padded signal.
+        /// By default array is zero-padded to have length of next power of 2.</param>
+        /// <returns>Zero padded complex discrete signal</returns>
+        public static ComplexDiscreteSignal ZeroPadded(this ComplexDiscreteSignal signal, int newLength)
+        {
+            if (newLength <= 0)
+            {
+                newLength = MathUtils.NextPowerOfTwo(signal.Real.Length);
+            }
+
+            return new ComplexDiscreteSignal(
+                            signal.SamplingRate,
+                            FastCopy.PadZeros(signal.Real, newLength),
+                            FastCopy.PadZeros(signal.Imag, newLength));
+        }
+
+        /// <summary>
         /// Method performs the complex multiplication of two signals
+        /// (with normalization by length)
         /// </summary>
         /// <param name="signal1"></param>
         /// <param name="signal2"></param>

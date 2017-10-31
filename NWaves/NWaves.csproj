@@ -36,6 +36,7 @@
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <Folder Include="FeatureReconstructors\" />
+    <Folder Include="Filters\OnePole\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\Channels.cs" />

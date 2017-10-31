@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -9,36 +8,50 @@ namespace NWaves.Operations
     public static partial class Operation
     {
         /// <summary>
-        /// Fast convolution via FFT
+        /// Fast convolution via FFT for general complex-valued case
         /// </summary>
         /// <param name="signal1"></param>
         /// <param name="signal2"></param>
         /// <returns></returns>
-        public static DiscreteSignal Convolve(DiscreteSignal signal1, DiscreteSignal signal2)
+        public static ComplexDiscreteSignal Convolve(ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
         {
-            var length = signal1.Samples.Length + signal2.Samples.Length - 1;
+            var length = signal1.Real.Length + signal2.Real.Length - 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(length);
 
-            var complex1 = signal1.ToComplex(fftSize);
-            var complex2 = signal2.ToComplex(fftSize);
-            
+            signal1 = signal1.ZeroPadded(fftSize);
+            signal2 = signal2.ZeroPadded(fftSize);
+
             // 1) do FFT of both signals
 
-            Transform.Fft(complex1.Real, complex1.Imag, fftSize);
-            Transform.Fft(complex2.Real, complex2.Imag, fftSize);
+            Transform.Fft(signal1.Real, signal1.Imag, fftSize);
+            Transform.Fft(signal2.Real, signal2.Imag, fftSize);
 
             // 2) do complex multiplication of spectra
 
-            var spectrum = complex1.Multiply(complex2);
-            
+            var spectrum = signal1.Multiply(signal2);
+
             // 3) do inverse FFT of resulting spectrum
 
             Transform.Ifft(spectrum.Real, spectrum.Imag, fftSize);
 
             // 4) return resulting real-valued part of the signal (truncate size to N + M - 1)
 
-            return new DiscreteSignal(signal1.SamplingRate, FastCopy.ArrayFragment(spectrum.Real, length));
+            return new ComplexDiscreteSignal(signal1.SamplingRate, 
+                                FastCopy.ArrayFragment(spectrum.Real, length),
+                                FastCopy.ArrayFragment(spectrum.Imag, length));
+        }
+
+        /// <summary>
+        /// Fast convolution via FFT for real-valued signals
+        /// </summary>
+        /// <param name="signal1"></param>
+        /// <param name="signal2"></param>
+        /// <returns></returns>
+        public static DiscreteSignal Convolve(DiscreteSignal signal1, DiscreteSignal signal2)
+        {
+            var complexConvolution = Convolve(signal1.ToComplex(), signal2.ToComplex());
+            return new DiscreteSignal(signal1.SamplingRate, complexConvolution.Real);
         }
 
         /// <summary>

@@ -10,12 +10,12 @@ namespace NWaves.Filters
     public class MedianFilter : IFilter
     {
         /// <summary>
-        /// 
+        /// The size of median filter
         /// </summary>
         public int Size { get; }
 
         /// <summary>
-        /// 
+        /// Constructor
         /// </summary>
         /// <param name="size"></param>
         public MedianFilter(int size = 9)
@@ -24,7 +24,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// 
+        /// Method implements median filtering algorithm
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="filteringOptions"></param>
@@ -38,7 +38,7 @@ namespace NWaves.Filters
             var mid = (Size - 1) / 2;
 
             var buf = FastCopy.ArrayFragment(input, Size);
-            var value = NthOrderStatistic(buf, mid, 0, Size - 1);
+            var value = FindNth(buf, mid, 0, Size - 1);
             
             for (var i = 0; i < Size; i++)
             {
@@ -49,7 +49,7 @@ namespace NWaves.Filters
             for (var i = 1; i < input.Length - Size + 1; i++)
             {
                 FastCopy.ToExistingArray(input, buf, Size, i);
-                output[n++] = NthOrderStatistic(buf, 0 + mid, 0, 0 + Size - 1);
+                output[n++] = FindNth(buf, mid, 0, Size - 1);
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
@@ -88,7 +88,7 @@ namespace NWaves.Filters
         /// <param name="start"></param>
         /// <param name="end"></param>
         /// <returns></returns>
-        private static double NthOrderStatistic(double[] a, int n, int start, int end)
+        private static double FindNth(double[] a, int n, int start, int end)
         {
             while (true)
             {

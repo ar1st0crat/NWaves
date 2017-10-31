@@ -52,7 +52,6 @@ namespace NWaves.Signals
                 var imag = Imag;
 
                 var magnitude = new double[real.Length];
-
                 for (var i = 0; i < magnitude.Length; i++)
                 {
                     magnitude[i] = Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]);
@@ -73,7 +72,6 @@ namespace NWaves.Signals
                 var imag = Imag;
 
                 var magnitude = new double[real.Length];
-
                 for (var i = 0; i < magnitude.Length; i++)
                 {
                     magnitude[i] = Math.Atan(imag[i] / real[i]);
@@ -99,7 +97,7 @@ namespace NWaves.Signals
             SamplingRate = samplingRate;
             Real = FastCopy.EntireArray(real);
 
-            // some additional logic for imaginary part initialization
+            // additional logic for imaginary part initialization
 
             if (imag != null)
             {

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using NWaves.Operations;
 using NWaves.Signals;
 
@@ -40,6 +41,18 @@ namespace NWaves.Tests.Operations
             var conv = Operation.CrossCorrelateDirect(_s1, _s2);
 
             Assert.That(conv.Samples, Is.EqualTo(new[] { 1, 8, 20, 21, 18, 24, 19, 7, 2.0 }).Within(1e-12));
+        }
+
+        [Test]
+        public void TestImaginaryParts()
+        {
+            var s1 = new ComplexDiscreteSignal(1, new[] { 1, 0.5 }, new[] { 0, -1.5 });
+            var s2 = new ComplexDiscreteSignal(1, new[] { 1, 0.5 }, new[] { 0, 1.5 });
+
+            var conv = Operation.Convolve(s1, s2);
+
+            Assert.That(conv.Real, Is.EquivalentTo(new[] { 1, 1, 2.5 }));
+            Assert.That(conv.Imag, Is.EqualTo(new[] { 0, 0, 0 }).Within(1e-8));
         }
     }
 }

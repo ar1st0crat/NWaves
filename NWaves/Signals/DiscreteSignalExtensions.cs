@@ -18,7 +18,9 @@ namespace NWaves.Signals
     public static class DiscreteSignalExtensions
     {
         /// <summary>
-        /// 
+        /// Method delays the signal
+        ///     either by shifting it to the right (positive, e.g. Delay(1000))
+        ///         or by shifting it to the left (negative, e.g. Delay(-1000))
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="delay"></param>
@@ -47,7 +49,9 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Method superimposes two signals.
+        /// If sizes are different then the smaller signal is broadcasted 
+        /// to fit the size of the larger signal.
         /// </summary>
         /// <param name="signal1"></param>
         /// <param name="signal2"></param>
@@ -84,7 +88,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Method concatenates two signals.
         /// </summary>
         /// <param name="signal1"></param>
         /// <param name="signal2"></param>
@@ -102,7 +106,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Method returns repeated n times copy of the signal
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="times"></param>
@@ -170,16 +174,13 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Returns own complex-valued copy
+        /// Method wraps discrete signal samples into complex signal
         /// </summary>
         /// <param name="signal">Real-valued signal</param>
-        /// <param name="size">New size of complex-valued signal</param>
         /// <returns>Corresponding complex-valued signal</returns>
-        public static ComplexDiscreteSignal ToComplex(this DiscreteSignal signal, int size = -1)
+        public static ComplexDiscreteSignal ToComplex(this DiscreteSignal signal)
         {
-            return size == -1 ? 
-                new ComplexDiscreteSignal(signal.SamplingRate, FastCopy.EntireArray(signal.Samples)) : 
-                new ComplexDiscreteSignal(signal.SamplingRate, FastCopy.PadZeros(signal.Samples, size));
+            return new ComplexDiscreteSignal(signal.SamplingRate, signal.Samples);
         }
     }
 }

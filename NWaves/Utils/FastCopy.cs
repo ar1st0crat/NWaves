@@ -84,22 +84,14 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Method creates new zero-padded array from source array
+        /// Method creates new zero-padded array from source array.
         /// </summary>
         /// <param name="source">Source array</param>
-        /// <param name="newLength">
-        /// The length of a zero-padded array.
-        /// By default array is zero-padded to have length of next power of 2.
-        /// </param>
+        /// <param name="size">The size of a zero-padded array</param>
         /// <returns>Zero-padded array</returns>
-        public static double[] PadZeros(double[] source, int newLength = 0)
+        public static double[] PadZeros(double[] source, int size = 0)
         {
-            if (newLength <= 0)
-            {
-                newLength = MathUtils.NextPowerOfTwo(source.Length);
-            }
-
-            var zeroPadded = new double[newLength];
+            var zeroPadded = new double[size];
             Buffer.BlockCopy(source, 0, zeroPadded, 0, source.Length * 8);
             return zeroPadded;
         }

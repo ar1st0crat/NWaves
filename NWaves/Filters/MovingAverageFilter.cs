@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using NWaves.Filters.Base;
-using NWaves.Signals;
 
 namespace NWaves.Filters
 {
@@ -31,24 +30,6 @@ namespace NWaves.Filters
 
             Size = size;
             Kernel = Enumerable.Repeat(1.0 / size, size).ToArray();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override ComplexDiscreteSignal Zeros
-        {
-            get
-            {
-                var re = new double[Size];
-                var im = new double[Size];
-                for (var i = 0; i < Size; i++)
-                {
-                    re[i] = Math.Cos(2 * Math.PI * i / Size);
-                    im[i] = Math.Sin(2 * Math.PI * i / Size);
-                }
-                return new ComplexDiscreteSignal(1, re, im);
-            }
         }
     }
 }

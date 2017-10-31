@@ -14,5 +14,31 @@ namespace NWaves.Tests.Misc
             Assert.That(MathUtils.NextPowerOfTwo(33), Is.EqualTo(64));
             Assert.That(MathUtils.NextPowerOfTwo(65000), Is.EqualTo(65536));
         }
+
+        [Test]
+        public void TestRealPolynomialRoots()
+        {
+            double[] re = { -6, -5, 2, 1 };
+            double[] im = { 0, 0, 0, 0 };
+
+            var roots = MathUtils.PolynomialRoots(re, im);
+
+            double[] expected = {2, -3, -1};
+            Assert.That(roots.Item1, Is.EquivalentTo(expected));
+        }
+
+        [Test]
+        public void TestComplexPolynomialRoots()
+        {
+            double[] re = { 2.5, 1, 1 };
+            double[] im = { 0, 0, 0 };
+
+            var roots = MathUtils.PolynomialRoots(re, im);
+
+            double[] expectedReal = { -0.5, -0.5 };
+            double[] expectedImag = { 1.5, -1.5 };
+            Assert.That(roots.Item1, Is.EquivalentTo(expectedReal));
+            Assert.That(roots.Item2, Is.EquivalentTo(expectedImag));
+        }
     }
 }

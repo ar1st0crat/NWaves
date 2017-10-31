@@ -165,37 +165,19 @@ namespace NWaves.Filters.Base
         {
             get
             {
-                switch (Kernel.Length)
+                if (Kernel.Length <= 1)
                 {
-                    case 1:
-                        return null;
-                    case 2:
-                        return new ComplexDiscreteSignal(1, new[] { -Kernel[1] }, new[] { 0.0 });
-                    case 3:
-                        var a = Kernel[0];
-                        var b = Kernel[1];
-                        var c = Kernel[2];
-                        var discriminant = b * b - 4 * a * c;
-                        if (discriminant > 0)
-                        {
-                            var x1 = (-b + Math.Sqrt(discriminant)) / (2 * a);  // a is never equal to 0
-                            var x2 = (-b - Math.Sqrt(discriminant)) / (2 * a);
-                            return new ComplexDiscreteSignal(1, new[] { x1, x2 }, new[] { 0.0, 0.0 });
-                        }
-                        else
-                        {
-                            var re = -b / (2 * a);
-                            var im = Math.Sqrt(-discriminant) / (2 * a);
-                            return new ComplexDiscreteSignal(1, new[] { re, re }, new[] { im, -im });
-                        }
+                    return null;
                 }
 
-                throw new NotImplementedException();
+                var roots = MathUtils.PolynomialRoots(Kernel.Reverse().ToArray(), new double[Kernel.Length]);
+
+                return new ComplexDiscreteSignal(1, roots.Item1, roots.Item2);
             }
         }
 
         /// <summary>
-        /// Poles of the transfer function
+        /// Poles of the transfer function (FIR filter does not have poles)
         /// </summary>
         public override ComplexDiscreteSignal Poles => null;
     }

@@ -62,6 +62,20 @@ namespace NWaves.DemoForms
                 case "Pre-emphasis":
                     AnalyzePreemphasisFilter();
                     break;
+                case "Butterworth":
+                    _filter = new ButterworthFilter(0.25, 8);
+
+                    numeratorListBox.DataSource = (_filter as IirFilter).B;
+                    denominatorListBox.DataSource = (_filter as IirFilter).A;
+
+                    filterParamsDataGrid.RowCount = 2;
+                    filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+                    filterParamsDataGrid.Rows[0].Cells[1].Value = "4";
+                    filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
+                    filterParamsDataGrid.Rows[1].Cells[1].Value = "0,15";
+                    orderNumeratorTextBox.Text = "0";
+                    orderDenominatorTextBox.Text = "5";
+                    break;
             }
 
             DrawFrequencyResponse();

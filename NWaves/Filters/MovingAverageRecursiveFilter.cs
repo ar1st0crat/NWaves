@@ -70,23 +70,5 @@ namespace NWaves.Filters
 
             return new DiscreteSignal(signal.SamplingRate, samples);
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override ComplexDiscreteSignal Zeros
-        {
-            get
-            {
-                var re = new double[Size];
-                var im = new double[Size];
-                for (var i = 0; i < Size; i++)
-                {
-                    re[i] = Math.Cos(2 * Math.PI * i / Size);
-                    im[i] = Math.Sin(2 * Math.PI * i / Size);
-                }
-                return new ComplexDiscreteSignal(1, re, im);
-            }
-        }
     }
 }

@@ -255,39 +255,20 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Zeros of the transfer function (TODO: soooo refactor this)
+        /// Zeros of the transfer function
         /// </summary>
         public override ComplexDiscreteSignal Zeros
         {
             get
             {
-                switch (B.Length)
+                if (B.Length <= 1)
                 {
-                    case 0:
-                    case 1:
-                        return null;
-                    case 2:
-                        return new ComplexDiscreteSignal(1, new[] { -B[1] }, new[] { 0.0 });
-                    case 3:
-                        var a = B[0];
-                        var b = B[1];
-                        var c = B[2];
-                        var discriminant = b * b - 4 * a * c;
-                        if (discriminant > 0)
-                        {
-                            var x1 = (-b + Math.Sqrt(discriminant)) / (2 * a);  // a is never equal to 0
-                            var x2 = (-b - Math.Sqrt(discriminant)) / (2 * a);
-                            return new ComplexDiscreteSignal(1, new[] { x1, x2 }, new[] { 0.0, 0.0 });
-                        }
-                        else
-                        {
-                            var re = -b / (2 * a);
-                            var im = Math.Sqrt(-discriminant) / (2 * a);
-                            return new ComplexDiscreteSignal(1, new[] { re, re }, new[] { im, -im });
-                        }
+                    return null;
                 }
 
-                throw new NotImplementedException();
+                var roots = MathUtils.PolynomialRoots(B.Reverse().ToArray(), new double[B.Length]);
+
+                return new ComplexDiscreteSignal(1, roots.Item1, roots.Item2);
             }
         }
 
@@ -298,32 +279,14 @@ namespace NWaves.Filters.Base
         {
             get
             {
-                switch (A.Length)
+                if (A.Length <= 1)
                 {
-                    case 1:
-                        return null;
-                    case 2:
-                        return new ComplexDiscreteSignal(1, new[] { -A[1] }, new[] { 0.0 });
-                    case 3:
-                        var a = A[0];
-                        var b = A[1];
-                        var c = A[2];
-                        var discriminant = b * b - 4 * a * c;
-                        if (discriminant > 0)
-                        {
-                            var x1 = (-b + Math.Sqrt(discriminant)) / (2 * a);  // a is never equal to 0
-                            var x2 = (-b - Math.Sqrt(discriminant)) / (2 * a);
-                            return new ComplexDiscreteSignal(1, new[] { x1, x2 }, new[] { 0.0, 0.0 });
-                        }
-                        else
-                        {
-                            var re = -b / (2 * a);
-                            var im = Math.Sqrt(-discriminant) / (2 * a);
-                            return new ComplexDiscreteSignal(1, new[] { re, re }, new[] { im, -im });
-                        }
+                    return null;
                 }
 
-                throw new NotImplementedException();
+                var roots = MathUtils.PolynomialRoots(A.Reverse().ToArray(), new double[A.Length]);
+
+                return new ComplexDiscreteSignal(1, roots.Item1, roots.Item2);
             }
         }
     }

@@ -30,7 +30,7 @@ namespace NWaves.Filters.Base
         public int ImpulseResponseLength { get; set; }
 
         /// <summary>
-        /// Zeros of the transfer function (TODO: refactor class for zeros and poles summary)
+        /// Zeros of the transfer function
         /// </summary>
         public abstract ComplexDiscreteSignal Zeros { get; }
 
