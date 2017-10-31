@@ -36,7 +36,6 @@
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <Folder Include="FeatureReconstructors\" />
-    <Folder Include="Filters\OnePole\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\Channels.cs" />
@@ -74,10 +73,13 @@
     <Compile Include="Filters\MedianFilter.cs" />
     <Compile Include="Filters\MovingAverageFilter.cs" />
     <Compile Include="Filters\MovingAverageRecursiveFilter.cs" />
+    <Compile Include="Filters\OnePole\HighPassFilter.cs" />
+    <Compile Include="Filters\OnePole\LowPassFilter.cs" />
     <Compile Include="Filters\PreEmphasisFilter.cs" />
     <Compile Include="Operations\AdaptiveFiltering.cs" />
     <Compile Include="Operations\BlockConvolution.cs" />
     <Compile Include="Operations\Convolution.cs" />
+    <Compile Include="Operations\Deconvolution.cs" />
     <Compile Include="Operations\Resampling.cs" />
     <Compile Include="Operations\SpectralSubtraction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

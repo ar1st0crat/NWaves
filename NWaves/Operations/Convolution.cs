@@ -35,7 +35,7 @@ namespace NWaves.Operations
 
             Transform.Ifft(spectrum.Real, spectrum.Imag, fftSize);
 
-            // 4) return resulting real-valued part of the signal (truncate size to N + M - 1)
+            // 4) return resulting meaningful part of the signal (truncate size to N + M - 1)
 
             return new ComplexDiscreteSignal(signal1.SamplingRate, 
                                 FastCopy.ArrayFragment(spectrum.Real, length),

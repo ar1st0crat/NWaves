@@ -5,6 +5,16 @@ using NWaves.Signals;
 
 namespace NWaves.Filters
 {
+    /// ========================= ATTENTION! ===========================
+    /// this code does not produce right Butterworth filter coefficients
+    /// 
+    /// The idea is as follows:
+    ///     - compute poles for continuous case
+    ///     - transform them to discrete analogs
+    ///     - get filter coefficients from poles 
+    ///       (based on successive polynomial multiplications)
+    /// ================================================================
+
     /// <summary>
     /// Class for Butterworth IIR filter.
     /// 

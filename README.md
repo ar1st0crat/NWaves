@@ -9,8 +9,9 @@ Already available:
 - [x] major DSP transforms (FFT, DCT, STFT)
 - [x] basic LTI digital filters (FIR, IIR, moving average (non-recursive and recursive), pre-emphasis)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
+- [x] 1-pole filters (low-pass, high-pass)
 - [x] median filter
-- [x] basic operations and filtering (convolution, cross-correlation, overlap-add, overlap-save)
+- [x] basic operations and filtering (convolution/deconvolution, cross-correlation, overlap-add, overlap-save)
 - [x] windowing functions (Hamming, Blackman, Hann)
 - [x] feature extraction (MFCC, LPC, LPCC)
 - [x] sound synthesis and signal builders (sinusoids, sawtooth)

@@ -87,7 +87,8 @@ namespace NWaves.Signals
         /// <param name="samplingRate">Sampling rate of the signal</param>
         /// <param name="real">Array of real parts of the complex-valued signal</param>
         /// <param name="imag">Array of imaginary parts of the complex-valued signal</param>
-        public ComplexDiscreteSignal(int samplingRate, double[] real, double[] imag = null)
+        /// <param name="allocateNew">Set to true if new memory should be allocated for data</param>
+        public ComplexDiscreteSignal(int samplingRate, double[] real, double[] imag = null, bool allocateNew = false)
         {
             if (samplingRate <= 0)
             {
@@ -95,7 +96,7 @@ namespace NWaves.Signals
             }
 
             SamplingRate = samplingRate;
-            Real = FastCopy.EntireArray(real);
+            Real = allocateNew ? FastCopy.EntireArray(real) : real;
 
             // additional logic for imaginary part initialization
 
@@ -106,7 +107,7 @@ namespace NWaves.Signals
                     throw new ArgumentException("Arrays of real and imaginary parts have different size!");
                 }
 
-                Imag = FastCopy.EntireArray(imag);
+                Imag = allocateNew ? FastCopy.EntireArray(imag) : imag;
             }
             else
             {
@@ -185,7 +186,7 @@ namespace NWaves.Signals
         /// <returns>New copied signal</returns>
         public ComplexDiscreteSignal Copy()
         {
-            return new ComplexDiscreteSignal(SamplingRate, Real, Imag);
+            return new ComplexDiscreteSignal(SamplingRate, FastCopy.EntireArray(Real), FastCopy.EntireArray(Imag));
         }
 
         /// <summary>

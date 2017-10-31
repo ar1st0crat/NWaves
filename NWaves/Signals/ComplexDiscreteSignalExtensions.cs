@@ -214,5 +214,35 @@ namespace NWaves.Signals
 
             return new ComplexDiscreteSignal(signal1.SamplingRate, real, imag);
         }
+
+        /// <summary>
+        /// Method performs the complex division of two signals
+        /// (with normalization by length)
+        /// </summary>
+        /// <param name="signal1"></param>
+        /// <param name="signal2"></param>
+        /// <returns></returns>
+        public static ComplexDiscreteSignal Divide(
+            this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
+        {
+            var length = signal1.Real.Length;
+
+            var real = new double[length];
+            var imag = new double[length];
+
+            var real1 = signal1.Real;
+            var imag1 = signal1.Imag;
+            var real2 = signal2.Real;
+            var imag2 = signal2.Imag;
+
+            for (var i = 0; i < length; i++)
+            {
+                var den = imag1[i] * imag1[i] + imag2[i] * imag2[i];
+                real[i] = (real1[i] * real2[i] + imag1[i] * imag2[i]) / den;
+                imag[i] = (real2[i] * imag1[i] - imag2[i] * real1[i]) / den;
+            }
+
+            return new ComplexDiscreteSignal(signal1.SamplingRate, real, imag);
+        }
     }
 }
