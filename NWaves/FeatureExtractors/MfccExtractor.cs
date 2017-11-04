@@ -89,7 +89,7 @@ namespace NWaves.FeatureExtractors
                 _preemphasisFilter = new PreEmphasisFilter(preEmphasis);
             }
 
-            CreateMelFilterbanks(samplingRate, melFilterbanks, fftSize);
+            MelFilterBanks = FilterBanks.Mel(melFilterbanks, fftSize, samplingRate);
         }
 
         /// <summary>
@@ -171,65 +171,6 @@ namespace NWaves.FeatureExtractors
             }
 
             return featureVectors;
-        }
-
-        /// <summary>
-        /// Method converts herz frequency to corresponding mel frequency
-        /// </summary>
-        /// <param name="herz">Herz frequency</param>
-        /// <returns>Mel frequency</returns>
-        public static double HerzToMel(double herz)
-        {
-            return 1127.01048 * Math.Log(herz / 700 + 1);
-        }
-
-        /// <summary>
-        /// Method converts mel frequency to corresponding herz frequency
-        /// </summary>
-        /// <param name="mel">Mel frequency</param>
-        /// <returns>Herz frequency</returns>
-        public static double MelToHerz(double mel)
-        {
-            return (Math.Exp(mel / 1127.01048) - 1) * 700;
-        }
-
-        /// <summary>
-        /// Method creates triangular mel filterbanks of constant height = 1
-        /// </summary>
-        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
-        /// <param name="melFilterbanks">Number of mel filterbanks to create</param>
-        /// <param name="fftSize">Assumed size of FFT</param>
-        private void CreateMelFilterbanks(int samplingRate, int melFilterbanks, int fftSize)
-        {
-            MelFilterBanks = new double[melFilterbanks][];
-
-            var frequencyResolution = HerzToMel(samplingRate / 2.0) / (melFilterbanks + 1);
-
-            var leftSample = 0;
-
-            var melFrequency = frequencyResolution;
-            var centerSample = (int)Math.Floor((fftSize + 1) * MelToHerz(melFrequency) / samplingRate);
-
-            for (var i = 0; i < melFilterbanks; i++)
-            {
-                melFrequency += frequencyResolution;
-
-                var rightSample = (int)Math.Floor((fftSize + 1) * MelToHerz(melFrequency) / samplingRate);
-
-                MelFilterBanks[i] = new double[fftSize / 2];
-
-                for (var j = leftSample; j < centerSample; j++)
-                {
-                    MelFilterBanks[i][j] = (double)(j - leftSample) / (centerSample - leftSample);
-                }
-                for (var j = centerSample; j < rightSample; j++)
-                {
-                    MelFilterBanks[i][j] = (double)(rightSample - j) / (rightSample - centerSample);
-                }
-
-                leftSample = centerSample;
-                centerSample = rightSample;
-            }
         }
 
         /// <summary>

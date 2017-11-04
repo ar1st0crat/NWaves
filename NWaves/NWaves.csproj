@@ -55,6 +55,7 @@
     <Compile Include="FeatureExtractors\LpccExtractor.cs" />
     <Compile Include="FeatureExtractors\LpcExtractor.cs" />
     <Compile Include="FeatureExtractors\MfccExtractor.cs" />
+    <Compile Include="FeatureExtractors\MsExtractor.cs" />
     <Compile Include="FeatureExtractors\PnccExtractor.cs" />
     <Compile Include="Filters\Base\LtiFilter.cs" />
     <Compile Include="Filters\Base\FilteringOptions.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="Filters\BiQuad\NotchFilter.cs" />
     <Compile Include="Filters\BiQuad\PeakFilter.cs" />
     <Compile Include="Filters\ButterworthFilter.cs" />
+    <Compile Include="Filters\FilterBanks.cs" />
     <Compile Include="Filters\MedianFilter.cs" />
     <Compile Include="Filters\MovingAverageFilter.cs" />
     <Compile Include="Filters\MovingAverageRecursiveFilter.cs" />
@@ -80,6 +82,7 @@
     <Compile Include="Operations\BlockConvolution.cs" />
     <Compile Include="Operations\Convolution.cs" />
     <Compile Include="Operations\Deconvolution.cs" />
+    <Compile Include="Operations\Envelope.cs" />
     <Compile Include="Operations\Resampling.cs" />
     <Compile Include="Operations\SpectralSubtraction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

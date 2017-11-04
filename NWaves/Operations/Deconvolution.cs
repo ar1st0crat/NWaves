@@ -28,10 +28,10 @@ namespace NWaves.Operations
 
             for (var i = 0; i < fftSize; i++)
             {
-                signal.Real[i] += 1e-9;
-                kernel.Real[i] += 1e-9;
-                signal.Imag[i] += 1e-9;
-                kernel.Imag[i] += 1e-9;
+                signal.Real[i] += 1e-10;
+                kernel.Real[i] += 1e-10;
+                signal.Imag[i] += 1e-10;
+                kernel.Imag[i] += 1e-10;
             }
 
             // 2) do complex division of spectra
@@ -57,7 +57,7 @@ namespace NWaves.Operations
         /// <returns></returns>
         public static DiscreteSignal Deconvolve(DiscreteSignal signal, DiscreteSignal kernel)
         {
-            var complexResult = Convolve(signal.ToComplex(), kernel.ToComplex());
+            var complexResult = Deconvolve(signal.ToComplex(), kernel.ToComplex());
             return new DiscreteSignal(signal.SamplingRate, complexResult.Real);
         }
     }

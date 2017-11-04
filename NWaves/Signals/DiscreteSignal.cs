@@ -35,7 +35,8 @@ namespace NWaves.Signals
         /// </summary>
         /// <param name="samplingRate"></param>
         /// <param name="samples"></param>
-        public DiscreteSignal(int samplingRate, double[] samples)
+        /// <param name="allocateNew">Set to true if new memory should be allocated for data</param>
+        public DiscreteSignal(int samplingRate, double[] samples, bool allocateNew = false)
         {
             if (samplingRate <= 0)
             {
@@ -43,7 +44,7 @@ namespace NWaves.Signals
             }
 
             SamplingRate = samplingRate;
-            Samples = FastCopy.EntireArray(samples);
+            Samples = allocateNew ? FastCopy.EntireArray(samples) : samples;
         }
 
         /// <summary>
@@ -106,12 +107,12 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Method for creating deep copy of the signal
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Copy of the signal</returns>
         public DiscreteSignal Copy()
         {
-            return new DiscreteSignal(SamplingRate, Samples);
+            return new DiscreteSignal(SamplingRate, Samples, allocateNew: true);
         }
 
         /// <summary>

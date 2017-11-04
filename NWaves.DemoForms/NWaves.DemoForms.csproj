@@ -64,6 +64,12 @@
     <Compile Include="MfccForm.Designer.cs">
       <DependentUpon>MfccForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ModulationSpectrumForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModulationSpectrumForm.Designer.cs">
+      <DependentUpon>ModulationSpectrumForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="SignalsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -80,6 +86,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MfccForm.resx">
       <DependentUpon>MfccForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModulationSpectrumForm.resx">
+      <DependentUpon>ModulationSpectrumForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SignalsForm.resx">
       <DependentUpon>SignalsForm.cs</DependentUpon>

@@ -65,6 +65,7 @@
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
+            this.modulationSpectrumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -250,7 +251,8 @@
             this.recordToolStripMenuItem,
             this.filtersToolStripMenuItem,
             this.mfccToolStripMenuItem,
-            this.lpcToolStripMenuItem});
+            this.lpcToolStripMenuItem,
+            this.modulationSpectrumToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1207, 28);
@@ -388,6 +390,13 @@
             this.label8.TabIndex = 24;
             this.label8.Text = "Spectrum";
             // 
+            // modulationSpectrumToolStripMenuItem
+            // 
+            this.modulationSpectrumToolStripMenuItem.Name = "modulationSpectrumToolStripMenuItem";
+            this.modulationSpectrumToolStripMenuItem.Size = new System.Drawing.Size(165, 24);
+            this.modulationSpectrumToolStripMenuItem.Text = "Mo&dulation Spectrum";
+            this.modulationSpectrumToolStripMenuItem.Click += new System.EventHandler(this.modulationSpectrumToolStripMenuItem_Click);
+            // 
             // SignalsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -467,6 +476,7 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ToolStripMenuItem modulationSpectrumToolStripMenuItem;
     }
 }
 

@@ -74,6 +74,12 @@ namespace NWaves.DemoForms
             lpcForm.ShowDialog();
         }
 
+        private void modulationSpectrumToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var msForm = new ModulationSpectrumForm();
+            msForm.ShowDialog();
+        }
+
         private void OpenSignal()
         {
             var ofd = new OpenFileDialog();

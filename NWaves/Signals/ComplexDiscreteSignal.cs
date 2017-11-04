@@ -181,12 +181,12 @@ namespace NWaves.Signals
         }
         
         /// <summary>
-        /// Create a copy of complex signal
+        /// Method for creating the deep copy of a complex signal
         /// </summary>
         /// <returns>New copied signal</returns>
         public ComplexDiscreteSignal Copy()
         {
-            return new ComplexDiscreteSignal(SamplingRate, FastCopy.EntireArray(Real), FastCopy.EntireArray(Imag));
+            return new ComplexDiscreteSignal(SamplingRate, Real, Imag, allocateNew: true);
         }
 
         /// <summary>
