@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace NWaves.Transforms
 {
@@ -133,81 +132,6 @@ namespace NWaves.Transforms
                 }
                 j += k;
             }
-        }
-
-        /// <summary>
-        /// Magnitude spectrum:
-        /// 
-        ///     spectrum = sqrt(re * re + im * im)
-        /// 
-        /// </summary>
-        /// <param name="real">Array of samples (real parts)</param>
-        /// <param name="fftSize">Size of FFT</param>
-        /// <returns>Left HALF of the magnitude spectrum</returns>
-        /// 
-        /// NOTE: method expects FFT size to be a power of 2
-        ///       however, for the sake of performance, does NOT check FFT size
-        /// 
-        public static double[] MagnitudeSpectrum(double[] real, int fftSize = 512)
-        {
-            var imag = new double[real.Length];
-
-            Fft(real, imag, fftSize);
-
-            var reals = real.Take(fftSize / 2);
-            var imags = imag.Take(fftSize / 2);
-
-            return reals.Zip(imags, (re, im) => Math.Sqrt(re * re + im * im)).ToArray();
-        }
-
-        /// <summary>
-        /// Power spectrum:
-        /// 
-        ///     spectrum =   re * re + im * im
-        /// 
-        /// </summary>
-        /// <param name="real">Array of samples (real parts)</param>
-        /// <param name="fftSize">Size of FFT</param>
-        /// <returns>Left HALF of the magnitude spectrum</returns>
-        /// 
-        /// NOTE: method expects FFT size to be a power of 2
-        ///       however, for the sake of performance, does NOT check FFT size
-        /// 
-        public static double[] PowerSpectrum(double[] real, int fftSize = 512)
-        {
-            var imag = new double[real.Length];
-
-            Fft(real, imag, fftSize);
-
-            var reals = real.Take(fftSize / 2);
-            var imags = imag.Take(fftSize / 2);
-
-            return reals.Zip(imags, (re, im) => (re * re + im * im) / fftSize).ToArray();
-        }
-
-        /// <summary>
-        /// Log power spectrum:
-        /// 
-        ///     spectrum = 20 * log10(re * re + im * im)
-        /// 
-        /// </summary>
-        /// <param name="real">Array of samples (real parts)</param>
-        /// <param name="fftSize">Size of FFT</param>
-        /// 
-        /// NOTE: method expects FFT size to be a power of 2
-        ///       however, for the sake of performance, does NOT check FFT size
-        /// 
-        /// <returns>Left HALF of the log-power spectrum</returns>
-        public static double[] LogPowerSpectrum(double[] real, int fftSize = 512)
-        {
-            var imag = new double[real.Length];
-
-            Fft(real, imag, fftSize);
-
-            var reals = real.Take(fftSize / 2);
-            var imags = imag.Take(fftSize / 2);
-
-            return reals.Zip(imags, (re, im) => 20 * Math.Log10(re * re + im * im + double.Epsilon)).ToArray();
         }
     }
 }

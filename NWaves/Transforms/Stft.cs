@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using NWaves.Transforms.Windows;
 using NWaves.Utils;
 using NWaves.Windows;
 

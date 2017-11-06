@@ -1,5 +1,4 @@
 ﻿using NWaves.Signals;
-using NWaves.Transforms.Windows;
 
 namespace NWaves.Windows
 {

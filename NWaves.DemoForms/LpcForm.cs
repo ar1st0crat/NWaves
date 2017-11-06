@@ -64,9 +64,9 @@ namespace NWaves.DemoForms
             var gain = Math.Sqrt(vector[0]);
             vector[0] = 1.0;
 
-            var lpcFilter = new IirFilter(new[] { gain }, vector, WindowSize);
+            var lpcFilter = new IirFilter(new[] { gain }, vector);
 
-            var lpcSpectrum = lpcFilter.FrequencyResponse.Magnitude.Samples;
+            var lpcSpectrum = lpcFilter.FrequencyResponse(WindowSize).Magnitude.Samples;
 
             for (var i = 0; i < lpcSpectrum.Length; i++)
             {

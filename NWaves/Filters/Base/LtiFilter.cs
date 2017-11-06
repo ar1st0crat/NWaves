@@ -25,11 +25,6 @@ namespace NWaves.Filters.Base
                                                FilteringOptions filteringOptions = FilteringOptions.Auto);
 
         /// <summary>
-        /// The length of truncated infinite impulse reponse
-        /// </summary>
-        public int ImpulseResponseLength { get; set; }
-
-        /// <summary>
         /// Zeros of the transfer function
         /// </summary>
         public abstract ComplexDiscreteSignal Zeros { get; }
@@ -43,19 +38,17 @@ namespace NWaves.Filters.Base
         /// Returns the complex frequency response of a filter.
         /// 
         /// Method calculates the Frequency Response of a filter
-        /// by taking FFT of truncated impulse response.
+        /// by taking FFT of an impulse response (possibly truncated).
         /// </summary>
-        public virtual ComplexDiscreteSignal FrequencyResponse
+        /// <param name="length">Number of frequency response samples</param>
+        public virtual ComplexDiscreteSignal FrequencyResponse(int length = 512)
         {
-            get
-            {
-                var real = ImpulseResponse.Samples;
-                var imag = new double[ImpulseResponseLength];
+            var real = ImpulseResponse(length).Samples;
+            var imag = new double[length];
 
-                Transform.Fft(real, imag, ImpulseResponseLength);
+            Transform.Fft(real, imag, length);
 
-                return new ComplexDiscreteSignal(1, real, imag);
-            }
+            return new ComplexDiscreteSignal(1, real, imag);
         }
 
         /// <summary>
@@ -64,13 +57,14 @@ namespace NWaves.Filters.Base
         /// Method calculates the Impulse Response of a filter
         /// by feeding the unit impulse into it.
         /// </summary>
-        public virtual DiscreteSignal ImpulseResponse
+        /// <param name="length">
+        /// The length of an impulse reponse.
+        /// If the filter is IIR, then it's the length of truncated infinite impulse reponse.
+        /// </param>
+        public virtual DiscreteSignal ImpulseResponse(int length = 512)
         {
-            get
-            {
-                var impulse = new DiscreteSignal(1, ImpulseResponseLength) { [0] = 1.0 };
-                return ApplyTo(impulse);
-            }
+            var impulse = new DiscreteSignal(1, length) { [0] = 1.0 };
+            return ApplyTo(impulse);
         }
     }
 }

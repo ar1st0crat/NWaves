@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using NWaves.Filters.BiQuad;
 
 namespace NWaves.Filters
 {
@@ -8,6 +10,7 @@ namespace NWaves.Filters
     ///     - Fourier (rectangular) filterbanks
     ///     - Mel (triangular) filterbanks
     ///     - Bark (triangular) filterbanks
+    ///     - Critical bands (Bark bandpass filterbanks)
     ///     - ERB filterbanks
     ///     - Equal Loudness Curves
     /// 
@@ -59,48 +62,73 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Method creates triangular mel filterbanks of constant height = 1
+        /// General method returning universal triangular filterbanks based on positions of center frequencies
         /// </summary>
-        /// <param name="melFilterCount">Number of mel filterbanks to create</param>
-        /// <param name="fftSize">Assumed size of FFT</param>
-        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="bankCount"></param>
+        /// <param name="length"></param>
+        /// <param name="frequencyPoints"></param>
         /// <returns></returns>
-        public static double[][] Mel(int melFilterCount, int fftSize, int samplingRate)
+        public static double[][] Triangular(int bankCount, int length, int[] frequencyPoints)
         {
-            var melFilterBanks = new double[melFilterCount][];
+            var filterBanks = new double[bankCount][];
+            
+            var leftSample = frequencyPoints[0];
+            var centerSample = frequencyPoints[1];
 
-            var frequencyResolution = HerzToMel(samplingRate / 2.0) / (melFilterCount + 1);
-
-            var leftSample = 0;
-
-            var melFrequency = frequencyResolution;
-            var centerSample = (int)Math.Floor((fftSize + 1) * MelToHerz(melFrequency) / samplingRate);
-
-            for (var i = 0; i < melFilterCount; i++)
+            for (var i = 0; i < bankCount; i++)
             {
-                melFrequency += frequencyResolution;
+                var rightSample = frequencyPoints[i + 2];
 
-                var rightSample = (int)Math.Floor((fftSize + 1) * MelToHerz(melFrequency) / samplingRate);
-
-                melFilterBanks[i] = new double[fftSize / 2];
+                filterBanks[i] = new double[length];
 
                 for (var j = leftSample; j < centerSample; j++)
                 {
-                    melFilterBanks[i][j] = (double)(j - leftSample) / (centerSample - leftSample);
+                    filterBanks[i][j] = (double)(j - leftSample) / (centerSample - leftSample);
                 }
                 for (var j = centerSample; j < rightSample; j++)
                 {
-                    melFilterBanks[i][j] = (double)(rightSample - j) / (rightSample - centerSample);
+                    filterBanks[i][j] = (double)(rightSample - j) / (rightSample - centerSample);
                 }
 
                 leftSample = centerSample;
                 centerSample = rightSample;
             }
 
-            return melFilterBanks;
+            return filterBanks;
         }
 
+        /// <summary>
+        /// Method creates triangular overlapping mel filterbanks of constant height = 1
+        /// </summary>
+        /// <param name="melFilterCount">Number of mel filterbanks to create</param>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="lowFreq">Lower bound of the frequency range</param>
+        /// <param name="highFreq">Upper bound of the frequency range</param>
+        /// <returns>Array of mel filterbanks</returns>
+        public static double[][] Mel(int melFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0)
+        {
+            if (lowFreq < 0)
+            {
+                lowFreq = 0;
+            }
+            if (highFreq <= lowFreq)
+            {
+                highFreq = samplingRate / 2.0;
+            }
 
+            var herzResolution = (double)samplingRate / fftSize;
+            var melResolution = (HerzToMel(highFreq) - HerzToMel(lowFreq)) / (melFilterCount + 1);
+
+            var startingFrequency = HerzToMel(lowFreq);
+            var frequencyPositions = 
+                Enumerable.Range(0, melFilterCount + 2)
+                          .Select(i => (int)Math.Floor((MelToHerz(startingFrequency + i * melResolution)) / herzResolution))
+                          .ToArray();
+
+            return Triangular(melFilterCount, fftSize / 2, frequencyPositions);
+        }
+        
         /// <summary>
         /// Method converts herz frequency to corresponding bark frequency
         /// (according to Traunmüller (1990))
@@ -124,22 +152,55 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public const int MaxBarkFilters = 25;
-
-        /// <summary>
-        /// 
+        /// Method creates triangular overlapping bark filterbanks of constant height = 1
         /// </summary>
         /// <param name="barkFilterCount">Number of bark filterbanks to create</param>
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
-        /// <returns></returns>
-        public static double[][] Bark(int barkFilterCount, int fftSize, int samplingRate)
+        /// <param name="lowFreq">Lower bound of the frequency range</param>
+        /// <param name="highFreq">Upper bound of the frequency range</param>
+        /// <returns>Array of bark filterbanks</returns>
+        public static double[][] Bark(int barkFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0)
         {
-            if (barkFilterCount > MaxBarkFilters)
+            if (lowFreq < 0)
             {
-                throw new ArgumentException(string.Format("Maximum {0} bark filters are supported", MaxBarkFilters));
+                lowFreq = 0;
+            }
+            if (highFreq <= lowFreq)
+            {
+                highFreq = samplingRate / 2.0;
+            }
+
+            var herzResolution = (double)samplingRate / fftSize;
+            var melResolution = (HerzToBark(highFreq) - HerzToBark(lowFreq)) / (barkFilterCount + 1);
+
+            var startingFrequency = HerzToBark(lowFreq);
+            var frequencyPositions =
+                Enumerable.Range(0, barkFilterCount + 2)
+                          .Select(i => (int)Math.Floor((BarkToHerz(startingFrequency + i * melResolution)) / herzResolution))
+                          .ToArray();
+
+            return Triangular(barkFilterCount, fftSize / 2, frequencyPositions);
+        }
+
+        /// <summary>
+        /// Method creates bandpass overlapping critical band filters
+        /// </summary>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="filterQ">Q-value of each filterbank</param>
+        /// <param name="lowFreq">Lower bound of the frequency range</param>
+        /// <param name="highFreq">Upper bound of the frequency range</param>
+        /// <returns>Array of mel filterbanks</returns>
+        public static double[][] CriticalBands(int fftSize, int samplingRate, double filterQ = -1, double lowFreq = 0, double highFreq = 0)
+        {
+            if (lowFreq < 0)
+            {
+                lowFreq = 0;
+            }
+            if (highFreq <= lowFreq)
+            {
+                highFreq = samplingRate / 2.0;
             }
 
             double[] edgeFrequencies = { 0,    100,  200,  300,  400,  510,  630,  770,  920,  1080, 1270,  1480,  1720,
@@ -148,27 +209,43 @@ namespace NWaves.Filters
             double[] centerFrequencies = { 50,   150,  250,  350,  450,  570,  700,  840,  1000, 1170, 1370,  1600,
                                            1850, 2150, 2500, 2900, 3400, 4000, 4800, 5800, 7000, 8500, 10500, 13500, 17500 };
 
+            var startIndex = 0;
+            for (var i = 0; i < centerFrequencies.Length; i++)
+            {
+                if (centerFrequencies[i] >= lowFreq)
+                {
+                    startIndex = i;
+                    break;
+                }
+            }
+            var endIndex = 0;
+            for (var i = centerFrequencies.Length - 1; i >= 0; i--)
+            {
+                if (centerFrequencies[i] <= highFreq)
+                {
+                    endIndex = i;
+                    break;
+                }
+            }
+
+            var barkFilterCount = endIndex - startIndex;
             var barkFilterBanks = new double[barkFilterCount][];
 
-            var leftSample = 0;
-            
+            var halfLn2 = Math.Log(2) / 2;
+
             for (var i = 0; i < barkFilterCount; i++)
             {
-                barkFilterBanks[i] = new double[fftSize / 2];
-
-                var centerSample = (int)Math.Floor((fftSize + 1) * centerFrequencies[i] / samplingRate);
-                var rightSample = (int)Math.Floor((fftSize + 1) * edgeFrequencies[i + 1] / samplingRate);
-
-                for (var j = leftSample; j < centerSample; j++)
+                var freq = centerFrequencies[i + startIndex] / samplingRate;
+                var q = filterQ;
+                if (filterQ <= 0)
                 {
-                    barkFilterBanks[i][j] = (double)(j - leftSample) / (centerSample - leftSample);
+                    var omega = 2 * Math.PI * freq;
+                    var bw = (edgeFrequencies[i + startIndex + 1] - edgeFrequencies[i + startIndex]) / samplingRate * 2 * Math.PI;
+                    q = 1 / (2 * Math.Sinh(halfLn2 * bw * omega / Math.Sin(omega)));
                 }
-                for (var j = centerSample; j < rightSample; j++)
-                {
-                    barkFilterBanks[i][j] = (double)(rightSample - j) / (rightSample - centerSample);
-                }
-
-                leftSample = rightSample;
+                var filter = new BandPassFilter(freq, q);
+                var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
+                barkFilterBanks[i] = filterResponse.Samples.Take(fftSize / 2).ToArray();
             }
 
             return barkFilterBanks;

@@ -26,7 +26,6 @@ namespace NWaves.Filters.Base
         /// </summary>
         public FirFilter()
         {
-            ImpulseResponseLength = DefaultImpulseResponseLength;
         }
 
         /// <summary>
@@ -37,7 +36,6 @@ namespace NWaves.Filters.Base
         public FirFilter(IEnumerable<double> kernel, int impulseResponseLength = DefaultImpulseResponseLength)
         {
             Kernel = kernel.ToArray();
-            ImpulseResponseLength = impulseResponseLength;
         }
 
         /// <summary>
@@ -138,25 +136,25 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Frequency response of an FIR filter is the FT of its impulse response
         /// </summary>
-        public override ComplexDiscreteSignal FrequencyResponse
+        public override ComplexDiscreteSignal FrequencyResponse(int length = 512)
         {
-            get
-            {
-                var real = new double[ImpulseResponseLength];
-                var imag = new double[ImpulseResponseLength];
+            var real = new double[length];
+            var imag = new double[length];
 
-                Buffer.BlockCopy(Kernel, 0, real, 0, Kernel.Length * 8);
+            Buffer.BlockCopy(Kernel, 0, real, 0, Kernel.Length * 8);
 
-                Transform.Fft(real, imag, ImpulseResponseLength);
+            Transform.Fft(real, imag, length);
 
-                return new ComplexDiscreteSignal(1, real, imag);
-            }
+            return new ComplexDiscreteSignal(1, real, imag);
         }
 
         /// <summary>
         /// Impulse response of an FIR filter is its kernel
         /// </summary>
-        public override DiscreteSignal ImpulseResponse => new DiscreteSignal(1, Kernel);
+        public override DiscreteSignal ImpulseResponse(int length = 512)
+        {
+            return new DiscreteSignal(1, Kernel);
+        } 
 
         /// <summary>
         /// Zeros of the transfer function

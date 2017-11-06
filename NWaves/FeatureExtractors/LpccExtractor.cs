@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Signals;
-using NWaves.Transforms.Windows;
+using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors
 {
@@ -26,17 +26,24 @@ namespace NWaves.FeatureExtractors
         private readonly LpcExtractor _lpcExtractor;
 
         /// <summary>
+        /// Coefficients of the liftering window
+        /// </summary>
+        private readonly double[] _lifterCoeffs;
+
+        /// <summary>
         /// Main constructor
         /// </summary>
         /// <param name="featureCount"></param>
         /// <param name="windowSize"></param>
         /// <param name="hopSize"></param>
+        /// <param name="lifterSize"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
-        public LpccExtractor(int featureCount, int windowSize = 512, int hopSize = 256,
+        public LpccExtractor(int featureCount, int windowSize = 512, int hopSize = 256, int lifterSize = 22,
                             double preEmphasis = 0.0, WindowTypes window = WindowTypes.Rectangular)
         {
             FeatureCount = featureCount;
+            _lifterCoeffs = Window.Liftering(featureCount, lifterSize);
 
             _lpcExtractor = new LpcExtractor(featureCount, windowSize, hopSize, preEmphasis, window);
         }
@@ -64,17 +71,21 @@ namespace NWaves.FeatureExtractors
             var lpc = lp.Features;
             var lpcc = new double[FeatureCount];
 
-            lpcc[0] = Math.Log(Math.Sqrt(lpc[0]));
-            
+            var gain = lpc[0];
+            lpcc[0] = Math.Log(gain);
+
             for (var n = 1; n < FeatureCount; n++)
             {
-                var acc = lpc[n];
+                var acc = 0.0;
                 for (var k = 1; k < n; k++)
                 {
                     acc += k * lpcc[k] * lpc[n - k];
                 }
-                lpcc[n] = acc / n;
+                lpcc[n] = -lpc[n] - acc / n;
             }
+
+            // (optional) liftering
+            lpcc.ApplyWindow(_lifterCoeffs);
 
             return new FeatureVector
             {

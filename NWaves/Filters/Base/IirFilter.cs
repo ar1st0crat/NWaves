@@ -49,7 +49,6 @@ namespace NWaves.Filters.Base
         /// </summary>
         public IirFilter()
         {
-            ImpulseResponseLength = DefaultImpulseResponseLength;
         }
 
         /// <summary>
@@ -57,14 +56,10 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="b">TF numerator coefficients</param>
         /// <param name="a">TF denominator coefficients</param>
-        /// <param name="impulseResponseLength">Length of truncated impulse response</param>
-        public IirFilter(IEnumerable<double> b, 
-                         IEnumerable<double> a,
-                         int impulseResponseLength = DefaultImpulseResponseLength)
+        public IirFilter(IEnumerable<double> b, IEnumerable<double> a)
         {
             B = b.ToArray();
             A = a.ToArray();
-            ImpulseResponseLength = impulseResponseLength;
         }
 
         /// <summary>
@@ -88,12 +83,12 @@ namespace NWaves.Filters.Base
                 case FilteringOptions.OverlapAdd:
                 {
                     var fftSize = MathUtils.NextPowerOfTwo(4 * DefaultImpulseResponseLength);
-                    return Operation.OverlapAdd(signal, ImpulseResponse, fftSize);
+                    return Operation.OverlapAdd(signal, ImpulseResponse(), fftSize);
                 }
                 case FilteringOptions.OverlapSave:
                 {
                     var fftSize = MathUtils.NextPowerOfTwo(4 * DefaultImpulseResponseLength);
-                    return Operation.OverlapSave(signal, ImpulseResponse, fftSize);
+                    return Operation.OverlapSave(signal, ImpulseResponse(), fftSize);
                 }
                 default:
                 {

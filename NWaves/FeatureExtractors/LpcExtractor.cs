@@ -4,7 +4,6 @@ using NWaves.FeatureExtractors.Base;
 using NWaves.Filters;
 using NWaves.Operations;
 using NWaves.Signals;
-using NWaves.Transforms.Windows;
 using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors

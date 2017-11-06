@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using NWaves.Transforms.Windows;
 
 namespace NWaves.Windows
 {
@@ -27,6 +26,9 @@ namespace NWaves.Windows
 
                 case WindowTypes.Hann:
                     return Hann(length);
+
+                case WindowTypes.Liftering:
+                    return Liftering(length);
 
                 default:
                     return Rectangular(length);
@@ -92,6 +94,27 @@ namespace NWaves.Windows
             for (var n = 0; n < window.Length; n++)
             {
                 window[n] = 0.5 * (1 - Math.Cos(2 * Math.PI * n / N));
+            }
+
+            return window;
+        }
+
+        /// <summary>
+        /// Simple cepstrum liftering
+        /// </summary>
+        /// <param name="length">Length of the window</param>
+        /// <param name="l">Denominator in liftering formula</param>
+        public static double[] Liftering(int length, int l = 22)
+        {
+            if (l <= 0)
+            {
+                return Rectangular(length);
+            }
+
+            var window = new double[length];
+            for (var i = 0; i < length; i++)
+            {
+                window[i] = 1 + l * Math.Sin(Math.PI * i / l) / 2;
             }
 
             return window;

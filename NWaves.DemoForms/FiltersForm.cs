@@ -541,7 +541,7 @@ namespace NWaves.DemoForms
 
             var offset = magnitudeResponsePanel.Height - 2;
             
-            var magnitudeResponse = _filter.FrequencyResponse.Magnitude;
+            var magnitudeResponse = _filter.FrequencyResponse().Magnitude;
 
             var i = 0;
             var x = 0;
@@ -560,7 +560,7 @@ namespace NWaves.DemoForms
             g = phaseResponsePanel.CreateGraphics();
             g.Clear(Color.White);
 
-            var phaseResponse = _filter.FrequencyResponse.Phase;
+            var phaseResponse = _filter.FrequencyResponse().Phase;
 
             offset = phaseResponsePanel.Height / 2;
 

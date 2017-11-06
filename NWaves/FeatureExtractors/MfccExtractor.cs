@@ -5,7 +5,6 @@ using NWaves.FeatureExtractors.Base;
 using NWaves.Filters;
 using NWaves.Signals;
 using NWaves.Transforms;
-using NWaves.Transforms.Windows;
 using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors
@@ -29,7 +28,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Mel Filterbanks matrix of dimension [melFilterbanks * (fftSize/2 + 1)]
         /// </summary>
-        public double[][] MelFilterBanks { get; private set; }
+        public double[][] MelFilterBanks { get; }
 
         /// <summary>
         /// Size of FFT
@@ -42,9 +41,9 @@ namespace NWaves.FeatureExtractors
         private readonly int _hopSize;
 
         /// <summary>
-        /// Number of liftering coefficients
+        /// Coefficients of the liftering window
         /// </summary>
-        private readonly int _lifterSize;
+        private readonly double[] _lifterCoeffs;
 
         /// <summary>
         /// Type of the window function
@@ -52,7 +51,7 @@ namespace NWaves.FeatureExtractors
         private readonly WindowTypes _window;
 
         /// <summary>
-        /// Samples of the window
+        /// Samples of the weighting window
         /// </summary>
         private readonly double[] _windowSamples;
 
@@ -67,29 +66,31 @@ namespace NWaves.FeatureExtractors
         /// <param name="featureCount"></param>
         /// <param name="samplingRate"></param>
         /// <param name="melFilterbanks"></param>
+        /// <param name="lowFreq"></param>
+        /// <param name="highFreq"></param>
         /// <param name="fftSize"></param>
         /// <param name="hopSize"></param>
         /// <param name="lifterSize"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
-        public MfccExtractor(int featureCount, int samplingRate, int melFilterbanks = 20,
+        public MfccExtractor(int featureCount, int samplingRate,
+                             int melFilterbanks = 20, double lowFreq = 0, double highFreq = 0,
                              int fftSize = 512, int hopSize = 256, int lifterSize = 22,
                              double preEmphasis = 0.0, WindowTypes window = WindowTypes.Hamming)
         {
             FeatureCount = featureCount;
             _fftSize = fftSize;
             _hopSize = hopSize;
-            _lifterSize = lifterSize;
-
             _window = window;
-            _windowSamples = Window.OfType(window, _fftSize);
+            _windowSamples = Window.OfType(window, fftSize);
+            _lifterCoeffs = Window.Liftering(featureCount, lifterSize);
 
             if (preEmphasis > 0.0)
             {
                 _preemphasisFilter = new PreEmphasisFilter(preEmphasis);
             }
 
-            MelFilterBanks = FilterBanks.Mel(melFilterbanks, fftSize, samplingRate);
+            MelFilterBanks = FilterBanks.Mel(melFilterbanks, fftSize, samplingRate, lowFreq, highFreq);
         }
 
         /// <summary>
@@ -154,9 +155,9 @@ namespace NWaves.FeatureExtractors
                 dct.Dct2(logMelSpectrum, mfccs);
 
 
-                // 5) optional liftering
+                // 5) (optional) liftering
 
-                Lifter(mfccs, _lifterSize);
+                mfccs.ApplyWindow(_lifterCoeffs);
 
 
                 // add mfcc vector to output sequence
@@ -190,24 +191,6 @@ namespace NWaves.FeatureExtractors
                 }
 
                 logMelSpectrum[i] = Math.Log10(logMelSpectrum[i] + double.Epsilon);
-            }
-        }
-
-        /// <summary>
-        /// Simple cepstrum liftering
-        /// </summary>
-        /// <param name="cepstrum">Cepstrum to be liftered</param>
-        /// <param name="l">Denominator in liftering formula</param>
-        private static void Lifter(double[] cepstrum, int l = 22)
-        {
-            if (l <= 0)
-            {
-                return;
-            }
-
-            for (var i = 0; i < cepstrum.Length; i++)
-            {
-                cepstrum[i] *= (1 + l * Math.Sin(Math.PI * i / l) / 2);
             }
         }
     }
