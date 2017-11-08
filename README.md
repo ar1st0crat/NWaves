@@ -8,28 +8,29 @@ Already available:
 
 - [x] major DSP transforms (FFT, DCT, STFT)
 - [x] basic LTI digital filters (FIR, IIR, moving average (non-recursive and recursive), pre-emphasis)
+- [x] basic operations and filtering (convolution/deconvolution, cross-correlation, overlap-add, overlap-save)
+- [x] simple filter design & analysis (zeros and poles, window method)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
 - [x] median filter
-- [x] basic operations and filtering (convolution/deconvolution, cross-correlation, overlap-add, overlap-save)
-- [x] windowing functions (Hamming, Blackman, Hann)
-- [x] feature extraction (MFCC, LPC, LPCC)
+- [x] windowing functions (Hamming, Blackman, Hann, cepstral liftering)
+- [x] psychoacoustic filter banks (Mel, Bark, ERB, Critical Bands), Equal Loudness Curves
+- [x] feature extraction (MFCC, LPC, LPCC, modulation spectra)
 - [x] sound synthesis and signal builders (sinusoids, sawtooth)
 - [x] simple audio playback and recording (Windows only)
 
 Planned:
 
-- [ ] more transforms (CQT, DWT, Mellin, LogPolar, Haar, Hadamard)
+- [ ] more transforms (CQT, DWT, Mellin, Hilbert, Haar, Hadamard)
 - [ ] more operations (resampling, spectral subtraction, adaptive filtering)
-- [ ] more feature extraction (PNCC, phonological features)
+- [ ] more feature extraction (PNCC, MPEG7 descriptors and lots of others)
 - [ ] more sound synthesis and signal builders (noises, triangular, periodic pulse, ADSR, etc.)
-- [ ] filter design
 - [ ] sound effects (WahWah, Reverb, Vibrato, Chorus, Flanger, PitchShift, etc.)
 
 
 ## Philosophy of NWaves
 
-NWaves was initially intended for teaching basics of DSP and sound programming. All algorithms are coded in C#. Perhaps, in the future I'll work on optimized versions and add them to the project separately.
+NWaves was initially intended for research and teaching basics of DSP and sound programming. All algorithms are coded in C# and designed mostly for offline processing. Perhaps, in the future I'll work on optimized versions and add them to the project separately.
 
 In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOD-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in static classes, so that you wouldn't get lost in object-oriented labyrinths. Although you may suddenly find a little bit of fluent syntax (e.g., SignalBuilders) and some Strategy patterns (e.g. FeatureExtractor) in the project.
 

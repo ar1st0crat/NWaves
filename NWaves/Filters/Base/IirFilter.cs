@@ -45,6 +45,11 @@ namespace NWaves.Filters.Base
         public const int FilterSizeForOptimizedProcessing = 64;
 
         /// <summary>
+        /// Default length of truncated impulse response
+        /// </summary>
+        public const int DefaultImpulseResponseLength = 512;
+
+        /// <summary>
         /// Parameterless constructor
         /// </summary>
         public IirFilter()

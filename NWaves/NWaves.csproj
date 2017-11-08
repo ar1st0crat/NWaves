@@ -71,7 +71,8 @@
     <Compile Include="Filters\BiQuad\NotchFilter.cs" />
     <Compile Include="Filters\BiQuad\PeakFilter.cs" />
     <Compile Include="Filters\ButterworthFilter.cs" />
-    <Compile Include="Filters\FilterBanks.cs" />
+    <Compile Include="Filters\Fda\FilterDesign.cs" />
+    <Compile Include="Filters\Fda\FilterBanks.cs" />
     <Compile Include="Filters\MedianFilter.cs" />
     <Compile Include="Filters\MovingAverageFilter.cs" />
     <Compile Include="Filters\MovingAverageRecursiveFilter.cs" />

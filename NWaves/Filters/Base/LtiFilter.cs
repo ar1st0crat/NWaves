@@ -11,11 +11,6 @@ namespace NWaves.Filters.Base
     public abstract class LtiFilter : IFilter
     {
         /// <summary>
-        /// Default length of truncated impulse reponse
-        /// </summary>
-        protected const int DefaultImpulseResponseLength = 512;
-        
-        /// <summary>
         /// The filtering algorithm that should be implemented by particular subclass
         /// </summary>
         /// <param name="signal">Signal for filtering</param>

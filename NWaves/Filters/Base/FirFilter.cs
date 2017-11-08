@@ -32,8 +32,7 @@ namespace NWaves.Filters.Base
         /// 
         /// </summary>
         /// <param name="kernel"></param>
-        /// <param name="impulseResponseLength"></param>
-        public FirFilter(IEnumerable<double> kernel, int impulseResponseLength = DefaultImpulseResponseLength)
+        public FirFilter(IEnumerable<double> kernel)
         {
             Kernel = kernel.ToArray();
         }

@@ -16,7 +16,7 @@ namespace NWaves.Tests.FilterTests
         [Test]
         public void TestImpulseResponse()
         {
-            AssertFilterOutput(_filter.ImpulseResponse);
+            AssertFilterOutput(_filter.ImpulseResponse());
         }
 
         [Test]

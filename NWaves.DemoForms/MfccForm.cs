@@ -40,8 +40,8 @@ namespace NWaves.DemoForms
                                                   fftSize: 512,
                                                   hopSize: 256,
                                                   melFilterbanks: 20, 
-                                                  //lowFreq: 200,
-                                                  //highFreq: 4200,
+                                                  lowFreq: 100,
+                                                  //highFreq: 3200,
                                                   lifterSize: 22,
                                                   preEmphasis: 0.95,
                                                   window: WindowTypes.Hamming);
@@ -51,7 +51,7 @@ namespace NWaves.DemoForms
             FillFeaturesList(_mfccVectors, mfccExtractor.FeatureDescriptions);
             mfccListView.Items[0].Selected = true;
 
-            PlotMelFilterbanks(mfccExtractor.MelFilterBanks);
+            PlotMelFilterbank(mfccExtractor.MelFilterBank);
             PlotMfcc(_mfccVectors[0].Features);
         }
 
@@ -81,27 +81,27 @@ namespace NWaves.DemoForms
             PlotMfcc(_mfccVectors[e.ItemIndex].Features);
         }
 
-        private void PlotMelFilterbanks(double[][] filterbanks)
+        private void PlotMelFilterbank(double[][] filterbank)
         {
-            var g = melFilterBanksPanel.CreateGraphics();
+            var g = melFilterBankPanel.CreateGraphics();
             g.Clear(Color.White);
 
             var rand = new Random();
 
-            var offset = melFilterBanksPanel.Height - 20;
+            var offset = melFilterBankPanel.Height - 20;
 
-            for (var j = 0; j < filterbanks.Length; j++)
+            for (var j = 0; j < filterbank.Length; j++)
             {
                 var pen = new Pen(Color.FromArgb(rand.Next() % 255, rand.Next() % 255, rand.Next() % 255));
 
                 var i = 1;
                 var x = 2;
 
-                while (i < filterbanks[j].Length)
+                while (i < filterbank[j].Length)
                 {
                     g.DrawLine(pen, 
-                        x-2, (float)-filterbanks[j][i-1] * 100 + offset, 
-                        x,   (float)-filterbanks[j][i] * 100 + offset);
+                        x-2, (float)-filterbank[j][i-1] * 100 + offset, 
+                        x,   (float)-filterbank[j][i] * 100 + offset);
                     x += 2;
                     i++;
                 }

@@ -31,7 +31,7 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.melFilterBanksPanel = new System.Windows.Forms.Panel();
+            this.melFilterBankPanel = new System.Windows.Forms.Panel();
             this.mfccPanel = new System.Windows.Forms.Panel();
             this.mfccListView = new System.Windows.Forms.ListView();
             this.menuStrip1.SuspendLayout();
@@ -63,13 +63,13 @@
             this.openToolStripMenuItem.Text = "&Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
-            // melFilterBanksPanel
+            // melFilterBankPanel
             // 
-            this.melFilterBanksPanel.BackColor = System.Drawing.Color.White;
-            this.melFilterBanksPanel.Location = new System.Drawing.Point(12, 404);
-            this.melFilterBanksPanel.Name = "melFilterBanksPanel";
-            this.melFilterBanksPanel.Size = new System.Drawing.Size(588, 160);
-            this.melFilterBanksPanel.TabIndex = 1;
+            this.melFilterBankPanel.BackColor = System.Drawing.Color.White;
+            this.melFilterBankPanel.Location = new System.Drawing.Point(12, 404);
+            this.melFilterBankPanel.Name = "melFilterBankPanel";
+            this.melFilterBankPanel.Size = new System.Drawing.Size(588, 160);
+            this.melFilterBankPanel.TabIndex = 1;
             // 
             // mfccPanel
             // 
@@ -98,7 +98,7 @@
             this.ClientSize = new System.Drawing.Size(1029, 576);
             this.Controls.Add(this.mfccListView);
             this.Controls.Add(this.mfccPanel);
-            this.Controls.Add(this.melFilterBanksPanel);
+            this.Controls.Add(this.melFilterBankPanel);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MfccForm";
@@ -115,7 +115,7 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
-        private System.Windows.Forms.Panel melFilterBanksPanel;
+        private System.Windows.Forms.Panel melFilterBankPanel;
         private System.Windows.Forms.Panel mfccPanel;
         private System.Windows.Forms.ListView mfccListView;
     }
