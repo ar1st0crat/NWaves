@@ -186,7 +186,7 @@ namespace NWaves.FeatureExtractors
                 }
             }
 
-            var vector = new double[_envelopes.Length * _modulationFftSize / 2];
+            var vector = new double[_envelopes.Length * (_modulationFftSize / 2 + 1)];
             var offset = 0;
 
             i = 0;
@@ -262,7 +262,7 @@ namespace NWaves.FeatureExtractors
         public double[][] MakeSpectrum2D(IEnumerable<FeatureVector> featureVectors, int idx = 0)
         {
             var spectrum = new double[_filterBank.Length][];
-            var specSize = _modulationFftSize / 2;
+            var specSize = _modulationFftSize / 2 + 1;
 
             var offset = 0;
             for (var i = 0; i < spectrum.Length; i++)
@@ -285,7 +285,7 @@ namespace NWaves.FeatureExtractors
             var resolution = (double)_samplingRate / _hopSize / _modulationHopSize;
             var freqAtHz = (int)(herz / resolution);
 
-            var specSize = _modulationFftSize / 2;
+            var specSize = _modulationFftSize / 2 + 1;
 
             var freqVectors = new List<FeatureVector>();
             foreach (var vector in featureVectors)

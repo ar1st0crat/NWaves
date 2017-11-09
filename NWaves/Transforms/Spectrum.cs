@@ -113,8 +113,8 @@ namespace NWaves.Transforms
 
             Fft(samples, imag, fftSize);
 
-            realSpectrum = FastCopy.ArrayFragment(samples, fftSize / 2);
-            imagSpectrum = FastCopy.ArrayFragment(imag, fftSize / 2);
+            realSpectrum = FastCopy.ArrayFragment(samples, fftSize / 2 + 1);
+            imagSpectrum = FastCopy.ArrayFragment(imag, fftSize / 2 + 1);
         }
     }
 }

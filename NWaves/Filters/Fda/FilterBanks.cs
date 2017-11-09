@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
+using NWaves.Filters.Base;
 using NWaves.Filters.BiQuad;
+using NWaves.Signals;
+using NWaves.Transforms;
 
 namespace NWaves.Filters.Fda
 {
@@ -266,7 +269,7 @@ namespace NWaves.Filters.Fda
 
         /// <summary>
         /// Method creates rectangular (in fact closer to trapezoidal) 
-        /// bandpass (minimally overlapping) critical band filters.
+        /// bandpass (not very much overlapping) critical band filters.
         /// </summary>
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
@@ -286,9 +289,21 @@ namespace NWaves.Filters.Fda
 
             for (var i = 0; i < filterCount; i++)
             {
-                var filter = FilterDesign.DesignFirFilter(fftSize - 1, filterBank[i]);
+                var filter = FilterDesign.DesignFirFilter(fftSize / 4 - 1, filterBank[i]);
                 var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
                 filterBank[i] = filterResponse.Samples.Take(fftSize / 2 + 1).ToArray();
+
+                // normalize gain to 1.0
+
+                var maxAmp = 0.0;
+                for (var j = 0; j < filterBank[i].Length; j++)
+                {
+                    if (filterBank[i][j] > maxAmp) maxAmp = filterBank[i][j];
+                }
+                for (var j = 0; j < filterBank[i].Length; j++)
+                {
+                    filterBank[i][j] /= maxAmp;
+                }
             }
 
             return filterBank;
@@ -296,14 +311,16 @@ namespace NWaves.Filters.Fda
 
         /// <summary>
         /// Method creates overlapping ERB filters
+        /// (ported from Malcolm Slaney's MATLAB code).
         /// </summary>
         /// <param name="erbFilterCount">Number of ERB filters</param>
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate</param>
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
+        /// <param name="normalizeGain">True if gain should be normalized; false if all filters should have same height 1.0</param>
         /// <returns>Array of ERB filters</returns>
-        public static double[][] Erb(int erbFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0)
+        public static double[][] Erb(int erbFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool normalizeGain = true)
         {
             if (lowFreq < 0)
             {
@@ -320,8 +337,7 @@ namespace NWaves.Filters.Fda
             const int order = 1;
 
             var t = 1.0 / samplingRate;
-            var t4 = Math.Pow(t, 4);
-
+            
             var frequencies = new double[erbFilterCount];
             for (var i = 1; i <= erbFilterCount; i++)
             {
@@ -329,67 +345,98 @@ namespace NWaves.Filters.Fda
                     -bw + Math.Exp(i * (-Math.Log(highFreq + bw) + Math.Log(lowFreq + bw)) / erbFilterCount) * (highFreq + bw);
             }
 
-            var erbFilterBanks = new double[erbFilterCount][];
-
-            var sqrP = Math.Sqrt(3 + Math.Pow(2, 1.5));
-            var sqrM = Math.Sqrt(3 - Math.Pow(2, 1.5));
-
             var ucirc = new Complex[fftSize / 2 + 1];
-            for (var i = 0; i < fftSize / 2 + 1; i++)
+            for (var i = 0; i < ucirc.Length; i++)
             {
                 ucirc[i] = Complex.Exp((2 * Complex.ImaginaryOne * i * Math.PI) / fftSize);
             }
 
+            var rootPos = Math.Sqrt(3 + Math.Pow(2, 1.5));
+            var rootNeg = Math.Sqrt(3 - Math.Pow(2, 1.5));
+
+            
+            var erbFilterBank = new double[erbFilterCount][];
+            
             for (var i = 0; i < erbFilterCount; i++)
             {
                 var cf = frequencies[i];
                 var erb = Math.Pow(Math.Pow(cf / earQ, order) + Math.Pow(minBw, order), 1.0 / order);
                 var b = 1.019 * 2 * Math.PI * erb;
 
-                var theta = 2 * Math.PI * cf * t;
-                var pole = Math.Exp(-b * t) * Complex.Exp(Complex.ImaginaryOne * theta);
-                
-                var sinCf = Math.Sin(2 * cf * Math.PI * t);
-                var cosCf = Math.Cos(2 * cf * Math.PI * t);
-                var gtCos = 2 * t * cosCf / Math.Exp(b * t);
-                var gtSin = t * sinCf / Math.Exp(b * t);
+                var theta = 2 * cf * Math.PI * t;
+                var itheta = Complex.Exp(2 * Complex.ImaginaryOne * theta);
 
-                var a11 = -(gtCos + 2 * sqrP * gtSin) / 2;
-                var a12 = -(gtCos - 2 * sqrP * gtSin) / 2;
-                var a13 = -(gtCos + 2 * sqrM * gtSin) / 2;
-                var a14 = -(gtCos - 2 * sqrM * gtSin) / 2;
+                var a0 = t;
+                var a2 = 0.0;
+                var b0 = 1.0;
+                var b1 = -2 * Math.Cos(theta) / Math.Exp(b * t);
+                var b2 = Math.Exp(-2 * b * t);
 
-                var zeros = new [] { -a11 / t, -a12 / t, -a13 / t, -a14 / t };
+                var common = -t * Math.Exp(-b * t);
 
-                var g1 = -2 * Complex.Exp(4 * Complex.ImaginaryOne * cf * Math.PI * t) * t;
-                var g2 = 2 * Complex.Exp(-(b * t) + 2 * Complex.ImaginaryOne * cf * Math.PI * t) * t;
-                var cxExp = Complex.Exp(4 * Complex.ImaginaryOne * cf * Math.PI * t);
+                var k1 = Math.Cos(theta) + rootPos * Math.Sin(theta);
+                var k2 = Math.Cos(theta) - rootPos * Math.Sin(theta);
+                var k3 = Math.Cos(theta) + rootNeg * Math.Sin(theta);
+                var k4 = Math.Cos(theta) - rootNeg * Math.Sin(theta);
 
-                var filterGain = Complex.Abs(
-                  (g1 + g2 * (cosCf - sqrM * sinCf)) *
-                  (g1 + g2 * (cosCf + sqrM * sinCf)) *
-                  (g1 + g2 * (cosCf - sqrP * sinCf)) *
-                  (g1 + g2 * (cosCf + sqrP * sinCf)) /
-                  Complex.Pow(-2 / Math.Exp(2 * b * t) - 2 * cxExp + 2 * (1 + cxExp) / Math.Exp(b * t), 4));
+                var a11 = common * k1;
+                var a12 = common * k2;
+                var a13 = common * k3;
+                var a14 = common * k4;
 
+                var gainArg = Complex.Exp(Complex.ImaginaryOne * theta - b * t);
 
-                erbFilterBanks[i] = new double[fftSize / 2 + 1];
+                var gain = Complex.Abs(
+                                (itheta - gainArg * k1) *
+                                (itheta - gainArg * k2) *
+                                (itheta - gainArg * k3) *
+                                (itheta - gainArg * k4) *
+                                Complex.Pow(t * Math.Exp(b * t) / (-1.0/Math.Exp(b*t) + 1 + itheta*(1 - Math.Exp(b*t))), 4.0));
 
-                for (var j = 0; j < fftSize / 2 + 1; j++)
+                var ir = new DiscreteSignal(1, fftSize * 2) { [0] = 1.0 };
+
+                var filter1 = new IirFilter(new[] { a0, a11, a2 }, new[] { b0, b1, b2 });
+                var filter2 = new IirFilter(new[] { a0, a12, a2 }, new[] { b0, b1, b2 });
+                var filter3 = new IirFilter(new[] { a0, a13, a2 }, new[] { b0, b1, b2 });
+                var filter4 = new IirFilter(new[] { a0, a14, a2 }, new[] { b0, b1, b2 });
+
+                ir = filter1.ApplyTo(ir);
+                ir = filter2.ApplyTo(ir);
+                ir = filter3.ApplyTo(ir);
+                ir = filter4.ApplyTo(ir);
+
+                for (var j = 0; j < ir.Samples.Length; j++)
                 {
-                    erbFilterBanks[i][j] = (t4 / filterGain) *
-                          Complex.Abs(ucirc[j] - zeros[0]) * Complex.Abs(ucirc[j] - zeros[1]) *
-                          Complex.Abs(ucirc[j] - zeros[2]) * Complex.Abs(ucirc[j] - zeros[3]) *
-                          Math.Pow(Complex.Abs((pole - ucirc[j]) * (pole - ucirc[j])), -4);
+                    ir.Samples[j] = ir[j] / gain;
                 }
 
-
-                //var filter = new IirFilter(forward, feedback);
-                //var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
-                //erbFilterBanks[i] = filterResponse.Samples.Take(fftSize / 2).ToArray();
+                erbFilterBank[i] = Transform.PowerSpectrum(ir.Samples, fftSize, false);
             }
 
-            return erbFilterBanks;
+            // normalize gain (by default)
+
+            if (!normalizeGain)
+            {
+                return erbFilterBank;
+            }
+
+            foreach (var filter in erbFilterBank)
+            {
+                var sum = 0.0;
+                for (var j = 0; j < filter.Length; j++)
+                {
+                    sum += Math.Abs(filter[j]*filter[j]);
+                }
+
+                var weight = Math.Sqrt(sum*samplingRate/fftSize);
+
+                for (var j = 0; j < filter.Length; j++)
+                {
+                    filter[j] /= weight;
+                }
+            }
+
+            return erbFilterBank;
         }
 
 

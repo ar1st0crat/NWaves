@@ -169,14 +169,14 @@ namespace NWaves.DemoForms
                 var en = envNo[i];
 
                 g.DrawLine(blackPen, xOffset, offsets[i], envelopesPanel.Width - xOffset, offsets[i]);
-                g.DrawLine(blackPen, xOffset, offsets[i] - 35, xOffset, offsets[i] + 35);
+                g.DrawLine(blackPen, xOffset, offsets[i] - 70, xOffset, offsets[i]);
 
                 var x = 1;
                 for (var j = stride; j < envelopes[en].Length; j += stride)
                 {
                     g.DrawLine(pen,
-                        xOffset + x - 1, (float)-envelopes[en][j-stride] + offsets[i],
-                        xOffset + x,     (float)-envelopes[en][j] + offsets[i]);
+                        xOffset + x - 1, (float)-envelopes[en][j-stride] * 1.5f + offsets[i],
+                        xOffset + x,     (float)-envelopes[en][j] * 1.5f + offsets[i]);
                     x++;
                 }
             }
