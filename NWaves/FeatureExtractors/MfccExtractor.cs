@@ -6,6 +6,7 @@ using NWaves.Filters;
 using NWaves.Filters.Fda;
 using NWaves.Signals;
 using NWaves.Transforms;
+using NWaves.Utils;
 using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors
@@ -66,24 +67,29 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <param name="featureCount"></param>
         /// <param name="samplingRate"></param>
-        /// <param name="melFilterbanks"></param>
+        /// <param name="melFilterbankSize"></param>
         /// <param name="lowFreq"></param>
         /// <param name="highFreq"></param>
+        /// <param name="windowSize"></param>
+        /// <param name="overlapSize"></param>
         /// <param name="fftSize"></param>
-        /// <param name="hopSize"></param>
         /// <param name="lifterSize"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
         public MfccExtractor(int featureCount, int samplingRate,
-                             int melFilterbanks = 20, double lowFreq = 0, double highFreq = 0,
-                             int fftSize = 512, int hopSize = 256, int lifterSize = 22,
+                             int melFilterbankSize = 20, double lowFreq = 0, double highFreq = 0,
+                             double windowSize = 0.0256, double overlapSize = 0.010, int fftSize = 512, int lifterSize = 22,
                              double preEmphasis = 0.0, WindowTypes window = WindowTypes.Hamming)
         {
             FeatureCount = featureCount;
-            _fftSize = fftSize;
-            _hopSize = hopSize;
+
+            var windowLength = (int)(samplingRate * windowSize);
+            _windowSamples = Window.OfType(window, windowLength);
             _window = window;
-            _windowSamples = Window.OfType(window, fftSize);
+
+            _fftSize = fftSize >= windowLength ? fftSize : MathUtils.NextPowerOfTwo(windowLength);
+            _hopSize = (int)(samplingRate * overlapSize);
+            
             _lifterCoeffs = Window.Liftering(featureCount, lifterSize);
 
             if (preEmphasis > 0.0)
@@ -91,7 +97,7 @@ namespace NWaves.FeatureExtractors
                 _preemphasisFilter = new PreEmphasisFilter(preEmphasis);
             }
 
-            MelFilterBank = FilterBanks.Mel(melFilterbanks, fftSize, samplingRate, lowFreq, highFreq);
+            MelFilterBank = FilterBanks.Mel(melFilterbankSize, _fftSize, samplingRate, lowFreq, highFreq);
         }
 
         /// <summary>
@@ -126,28 +132,34 @@ namespace NWaves.FeatureExtractors
             
             var logMelSpectrum = new double[MelFilterBank.Length];
 
+            var block = new double[_fftSize];
+            var zeroblock = new double[_fftSize - _windowSamples.Length];
+
             var i = 0;
-            while (i + _fftSize < filtered.Samples.Length)
+            while (i + _windowSamples.Length < filtered.Samples.Length)
             {
-                var x = filtered[i, i + _fftSize].Samples;
-                
+                // prepare next block for processing
+
+                FastCopy.ToExistingArray(filtered.Samples, block, _windowSamples.Length, i);
+                FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length, 0, _windowSamples.Length);
+
 
                 // 1) apply window
 
                 if (_window != WindowTypes.Rectangular)
                 {
-                    x.ApplyWindow(_windowSamples);
+                    block.ApplyWindow(_windowSamples);
                 }
 
 
                 // 2) calculate power spectrum
 
-                var spectrum = Transform.PowerSpectrum(x, _fftSize);
+                var spectrum = Transform.PowerSpectrum(block, _fftSize);
 
 
                 // 3) apply mel filterbank and take log() of the result
 
-                ApplyMelFilterbankLog(spectrum, logMelSpectrum);
+                ApplyFilterbankAndLog(spectrum, logMelSpectrum);
 
 
                 // 4) dct-II
@@ -180,7 +192,7 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <param name="spectrum">Original spectrum</param>
         /// <param name="logMelSpectrum">Output log-mel-spectral array</param>
-        private void ApplyMelFilterbankLog(double[] spectrum, double[] logMelSpectrum)
+        private void ApplyFilterbankAndLog(double[] spectrum, double[] logMelSpectrum)
         {
             for (var i = 0; i < MelFilterBank.Length; i++)
             {

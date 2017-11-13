@@ -14,8 +14,8 @@ Already available:
 - [x] 1-pole filters (low-pass, high-pass)
 - [x] median filter
 - [x] windowing functions (Hamming, Blackman, Hann, cepstral liftering)
-- [x] psychoacoustic filter banks (Mel, Bark, ERB, Critical Bands), Equal Loudness Curves
-- [x] feature extraction (MFCC, LPC, LPCC, modulation spectra)
+- [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB), Equal Loudness Curves
+- [x] feature extraction (MFCC, PNCC, LPC, LPCC, modulation spectra)
 - [x] sound synthesis and signal builders (sinusoids, sawtooth)
 - [x] simple audio playback and recording (Windows only)
 
@@ -23,7 +23,7 @@ Planned:
 
 - [ ] more transforms (CQT, DWT, Mellin, Hilbert, Haar, Hadamard)
 - [ ] more operations (resampling, spectral subtraction, adaptive filtering)
-- [ ] more feature extraction (PNCC, MPEG7 descriptors and lots of others)
+- [ ] more feature extraction (MPEG7 descriptors and lots of others)
 - [ ] more sound synthesis and signal builders (noises, triangular, periodic pulse, ADSR, etc.)
 - [ ] sound effects (WahWah, Reverb, Vibrato, Chorus, Flanger, PitchShift, etc.)
 
@@ -273,6 +273,8 @@ var decimated = Operation.Decimate(signal, 3);
 
 var filter = new MovingAverageFilter(7);
 var filteredSignal = filter.ApplyTo(signal);
+
+// TODO:
 
 var filtered = signal.ApplyFilter(filter.CombineWith(new Reverb(params))
                                         .CombineWith(new FirFilter(coeffs)));

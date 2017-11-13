@@ -14,7 +14,7 @@ namespace NWaves.Windows
         /// <param name="windowSamples"></param>
         public static void ApplyWindow(this double[] samples, double[] windowSamples)
         {
-            for (var k = 0; k < samples.Length; k++)
+            for (var k = 0; k < windowSamples.Length; k++)
             {
                 samples[k] *= windowSamples[k];
             }

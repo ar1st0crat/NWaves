@@ -36,22 +36,63 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            var mfccExtractor = new MfccExtractor(13, _signal.SamplingRate, 
-                                                  fftSize: 512,
-                                                  hopSize: 256,
-                                                  melFilterbanks: 20, 
-                                                  lowFreq: 100,
-                                                  //highFreq: 3200,
-                                                  lifterSize: 22,
-                                                  preEmphasis: 0.95,
-                                                  window: WindowTypes.Hamming);
-            
+            //var lines = new List<string>();
+
+            //using (var fs = new FileStream(@"E:\Projects\Science\PNCC_C\esh_ru_0001.pncc", FileMode.Open))
+            //using (var br = new BinaryReader(fs))
+            //{
+            //    var length = br.ReadInt32();
+            //    MessageBox.Show(length + " size");
+
+            //    var s = "";
+            //    for (var i = 0; i < length; i++)
+            //    {
+            //        s += br.ReadSingle().ToString("F4") + " ";
+            //    }
+            //    lines.Add(s + "\r\n");
+            //}
+
+            //var txt = File.CreateText(@"E:\Projects\Science\PNCC_C\esh_ru_0001.pncc.txt");
+            //foreach (var line in lines)
+            //{
+            //    txt.WriteLine(line);
+            //    txt.WriteLine();
+            //}
+            //txt.Close();
+
+            //var gammatoneFilterBank = new double[40][];
+
+            //using (var fs = new FileStream(@"e:\GTFB.bin", FileMode.Open))
+            //using (var br = new BinaryReader(fs))
+            //{
+            //    for (var i = 0; i < 40; i++)
+            //    {
+            //        gammatoneFilterBank[i] = new double[513];
+            //        for (var j = 0; j < 512; j++)
+            //        {
+            //            gammatoneFilterBank[i][j] = br.ReadDouble();
+            //        }
+            //    }
+            //}
+
+            //var mfccExtractor = new MfccExtractor(13, _signal.SamplingRate,
+            //                                      windowSize: 0.03,
+            //                                      overlapSize: 0.015,
+            //                                      melFilterbankSize: 20,
+            //                                      //lowFreq: 100,
+            //                                      //highFreq: 3200,
+            //                                      lifterSize: 22,
+            //                                      preEmphasis: 0.95,
+            //                                      window: WindowTypes.Hamming);
+            var mfccExtractor = new PnccExtractor(13, _signal.SamplingRate, preEmphasis: 0.97);
+            //mfccExtractor.GammatoneFilterBank = gammatoneFilterBank;
+
             _mfccVectors = mfccExtractor.ComputeFrom(_signal).ToList();
 
             FillFeaturesList(_mfccVectors, mfccExtractor.FeatureDescriptions);
             mfccListView.Items[0].Selected = true;
 
-            PlotMelFilterbank(mfccExtractor.MelFilterBank);
+            PlotMelFilterbank(mfccExtractor.GammatoneFilterBank);//PlotMelFilterbank(mfccExtractor.MelFilterBank);
             PlotMfcc(_mfccVectors[0].Features);
         }
 
