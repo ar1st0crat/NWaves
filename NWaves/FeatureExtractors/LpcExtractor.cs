@@ -4,6 +4,7 @@ using NWaves.FeatureExtractors.Base;
 using NWaves.Filters;
 using NWaves.Operations;
 using NWaves.Signals;
+using NWaves.Utils;
 using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors
@@ -69,18 +70,21 @@ namespace NWaves.FeatureExtractors
         /// Main constructor
         /// </summary>
         /// <param name="order"></param>
+        /// <param name="samplingRate"></param>
         /// <param name="windowSize"></param>
-        /// <param name="hopSize"></param>
+        /// <param name="overlapSize"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
-        public LpcExtractor(int order, int windowSize = 512, int hopSize = 256,
+        public LpcExtractor(int order, int samplingRate, double windowSize = 0.0256, double overlapSize = 0.010,
                             double preEmphasis = 0.0, WindowTypes window = WindowTypes.Rectangular)
         {
             _order = order;
-            _windowSize = windowSize;
-            _hopSize = hopSize;
+
+            _windowSize = (int)(samplingRate * windowSize);
+            _windowSamples = Window.OfType(window, _windowSize);
             _window = window;
-            _windowSamples = Window.OfType(window, windowSize);
+
+            _hopSize = (int)(samplingRate * overlapSize);
 
             if (preEmphasis > 0.0)
             {
@@ -109,21 +113,23 @@ namespace NWaves.FeatureExtractors
 
             var filtered = (_preemphasisFilter != null) ? _preemphasisFilter.ApplyTo(signal) : signal;
 
+            var block = new DiscreteSignal(signal.SamplingRate, new double[_windowSize]);
+
             var i = 0;
             while (i + _windowSize < filtered.Samples.Length)
             {
-                var x = filtered[i, i + _windowSize];
+                FastCopy.ToExistingArray(filtered.Samples, block.Samples, _windowSize, i);
 
                 // 1) apply window
 
                 if (_window != WindowTypes.Rectangular)
                 {
-                    x.ApplyWindow(_windowSamples);
+                    block.ApplyWindow(_windowSamples);
                 }
 
                 // 2) autocorrelation
 
-                var cc = Operation.CrossCorrelate(x, x).Last(_windowSize);
+                var cc = Operation.CrossCorrelate(block, block).Last(_windowSize);
 
                 // 3) levinson-durbin
 

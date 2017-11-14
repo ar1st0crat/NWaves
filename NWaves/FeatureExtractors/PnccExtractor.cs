@@ -30,48 +30,43 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Window length for median-time power (2 * M + 1)
         /// </summary>
-        public const int M = 2;
+        public int M { get; set; } = 2;
 
         /// <summary>
         /// Window length for spectral smoothing (2 * N + 1)
         /// </summary>
-        public const int N = 4;
+        public int N { get; set; } = 4;
 
         /// <summary>
         /// Lambdas used in asymmetric noise suppression formula (4)
         /// </summary>
-        public const double LambdaA = 0.999;
-        public const double LambdaB = 0.5;
+        public double LambdaA { get; set; } = 0.999;
+        public double LambdaB { get; set; } = 0.5;
         
         /// <summary>
         /// Forgetting factor in temporal masking formula
         /// </summary>
-        public const double LambdaT = 0.85;
+        public double LambdaT { get; set; } = 0.85;
 
         /// <summary>
         /// Forgetting factor in formula (15) in [Kim & Stern, 2016]
         /// </summary>
-        public const double LambdaMu = 0.999;
+        public double LambdaMu { get; set; } = 0.999;
 
         /// <summary>
         /// Threshold for detecting excitation/non-excitation segments
         /// </summary>
-        public const double C = 2;
+        public double C { get; set; } = 2;
 
         /// <summary>
         /// Multiplier in formula (12) in [Kim & Stern, 2016]
         /// </summary>
-        public const double MuT = 0.2;
-
-        /// <summary>
-        /// Lower power level threshold
-        /// </summary>
-        public const double Epsilon = 2.22e-16;
+        public double MuT { get; set; } = 0.2;
 
         /// <summary>
         /// Gammatone Filterbank matrix of dimension [filterCount * (fftSize/2 + 1)]
         /// </summary>
-        public double[][] GammatoneFilterBank { get; set; }
+        public double[][] GammatoneFilterBank { get; }
 
         /// <summary>
         /// Ring buffer for efficient processing of consecutive spectra
@@ -135,19 +130,7 @@ namespace NWaves.FeatureExtractors
                 _preemphasisFilter = new PreEmphasisFilter(preEmphasis);
             }
 
-            GammatoneFilterBank = FilterBanks.Erb(filterbankSize, fftSize, samplingRate, lowFreq, highFreq);
-
-            foreach (var filter in GammatoneFilterBank)
-            {
-                var max = filter.Max();
-                for (var j = 0; j < filter.Length; j++)
-                {
-                    if (filter[j] < 0.005 * max)
-                    {
-                        filter[j] = 0.0;
-                    }
-                }
-            }
+            GammatoneFilterBank = FilterBanks.Erb(filterbankSize, _fftSize, samplingRate, lowFreq, highFreq);
         }
 
         /// <summary>
@@ -161,7 +144,7 @@ namespace NWaves.FeatureExtractors
         ///     3) Apply gammatone filters (squared)
         ///     4) Medium-time processing (asymmetric noise suppression, temporal masking, spectral smoothing)
         ///     5) Apply nonlinearity
-        ///     6) Do dct-II
+        ///     6) Do dct-II (normalized)
         /// 
         /// </summary>
         /// <param name="signal">Signal for analysis</param>
@@ -186,7 +169,7 @@ namespace NWaves.FeatureExtractors
             var block = new double[_fftSize];
             var zeroblock = new double[_fftSize - _windowSamples.Length];
 
-            _ringBuffer = new SpectraRingBuffer(2 * M + 1, _fftSize);
+            _ringBuffer = new SpectraRingBuffer(2 * M + 1, GammatoneFilterBank.Length);
 
             // prepare everything for dct
 
@@ -305,7 +288,7 @@ namespace NWaves.FeatureExtractors
 
                     for (var j = 0; j < spectrumS.Length; j++)
                     {
-                        spectrumS[j] = filteredSpectrumQ[j] / Math.Max(spectrumQ[j], Epsilon);
+                        spectrumS[j] = filteredSpectrumQ[j]/Math.Max(spectrumQ[j], double.Epsilon);
                     }
 
                     for (var j = 0; j < smoothedSpectrumS.Length; j++)
@@ -348,18 +331,11 @@ namespace NWaves.FeatureExtractors
                         smoothedSpectrum[j] = Math.Pow(smoothedSpectrum[j], 1 / 15.0);
                     }
 
-                    // 6) dct-II
+                    // 6) dct-II (normalized)
 
                     var pnccs = new double[FeatureCount];
-                    dct.Dct2(smoothedSpectrum, pnccs);
-
-                    // additional normalization
-                    for (var j = 1; j < pnccs.Length; j++)
-                    {
-                        pnccs[j] *= Math.Sqrt(2.0 / pnccs.Length);
-                    }
-                    pnccs[0] *= Math.Sqrt(2.0 / pnccs.Length);
-
+                    dct.Dct2N(smoothedSpectrum, pnccs);
+                    
 
                     // add pncc vector to output sequence
 
@@ -373,19 +349,6 @@ namespace NWaves.FeatureExtractors
                 i++;
                 
                 timePos += _hopSize;
-            }
-
-
-            // CMN
-
-            for (i = 0; i < FeatureCount; i++)
-            {
-                var cmean = featureVectors.Average(t => t.Features[i]);
-
-                for (var j = 0; j < featureVectors.Count; j++)
-                {
-                    featureVectors[j].Features[i] -= cmean;
-                }
             }
 
             return featureVectors;
@@ -433,6 +396,8 @@ namespace NWaves.FeatureExtractors
 
             public void Add(double[] spectrum)
             {
+                if (_count < _capacity) _count++;
+
                 _spectra[_current] = spectrum;
 
                 for (var j = 0; j < spectrum.Length; j++)
@@ -445,11 +410,9 @@ namespace NWaves.FeatureExtractors
                     AverageSpectrum[j] /= _count;
                 }
 
-                _current = (_current + 1) % _capacity;
-
-                if (_count < _capacity) _count++;
-
                 CentralSpectrum = _spectra[(_current + _capacity / 2 + 1) % _capacity];
+
+                _current = (_current + 1) % _capacity;
             }
         }
     }

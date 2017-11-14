@@ -82,19 +82,23 @@ namespace NWaves.DemoForms
             band2ComboBox.DataSource = Enumerable.Range(1, filterCount).ToArray();
             band3ComboBox.DataSource = Enumerable.Range(1, filterCount).ToArray();
             band4ComboBox.DataSource = Enumerable.Range(1, filterCount).ToArray();
+            band1ComboBox.Text = "1";
+            band2ComboBox.Text = "2";
+            band3ComboBox.Text = "3";
+            band4ComboBox.Text = "4";
 
             DrawFilterbank(_filterbank);
         }
 
         private void computeButton_Click(object sender, EventArgs e)
         {
-            var fftSize = int.Parse(analysisFftTextBox.Text);
-            var hopSize = int.Parse(hopSizeTextBox.Text);
+            var windowSize = double.Parse(analysisFftTextBox.Text);
+            var overlapSize = double.Parse(hopSizeTextBox.Text);
             var modulationFftSize = int.Parse(longTermFftSizeTextBox.Text);
             var modulationHopSize = int.Parse(longTermHopSizeTextBox.Text);
 
             _extractor = new MsExtractor(_signal.SamplingRate,
-                                         fftSize, hopSize, 
+                                         windowSize, overlapSize, 
                                          modulationFftSize, modulationHopSize,
                                          filterbank: _filterbank);
             var features = _extractor.ComputeFrom(_signal);

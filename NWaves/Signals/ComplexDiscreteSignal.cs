@@ -44,7 +44,7 @@ namespace NWaves.Signals
         /// <summary>
         /// Get real-valued signal containing magnitudes of complex-valued samples
         /// </summary>
-        public DiscreteSignal Magnitude
+        public double[] Magnitude
         {
             get
             {
@@ -57,27 +57,47 @@ namespace NWaves.Signals
                     magnitude[i] = Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]);
                 }
 
-                return new DiscreteSignal(SamplingRate, magnitude);
+                return magnitude;
             }
         }
 
         /// <summary>
         /// Get real-valued signal containing phases of complex-valued samples
         /// </summary>
-        public DiscreteSignal Phase
+        public double[] Phase
         {
             get
             {
                 var real = Real;
                 var imag = Imag;
 
-                var magnitude = new double[real.Length];
-                for (var i = 0; i < magnitude.Length; i++)
+                var phase = new double[real.Length];
+                for (var i = 0; i < phase.Length; i++)
                 {
-                    magnitude[i] = Math.Atan(imag[i] / real[i]);
+                    phase[i] = Math.Atan(imag[i] / real[i]);
                 }
 
-                return new DiscreteSignal(SamplingRate, magnitude);
+                return phase;
+            }
+        }
+
+        /// <summary>
+        /// Get real-valued signal containing log-powers of complex-valued samples
+        /// </summary>
+        public double[] LogPower
+        {
+            get
+            {
+                var real = Real;
+                var imag = Imag;
+
+                var logPower = new double[real.Length];
+                for (var i = 0; i < logPower.Length; i++)
+                {
+                    logPower[i] = 20 * Math.Log10(real[i] * real[i] + imag[i] * imag[i]);
+                }
+
+                return logPower;
             }
         }
 

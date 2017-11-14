@@ -78,7 +78,7 @@ namespace NWaves.FeatureExtractors
         /// <param name="window"></param>
         public MfccExtractor(int featureCount, int samplingRate,
                              int melFilterbankSize = 20, double lowFreq = 0, double highFreq = 0,
-                             double windowSize = 0.0256, double overlapSize = 0.010, int fftSize = 512, int lifterSize = 22,
+                             double windowSize = 0.0256, double overlapSize = 0.010, int fftSize = 0, int lifterSize = 22,
                              double preEmphasis = 0.0, WindowTypes window = WindowTypes.Hamming)
         {
             FeatureCount = featureCount;

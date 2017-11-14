@@ -32,6 +32,10 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.envelopesPanel = new System.Windows.Forms.Panel();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
             this.band4ComboBox = new System.Windows.Forms.ComboBox();
             this.band3ComboBox = new System.Windows.Forms.ComboBox();
             this.band2ComboBox = new System.Windows.Forms.ComboBox();
@@ -63,10 +67,6 @@
             this.label7 = new System.Windows.Forms.Label();
             this.analysisFftTextBox = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
-            this.label13 = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.envelopesPanel.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -113,6 +113,42 @@
             this.envelopesPanel.Name = "envelopesPanel";
             this.envelopesPanel.Size = new System.Drawing.Size(1126, 370);
             this.envelopesPanel.TabIndex = 1;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(1016, 253);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(49, 17);
+            this.label15.TabIndex = 7;
+            this.label15.Text = "Band#";
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(1016, 168);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(49, 17);
+            this.label14.TabIndex = 6;
+            this.label14.Text = "Band#";
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(1016, 87);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(49, 17);
+            this.label13.TabIndex = 5;
+            this.label13.Text = "Band#";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(1016, 6);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(49, 17);
+            this.label12.TabIndex = 4;
+            this.label12.Text = "Band#";
             // 
             // band4ComboBox
             // 
@@ -371,16 +407,16 @@
             this.hopSizeTextBox.Name = "hopSizeTextBox";
             this.hopSizeTextBox.Size = new System.Drawing.Size(47, 22);
             this.hopSizeTextBox.TabIndex = 31;
-            this.hopSizeTextBox.Text = "256";
+            this.hopSizeTextBox.Text = "0,010";
             // 
             // label7
             // 
             this.label7.AutoSize = true;
             this.label7.Location = new System.Drawing.Point(19, 87);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(63, 17);
+            this.label7.Size = new System.Drawing.Size(87, 17);
             this.label7.TabIndex = 30;
-            this.label7.Text = "Hop size";
+            this.label7.Text = "Overlap size";
             // 
             // analysisFftTextBox
             // 
@@ -388,52 +424,16 @@
             this.analysisFftTextBox.Name = "analysisFftTextBox";
             this.analysisFftTextBox.Size = new System.Drawing.Size(47, 22);
             this.analysisFftTextBox.TabIndex = 29;
-            this.analysisFftTextBox.Text = "512";
+            this.analysisFftTextBox.Text = "0,0256";
             // 
             // label8
             // 
             this.label8.AutoSize = true;
             this.label8.Location = new System.Drawing.Point(20, 53);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(62, 17);
+            this.label8.Size = new System.Drawing.Size(86, 17);
             this.label8.TabIndex = 28;
-            this.label8.Text = "FFT size";
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(1016, 6);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(49, 17);
-            this.label12.TabIndex = 4;
-            this.label12.Text = "Band#";
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(1016, 87);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(49, 17);
-            this.label13.TabIndex = 5;
-            this.label13.Text = "Band#";
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(1016, 168);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(49, 17);
-            this.label14.TabIndex = 6;
-            this.label14.Text = "Band#";
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(1016, 253);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(49, 17);
-            this.label15.TabIndex = 7;
-            this.label15.Text = "Band#";
+            this.label8.Text = "Window size";
             // 
             // ModulationSpectrumForm
             // 

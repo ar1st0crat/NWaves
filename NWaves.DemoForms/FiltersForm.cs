@@ -545,7 +545,7 @@ namespace NWaves.DemoForms
 
             var i = 0;
             var x = 0;
-            while (i < magnitudeResponse.Samples.Length / 2)
+            while (i < magnitudeResponse.Length / 2)
             {
                 if (Math.Abs(magnitudeResponse[i] * 40) < magnitudeResponsePanel.Height)
                 {
@@ -566,7 +566,7 @@ namespace NWaves.DemoForms
 
             i = 0;
             x = 0;
-            while (i < phaseResponse.Samples.Length / 2)
+            while (i < phaseResponse.Length / 2)
             {
                 if (Math.Abs(phaseResponse[i] * 70) < magnitudeResponsePanel.Height)
                 {

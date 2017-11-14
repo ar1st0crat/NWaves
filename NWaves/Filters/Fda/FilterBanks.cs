@@ -261,7 +261,7 @@ namespace NWaves.Filters.Fda
                 }
                 var filter = new BandPassFilter(freq, q);
                 var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
-                filterBank[i] = filterResponse.Samples.Take(fftSize / 2 + 1).ToArray();
+                filterBank[i] = filterResponse.Take(fftSize / 2 + 1).ToArray();
             }
 
             return filterBank;
@@ -291,7 +291,7 @@ namespace NWaves.Filters.Fda
             {
                 var filter = FilterDesign.DesignFirFilter(fftSize / 4 - 1, filterBank[i]);
                 var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
-                filterBank[i] = filterResponse.Samples.Take(fftSize / 2 + 1).ToArray();
+                filterBank[i] = filterResponse.Take(fftSize / 2 + 1).ToArray();
 
                 // normalize gain to 1.0
 

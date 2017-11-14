@@ -122,6 +122,25 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
+        /// DCT-II (with normalization)
+        /// </summary>
+        public void Dct2N(double[] input, double[] output)
+        {
+            for (var k = 0; k < output.Length; k++)
+            {
+                output[k] = 0.0;
+
+                for (var n = 0; n < input.Length; n++)
+                {
+                    output[k] += input[n] * _dct2[n][k];
+                }
+
+                output[k] *= Math.Sqrt(2.0 / output.Length);
+            }
+            output[0] *= Math.Sqrt(0.5);
+        }
+
+        /// <summary>
         /// DCT-III (without normalization)
         /// </summary>
         public void Dct3(double[] input, double[] output)

@@ -52,6 +52,7 @@
     <Compile Include="Effects\Wahwah.cs" />
     <Compile Include="FeatureExtractors\Base\FeatureVector.cs" />
     <Compile Include="FeatureExtractors\Base\FeatureExtractor.cs" />
+    <Compile Include="FeatureExtractors\Base\FeaturePostProcessing.cs" />
     <Compile Include="FeatureExtractors\LpccExtractor.cs" />
     <Compile Include="FeatureExtractors\LpcExtractor.cs" />
     <Compile Include="FeatureExtractors\MfccExtractor.cs" />

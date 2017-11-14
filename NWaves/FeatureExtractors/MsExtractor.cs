@@ -81,32 +81,36 @@ namespace NWaves.FeatureExtractors
         /// Main constructor
         /// </summary>
         /// <param name="samplingRate"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="hopSize"></param>
-        /// <param name="modulationFftSize"></param>
-        /// <param name="modulationHopSize"></param>
+        /// <param name="windowSize">In seconds</param>
+        /// <param name="overlapSize">In seconds</param>
+        /// <param name="modulationFftSize">In samples</param>
+        /// <param name="modulationOverlapSize">In samples</param>
         /// <param name="filterbank"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
-        public MsExtractor(int samplingRate, int fftSize = 512, int hopSize = 256,
-                           int modulationFftSize = 64, int modulationHopSize = 4,
+        public MsExtractor(int samplingRate, 
+                           double windowSize = 0.0256, double overlapSize = 0.010,
+                           int modulationFftSize = 64, int modulationOverlapSize = 4,
                            double[][] filterbank = null, double preEmphasis = 0.0,
                            WindowTypes window = WindowTypes.Rectangular)
         {
-            _fftSize = fftSize;
-            _hopSize = hopSize;
-            _modulationFftSize = modulationFftSize;
-            _modulationHopSize = modulationHopSize;
-            _samplingRate = samplingRate;
+            var windowLength = (int)(samplingRate * windowSize);
+            _windowSamples = Window.OfType(window, windowLength);
             _window = window;
-            _windowSamples = Window.OfType(window, fftSize);
+
+            _fftSize = MathUtils.NextPowerOfTwo(windowLength);
+            _hopSize = (int)(samplingRate * overlapSize);
+
+            _modulationFftSize = modulationFftSize;
+            _modulationHopSize = modulationOverlapSize;
+            _samplingRate = samplingRate;
             
             if (preEmphasis > 0.0)
             {
                 _preemphasisFilter = new PreEmphasisFilter(preEmphasis);
             }
 
-            _filterBank = filterbank ?? FilterBanks.Mel(18, fftSize, samplingRate, 200, 6200);
+            _filterBank = filterbank ?? FilterBanks.Mel(18, _fftSize, samplingRate, 100, 4200);
 
             FeatureCount = _filterBank.Length;
         }
@@ -128,28 +132,34 @@ namespace NWaves.FeatureExtractors
 
             var filteredSpectrum = new double[_filterBank.Length];
             
+            
             // 0) pre-emphasis (if needed)
 
             var filtered = (_preemphasisFilter != null) ? _preemphasisFilter.ApplyTo(signal) : signal;
 
+
             // ===================== compute local FFTs (do STFT) =======================
+
+            var block = new double[_fftSize];
+            var zeroblock = new double[_fftSize - _windowSamples.Length];
 
             var en = 0;
             var i = 0;
             while (i + _fftSize < filtered.Samples.Length)
             {
-                var x = filtered[i, i + _fftSize].Samples;
-                
+                FastCopy.ToExistingArray(filtered.Samples, block, _windowSamples.Length, i);
+                FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length, 0, _windowSamples.Length);
+
                 // 1) apply window
 
                 if (_window != WindowTypes.Rectangular)
                 {
-                    x.ApplyWindow(_windowSamples);
+                    block.ApplyWindow(_windowSamples);
                 }
                 
                 // 2) calculate power spectrum
 
-                var spectrum = Transform.PowerSpectrum(x, _fftSize);
+                var spectrum = Transform.PowerSpectrum(block, _fftSize);
                 
                 // 3) apply filterbank...
 

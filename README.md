@@ -14,7 +14,7 @@ Already available:
 - [x] 1-pole filters (low-pass, high-pass)
 - [x] median filter
 - [x] windowing functions (Hamming, Blackman, Hann, cepstral liftering)
-- [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB), Equal Loudness Curves
+- [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB)
 - [x] feature extraction (MFCC, PNCC, LPC, LPCC, modulation spectra)
 - [x] sound synthesis and signal builders (sinusoids, sawtooth)
 - [x] simple audio playback and recording (Windows only)
@@ -246,7 +246,11 @@ File.Delete(filename);
 
 var spectrogram = Transform.Stft(signal, 512, 256, WindowTypes.Hamming);
 
-var spectrum = Transform.MagnitudeSpectrum(signal[1000, 1512]);
+var spectrum = Transform.MagnitudeSpectrum(signal[1000, 1512].Samples);
+var spectrum = Transform.PowerSpectrum(signal.Samples, fftSize: 512, normalize: false);
+var spectrum = Transform.LogPowerSpectrum(samples, fftSize: 1024);
+
+var cepstrum = Transform.Cepstrum(block.Samples, 20);
 
 ```
 
@@ -260,6 +264,8 @@ var filteredSignal = Operation.Convolve(signal, kernel);
 var correlated = Operation.CrossCorrelate(signal1, signal2);
 
 var deconvolved = Operation.Deconvolve(filteredSignal, kernel);
+
+// TODO:
 
 var resampled = Operation.Resample(signal, 22050);
 var decimated = Operation.Decimate(signal, 3);
@@ -294,11 +300,12 @@ var freqz = filter.Freqz();
 
 ```C#
 
-var mfccExtractor = new MfccFeatureExtractor(13, signal.SamplingRate, melFilterbanks: 24, preEmphasis: 0.95);
-var mfccVectors = mfccExtractor.ComputeFrom(signal).Take(3);
-
-var lpcExtractor = new LpcFeatureExtractor(16);
+var lpcExtractor = new LpcFeatureExtractor(16, signal.SamplingRate, windowSize: 0.032, overlapSize: 0.015);
 var lpcVectors = lpcExtractor.ComputeFrom(signal);
+
+var mfccExtractor = new MfccFeatureExtractor(13, signal.SamplingRate, melFilterbanks: 24, preEmphasis: 0.95);
+var mfccVectors = mfccExtractor.ComputeFrom(signal).Take(15);
+FeaturePostProcessing.NormalizeMean(mfccVectors);
 
 ```
 

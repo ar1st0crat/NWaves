@@ -34,18 +34,21 @@ namespace NWaves.FeatureExtractors
         /// Main constructor
         /// </summary>
         /// <param name="featureCount"></param>
+        /// <param name="samplingRate"></param>
         /// <param name="windowSize"></param>
-        /// <param name="hopSize"></param>
+        /// <param name="overlapSize"></param>
         /// <param name="lifterSize"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
-        public LpccExtractor(int featureCount, int windowSize = 512, int hopSize = 256, int lifterSize = 22,
-                            double preEmphasis = 0.0, WindowTypes window = WindowTypes.Rectangular)
+        public LpccExtractor(int featureCount, int samplingRate,
+                             double windowSize = 0.0256, double overlapSize = 0.010, int lifterSize = 22,
+                             double preEmphasis = 0.0, WindowTypes window = WindowTypes.Rectangular)
         {
             FeatureCount = featureCount;
             _lifterCoeffs = Window.Liftering(featureCount, lifterSize);
 
-            _lpcExtractor = new LpcExtractor(featureCount, windowSize, hopSize, preEmphasis, window);
+            _lpcExtractor = 
+                new LpcExtractor(featureCount, samplingRate, windowSize, overlapSize, preEmphasis, window);
         }
 
         /// <summary>

@@ -15,8 +15,8 @@ namespace NWaves.DemoForms
 {
     public partial class LpcForm : Form
     {
-        private const int WindowSize = 512;
-        private const int HopSize = 512;
+        private const double WindowSize = 0.032;
+        private const double OverlapSize = 0.010;
 
         private DiscreteSignal _signal;
         private List<FeatureVector> _lpcVectors;
@@ -40,7 +40,7 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
             
-            var lpcExtractor = new LpcExtractor(16, WindowSize, HopSize);
+            var lpcExtractor = new LpcExtractor(16, _signal.SamplingRate, WindowSize, OverlapSize);
 
             _lpcVectors = lpcExtractor.ComputeFrom(_signal).ToList();
 
@@ -55,7 +55,8 @@ namespace NWaves.DemoForms
 
         double[] ComputeSpectrum(int idx)
         {
-            return Transform.LogPowerSpectrum(_signal[WindowSize * idx, WindowSize * (idx + 1)].Samples);
+            var pos = (int)(_signal.SamplingRate * OverlapSize * idx);
+            return Transform.LogPowerSpectrum(_signal[pos, pos + 512].Samples);
         }
 
         double[] EstimateSpectrum(int idx)
@@ -66,21 +67,13 @@ namespace NWaves.DemoForms
 
             var lpcFilter = new IirFilter(new[] { gain }, vector);
 
-            var lpcSpectrum = lpcFilter.FrequencyResponse(WindowSize).Magnitude.Samples;
-
-            for (var i = 0; i < lpcSpectrum.Length; i++)
-            {
-                lpcSpectrum[i] = 20 * Math.Log10(lpcSpectrum[i] * lpcSpectrum[i]);
-            }
-
-            return lpcSpectrum;
+            return lpcFilter.FrequencyResponse().LogPower;
         }
 
         private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors, 
                                       IEnumerable<string> featureDescriptions)
         {
             lpcListView.Clear();
-
             lpcListView.Columns.Add("time", 50);
 
             foreach (var name in featureDescriptions)
