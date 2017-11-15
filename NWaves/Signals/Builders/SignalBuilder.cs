@@ -5,32 +5,47 @@ using System.Linq;
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// 
+    /// Abstract class for representing any signal builder (generator)
     /// </summary>
     public abstract class SignalBuilder
     {
         /// <summary>
-        /// 
+        /// Number of delay samples
+        /// </summary>
+        private int _delay;
+
+        /// <summary>
+        /// Number of times to repeat the signal
+        /// </summary>
+        private int _repeatTimes;
+
+        /// <summary>
+        /// List of signals to be superimposed with the resulting signal
+        /// </summary>
+        private readonly List<DiscreteSignal> _toSuperimpose = new List<DiscreteSignal>();
+        
+        /// <summary>
+        /// Resulting signal
         /// </summary>
         protected DiscreteSignal Signal { get; set; }
 
         /// <summary>
-        /// 
+        /// The length of the signal
         /// </summary>
         protected int Length { get; set; }
 
         /// <summary>
-        /// 
+        /// Sampling rate of the signal
         /// </summary>
         protected int SamplingRate { get; set; }
 
         /// <summary>
-        /// 
+        /// Dictionary of setters for each parameter
         /// </summary>
         protected Dictionary<string, Action<double>> ParameterSetters { get; set; }
 
         /// <summary>
-        /// 
+        /// Brief descriptions of parameters (list of their names)
         /// </summary>
         /// <returns></returns>
         public virtual string[] GetParametersInfo()
@@ -39,7 +54,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// 
+        /// Method for setting parameter values
         /// </summary>
         /// <param name="parameterName"></param>
         /// <param name="parameterValue"></param>
@@ -62,12 +77,38 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
+        /// Method for generating signal of particular shape 
+        /// (must be implemented in subclasses).
+        /// </summary>
+        /// <returns>Generated signal</returns>
+        public abstract DiscreteSignal Generate();
+
+        /// <summary>
         /// Final or intermediate build step
         /// </summary>
         /// <returns>The signal that is currently built</returns>
-        public abstract DiscreteSignal Build();
+        public virtual DiscreteSignal Build()
+        {
+            var signal = Generate();
 
+            // perhaps, superimpose
+            signal = _toSuperimpose.Aggregate(signal, (current, s) => current.Superimpose(s));
 
+            // perhaps, delay
+            if (_delay != 0)
+            {
+                signal = signal + _delay;
+            }
+
+            // and perhaps, repeat
+            if (_repeatTimes > 1)
+            {
+                signal = signal * _repeatTimes;
+            }
+
+            return signal;
+        }
+        
         /// <summary>
         /// 
         /// </summary>
@@ -76,7 +117,6 @@ namespace NWaves.Signals.Builders
         public virtual SignalBuilder OfLength(int sampleCount)
         {
             Length = sampleCount;
-
             return this;
         }
 
@@ -91,20 +131,7 @@ namespace NWaves.Signals.Builders
             {
                 throw new ArgumentException("Sampling rate must be positive!");
             }
-
             SamplingRate = samplingRate;
-
-            return this;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public virtual SignalBuilder FromSignal(DiscreteSignal signal)
-        {
-            Signal = signal.Copy();
 
             return this;
         }
@@ -116,8 +143,7 @@ namespace NWaves.Signals.Builders
         /// <returns></returns>
         public virtual SignalBuilder DelayedBy(int delay)
         {
-            Signal = Signal?.Delay(delay);
-
+            _delay += delay;
             return this;
         }
 
@@ -128,8 +154,7 @@ namespace NWaves.Signals.Builders
         /// <returns></returns>
         public virtual SignalBuilder SuperimposedWith(DiscreteSignal signal)
         {
-            Signal = Signal?.Superimpose(signal);
-
+            _toSuperimpose.Add(signal);
             return this;
         }
 
@@ -140,8 +165,7 @@ namespace NWaves.Signals.Builders
         /// <returns></returns>
         public virtual SignalBuilder RepeatedTimes(int times)
         {
-            Signal = Signal?.Repeat(times);
-
+            _repeatTimes += times;
             return this;
         }
     }

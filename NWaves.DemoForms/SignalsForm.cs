@@ -108,46 +108,96 @@ namespace NWaves.DemoForms
         private void generateSignalButton_Click(object sender, EventArgs e)
         { 
             var sampleCount = int.Parse(durationTextBox.Text);
+            var samplingRate = _signal1?.SamplingRate ?? 16000;
+
+            SignalBuilder signalBuilder;
 
             switch (builderComboBox.Text)
             {
                 case "Sinusoid":
-                    _signal2 = new SinusoidBuilder()
-                                        .SetParameter("amp", 0.2)
-                                        .SetParameter("freq", 200)
-                                        .OfLength(sampleCount)
-                                        .SampledAt(_signal1.SamplingRate)
-                                        .Build();
-
-                    builderParametersListBox.Items.Clear();
-                    builderParametersListBox.Items.Add("Sinusoidal Builder:");
-                    builderParametersListBox.Items.AddRange(new SinusoidBuilder().GetParametersInfo());
-
+                    signalBuilder = new SinusoidBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("amp", 0.2)
+                                    .SetParameter("freq", 200)
+                                    .OfLength(sampleCount)
+                                    .SampledAt(samplingRate)
+                                    .Build();
                     break;
 
                 case "Sawtooth":
-                    _signal2 = new SawtoothBuilder()
-                                        .SetParameter("low", -0.2)
-                                        .SetParameter("high", 0.5)
-                                        .SetParameter("freq", 0.02)
-                                        .OfLength(sampleCount)
-                                        .SampledAt(_signal1.SamplingRate)
-                                        .Build();
+                    signalBuilder = new SawtoothBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("low", -0.2)
+                                    .SetParameter("high", 0.5)
+                                    .SetParameter("freq", 0.02)
+                                    .OfLength(sampleCount)
+                                    .SampledAt(samplingRate)
+                                    .Build();
+                    break;
 
-                    builderParametersListBox.Items.Clear();
-                    builderParametersListBox.Items.Add("Sawtooth Builder:");
-                    builderParametersListBox.Items.AddRange(new SawtoothBuilder().GetParametersInfo());
+                case "Pulse Wave":
+                    signalBuilder = new PulseWaveBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("amp", 0.5)
+                                    .SetParameter("pulse", 0.07)
+                                    .SetParameter("period", 0.2)
+                                    .OfLength(sampleCount)
+                                    .DelayedBy(3000)
+                                    .SampledAt(samplingRate)
+                                    .Build();
+                    break;
 
+                case "Triangle Wave":
+                    signalBuilder = new TriangleWaveBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("low", -0.2)
+                                    .SetParameter("high", 0.5)
+                                    .SetParameter("freq", 0.02)
+                                    .OfLength(sampleCount)
+                                    .SampledAt(samplingRate)
+                                    .Build();
+                    break;
+
+                case "Pink Noise":
+                    signalBuilder = new PinkNoiseBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("min", -0.5)
+                                    .SetParameter("max", 0.5)
+                                    .OfLength(sampleCount)
+                                    .SampledAt(samplingRate)
+                                    .Build();
+                    break;
+
+                case "Red Noise":
+                    signalBuilder = new RedNoiseBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("min", -0.5)
+                                    .SetParameter("max", 0.5)
+                                    .OfLength(sampleCount)
+                                    .SampledAt(samplingRate)
+                                    .Build();
+                    break;
+
+                default:
+                    signalBuilder = new WhiteNoiseBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("min", -0.5)
+                                    .SetParameter("max", 0.5)
+                                    .OfLength(sampleCount)
+                                    .SampledAt(samplingRate)
+                                    .Build();
                     break;
             }
 
-            _signal3 = _signal1.Superimpose(_signal2);
+            builderParametersListBox.Items.Clear();
+            builderParametersListBox.Items.AddRange(signalBuilder.GetParametersInfo());
+
+            //_signal3 = _signal1.Superimpose(_signal2);
 
             DrawSignal(generatedSignalPanel, _signal2, 53);
-            DrawSignal(superimposedSignalPanel, _signal3, 53);
 
-            var spectrum = Transform.PowerSpectrum(_signal2[0, 512].Samples);
-            DrawSignal(spectrumPanel, new DiscreteSignal(_signal2.SamplingRate, spectrum));
+            var spectrum = Transform.PowerSpectrum(_signal2.First(512).Samples);
+            DrawSpectrum(spectrum);
         }
 
         private void signalOperationButton_Click(object sender, EventArgs e)
@@ -272,7 +322,6 @@ namespace NWaves.DemoForms
         private void DrawSignal(Control panel, DiscreteSignal signal, int step = 1)
         {
             var g = panel.CreateGraphics();
-
             g.Clear(Color.White);
 
             var offset = panel.Height / 2;
@@ -305,6 +354,30 @@ namespace NWaves.DemoForms
                 x++;
                 i += step;
 
+            }
+
+            pen.Dispose();
+        }
+
+        private void DrawSpectrum(double[] spectrum)
+        {
+            var g = spectrumPanel.CreateGraphics();
+            g.Clear(Color.White);
+
+            var offset = spectrumPanel.Height - 20;
+
+            var pen = new Pen(Color.Black);
+            
+            var i = 0;
+            
+            while (i < spectrum.Length)
+            {
+                if (Math.Abs(spectrum[i] * 500) < spectrumPanel.Height)
+                {
+                    g.DrawLine(pen, i, offset, i, (float)-spectrum[i] * 500 + offset);
+                    g.DrawEllipse(pen, i - 1, (int)(-spectrum[i] * 500) + offset - 1, 3, 3);
+                }
+                i++;
             }
 
             pen.Dispose();

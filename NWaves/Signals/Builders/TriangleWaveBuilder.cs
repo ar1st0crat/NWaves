@@ -5,9 +5,9 @@ using System.Linq;
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Class for the generator of sawtooth waves
+    /// Class for the generator of triangle waves
     /// </summary>
-    public class SawtoothBuilder : SignalBuilder
+    public class TriangleWaveBuilder : SignalBuilder
     {
         /// <summary>
         /// 
@@ -24,24 +24,17 @@ namespace NWaves.Signals.Builders
         /// </summary>
         private double _frequency;
 
-        public SawtoothBuilder()
+        public TriangleWaveBuilder()
         {
             ParameterSetters = new Dictionary<string, Action<double>>
             {
-                {"low, lo, lower",  param => _low = param},
-                {"high, hi, upper", param => _high = param},
-                {"frequency, freq", param => _frequency = param},
+                { "low, lo, lower",  param => _low = param },
+                { "high, hi, upper", param => _high = param },
+                { "frequency, freq", param => _frequency = param }
             };
-
-            _low = -1.0;
-            _high = 1.0;
-            _frequency = 0.0;
         }
 
         /// <summary>
-        /// Formula:
-        /// 
-        ///     s[n] = LO + (HI - LO) * frac(i * freq + phi)
         /// 
         /// </summary>
         /// <returns></returns>
@@ -58,7 +51,7 @@ namespace NWaves.Signals.Builders
             }
 
             var samples = Enumerable.Range(0, Length)
-                                    .Select(i => _low + (_high - _low) * (i*_frequency - Math.Floor(i * _frequency)));
+                                    .Select(i => 1 - 4 * (0.5 + 0.5 * i * _frequency + 0.25 - Math.Floor(0.5 * i * _frequency + 0.25)));
 
             return new DiscreteSignal(SamplingRate, samples);
         }

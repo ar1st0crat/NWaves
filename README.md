@@ -15,8 +15,8 @@ Already available:
 - [x] median filter
 - [x] windowing functions (Hamming, Blackman, Hann, cepstral liftering)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB)
-- [x] feature extraction (MFCC, PNCC, LPC, LPCC, modulation spectra)
-- [x] sound synthesis and signal builders (sinusoids, sawtooth)
+- [x] feature extraction (MFCC, PNCC, LPC, LPCC, modulation spectra) and post-processing (CMN, deltas)
+- [x] sound synthesis and signal builders (sinusoidal, white/pink/red noise, triangular, sawtooth, periodic pulse)
 - [x] simple audio playback and recording (Windows only)
 
 Planned:
@@ -24,13 +24,13 @@ Planned:
 - [ ] more transforms (CQT, DWT, Mellin, Hilbert, Haar, Hadamard)
 - [ ] more operations (resampling, spectral subtraction, adaptive filtering)
 - [ ] more feature extraction (MPEG7 descriptors and lots of others)
-- [ ] more sound synthesis and signal builders (noises, triangular, periodic pulse, ADSR, etc.)
+- [ ] more sound synthesis (ADSR, etc.)
 - [ ] sound effects (WahWah, Reverb, Vibrato, Chorus, Flanger, PitchShift, etc.)
 
 
 ## Philosophy of NWaves
 
-NWaves was initially intended for research and teaching basics of DSP and sound programming. All algorithms are coded in C# and designed mostly for offline processing. Perhaps, in the future I'll work on optimized versions and add them to the project separately.
+NWaves was initially intended for research, visualizations and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and designed mostly for offline processing. Perhaps, in the future I'll work on optimized versions and add them to the project separately.
 
 In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOD-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in static classes, so that you wouldn't get lost in object-oriented labyrinths. Although you may suddenly find a little bit of fluent syntax (e.g., SignalBuilders) and some Strategy patterns (e.g. FeatureExtractor) in the project.
 
@@ -118,25 +118,32 @@ var copy = new Signal(signal.SamplingRate, signal.Samples)
 
 ```C#
 
-DiscreteSignal sinusoid = SinusoidBuilder()
-				.SetParameter("amplitude", 12)
-				.SetParameter("frequency", 0.25)
-				.OfLength(1000)
-				.SampledAt(44100)
-				.Build();
+DiscreteSignal sinusoid = 
+	new SinusoidBuilder()
+		.SetParameter("amplitude", 1.2)
+		.SetParameter("frequency", 0.25)
+		.OfLength(1000)
+		.SampledAt(44100)
+		.Build();
 
-DiscreteSignal noise = WhiteNoiseBuilder()
-				.SetParameter("amp", 2.5)
-				.OfLength(800)
-				.SampledAt(44100)
-				.DelayedBy(200)
-				.Build();
+DiscreteSignal noise = 
+	new WhiteNoiseBuilder()
+		.SetParameter("min", -0.5)
+		.SetParameter("max", 0.5)
+		.OfLength(800)
+		.SampledAt(44100)
+		.DelayedBy(200)
+		.Build();
 
-DiscreteSignal noisy = SinusoidBuilder()
-				.FromSignal(sinusoid)
-				.SetParameter("phase", Math.PI/3)
-				.SuperimposedWith(noise)
-				.Build();
+DiscreteSignal noisy = 
+	new SinusoidBuilder()
+		.SetParameter("amp", 3.0)
+		.SetParameter("freq", 0.12)
+		.SetParameter("phase", Math.PI/3)
+		.OfLength(1000)
+		.SampledAt(44100)
+		.SuperimposedWith(noise)
+		.Build();
 
 ```
 

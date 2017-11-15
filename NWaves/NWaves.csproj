@@ -90,9 +90,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Audio\WaveFile.cs" />
     <Compile Include="Audio\WaveFormat.cs" />
+    <Compile Include="Signals\Builders\PinkNoiseBuilder.cs" />
+    <Compile Include="Signals\Builders\PulseWaveBuilder.cs" />
+    <Compile Include="Signals\Builders\RedNoiseBuilder.cs" />
     <Compile Include="Signals\Builders\SawtoothBuilder.cs" />
     <Compile Include="Signals\Builders\SignalBuilder.cs" />
     <Compile Include="Signals\Builders\SinusoidBuilder.cs" />
+    <Compile Include="Signals\Builders\TriangleWaveBuilder.cs" />
+    <Compile Include="Signals\Builders\WhiteNoiseBuilder.cs" />
     <Compile Include="Signals\ComplexDiscreteSignal.cs" />
     <Compile Include="Signals\ComplexDiscreteSignalExtensions.cs" />
     <Compile Include="Signals\DiscreteSignal.cs" />
