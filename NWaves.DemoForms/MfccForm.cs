@@ -37,15 +37,14 @@ namespace NWaves.DemoForms
             }
 
             var mfccExtractor = new MfccExtractor(13, _signal.SamplingRate,
-                                                  windowSize: 0.05,
-                                                  overlapSize: 0.025,
-                                                  melFilterbankSize: 20,
-                                                  //lowFreq: 100,
-                                                  //highFreq: 4500,
-                                                  lifterSize: 22,
-                                                  preEmphasis: 0.95,
-                                                  window: WindowTypes.Hamming);
-
+                                                      //windowSize: 0.05,
+                                                      //overlapSize: 0.025,
+                                                      melFilterbankSize: 20,
+                                                      lowFreq: 100,
+                                                      highFreq: 4200,
+                                                      lifterSize: 22,
+                                                      preEmphasis: 0.95,
+                                                      window: WindowTypes.Hamming);
             _mfccVectors = mfccExtractor.ComputeFrom(_signal).ToList();
             //FeaturePostProcessing.NormalizeMean(_mfccVectors);
 

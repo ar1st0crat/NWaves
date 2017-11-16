@@ -74,6 +74,11 @@ namespace NWaves.FeatureExtractors
         private SpectraRingBuffer _ringBuffer;
 
         /// <summary>
+        /// Nonlinearity coefficient (if 0 then Log10 is applied)
+        /// </summary>
+        private readonly int _power;
+
+        /// <summary>
         /// Size of FFT (in samples)
         /// </summary>
         private readonly int _fftSize;
@@ -103,6 +108,7 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <param name="featureCount"></param>
         /// <param name="samplingRate"></param>
+        /// <param name="power"></param>
         /// <param name="filterbankSize"></param>
         /// <param name="lowFreq"></param>
         /// <param name="highFreq"></param>
@@ -111,12 +117,13 @@ namespace NWaves.FeatureExtractors
         /// <param name="fftSize">Size of FFT (in samples)</param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
-        public PnccExtractor(int featureCount, int samplingRate,
+        public PnccExtractor(int featureCount, int samplingRate, int power = 15,
                              int filterbankSize = 40, double lowFreq = 100, double highFreq = 6800,
                              double windowSize = 0.0256, double overlapSize = 0.010, int fftSize = 1024,
                              double preEmphasis = 0.0, WindowTypes window = WindowTypes.Hamming)
         {
             FeatureCount = featureCount;
+            _power = power;
 
             var windowLength = (int)(samplingRate * windowSize);
             _windowSamples = Window.OfType(window, windowLength);
@@ -131,6 +138,16 @@ namespace NWaves.FeatureExtractors
             }
 
             GammatoneFilterBank = FilterBanks.Erb(filterbankSize, _fftSize, samplingRate, lowFreq, highFreq);
+
+            // use power spectrum
+            foreach (var filter in GammatoneFilterBank)
+            {
+                for (var j = 0; j < filter.Length; j++)
+                {
+                    var ps = filter[j] * filter[j];
+                    filter[j] = ps;
+                }
+            }
         }
 
         /// <summary>
@@ -165,7 +182,9 @@ namespace NWaves.FeatureExtractors
             
             const double meanPower = 1e10;
             var mean = 4e07;
-            
+
+            var d = _power != 0 ? 1.0 / _power : 0.0;
+
             var block = new double[_fftSize];
             var zeroblock = new double[_fftSize - _windowSamples.Length];
 
@@ -305,6 +324,8 @@ namespace NWaves.FeatureExtractors
                         smoothedSpectrumS[j] /= total;
                     }
 
+                    // 4.5) mean power normalization
+
                     var centralSpectrum = _ringBuffer.CentralSpectrum;
 
                     var sumPower = 0.0;
@@ -324,11 +345,21 @@ namespace NWaves.FeatureExtractors
                     // =============================================================
 
 
-                    // 5) nonlinearity (power ^ 1/15)
+                    // 5) nonlinearity (power ^ d    or    Log10)
 
-                    for (var j = 0; j < smoothedSpectrum.Length; j++)
+                    if (_power != 0)
                     {
-                        smoothedSpectrum[j] = Math.Pow(smoothedSpectrum[j], 1 / 15.0);
+                        for (var j = 0; j < smoothedSpectrum.Length; j++)
+                        {
+                            smoothedSpectrum[j] = Math.Pow(smoothedSpectrum[j], d);
+                        }
+                    }
+                    else
+                    {
+                        for (var j = 0; j < smoothedSpectrum.Length; j++)
+                        {
+                            smoothedSpectrum[j] = Math.Log10(smoothedSpectrum[j] + double.Epsilon);
+                        }
                     }
 
                     // 6) dct-II (normalized)
@@ -367,7 +398,7 @@ namespace NWaves.FeatureExtractors
 
                 for (var j = 0; j < spectrum.Length; j++)
                 {
-                    gammatoneSpectrum[i] += GammatoneFilterBank[i][j] * GammatoneFilterBank[i][j] * spectrum[j];
+                    gammatoneSpectrum[i] += GammatoneFilterBank[i][j] * spectrum[j];
                 }
             }
         }

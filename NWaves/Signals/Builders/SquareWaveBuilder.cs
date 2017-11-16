@@ -7,7 +7,7 @@ namespace NWaves.Signals.Builders
     /// <summary>
     /// Class for the generator of triangle waves
     /// </summary>
-    public class TriangleWaveBuilder : SignalBuilder
+    public class SquareWaveBuilder : SignalBuilder
     {
         /// <summary>
         /// Lower amplitude level
@@ -24,7 +24,7 @@ namespace NWaves.Signals.Builders
         /// </summary>
         private double _frequency;
 
-        public TriangleWaveBuilder()
+        public SquareWaveBuilder()
         {
             ParameterSetters = new Dictionary<string, Action<double>>
             {
@@ -35,13 +35,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Method generates triangle wave according to the formula:
-        /// 
-        ///     s[n] = LO + 2 * (HI - LO) * (i / N)          when i is less than N / 2
-        ///            HI + 2 * (LO - HI) * ((i - N/2) / N)  when i is less than N
-        /// 
-        /// where i = n % N
-        ///       N = fs / freq
+        /// Method generates square wave
         /// </summary>
         /// <returns></returns>
         public override DiscreteSignal Generate()
@@ -57,15 +51,12 @@ namespace NWaves.Signals.Builders
             }
 
             var n = SamplingRate / _frequency;
-            var start = (int)(n / 4);
-
-            var samples = Enumerable.Range(start, Length)
+            
+            var samples = Enumerable.Range(0, Length)
                                     .Select(i =>
                                     {
                                         var x = i % n;
-                                        return x < n / 2
-                                            ? _low + 2 * x * (_high - _low) / n
-                                            : _high + 2 * (x - n / 2) * (_low - _high) / n;
+                                        return x < n / 2 ? _high : _low;
                                     });
 
             return new DiscreteSignal(SamplingRate, samples);

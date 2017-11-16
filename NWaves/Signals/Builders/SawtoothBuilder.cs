@@ -10,17 +10,17 @@ namespace NWaves.Signals.Builders
     public class SawtoothBuilder : SignalBuilder
     {
         /// <summary>
-        /// 
+        /// Lower amplitude level
         /// </summary>
         private double _low;
 
         /// <summary>
-        /// 
+        /// Upper amplitude level
         /// </summary>
         private double _high;
 
         /// <summary>
-        /// 
+        /// Frequency of the sawtooth wave
         /// </summary>
         private double _frequency;
 
@@ -39,10 +39,12 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Formula:
+        /// Method generates sawtooth wave according to the formula:
         /// 
-        ///     s[n] = LO + (HI - LO) * frac(i * freq + phi)
+        ///     s[n] = LO + (HI - LO) * (i / N)
         /// 
+        /// where i = n % N
+        ///       N = fs / freq
         /// </summary>
         /// <returns></returns>
         public override DiscreteSignal Generate()
@@ -57,8 +59,11 @@ namespace NWaves.Signals.Builders
                 throw new FormatException("Upper level must be greater than he lower one!");
             }
 
-            var samples = Enumerable.Range(0, Length)
-                                    .Select(i => _low + (_high - _low) * (i*_frequency - Math.Floor(i * _frequency)));
+            var n = SamplingRate / _frequency;
+            var start = (int)(n / 2);
+
+            var samples = Enumerable.Range(start, Length)
+                                    .Select(i => _low + (_high - _low) * (i % n) / n);
 
             return new DiscreteSignal(SamplingRate, samples);
         }

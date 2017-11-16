@@ -118,7 +118,7 @@ namespace NWaves.DemoForms
                     signalBuilder = new SinusoidBuilder();
                     _signal2 = signalBuilder
                                     .SetParameter("amp", 0.2)
-                                    .SetParameter("freq", 200)
+                                    .SetParameter("freq", 233/*Hz*/)
                                     .OfLength(sampleCount)
                                     .SampledAt(samplingRate)
                                     .Build();
@@ -127,9 +127,31 @@ namespace NWaves.DemoForms
                 case "Sawtooth":
                     signalBuilder = new SawtoothBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("low", -0.2)
-                                    .SetParameter("high", 0.5)
-                                    .SetParameter("freq", 0.02)
+                                    .SetParameter("low", -0.3)
+                                    .SetParameter("high", 0.3)
+                                    .SetParameter("freq", 233/*Hz*/)
+                                    .OfLength(sampleCount)
+                                    .SampledAt(samplingRate)
+                                    .Build();
+                    break;
+
+                case "Triangle Wave":
+                    signalBuilder = new TriangleWaveBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("low", -0.3)
+                                    .SetParameter("high", 0.3)
+                                    .SetParameter("freq", 233/*Hz*/)
+                                    .OfLength(sampleCount)
+                                    .SampledAt(samplingRate)
+                                    .Build();
+                    break;
+
+                case "Square Wave":
+                    signalBuilder = new SquareWaveBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("low", -0.25)
+                                    .SetParameter("high", 0.25)
+                                    .SetParameter("freq", 233/*Hz*/)
                                     .OfLength(sampleCount)
                                     .SampledAt(samplingRate)
                                     .Build();
@@ -139,21 +161,10 @@ namespace NWaves.DemoForms
                     signalBuilder = new PulseWaveBuilder();
                     _signal2 = signalBuilder
                                     .SetParameter("amp", 0.5)
-                                    .SetParameter("pulse", 0.07)
-                                    .SetParameter("period", 0.2)
+                                    .SetParameter("pulse", 0.007/*sec*/)
+                                    .SetParameter("period", 0.020/*sec*/)
                                     .OfLength(sampleCount)
-                                    .DelayedBy(3000)
-                                    .SampledAt(samplingRate)
-                                    .Build();
-                    break;
-
-                case "Triangle Wave":
-                    signalBuilder = new TriangleWaveBuilder();
-                    _signal2 = signalBuilder
-                                    .SetParameter("low", -0.2)
-                                    .SetParameter("high", 0.5)
-                                    .SetParameter("freq", 0.02)
-                                    .OfLength(sampleCount)
+                                    .DelayedBy(50)
                                     .SampledAt(samplingRate)
                                     .Build();
                     break;
@@ -194,7 +205,7 @@ namespace NWaves.DemoForms
 
             //_signal3 = _signal1.Superimpose(_signal2);
 
-            DrawSignal(generatedSignalPanel, _signal2, 53);
+            DrawSignal(generatedSignalPanel, _signal2);//, 53);
 
             var spectrum = Transform.PowerSpectrum(_signal2.First(512).Samples);
             DrawSpectrum(spectrum);

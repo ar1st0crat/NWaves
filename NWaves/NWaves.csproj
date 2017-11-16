@@ -58,6 +58,7 @@
     <Compile Include="FeatureExtractors\MfccExtractor.cs" />
     <Compile Include="FeatureExtractors\MsExtractor.cs" />
     <Compile Include="FeatureExtractors\PnccExtractor.cs" />
+    <Compile Include="FeatureExtractors\SpnccExtractor.cs" />
     <Compile Include="Filters\Base\LtiFilter.cs" />
     <Compile Include="Filters\Base\FilteringOptions.cs" />
     <Compile Include="Filters\Base\FirFilter.cs" />
@@ -96,6 +97,7 @@
     <Compile Include="Signals\Builders\SawtoothBuilder.cs" />
     <Compile Include="Signals\Builders\SignalBuilder.cs" />
     <Compile Include="Signals\Builders\SinusoidBuilder.cs" />
+    <Compile Include="Signals\Builders\SquareWaveBuilder.cs" />
     <Compile Include="Signals\Builders\TriangleWaveBuilder.cs" />
     <Compile Include="Signals\Builders\WhiteNoiseBuilder.cs" />
     <Compile Include="Signals\ComplexDiscreteSignal.cs" />

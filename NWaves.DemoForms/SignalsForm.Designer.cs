@@ -133,8 +133,9 @@
             this.builderComboBox.Items.AddRange(new object[] {
             "Sinusoid",
             "Sawtooth",
-            "Pulse Wave",
             "Triangle Wave",
+            "Square Wave",
+            "Pulse Wave",
             "White Noise",
             "Pink Noise",
             "Red Noise"});

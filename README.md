@@ -15,8 +15,8 @@ Already available:
 - [x] median filter
 - [x] windowing functions (Hamming, Blackman, Hann, cepstral liftering)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB)
-- [x] feature extraction (MFCC, PNCC, LPC, LPCC, modulation spectra) and post-processing (CMN, deltas)
-- [x] sound synthesis and signal builders (sinusoidal, white/pink/red noise, triangular, sawtooth, periodic pulse)
+- [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, modulation spectra) and post-processing (CMN, deltas)
+- [x] sound synthesis and signal builders (sinusoid, white/pink/red noise, triangle, sawtooth, square, periodic pulse)
 - [x] simple audio playback and recording (Windows only)
 
 Planned:
@@ -32,7 +32,7 @@ Planned:
 
 NWaves was initially intended for research, visualizations and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and designed mostly for offline processing. Perhaps, in the future I'll work on optimized versions and add them to the project separately.
 
-In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOD-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in static classes, so that you wouldn't get lost in object-oriented labyrinths. Although you may suddenly find a little bit of fluent syntax (e.g., SignalBuilders) and some Strategy patterns (e.g. FeatureExtractor) in the project.
+In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOD-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in static classes, so that one wouldn't get lost in object-oriented labyrinths. Although you may suddenly find a little bit of fluent syntax (e.g., SignalBuilders) and some Strategy patterns (e.g. FeatureExtractor) in the project.
 
 ## Quickstart
 
@@ -255,9 +255,9 @@ var spectrogram = Transform.Stft(signal, 512, 256, WindowTypes.Hamming);
 
 var spectrum = Transform.MagnitudeSpectrum(signal[1000, 1512].Samples);
 var spectrum = Transform.PowerSpectrum(signal.Samples, fftSize: 512, normalize: false);
-var spectrum = Transform.LogPowerSpectrum(samples, fftSize: 1024);
+var spectrum = Transform.LogPowerSpectrum(samples, 1024);
 
-var cepstrum = Transform.Cepstrum(block.Samples, 20);
+var cepstrum = Transform.Cepstrum(signal.Samples, 20);
 
 ```
 
