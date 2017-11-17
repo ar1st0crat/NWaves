@@ -31,63 +31,63 @@ namespace NWaves.FeatureExtractors.Base
         /// Method for complementing feature vectors with 1st and 2nd order derivatives.
         /// </summary>
         /// <param name="vectors"></param>
-        public static void AddDeltas(List<FeatureVector> vectors)
+        /// <param name="previous"></param>
+        /// <param name="next"></param>
+        public static void AddDeltas(List<FeatureVector> vectors, 
+                                     List<FeatureVector> previous = null,
+                                     List<FeatureVector> next = null)
         {
+            const int N = 2;
+
+            if (previous == null)
+            {
+                previous = new List<FeatureVector> { vectors[0], vectors[0] };
+            }
+            if (next == null)
+            {
+                next = new List<FeatureVector> { vectors.Last(), vectors.Last() };
+            }
+
             var featureCount = vectors[0].Features.Length;
 
-            for (var i = 0; i < vectors.Count; i++)
+            var sequence = previous.Concat(vectors).Concat(next).ToArray();
+            
+            // deltas:
+
+            for (var i = N; i < sequence.Length - N; i++)
             {
-                var f = new double[2 * featureCount];
+                var f = new double[3 * featureCount];
 
                 for (var j = 0; j < featureCount; j++)
                 {
-                    f[j] = vectors[i].Features[j];
+                    f[j] = vectors[i - N].Features[j];
                 }
                 for (var j = 0; j < featureCount; j++)
                 {
-                    for (var n = 0; n < 2; n++)
+                    var num = 0.0;
+                    for (var n = 1; n <= N; n++)
                     {
-                        if (i + 1 < vectors.Count)
-                        {
-                            f[j + featureCount] += vectors[i + 1].Features[j];
-
-                            if (i + 2 < vectors.Count)
-                            {
-                                f[j + featureCount] += 2 * vectors[i + 2].Features[j];
-                            }
-                            else
-                            {
-                                f[j + featureCount] += 2 * vectors[i + 1].Features[j];
-                            }
-                        }
-                        else
-                        {
-                            f[j + featureCount] += 3 * vectors[i].Features[j];
-                        }
-
-                        if (i > 1)
-                        {
-                            f[j + featureCount] -= vectors[i - 1].Features[j];
-
-                            if (i > 2)
-                            {
-                                f[j + featureCount] -= 2 * vectors[i - 2].Features[j];
-                            }
-                            else
-                            {
-                                f[j + featureCount] -= 2 * vectors[i - 1].Features[j];
-                            }
-                        }
-                        else
-                        {
-                            f[j + featureCount] -= 3 * vectors[i].Features[j];
-                        }
+                        num += n * (sequence[i + n].Features[j] - sequence[i - n].Features[j]);
                     }
-
-                    f[j + featureCount] /= 10;
+                    f[j + featureCount] = num / 10;
                 }
+                vectors[i - N].Features = f;
+            }
 
-                vectors[i].Features = f;
+            // delta-deltas:
+
+            for (var i = N; i < sequence.Length - N; i++)
+            {
+                for (var j = 0; j < featureCount; j++)
+                {
+                    var num = 0.0;
+                    for (var n = 1; n <= N; n++)
+                    {
+                        num += sequence[i + n].Features[j + featureCount] * n;
+                        num -= sequence[i - n].Features[j + featureCount] * n;
+                    }
+                    vectors[i - N].Features[j + 2 * featureCount] = num / 10;
+                }
             }
         }
     }

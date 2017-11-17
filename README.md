@@ -30,7 +30,7 @@ Planned:
 
 ## Philosophy of NWaves
 
-NWaves was initially intended for research, visualizations and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and designed mostly for offline processing (it doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C++ or Asm, but it's not that *very* slow for many purposes either). Perhaps, in the future I'll work on optimized versions and add them to the project separately.
+NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and designed mostly for offline processing (it doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C++ or Asm, but it's not that *very* slow for many purposes either). Perhaps, in the future I'll work on optimized versions and add them to the project separately.
 
 In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOD-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in static classes, so that one wouldn't get lost in object-oriented labyrinths. Although you may suddenly find a little bit of fluent syntax (e.g., SignalBuilders) and some Strategy patterns (e.g. FeatureExtractor) in the project.
 
@@ -280,9 +280,10 @@ var pnccExtractor = new PnccFeatureExtractor(13, signal.SamplingRate);
 var pnccVectors = pnccExtractor.ComputeFrom(signal.First(10000));
 FeaturePostProcessing.NormalizeMean(pnccVectors);
 
-using (var serializer = new CsvFeatureSerializer("mfccs.csv"))
+using (var csvFile = new FileStream("mfccs.csv", FileMode.Create))
 {
-	serializer.Save(mfccVectors);
+	var serializer = new CsvFeatureSerializer(mfccVectors);
+	serializer.SaveTo(csvFile);
 }
 
 ```

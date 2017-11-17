@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Serializers;
 using NWaves.Signals;
 using NWaves.Windows;
 
@@ -22,7 +23,7 @@ namespace NWaves.DemoForms
             InitializeComponent();
         }
 
-        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var ofd = new OpenFileDialog();
             if (ofd.ShowDialog() != DialogResult.OK)
@@ -40,19 +41,26 @@ namespace NWaves.DemoForms
                                                       //windowSize: 0.05,
                                                       //overlapSize: 0.025,
                                                       melFilterbankSize: 20,
-                                                      lowFreq: 100,
-                                                      highFreq: 4200,
+                                                      //lowFreq: 100,
+                                                      //highFreq: 4200,
                                                       lifterSize: 22,
                                                       preEmphasis: 0.95,
                                                       window: WindowTypes.Hamming);
             _mfccVectors = mfccExtractor.ComputeFrom(_signal).ToList();
             //FeaturePostProcessing.NormalizeMean(_mfccVectors);
+            FeaturePostProcessing.AddDeltas(_mfccVectors);
 
             FillFeaturesList(_mfccVectors, mfccExtractor.FeatureDescriptions);
             mfccListView.Items[0].Selected = true;
 
             PlotMelFilterbank(mfccExtractor.MelFilterBank);
             PlotMfcc(_mfccVectors[0].Features);
+
+            using (var csvFile = new FileStream("mfccs.csv", FileMode.Create))
+            {
+                var serializer = new CsvFeatureSerializer(_mfccVectors);
+                await serializer.SaveToAsync(csvFile);
+            }
         }
 
         private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors,

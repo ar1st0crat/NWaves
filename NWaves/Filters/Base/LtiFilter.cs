@@ -1,5 +1,8 @@
-﻿using NWaves.Signals;
+﻿using System.Linq;
+using NWaves.Operations;
+using NWaves.Signals;
 using NWaves.Transforms;
+using NWaves.Utils;
 
 namespace NWaves.Filters.Base
 {
@@ -22,12 +25,12 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Zeros of the transfer function
         /// </summary>
-        public abstract ComplexDiscreteSignal Zeros { get; }
+        public abstract ComplexDiscreteSignal Zeros { get; set; }
 
         /// <summary>
         /// Poles of the transfer function
         /// </summary>
-        public abstract ComplexDiscreteSignal Poles { get; }
+        public abstract ComplexDiscreteSignal Poles { get; set; }
 
         /// <summary>
         /// Returns the complex frequency response of a filter.
@@ -60,6 +63,43 @@ namespace NWaves.Filters.Base
         {
             var impulse = new DiscreteSignal(1, length) { [0] = 1.0 };
             return ApplyTo(impulse);
+        }
+
+        /// <summary>
+        /// Method for converting zeros(poles) to TF numerator(denominator)
+        /// </summary>
+        /// <param name="zp"></param>
+        /// <returns></returns>
+        public double[] ZpToTf(ComplexDiscreteSignal zp)
+        {
+            var re = zp.Real;
+            var im = zp.Imag;
+
+            var tf = new ComplexDiscreteSignal(1, new[] { 1.0, -re[0] }, new[] { 0.0, -im[0] });
+
+            for (var k = 1; k < re.Length; k++)
+            {
+                tf = Operation.Convolve(tf, new ComplexDiscreteSignal(1, new[] { 1.0, -re[k] }, new[] { 0.0, -im[k] }));
+            }
+
+            return tf.Real;
+        }
+
+        /// <summary>
+        /// Method for converting TF numerator(denominator) to zeros(poles)
+        /// </summary>
+        /// <param name="tf"></param>
+        /// <returns></returns>
+        public ComplexDiscreteSignal TfToZp(double[] tf)
+        {
+            if (tf.Length <= 1)
+            {
+                return null;
+            }
+
+            var roots = MathUtils.PolynomialRoots(tf.Reverse().ToArray(), new double[tf.Length]);
+
+            return new ComplexDiscreteSignal(1, roots.Item1, roots.Item2);
         }
     }
 }

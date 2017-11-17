@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using NWaves.Filters.Base;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -63,13 +64,49 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// 
+        /// Method for ideal lowpass FIR filter design using window method
+        /// </summary>
+        /// <param name="order"></param>
+        /// <param name="freq"></param>
+        /// <param name="window"></param>
+        /// <returns></returns>
+        public static FirFilter DesignFirLowPassFilter(int order, double freq, WindowTypes window = WindowTypes.Hamming)
+        {
+            const int fftSize = 512;
+
+            var magnitudeResponse = new double[fftSize];
+            var phaseResponse = new double[fftSize];
+
+            var cutoffPos = (int)(freq * fftSize);
+            for (var i = 0; i < cutoffPos; i++)
+            {
+                magnitudeResponse[i] = 1.0;
+            }
+
+            return DesignFirFilter(order, magnitudeResponse, phaseResponse, window);
+        }
+
+        /// <summary>
+        /// Method for making HP filter from the linear-phase LP filter
         /// </summary>
         /// <param name="filter"></param>
         /// <returns></returns>
         public static FirFilter LpToHp(FirFilter filter)
         {
-            return null;
+            var kernel = filter.Kernel.Select(k => -k).ToArray();
+            kernel[kernel.Length / 2] += 1.0;
+            return new FirFilter(kernel);
+        }
+
+        /// <summary>
+        /// Method for making LP filter from the linear-phase HP filter
+        /// (no different from LpToHp method)
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        public static FirFilter HpToLp(FirFilter filter)
+        {
+            return LpToHp(filter);
         }
     }
 }

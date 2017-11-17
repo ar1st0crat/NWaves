@@ -10,6 +10,7 @@ using NWaves.Audio.Mci;
 using NWaves.Filters;
 using NWaves.Filters.Base;
 using NWaves.Filters.BiQuad;
+using NWaves.Filters.Fda;
 using NWaves.Transforms;
 
 namespace NWaves.DemoForms
@@ -63,10 +64,12 @@ namespace NWaves.DemoForms
                     AnalyzePreemphasisFilter();
                     break;
                 case "Butterworth":
-                    _filter = new ButterworthFilter(0.15, 4);
-
-                    numeratorListBox.DataSource = (_filter as IirFilter).B;
-                    denominatorListBox.DataSource = (_filter as IirFilter).A;
+                    //_filter = new ButterworthFilter(0.15, 4);
+                    _filter = (_filter == null) ? FilterDesign.DesignFirLowPassFilter(31, 0.1) : FilterDesign.LpToHp(_filter as FirFilter);
+                    
+                    //numeratorListBox.DataSource = (_filter as IirFilter).B;
+                    //denominatorListBox.DataSource = (_filter as IirFilter).A;
+                    numeratorListBox.DataSource = (_filter as FirFilter).Kernel;
 
                     filterParamsDataGrid.RowCount = 2;
                     filterParamsDataGrid.Rows[0].Cells[0].Value = "order";

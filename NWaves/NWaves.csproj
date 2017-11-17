@@ -58,6 +58,7 @@
     <Compile Include="FeatureExtractors\MfccExtractor.cs" />
     <Compile Include="FeatureExtractors\MsExtractor.cs" />
     <Compile Include="FeatureExtractors\PnccExtractor.cs" />
+    <Compile Include="FeatureExtractors\Serializers\CsvFeatureSerializer.cs" />
     <Compile Include="FeatureExtractors\SpnccExtractor.cs" />
     <Compile Include="Filters\Base\LtiFilter.cs" />
     <Compile Include="Filters\Base\FilteringOptions.cs" />

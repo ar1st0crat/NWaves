@@ -259,17 +259,8 @@ namespace NWaves.Filters.Base
         /// </summary>
         public override ComplexDiscreteSignal Zeros
         {
-            get
-            {
-                if (B.Length <= 1)
-                {
-                    return null;
-                }
-
-                var roots = MathUtils.PolynomialRoots(B.Reverse().ToArray(), new double[B.Length]);
-
-                return new ComplexDiscreteSignal(1, roots.Item1, roots.Item2);
-            }
+            get { return TfToZp(B); }
+            set { B = ZpToTf(value); }
         }
 
         /// <summary>
@@ -277,17 +268,8 @@ namespace NWaves.Filters.Base
         /// </summary>
         public override ComplexDiscreteSignal Poles
         {
-            get
-            {
-                if (A.Length <= 1)
-                {
-                    return null;
-                }
-
-                var roots = MathUtils.PolynomialRoots(A.Reverse().ToArray(), new double[A.Length]);
-
-                return new ComplexDiscreteSignal(1, roots.Item1, roots.Item2);
-            }
+            get { return TfToZp(A); }
+            set { A = ZpToTf(value); Normalize(); }
         }
     }
 }

@@ -29,7 +29,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// 
+        /// Constructor accepting the kernel of a filter
         /// </summary>
         /// <param name="kernel"></param>
         public FirFilter(IEnumerable<double> kernel)
@@ -160,22 +160,17 @@ namespace NWaves.Filters.Base
         /// </summary>
         public override ComplexDiscreteSignal Zeros
         {
-            get
-            {
-                if (Kernel.Length <= 1)
-                {
-                    return null;
-                }
-
-                var roots = MathUtils.PolynomialRoots(Kernel.Reverse().ToArray(), new double[Kernel.Length]);
-
-                return new ComplexDiscreteSignal(1, roots.Item1, roots.Item2);
-            }
+            get { return TfToZp(Kernel); }
+            set { Kernel = ZpToTf(value); }
         }
 
         /// <summary>
         /// Poles of the transfer function (FIR filter does not have poles)
         /// </summary>
-        public override ComplexDiscreteSignal Poles => null;
+        public override ComplexDiscreteSignal Poles
+        {
+            get { return null; }
+            set { }
+        }
     }
 }
