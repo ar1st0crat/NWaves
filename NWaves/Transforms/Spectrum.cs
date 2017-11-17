@@ -1,4 +1,5 @@
 ﻿using System;
+using NWaves.Signals;
 using NWaves.Utils;
 
 namespace NWaves.Transforms
@@ -40,7 +41,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Power spectrum (normalized):
+        /// Power spectrum (normalized by default):
         /// 
         ///     spectrum =   (re * re + im * im) / fftSize
         /// 
@@ -113,8 +114,43 @@ namespace NWaves.Transforms
 
             Fft(samples, imag, fftSize);
 
-            realSpectrum = FastCopy.ArrayFragment(samples, fftSize / 2 + 1);
-            imagSpectrum = FastCopy.ArrayFragment(imag, fftSize / 2 + 1);
+            realSpectrum = FastCopy.ArrayFragment(samples, fftSize/2 + 1);
+            imagSpectrum = FastCopy.ArrayFragment(imag, fftSize/2 + 1);
+        }
+
+        /// <summary>
+        /// Overloaded method for DiscreteSignal as an input
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="fftSize"></param>
+        /// <param name="normalize"></param>
+        /// <returns></returns>
+        public static double[] MagnitudeSpectrum(DiscreteSignal signal, int fftSize = 512, bool normalize = false)
+        {
+            return MagnitudeSpectrum(signal.Samples, fftSize, normalize);
+        }
+
+        /// <summary>
+        /// Overloaded method for DiscreteSignal as an input
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="fftSize"></param>
+        /// <param name="normalize"></param>
+        /// <returns></returns>
+        public static double[] PowerSpectrum(DiscreteSignal signal, int fftSize = 512, bool normalize = false)
+        {
+            return PowerSpectrum(signal.Samples, fftSize, normalize);
+        }
+
+        /// <summary>
+        /// Overloaded method for DiscreteSignal as an input
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="fftSize"></param>
+        /// <returns></returns>
+        public static double[] LogPowerSpectrum(DiscreteSignal signal, int fftSize = 512)
+        {
+            return LogPowerSpectrum(signal.Samples, fftSize);
         }
     }
 }

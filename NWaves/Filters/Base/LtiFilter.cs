@@ -4,7 +4,7 @@ using NWaves.Transforms;
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Base class for all kinds of filters.
+    /// Base class for all kinds of LTI filters.
     /// Provides general algorithms for computing impulse and frequency responses
     /// and leaves method ApplyTo() abstract.
     /// </summary>

@@ -15,7 +15,7 @@ Already available:
 - [x] median filter
 - [x] windowing functions (Hamming, Blackman, Hann, cepstral liftering)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB)
-- [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, modulation spectra) and post-processing (CMN, deltas)
+- [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, modulation spectra), post-processing (CMN, deltas) and CSV serialization
 - [x] sound synthesis and signal builders (sinusoid, white/pink/red noise, triangle, sawtooth, square, periodic pulse)
 - [x] simple audio playback and recording (Windows only)
 
@@ -30,7 +30,7 @@ Planned:
 
 ## Philosophy of NWaves
 
-NWaves was initially intended for research, visualizations and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and designed mostly for offline processing. Perhaps, in the future I'll work on optimized versions and add them to the project separately.
+NWaves was initially intended for research, visualizations and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and designed mostly for offline processing (it doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C++ or Asm, but it's not that *very* slow for many purposes either). Perhaps, in the future I'll work on optimized versions and add them to the project separately.
 
 In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOD-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in static classes, so that one wouldn't get lost in object-oriented labyrinths. Although you may suddenly find a little bit of fluent syntax (e.g., SignalBuilders) and some Strategy patterns (e.g. FeatureExtractor) in the project.
 
@@ -40,53 +40,54 @@ In the beginning... there were interfaces and factories here and there, and NWav
 
 ```C#
 
+// Create signal {0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75} sampled at 8 kHz:
 var constants = new DiscreteSignal(8000, 10, 0.75);
-// {0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75} sampled at 8 kHz
 
+
+// Create signal {0.0, 1.0, 2.0, ..., 99.0} sampled at 22050 Hz
 var linear = new DiscreteSignal(22050, Enumerable.Range(0, 100));
-// {0.0, 1.0, 2.0, ..., 99.0} sampled at 22050 Hz
 
-var bits = new DiscreteSignal(44100, new double [] {1, 0});
-// {1.0, 0.0}
+
+// Create signal {1.0, 0.0} sampled at 44,1 kHz
+var bits = new DiscreteSignal(44100, new double [] { 1, 0 });
+
+
+// Create one more signal from samples repeated 3 times
+var samples = new double[] { 0.5, 0.2, -0.3, 1.2, 1.6, -1.8, 0.3, -0.2 };
+
+var signal = new DiscreteSignal(16000, samples).Repeat(3);
+
+
+// DiscreteSignal samples are mutable by design:
+
+signal[2] = 1.27;
+signal[3] += 0.5;
+
+
+// slices (as in Python: "signal[6:18]")
+
+var middle = signal[6, 18];
+
+// specific slices:
+
+var starting = signal.First(10);	// Python analog is 'signal[:10]'
+var ending = signal.Last(10);		// Python analog is 'signal[-10:]'
+
+
+// We can get the entire array of samples anytime
+// (keeping in mind that it's mutable, i.e. it's not(!) IReadOnlyList)
+
+var samples = signal.Samples;
 
 
 // repeat signal 100 times {1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, ...}
 
 var bitStream = bits * 100;
 // or
-var bitStream = signal.Repeat(100);
+var bitStream = bits.Repeat(100);
 
 
-// Samples in DiscreteSignals are mutable by design:
-
-var samples = new double[] {0.5, 0.2, -0.3, 1.2, 1.6, -1.8, 0.3, -0.2};
-
-var signal = new DiscreteSignal(16000, samples).Repeat(3);
-
-signal[2] = 1.27;
-signal[3] += 0.5;
-
-var sample = signal[10];
-
-// slices (as in Python: "signal[500:1000]")
-
-var middle = signal[500, 1000];
-
-
-// specific slices:
-
-var initialSignal = signal.First(100);
-var endingSignal = signal.Last(100);
-
-
-
-// You can get all samples as an entire array of doubles
-// (be careful with mutability! It's not IReadOnlyList)
-
-var samples = signal.Samples;
-
-
-// concatenate
+// concatenate signals
 
 var concat = signal1 + signal2;
 // or
@@ -105,11 +106,11 @@ var delayed = signal1.Delay(1000);
 var delayed = signal1 + 1000;
 
 
-// make a copy
+// make a deep copy of a signal
 var copy = signal.Copy();
 
 // equivalent to:
-var copy = new Signal(signal.SamplingRate, signal.Samples)
+var copy = new Signal(signal.SamplingRate, signal.Samples, allocateNew: true);
 
 ```
 
@@ -121,15 +122,15 @@ var copy = new Signal(signal.SamplingRate, signal.Samples)
 DiscreteSignal sinusoid = 
 	new SinusoidBuilder()
 		.SetParameter("amplitude", 1.2)
-		.SetParameter("frequency", 0.25)
+		.SetParameter("frequency", 500.0/*Hz*/)
 		.OfLength(1000)
-		.SampledAt(44100)
+		.SampledAt(44100/*Hz*/)
 		.Build();
 
 DiscreteSignal noise = 
 	new WhiteNoiseBuilder()
-		.SetParameter("min", -0.5)
-		.SetParameter("max", 0.5)
+		.SetParameter("min", -1.5)
+		.SetParameter("max", 1.5)
 		.OfLength(800)
 		.SampledAt(44100)
 		.DelayedBy(200)
@@ -138,7 +139,7 @@ DiscreteSignal noise =
 DiscreteSignal noisy = 
 	new SinusoidBuilder()
 		.SetParameter("amp", 3.0)
-		.SetParameter("freq", 0.12)
+		.SetParameter("freq", 1200.0/*Hz*/)
 		.SetParameter("phase", Math.PI/3)
 		.OfLength(1000)
 		.SampledAt(44100)
@@ -148,17 +149,15 @@ DiscreteSignal noisy =
 ```
 
 
-### Loading/saving signals from/in wave files:
+### Loading signals from wave files:
 
 ```C#
-
-// load
 
 using (var stream = new FileStream("sample.wav", FileMode.Open))
 {
 	IAudioContainer waveFile = new WaveFile(stream);
 
-	// address with enum (Left, Right, Interleave):
+	// address signals with Channels enum (Left, Right, Interleave):
 
 	var signalLeft = waveFile[Channels.Left];
 	var signalRight = waveFile[Channels.Right];
@@ -166,17 +165,124 @@ using (var stream = new FileStream("sample.wav", FileMode.Open))
 
 	// or simply like this:
 
-	var signal = waveFile.Signals[0];
+	var signalLeft = waveFile.Signals[0];
 	var signalRight = waveFile.Signals[1];
 }
 
+```
 
-// save
 
-using (var stream = new FileStream(@"saved.wav", FileMode.Create))
+### Saving signals to wave files:
+
+```C#
+
+using (var stream = new FileStream("saved.wav", FileMode.Create))
 {
 	var waveFile = new WaveFile(signal);
 	waveFile.SaveTo(stream);
+}
+
+```
+
+
+### Transforms:
+
+```C#
+
+var spectrogram = Transform.Stft(signal, 512, 256, WindowTypes.Hamming);
+
+var magnitudeSpectrum = Transform.MagnitudeSpectrum(signal[1000, 1512]);
+var powerSpectrum = Transform.PowerSpectrum(signal, fftSize: 512, normalize: false);
+var logPowerSpectrum = Transform.LogPowerSpectrum(samples, 1024);
+
+var cepstrum = Transform.Cepstrum(signal, 20);
+
+```
+
+
+### Operations:
+
+```C#
+
+// the following five operations are based on FFT convolution:
+
+var filteredSignal = Operation.Convolve(signal, kernel);
+var correlated = Operation.CrossCorrelate(signal1, signal2);
+var deconvolved = Operation.Deconvolve(filteredSignal, kernel);
+
+var olaFiltered = Operation.OverlapAdd(signal, kernel, 2048);
+var olsFiltered = Operation.OverlapSave(signal, kernel, 2048);
+
+// TODO:
+
+var resampled = Operation.Resample(signal, 22050);
+var decimated = Operation.Decimate(signal, 3);
+
+```
+
+
+### Filters and effects (that are filters as well):
+
+```C#
+
+var maFilter = new MovingAverageFilter(7);
+var smoothedSignal = maFilter.ApplyTo(signal);
+
+var frequency = 800.0/*Hz*/;
+var notchFilter = new BiQuad.NotchFilter(frequency / signal.SamplingRate);
+var notchedSignal = notchFilter.ApplyTo(signal);
+
+
+// filter analysis:
+
+var filter = new IirFilter(new [] {1.0, 0.5, 0.2}, new [] {1.0, -0.8, 0.3});
+
+var impulseResponse = filter.ImpulseResponse();
+var magnitudeResponse = filter.FrequencyResponse().Magnitude;
+var phaseResponse = filter.FrequencyResponse().Phase;
+
+var zeros = filter.Zeros;
+var poles = filter.Poles;
+
+
+// some filter design:
+
+var firFilter = FilterDesign.DesignFirFilter(43, magnitudeResponse);
+
+var highpassFilter = FilterDesign.LpToHp(lowpassFilter);
+
+
+// TODO:
+
+var filtered = signal.ApplyFilter(filter.CombineWith(new Reverb(params))
+                                        .CombineWith(new FirFilter(coeffs)));
+
+var distortion = new DistortionEffect();
+var echo = new EchoEffect(delay: 20);
+var reverb = new ReverbEffect(1.9f);
+
+var filtered = signal.ApplyFilter(distortion + echo + reverb);
+
+```
+
+
+### Feature extractors
+
+```C#
+
+var lpcExtractor = new LpcFeatureExtractor(16, signal.SamplingRate, windowSize: 0.032, overlapSize: 0.015);
+var lpcVectors = lpcExtractor.ComputeFrom(signal);
+
+var mfccExtractor = new MfccFeatureExtractor(13, signal.SamplingRate, melFilterbanks: 24, preEmphasis: 0.95);
+var mfccVectors = mfccExtractor.ComputeFrom(signal).Take(15);
+
+var pnccExtractor = new PnccFeatureExtractor(13, signal.SamplingRate);
+var pnccVectors = pnccExtractor.ComputeFrom(signal.First(10000));
+FeaturePostProcessing.NormalizeMean(pnccVectors);
+
+using (var serializer = new CsvFeatureSerializer("mfccs.csv"))
+{
+	serializer.Save(mfccVectors);
 }
 
 ```
@@ -189,22 +295,21 @@ MciAudioPlayer and MciAudioRecorder work only with Windows, since they use winmm
 ```C#
 
 IAudioPlayer player = new MciAudioPlayer();
-player.Volume = 0.4f;
 
 // play entire file
 await player.PlayAsync("temp.wav");
 
-// play from 16000th sample to 32000th sample
+// play file from 16000th sample to 32000th sample
 await player.PlayAsync("temp.wav", 16000, 32000);
 
 
-// in some event handler
+// ...in some event handler
 player.Pause();
 
-// in some event handler
+// ...in some event handler
 player.Resume();
 
-// in some event handler
+// ...in some event handler
 player.Stop();
 
 
@@ -212,19 +317,19 @@ player.Stop();
 
 IAudioRecorder = new MciAudioRecorder();
 
-// in some event handler
+// ...in some event handler
 recorder.StartRecording(16000);
 
-// in some event handler
+// ...in some event handler
 recorder.StopRecording("temp.wav");
 
 ```
 
-Playing audio from buffers in memory is implied by design but it's not implemented in MciAudioPlayer (seems that it's simply impossible to do...). Still there's some workaround: in the calling code the signal can be saved to a temporary wave file, and then player can play this file.
+Playing audio from buffers in memory is implied by design but it's not implemented in MciAudioPlayer so far. Still there's some workaround: in the calling code the signal can be saved to a temporary wave file, and then player can play this file.
 
 ```C#
 
-// this won't work:
+// this won't work, unfortunately:
 
 // await player.PlayAsync(signal);
 // await player.PlayAsync(signal, 16000, 32000);
@@ -247,74 +352,6 @@ File.Delete(filename);
 
 ```
 
-### Transforms:
-
-```C#
-
-var spectrogram = Transform.Stft(signal, 512, 256, WindowTypes.Hamming);
-
-var spectrum = Transform.MagnitudeSpectrum(signal[1000, 1512].Samples);
-var spectrum = Transform.PowerSpectrum(signal.Samples, fftSize: 512, normalize: false);
-var spectrum = Transform.LogPowerSpectrum(samples, 1024);
-
-var cepstrum = Transform.Cepstrum(signal.Samples, 20);
-
-```
-
-
-### Operations:
-
-```C#
-
-var filteredSignal = Operation.Convolve(signal, kernel);
-
-var correlated = Operation.CrossCorrelate(signal1, signal2);
-
-var deconvolved = Operation.Deconvolve(filteredSignal, kernel);
-
-// TODO:
-
-var resampled = Operation.Resample(signal, 22050);
-var decimated = Operation.Decimate(signal, 3);
-
-```
-
-
-### Filters and effects (that are filters as well):
-
-```C#
-
-var filter = new MovingAverageFilter(7);
-var filteredSignal = filter.ApplyTo(signal);
-
-// TODO:
-
-var filtered = signal.ApplyFilter(filter.CombineWith(new Reverb(params))
-                                        .CombineWith(new FirFilter(coeffs)));
-
-var distortion = new DistortionEffect();
-var echo = new EchoEffect(delay: 20);
-var reverb = new ReverbEffect(1.9f);
-
-var filtered = signal.ApplyFilter(distortion + echo + reverb);
-
-var freqz = filter.Freqz();
-
-```
-
-
-### Feature extractors
-
-```C#
-
-var lpcExtractor = new LpcFeatureExtractor(16, signal.SamplingRate, windowSize: 0.032, overlapSize: 0.015);
-var lpcVectors = lpcExtractor.ComputeFrom(signal);
-
-var mfccExtractor = new MfccFeatureExtractor(13, signal.SamplingRate, melFilterbanks: 24, preEmphasis: 0.95);
-var mfccVectors = mfccExtractor.ComputeFrom(signal).Take(15);
-FeaturePostProcessing.NormalizeMean(mfccVectors);
-
-```
 
 ### Demos
 

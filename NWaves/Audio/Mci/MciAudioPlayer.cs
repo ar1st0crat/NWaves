@@ -88,7 +88,7 @@ namespace NWaves.Audio.Mci
 
             var currentAlias = _alias;
 
-            await Task.Delay(duration * 1000 / samplingRate);
+            await Task.Delay((int)(duration * 1000.0 / samplingRate));
 
             // During this time someone could Pause player.
             // In this case we add pause duration to awaiting time.

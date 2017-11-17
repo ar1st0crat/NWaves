@@ -71,15 +71,5 @@ namespace NWaves.Filters.Fda
         {
             return null;
         }
-        
-        public static double[][] ZpToTf(double[] zr, double[] zi, double[] pr, double[] pi)
-        {
-            return null;
-        }
-
-        public static double[][] TfToZp(double[] num, double[] den)
-        {
-            return null;
-        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using NWaves.Signals;
 using NWaves.Utils;
 
 namespace NWaves.Transforms
@@ -6,7 +7,7 @@ namespace NWaves.Transforms
     public static partial class Transform
     {
         /// <summary>
-        /// Method for computing real cepstrum of a signal
+        /// Method for computing real cepstrum from array of samples
         /// </summary>
         /// <param name="real"></param>
         /// <param name="cepstrumSize"></param>
@@ -34,6 +35,18 @@ namespace NWaves.Transforms
 
             // take real truncated part
             return FastCopy.ArrayFragment(real, cepstrumSize);
+        }
+
+        /// <summary>
+        /// Method for computing real cepstrum of a signal
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="cepstrumSize"></param>
+        /// <param name="fftSize"></param>
+        /// <returns></returns>
+        public static double[] Cepstrum(DiscreteSignal signal, int cepstrumSize, int fftSize = 512)
+        {
+            return Cepstrum(signal.Samples, cepstrumSize, fftSize);
         }
     }
 }

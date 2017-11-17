@@ -3,9 +3,9 @@
 namespace NWaves.Utils
 {
     /// <summary>
-    /// 
+    /// Static class providing some helpful math functions
     /// </summary>
-    public static class MathUtils
+    static class MathUtils
     {
         /// <summary>
         /// Method for computing next power of 2 (closest to the given number)
@@ -220,13 +220,13 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Method checks if two complex numbers are the same
+        /// Method checks if two complex numbers are basically identical
         /// </summary>
-        /// <param name="re1"></param>
-        /// <param name="im1"></param>
-        /// <param name="re2"></param>
-        /// <param name="im2"></param>
-        /// <param name="tolerance"></param>
+        /// <param name="re1">Real part of the first number</param>
+        /// <param name="im1">Imaginary part of the first number</param>
+        /// <param name="re2">Real part of the second number</param>
+        /// <param name="im2">Imaginary part of the second number</param>
+        /// <param name="tolerance">The difference threshold indicating the numbers are basically identical</param>
         /// <returns></returns>
         public static bool AreCloseComplex(double re1, double im1, double re2, double im2, double tolerance)
         {

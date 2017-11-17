@@ -355,7 +355,7 @@ namespace NWaves.DemoForms
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.OverlapAdd);
             DrawSignal(signalAfterFilteringPanel, _filteredSignal);
 
-            _filteredSpectrogram = Transform.Stft(_filteredSignal.Samples);
+            _filteredSpectrogram = Transform.Stft(_filteredSignal);
             DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
         }
 
@@ -366,7 +366,7 @@ namespace NWaves.DemoForms
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.OverlapSave);
             DrawSignal(signalAfterFilteringPanel, _filteredSignal);
 
-            _filteredSpectrogram = Transform.Stft(_filteredSignal.Samples);
+            _filteredSpectrogram = Transform.Stft(_filteredSignal);
             DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
         }
 
@@ -377,7 +377,7 @@ namespace NWaves.DemoForms
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.DifferenceEquation);
             DrawSignal(signalAfterFilteringPanel, _filteredSignal);
 
-            _filteredSpectrogram = Transform.Stft(_filteredSignal.Samples);
+            _filteredSpectrogram = Transform.Stft(_filteredSignal);
             DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
         }
 

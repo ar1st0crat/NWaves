@@ -112,7 +112,7 @@ namespace NWaves.Signals
         /// <returns>Copy of the signal</returns>
         public DiscreteSignal Copy()
         {
-            return new DiscreteSignal(SamplingRate, Samples, allocateNew: true);
+            return new DiscreteSignal(SamplingRate, Samples, true);
         }
 
         /// <summary>
@@ -174,6 +174,17 @@ namespace NWaves.Signals
         public static DiscreteSignal operator +(DiscreteSignal s, int delay)
         {
             return s.Delay(delay);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="delay"></param>
+        /// <returns></returns>
+        public static DiscreteSignal operator -(DiscreteSignal s, int delay)
+        {
+            return s.Delay(-delay);
         }
 
         /// <summary>

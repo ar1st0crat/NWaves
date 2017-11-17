@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using NWaves.Signals;
 using NWaves.Utils;
 using NWaves.Windows;
 
@@ -10,34 +11,51 @@ namespace NWaves.Transforms
         /// STFT (spectrogram) is essentially the list of spectra in time
         /// </summary>
         /// <param name="samples">The samples of signal</param>
-        /// <param name="fftSize">Size of FFT</param>
+        /// <param name="windowSize">Size of window</param>
         /// <param name="hopSize">Hop (overlap) size</param>
         /// <param name="window">Type of the window function to apply</param>
+        /// <param name="fftSize">Size of FFT</param>
         /// <returns>Spectrogram of the signal</returns>
-        public static List<double[]> Stft(double[] samples, int fftSize = 512, int hopSize = 256, WindowTypes window = WindowTypes.Rectangular)
+        public static List<double[]> Stft(double[] samples, int windowSize = 512, int hopSize = 256, WindowTypes window = WindowTypes.Rectangular, int fftSize = 512)
         {
+            fftSize = fftSize >= windowSize ? fftSize : MathUtils.NextPowerOfTwo(windowSize);
+
+            var block = new double [fftSize];
+            var zeroblock = new double [fftSize - windowSize];
+
+            var windowSamples = Window.OfType(window, windowSize);
+
             var spectrogram = new List<double[]>();
 
-            var start = 0;
-            for (; start + fftSize < samples.Length; start += hopSize)
+            var pos = 0;
+            for (; pos + windowSize < samples.Length; pos += hopSize)
             {
-                var segment = FastCopy.ArrayFragment(samples, fftSize, start);
+                FastCopy.ToExistingArray(samples, block, windowSize, pos);
+                FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length, 0, windowSize);
 
                 if (window != WindowTypes.Rectangular)
                 {
-                    segment.ApplyWindow(window);
+                    block.ApplyWindow(windowSamples);
                 }
-                
-                spectrogram.Add(MagnitudeSpectrum(segment, fftSize));
+
+                spectrogram.Add(MagnitudeSpectrum(block, fftSize));
             }
 
-            // if we need to process the last (not full) portion of data, we should pad it with zeros:
-            var lastSegment = new double[fftSize];
-            FastCopy.ArrayFragment(samples, samples.Length - start, start);
-
-            spectrogram.Add(MagnitudeSpectrum(lastSegment, fftSize));
-
             return spectrogram;
+        }
+
+        /// <summary>
+        /// Overloaded method for DiscreteSignal as an input
+        /// </summary>
+        /// <param name="signal">The signal under analysis</param>
+        /// <param name="windowSize">Size of window</param>
+        /// <param name="hopSize">Hop (overlap) size</param>
+        /// <param name="window">Type of the window function to apply</param>
+        /// <param name="fftSize">Size of FFT</param>
+        /// <returns>Spectrogram of the signal</returns>
+        public static List<double[]> Stft(DiscreteSignal signal, int windowSize = 512, int hopSize = 256, WindowTypes window = WindowTypes.Rectangular, int fftSize = 512)
+        {
+            return Stft(signal.Samples, windowSize, hopSize, window, fftSize);
         }
     }
 }

@@ -203,9 +203,13 @@ namespace NWaves.DemoForms
             builderParametersListBox.Items.Clear();
             builderParametersListBox.Items.AddRange(signalBuilder.GetParametersInfo());
 
-            //_signal3 = _signal1.Superimpose(_signal2);
+            if (_signal1 != null)
+            {
+                _signal3 = _signal1.Superimpose(_signal2);
+                DrawSignal(superimposedSignalPanel, _signal3);
+            }
 
-            DrawSignal(generatedSignalPanel, _signal2);//, 53);
+            DrawSignal(generatedSignalPanel, _signal2);
 
             var spectrum = Transform.PowerSpectrum(_signal2.First(512).Samples);
             DrawSpectrum(spectrum);
@@ -213,6 +217,11 @@ namespace NWaves.DemoForms
 
         private void signalOperationButton_Click(object sender, EventArgs e)
         {
+            if (_signal2 == null)
+            {
+                return;
+            }
+
             var param = int.Parse(operationSamplesTextBox.Text);
 
             switch (operationComboBox.Text)
@@ -228,18 +237,23 @@ namespace NWaves.DemoForms
 
             _signal3 = _signal1.Superimpose(_signal2);
 
-            DrawSignal(generatedSignalPanel, _signal2, 53);
+            DrawSignal(generatedSignalPanel, _signal2);
             DrawSignal(superimposedSignalPanel, _signal3, 53);
         }
 
         private void signalSliceButton_Click(object sender, EventArgs e)
         {
+            if (_signal1 == null)
+            {
+                return;
+            }
+
             var from = int.Parse(leftSliceTextBox.Text);
             var to = int.Parse(rightSliceTextBox.Text);
 
             _signal2 = _signal1[from, to];
 
-            DrawSignal(generatedSignalPanel, _signal2, 53);
+            DrawSignal(generatedSignalPanel, _signal2);
             DrawSignal(superimposedSignalPanel, _signal3, 53);
         }
         
