@@ -4,6 +4,7 @@ using NWaves.FeatureExtractors.Base;
 using NWaves.Filters;
 using NWaves.Operations;
 using NWaves.Signals;
+using NWaves.Transforms;
 using NWaves.Utils;
 using NWaves.Windows;
 
@@ -97,6 +98,7 @@ namespace NWaves.FeatureExtractors
 
         /// <summary>
         /// Standard method for computing LPC features.
+        /// This version is 'easy-to-read' and intended for understanding method's idea.
         /// 
         /// Note:
         ///     The first LP coefficient is always equal to 1.0.
@@ -105,7 +107,7 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <param name="signal"></param>
         /// <returns>List of LPC vectors</returns>
-        public override IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
+        public IEnumerable<FeatureVector> ComputeFromEasyToRead(DiscreteSignal signal)
         {
             var featureVectors = new List<FeatureVector>();
 
@@ -150,7 +152,88 @@ namespace NWaves.FeatureExtractors
 
             return featureVectors;
         }
-        
+
+        /// <summary>
+        /// Slightly optimized version (with no unnecessary memory allocations).
+        /// This version is used in production.
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public override IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
+        {
+            var featureVectors = new List<FeatureVector>();
+
+            var fftSize = MathUtils.NextPowerOfTwo(2 * _windowSize - 1);
+
+            var block = new double[fftSize];
+            var reversed = new double[fftSize];
+            var zeroblock = new double[fftSize];
+            var blockImag = new double[fftSize];
+            var reversedImag = new double[fftSize];
+
+            var ccr = new double[fftSize];
+            var cci = new double[fftSize];
+            var cc = new double[_windowSize];
+
+            // 0) pre-emphasis (if needed)
+
+            var filtered = (_preemphasisFilter != null) ? _preemphasisFilter.ApplyTo(signal) : signal;
+
+            var i = 0;
+            while (i + _windowSize < filtered.Length)
+            {
+                FastCopy.ToExistingArray(zeroblock, block, fftSize);
+                FastCopy.ToExistingArray(zeroblock, reversed, fftSize);
+                FastCopy.ToExistingArray(zeroblock, blockImag, fftSize);
+                FastCopy.ToExistingArray(zeroblock, reversedImag, fftSize);
+                FastCopy.ToExistingArray(filtered.Samples, block, _windowSize, i);
+
+                // 1) apply window
+
+                if (_window != WindowTypes.Rectangular)
+                {
+                    block.ApplyWindow(_windowSamples);
+                }
+
+                // 2) autocorrelation
+
+                for (var j = 0; j < _windowSize; j++)
+                {
+                    reversed[j] = block[_windowSize - 1 - j];
+                }
+
+                Transform.Fft(block, blockImag, fftSize);
+                Transform.Fft(reversed, reversedImag, fftSize);
+
+                for (var j = 0; j < fftSize; j++)
+                {
+                    ccr[j] = (block[j] * reversed[j] - blockImag[j] * reversedImag[j]) / fftSize;
+                    cci[j] = (block[j] * reversedImag[j] + reversed[j] * blockImag[j]) / fftSize;
+                }
+
+                Transform.Ifft(ccr, cci, fftSize);
+                FastCopy.ToExistingArray(ccr, cc, _windowSize, _windowSize - 1);
+
+                // 3) levinson-durbin
+
+                var a = new double[_order + 1];
+                var err = LevinsonDurbin(cc, a);
+                a[0] = err;
+
+                // add LPC vector to output sequence
+
+                featureVectors.Add(new FeatureVector
+                {
+                    Features = a,
+                    TimePosition = (double)i / signal.SamplingRate
+                });
+
+                i += _hopSize;
+            }
+
+            return featureVectors;
+        }
+
         /// <summary>
         /// Levinson-Durbin algorithm for solving main LPC task
         /// </summary>

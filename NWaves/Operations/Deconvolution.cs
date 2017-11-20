@@ -14,9 +14,9 @@ namespace NWaves.Operations
         /// <returns></returns>
         public static ComplexDiscreteSignal Deconvolve(ComplexDiscreteSignal signal, ComplexDiscreteSignal kernel)
         {
-            var length = signal.Real.Length - kernel.Real.Length + 1;
+            var length = signal.Length - kernel.Length + 1;
 
-            var fftSize = MathUtils.NextPowerOfTwo(signal.Real.Length);
+            var fftSize = MathUtils.NextPowerOfTwo(signal.Length);
 
             signal = signal.ZeroPadded(fftSize);
             kernel = kernel.ZeroPadded(fftSize);

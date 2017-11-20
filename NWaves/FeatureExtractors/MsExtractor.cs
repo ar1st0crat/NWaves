@@ -32,6 +32,13 @@ namespace NWaves.FeatureExtractors
         private readonly double[][] _filterBank;
 
         /// <summary>
+        /// The "featuregram": the sequence of (feature) vectors;
+        /// if this sequence is given, then MsExtractor computes 
+        /// modulation spectral coefficients from sequences in each 'feature channel'.
+        /// </summary>
+        private readonly double[][] _featuregram;
+
+        /// <summary>
         /// Signal envelopes in different frequency bands
         /// </summary>
         private double[][] _envelopes;
@@ -85,14 +92,15 @@ namespace NWaves.FeatureExtractors
         /// <param name="overlapSize">In seconds</param>
         /// <param name="modulationFftSize">In samples</param>
         /// <param name="modulationOverlapSize">In samples</param>
+        /// <param name="featuregram"></param>
         /// <param name="filterbank"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
         public MsExtractor(int samplingRate, 
                            double windowSize = 0.0256, double overlapSize = 0.010,
                            int modulationFftSize = 64, int modulationOverlapSize = 4,
-                           double[][] filterbank = null, double preEmphasis = 0.0,
-                           WindowTypes window = WindowTypes.Rectangular)
+                           IEnumerable<double[]> featuregram = null, double[][] filterbank = null,
+                           double preEmphasis = 0.0, WindowTypes window = WindowTypes.Rectangular)
         {
             var windowLength = (int)(samplingRate * windowSize);
             _windowSamples = Window.OfType(window, windowLength);
@@ -110,9 +118,16 @@ namespace NWaves.FeatureExtractors
                 _preemphasisFilter = new PreEmphasisFilter(preEmphasis);
             }
 
-            _filterBank = filterbank ?? FilterBanks.Mel(18, _fftSize, samplingRate, 100, 4200);
-
-            FeatureCount = _filterBank.Length;
+            if (featuregram == null)
+            {
+                _filterBank = filterbank ?? FilterBanks.Mel(18, _fftSize, samplingRate, 100, 4200);
+                FeatureCount = _filterBank.Length;
+            }
+            else
+            {
+                _featuregram = featuregram.ToArray();
+                FeatureCount = _featuregram[0].Length;
+            }
         }
 
         /// <summary>
@@ -123,71 +138,87 @@ namespace NWaves.FeatureExtractors
         public override IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
         {
             var featureVectors = new List<FeatureVector>();
-
-            _envelopes = new double[_filterBank.Length][];
-            for (var n = 0; n < _envelopes.Length; n++)
-            {
-                _envelopes[n] = new double[signal.Length / _hopSize];
-            }
-
-            var filteredSpectrum = new double[_filterBank.Length];
-            
             
             // 0) pre-emphasis (if needed)
 
             var filtered = (_preemphasisFilter != null) ? _preemphasisFilter.ApplyTo(signal) : signal;
 
-
-            // ===================== compute local FFTs (do STFT) =======================
-
-            var block = new double[_fftSize];
-            var zeroblock = new double[_fftSize - _windowSamples.Length];
-
             var en = 0;
             var i = 0;
-            while (i + _fftSize < filtered.Length)
+
+            if (_featuregram == null)
             {
-                FastCopy.ToExistingArray(filtered.Samples, block, _windowSamples.Length, i);
-                FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length, 0, _windowSamples.Length);
-
-                // 1) apply window
-
-                if (_window != WindowTypes.Rectangular)
+                _envelopes = new double[_filterBank.Length][];
+                for (var n = 0; n < _envelopes.Length; n++)
                 {
-                    block.ApplyWindow(_windowSamples);
+                    _envelopes[n] = new double[signal.Length / _hopSize];
                 }
-                
-                // 2) calculate power spectrum
 
-                var spectrum = Transform.PowerSpectrum(block, _fftSize);
-                
-                // 3) apply filterbank...
+                // ===================== compute local FFTs (do STFT) =======================
 
-                ApplyFilterbank(spectrum, filteredSpectrum);
+                var filteredSpectrum = new double[_filterBank.Length];
 
-                // ...and save results for future calculations
+                var block = new double[_fftSize];
+                var zeroblock = new double[_fftSize - _windowSamples.Length];
+
+                while (i + _fftSize < filtered.Length)
+                {
+                    FastCopy.ToExistingArray(filtered.Samples, block, _windowSamples.Length, i);
+                    FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length, 0, _windowSamples.Length);
+
+                    // 1) apply window
+
+                    if (_window != WindowTypes.Rectangular)
+                    {
+                        block.ApplyWindow(_windowSamples);
+                    }
+
+                    // 2) calculate power spectrum
+
+                    var spectrum = Transform.PowerSpectrum(block, _fftSize);
+
+                    // 3) apply filterbank...
+
+                    ApplyFilterbank(spectrum, filteredSpectrum);
+
+                    // ...and save results for future calculations
+
+                    for (var n = 0; n < _envelopes.Length; n++)
+                    {
+                        _envelopes[n][en] = filteredSpectrum[n];
+                    }
+                    en++;
+
+                    i += _hopSize;
+                }
+            }
+            else
+            {
+                en = _featuregram.Length;
+                _envelopes = new double[_featuregram[0].Length][];
 
                 for (var n = 0; n < _envelopes.Length; n++)
                 {
-                    _envelopes[n][en] = filteredSpectrum[n];
+                    _envelopes[n] = new double[en];
+                    for (i = 0; i < en; i++)
+                    {
+                        _envelopes[n][i] = _featuregram[i][n];
+                    }
                 }
-                en++;
-
-                i += _hopSize;
             }
 
             // =========================== modulation analysis =======================
 
             var envelopeLength = en;
 
-            // log-term avg. normalization
+            // long-term avg. normalization
 
             foreach (var envelope in _envelopes)
             {
                 var avg = 0.0;
                 for (var k = 0; k < envelopeLength; k++)
                 {
-                    avg += envelope[k];
+                    avg += (k >= 0) ? envelope[k] : -envelope[k];
                 }
                 avg /= envelopeLength;
                 for (var k = 0; k < envelopeLength; k++)
@@ -271,7 +302,9 @@ namespace NWaves.FeatureExtractors
         /// <returns></returns>
         public double[][] MakeSpectrum2D(IEnumerable<FeatureVector> featureVectors, int idx = 0)
         {
-            var spectrum = new double[_filterBank.Length][];
+            var length = (_filterBank != null) ? _filterBank.Length : _featuregram[0].Length;
+
+            var spectrum = new double[length][];
             var specSize = _modulationFftSize / 2 + 1;
 
             var offset = 0;

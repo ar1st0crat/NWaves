@@ -494,7 +494,7 @@ namespace NWaves.DemoForms
                 return;
             }
 
-            for (var i = 0; i < zeros.Real.Length; i++)
+            for (var i = 0; i < zeros.Length; i++)
             {
                 var x = cx + unitRadius * zeros.Real[i];
                 var y = cy + unitRadius * zeros.Imag[i];
@@ -507,7 +507,7 @@ namespace NWaves.DemoForms
                 return;
             }
 
-            for (var i = 0; i < poles.Real.Length; i++)
+            for (var i = 0; i < poles.Length; i++)
             {
                 var x = cx + unitRadius * poles.Real[i];
                 var y = cy + unitRadius * poles.Imag[i];

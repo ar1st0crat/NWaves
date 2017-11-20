@@ -31,9 +31,9 @@ namespace NWaves.Operations
             var s = signal.Copy();
             for (var i = 0; i < s.Length; i++)
             {
-                if (s.Samples[i] < 0)
+                if (s[i] < 0)
                 {
-                    s.Samples[i] = -s.Samples[i];
+                    s[i] = -s[i];
                 }
             }
             return s;
@@ -49,9 +49,9 @@ namespace NWaves.Operations
             var s = signal.Copy();
             for (var i = 0; i < s.Length; i++)
             {
-                if (s.Samples[i] < 0)
+                if (s[i] < 0)
                 {
-                    s.Samples[i] = 0;
+                    s[i] = 0;
                 }
             }
             return s;

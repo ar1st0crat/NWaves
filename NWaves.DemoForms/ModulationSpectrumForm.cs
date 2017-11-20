@@ -97,10 +97,17 @@ namespace NWaves.DemoForms
             var modulationFftSize = int.Parse(longTermFftSizeTextBox.Text);
             var modulationHopSize = int.Parse(longTermHopSizeTextBox.Text);
 
+            var mfccExtractor = new PnccExtractor(13, _signal.SamplingRate, windowSize: windowSize, overlapSize: overlapSize);
+            var vectors = mfccExtractor.ComputeFrom(_signal).ToList();
+            
+            //_extractor = new MsExtractor(_signal.SamplingRate,
+            //                             windowSize, overlapSize, 
+            //                             modulationFftSize, modulationHopSize,
+            //                             filterbank: _filterbank);
             _extractor = new MsExtractor(_signal.SamplingRate,
-                                         windowSize, overlapSize, 
+                                         windowSize, overlapSize,
                                          modulationFftSize, modulationHopSize,
-                                         filterbank: _filterbank);
+                                         featuregram: vectors.Select(v => v.Features));
             var features = _extractor.ComputeFrom(_signal);
 
             DrawEnvelopes(_extractor.Envelopes);
@@ -170,7 +177,7 @@ namespace NWaves.DemoForms
             var stride = 1;
             for (var i = 0; i < 4; i++)
             {
-                var en = envNo[i];
+                var en = envNo[i] - 1;
 
                 g.DrawLine(blackPen, xOffset, offsets[i], envelopesPanel.Width - xOffset, offsets[i]);
                 g.DrawLine(blackPen, xOffset, offsets[i] - 70, xOffset, offsets[i]);

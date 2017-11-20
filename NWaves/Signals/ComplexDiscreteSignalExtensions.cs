@@ -26,7 +26,7 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static ComplexDiscreteSignal Delay(this ComplexDiscreteSignal signal, int delay)
         {
-            var length = signal.Real.Length;
+            var length = signal.Length;
 
             if (delay <= 0)
             {
@@ -66,11 +66,11 @@ namespace NWaves.Signals
 
             ComplexDiscreteSignal superimposed;
 
-            if (signal1.Real.Length > signal2.Real.Length)
+            if (signal1.Length > signal2.Length)
             {
                 superimposed = signal1.Copy();
 
-                for (var i = 0; i < signal2.Real.Length; i++)
+                for (var i = 0; i < signal2.Length; i++)
                 {
                     superimposed.Real[i] += signal2.Real[i];
                     superimposed.Imag[i] += signal2.Imag[i];
@@ -80,7 +80,7 @@ namespace NWaves.Signals
             {
                 superimposed = signal2.Copy();
 
-                for (var i = 0; i < signal1.Real.Length; i++)
+                for (var i = 0; i < signal1.Length; i++)
                 {
                     superimposed.Real[i] += signal1.Real[i];
                     superimposed.Imag[i] += signal1.Imag[i];
@@ -136,7 +136,7 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static ComplexDiscreteSignal First(this ComplexDiscreteSignal signal, int sampleCount)
         {
-            if (sampleCount <= 0 || sampleCount >= signal.Real.Length)
+            if (sampleCount <= 0 || sampleCount >= signal.Length)
             {
                 throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
             }
@@ -155,14 +155,14 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static ComplexDiscreteSignal Last(this ComplexDiscreteSignal signal, int sampleCount)
         {
-            if (sampleCount <= 0 || sampleCount >= signal.Real.Length)
+            if (sampleCount <= 0 || sampleCount >= signal.Length)
             {
                 throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
             }
 
             return new ComplexDiscreteSignal(
                             signal.SamplingRate,
-                            FastCopy.ArrayFragment(signal.Real, sampleCount, signal.Real.Length - sampleCount),
+                            FastCopy.ArrayFragment(signal.Real, sampleCount, signal.Length - sampleCount),
                             FastCopy.ArrayFragment(signal.Imag, sampleCount, signal.Imag.Length - sampleCount));
         }
 
@@ -177,7 +177,7 @@ namespace NWaves.Signals
         {
             if (newLength <= 0)
             {
-                newLength = MathUtils.NextPowerOfTwo(signal.Real.Length);
+                newLength = MathUtils.NextPowerOfTwo(signal.Length);
             }
 
             return new ComplexDiscreteSignal(
@@ -196,7 +196,7 @@ namespace NWaves.Signals
         public static ComplexDiscreteSignal Multiply(
             this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
         {
-            var length = signal1.Real.Length;
+            var length = signal1.Length;
 
             var real = new double[length];
             var imag = new double[length];
@@ -225,7 +225,7 @@ namespace NWaves.Signals
         public static ComplexDiscreteSignal Divide(
             this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
         {
-            var length = signal1.Real.Length;
+            var length = signal1.Length;
 
             var real = new double[length];
             var imag = new double[length];

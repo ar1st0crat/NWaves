@@ -8,6 +8,53 @@ namespace NWaves.Operations
     public static partial class Operation
     {
         /// <summary>
+        /// Fast convolution via FFT for real-valued signals
+        /// </summary>
+        /// <param name="signal1"></param>
+        /// <param name="signal2"></param>
+        /// <returns></returns>
+        public static DiscreteSignal Convolve(DiscreteSignal signal1, DiscreteSignal signal2)
+        {
+            var length = signal1.Length + signal2.Length - 1;
+
+            var fftSize = MathUtils.NextPowerOfTwo(length);
+
+            var real1 = new double[fftSize];
+            var imag1 = new double[fftSize];
+            var real2 = new double[fftSize];
+            var imag2 = new double[fftSize];
+
+            FastCopy.ToExistingArray(signal1.Samples, real1, signal1.Length);
+            FastCopy.ToExistingArray(signal2.Samples, real2, signal2.Length);
+
+            // 1) do FFT of both signals
+
+            Transform.Fft(real1, imag1, fftSize);
+            Transform.Fft(real2, imag2, fftSize);
+
+            // 2) do complex multiplication of spectra
+
+            var s1 = new ComplexDiscreteSignal(1, real1, imag1);    // memory-costless wrap into complex signal
+            var s2 = new ComplexDiscreteSignal(1, real2, imag2);    // memory-costless wrap into complex signal
+            var spectrum = s1.Multiply(s2);
+
+            // 3) do inverse FFT of resulting spectrum
+
+            Transform.Ifft(spectrum.Real, spectrum.Imag, fftSize);
+
+            // 3a) normalize
+
+            for (var i = 0; i < spectrum.Length; i++)
+            {
+                spectrum.Real[i] /= fftSize;
+            }
+
+            // 4) return resulting meaningful part of the signal (truncate size to N + M - 1)
+
+            return new DiscreteSignal(signal1.SamplingRate, FastCopy.ArrayFragment(spectrum.Real, length));
+        }
+
+        /// <summary>
         /// Fast convolution via FFT for general complex-valued case
         /// </summary>
         /// <param name="signal1"></param>
@@ -15,7 +62,7 @@ namespace NWaves.Operations
         /// <returns></returns>
         public static ComplexDiscreteSignal Convolve(ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
         {
-            var length = signal1.Real.Length + signal2.Real.Length - 1;
+            var length = signal1.Length + signal2.Length - 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(length);
 
@@ -51,18 +98,6 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Fast convolution via FFT for real-valued signals
-        /// </summary>
-        /// <param name="signal1"></param>
-        /// <param name="signal2"></param>
-        /// <returns></returns>
-        public static DiscreteSignal Convolve(DiscreteSignal signal1, DiscreteSignal signal2)
-        {
-            var complexConvolution = Convolve(signal1.ToComplex(), signal2.ToComplex());
-            return new DiscreteSignal(signal1.SamplingRate, complexConvolution.Real);
-        }
-
-        /// <summary>
         /// Direct convolution by formula in time domain
         /// </summary>
         /// <param name="signal1"></param>
@@ -82,7 +117,7 @@ namespace NWaves.Operations
                 {
                     if (n >= k && n - k < a.Length)
                     {
-                        conv[n] += a[n - k]*b[k];
+                        conv[n] += a[n - k] * b[k];
                     }
                 }
             }

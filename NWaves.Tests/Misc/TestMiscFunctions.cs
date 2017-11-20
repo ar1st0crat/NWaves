@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Linq;
+using NUnit.Framework;
 using NWaves.Utils;
 
 namespace NWaves.Tests.Misc
@@ -36,9 +37,9 @@ namespace NWaves.Tests.Misc
             var roots = MathUtils.PolynomialRoots(re, im);
 
             double[] expectedReal = { -0.5, -0.5 };
-            double[] expectedImag = { 1.5, -1.5 };
-            Assert.That(roots.Item1, Is.EquivalentTo(expectedReal));
-            Assert.That(roots.Item2, Is.EquivalentTo(expectedImag));
+            double[] expectedImag = { -1.5, 1.5 };
+            Assert.That(roots.Item1.OrderBy(r => r), Is.EqualTo(expectedReal).Within(1e-10));
+            Assert.That(roots.Item2.OrderBy(r => r), Is.EqualTo(expectedImag).Within(1e-10));
         }
     }
 }
