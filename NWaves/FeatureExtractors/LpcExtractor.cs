@@ -116,7 +116,7 @@ namespace NWaves.FeatureExtractors
             var block = new DiscreteSignal(signal.SamplingRate, new double[_windowSize]);
 
             var i = 0;
-            while (i + _windowSize < filtered.Samples.Length)
+            while (i + _windowSize < filtered.Length)
             {
                 FastCopy.ToExistingArray(filtered.Samples, block.Samples, _windowSize, i);
 

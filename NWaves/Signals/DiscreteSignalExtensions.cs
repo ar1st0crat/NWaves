@@ -27,7 +27,7 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal Delay(this DiscreteSignal signal, int delay)
         {
-            var length = signal.Samples.Length;
+            var length = signal.Length;
 
             if (delay <= 0)
             {
@@ -65,11 +65,11 @@ namespace NWaves.Signals
 
             DiscreteSignal superimposed;
 
-            if (signal1.Samples.Length > signal2.Samples.Length)
+            if (signal1.Length > signal2.Length)
             {
                 superimposed = signal1.Copy();
 
-                for (var i = 0; i < signal2.Samples.Length; i++)
+                for (var i = 0; i < signal2.Length; i++)
                 {
                     superimposed[i] += signal2.Samples[i];
                 }
@@ -78,7 +78,7 @@ namespace NWaves.Signals
             {
                 superimposed = signal2.Copy();
 
-                for (var i = 0; i < signal1.Samples.Length; i++)
+                for (var i = 0; i < signal1.Length; i++)
                 {
                     superimposed[i] += signal1.Samples[i];
                 }
@@ -130,7 +130,7 @@ namespace NWaves.Signals
         /// <param name="coeff"></param>
         public static void Amplify(this DiscreteSignal signal, double coeff)
         {
-            for (var i = 0; i < signal.Samples.Length; i++)
+            for (var i = 0; i < signal.Length; i++)
             {
                 signal[i] *= coeff;
             }
@@ -144,7 +144,7 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal First(this DiscreteSignal signal, int sampleCount)
         {
-            if (sampleCount <= 0 || sampleCount > signal.Samples.Length)
+            if (sampleCount <= 0 || sampleCount > signal.Length)
             {
                 throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
             }
@@ -163,14 +163,14 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal Last(this DiscreteSignal signal, int sampleCount)
         {
-            if (sampleCount <= 0 || sampleCount >= signal.Samples.Length)
+            if (sampleCount <= 0 || sampleCount >= signal.Length)
             {
                 throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
             }
 
             return new DiscreteSignal(
                             signal.SamplingRate, 
-                            FastCopy.ArrayFragment(signal.Samples, sampleCount, signal.Samples.Length - sampleCount));
+                            FastCopy.ArrayFragment(signal.Samples, sampleCount, signal.Length - sampleCount));
         }
 
         /// <summary>

@@ -127,7 +127,7 @@ namespace NWaves.FeatureExtractors
             _envelopes = new double[_filterBank.Length][];
             for (var n = 0; n < _envelopes.Length; n++)
             {
-                _envelopes[n] = new double[signal.Samples.Length / _hopSize];
+                _envelopes[n] = new double[signal.Length / _hopSize];
             }
 
             var filteredSpectrum = new double[_filterBank.Length];
@@ -145,7 +145,7 @@ namespace NWaves.FeatureExtractors
 
             var en = 0;
             var i = 0;
-            while (i + _fftSize < filtered.Samples.Length)
+            while (i + _fftSize < filtered.Length)
             {
                 FastCopy.ToExistingArray(filtered.Samples, block, _windowSamples.Length, i);
                 FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length, 0, _windowSamples.Length);

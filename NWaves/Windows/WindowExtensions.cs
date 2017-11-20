@@ -48,7 +48,7 @@ namespace NWaves.Windows
         /// <param name="window"></param>
         public static void ApplyWindow(this DiscreteSignal signal, WindowTypes window)
         {
-            var windowSamples = Window.OfType(window, signal.Samples.Length);
+            var windowSamples = Window.OfType(window, signal.Length);
             signal.Samples.ApplyWindow(windowSamples);
         }
     }

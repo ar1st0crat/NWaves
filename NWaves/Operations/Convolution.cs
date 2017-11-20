@@ -30,10 +30,18 @@ namespace NWaves.Operations
             // 2) do complex multiplication of spectra
 
             var spectrum = signal1.Multiply(signal2);
-
+            
             // 3) do inverse FFT of resulting spectrum
 
             Transform.Ifft(spectrum.Real, spectrum.Imag, fftSize);
+
+            // 3a) normalize
+
+            for (var i = 0; i < spectrum.Length; i++)
+            {
+                spectrum.Real[i] /= fftSize;
+                spectrum.Imag[i] /= fftSize;
+            }
 
             // 4) return resulting meaningful part of the signal (truncate size to N + M - 1)
 

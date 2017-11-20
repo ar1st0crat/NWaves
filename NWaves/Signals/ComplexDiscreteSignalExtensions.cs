@@ -208,8 +208,8 @@ namespace NWaves.Signals
 
             for (var i = 0; i < length; i++)
             {
-                real[i] = (real1[i] * real2[i] - imag1[i] * imag2[i]) / length;
-                imag[i] = (real1[i] * imag2[i] + imag1[i] * real2[i]) / length;
+                real[i] = (real1[i] * real2[i] - imag1[i] * imag2[i]);
+                imag[i] = (real1[i] * imag2[i] + imag1[i] * real2[i]);
             }
 
             return new ComplexDiscreteSignal(signal1.SamplingRate, real, imag);

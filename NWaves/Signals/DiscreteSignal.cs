@@ -31,6 +31,11 @@ namespace NWaves.Signals
         public virtual double[] Samples { get; }
 
         /// <summary>
+        /// Length of the signal
+        /// </summary>
+        public virtual int Length => Samples.Length;
+
+        /// <summary>
         /// The most efficient constructor for initializing discrete signals
         /// </summary>
         /// <param name="samplingRate"></param>

@@ -136,7 +136,7 @@ namespace NWaves.FeatureExtractors
             var zeroblock = new double[_fftSize - _windowSamples.Length];
 
             var i = 0;
-            while (i + _windowSamples.Length < filtered.Samples.Length)
+            while (i + _windowSamples.Length < filtered.Length)
             {
                 // prepare next block for processing
 

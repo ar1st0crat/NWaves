@@ -162,7 +162,7 @@ namespace NWaves.Audio
         {
             using (var writer = new BinaryWriter(waveStream))
             {
-                var length = Signals[0].Samples.Length;
+                var length = Signals[0].Length;
 
                 writer.Write(0x46464952);     // "RIFF"
                 
@@ -239,7 +239,7 @@ namespace NWaves.Audio
 
                 // if it ain't mono, we start ACTUALLY interleaving:
 
-                var length = Signals[0].Samples.Length;
+                var length = Signals[0].Length;
 
                 var samples = new double[WaveFmt.ChannelCount * length];
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using NWaves.Signals;
 
 namespace NWaves.FeatureExtractors.Base
@@ -17,7 +18,23 @@ namespace NWaves.FeatureExtractors.Base
         /// String annotations (or simply names) of features
         /// </summary>
         public abstract IEnumerable<string> FeatureDescriptions { get; }
-        
+
+        /// <summary>
+        /// String annotations (or simply names) of delta features (1st order derivatives)
+        /// </summary>
+        public virtual IEnumerable<string> DeltaFeatureDescriptions
+        {
+            get { return FeatureDescriptions.Select(d => "delta_" + d); }
+        }
+
+        /// <summary>
+        /// String annotations (or simply names) of delta-delta features (2nd order derivatives)
+        /// </summary>
+        public virtual IEnumerable<string> DeltaDeltaFeatureDescriptions
+        {
+            get { return FeatureDescriptions.Select(d => "delta_delta_" + d); }
+        }
+
         /// <summary>
         /// Compute the sequence of feature vectors from the DiscreteSignal object
         /// </summary>

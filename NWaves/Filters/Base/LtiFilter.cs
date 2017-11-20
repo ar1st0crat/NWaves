@@ -70,7 +70,7 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="zp"></param>
         /// <returns></returns>
-        public double[] ZpToTf(ComplexDiscreteSignal zp)
+        public static double[] ZpToTf(ComplexDiscreteSignal zp)
         {
             var re = zp.Real;
             var im = zp.Imag;
@@ -90,7 +90,7 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="tf"></param>
         /// <returns></returns>
-        public ComplexDiscreteSignal TfToZp(double[] tf)
+        public static ComplexDiscreteSignal TfToZp(double[] tf)
         {
             if (tf.Length <= 1)
             {

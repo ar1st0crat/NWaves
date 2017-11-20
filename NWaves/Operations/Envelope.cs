@@ -29,7 +29,7 @@ namespace NWaves.Operations
         public static DiscreteSignal FullRectify(DiscreteSignal signal)
         {
             var s = signal.Copy();
-            for (var i = 0; i < s.Samples.Length; i++)
+            for (var i = 0; i < s.Length; i++)
             {
                 if (s.Samples[i] < 0)
                 {
@@ -47,7 +47,7 @@ namespace NWaves.Operations
         public static DiscreteSignal HalfRectify(DiscreteSignal signal)
         {
             var s = signal.Copy();
-            for (var i = 0; i < s.Samples.Length; i++)
+            for (var i = 0; i < s.Length; i++)
             {
                 if (s.Samples[i] < 0)
                 {

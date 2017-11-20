@@ -405,7 +405,7 @@ namespace NWaves.Filters.Fda
                 ir = filter3.ApplyTo(ir);
                 ir = filter4.ApplyTo(ir);
 
-                for (var j = 0; j < ir.Samples.Length; j++)
+                for (var j = 0; j < ir.Length; j++)
                 {
                     ir.Samples[j] = ir[j] / gain;
                 }

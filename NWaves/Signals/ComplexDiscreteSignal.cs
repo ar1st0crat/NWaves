@@ -42,6 +42,11 @@ namespace NWaves.Signals
         public virtual double[] Imag { get; }
 
         /// <summary>
+        /// Length of the signal
+        /// </summary>
+        public virtual int Length => Real.Length;
+
+        /// <summary>
         /// Get real-valued signal containing magnitudes of complex-valued samples
         /// </summary>
         public double[] Magnitude

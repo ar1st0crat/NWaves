@@ -203,7 +203,7 @@ namespace NWaves.FeatureExtractors
 
             var i = 0;
             var timePos = 0;
-            while (timePos + _windowSamples.Length < filtered.Samples.Length)
+            while (timePos + _windowSamples.Length < filtered.Length)
             {
                 // prepare next block for processing
 

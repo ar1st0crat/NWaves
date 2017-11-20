@@ -446,7 +446,7 @@ namespace NWaves.DemoForms
             var i = 0;
             var x = 0;
 
-            while (i < signal.Samples.Length)
+            while (i < signal.Length)
             {
                 if (Math.Abs(signal[i] * 160) < panel.Height)
                 {

@@ -1,5 +1,9 @@
 # NWaves
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+![logo](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/logo_draft.bmp)
+
 NWaves is a .NET library for 1d signal processing focused specifically on audio processing.
 
 ## Main features 
@@ -283,7 +287,7 @@ FeaturePostProcessing.NormalizeMean(pnccVectors);
 using (var csvFile = new FileStream("mfccs.csv", FileMode.Create))
 {
 	var serializer = new CsvFeatureSerializer(mfccVectors);
-	serializer.SaveTo(csvFile);
+	await serializer.SerializeAsync(csvFile);
 }
 
 ```
