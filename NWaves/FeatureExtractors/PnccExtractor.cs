@@ -84,6 +84,16 @@ namespace NWaves.FeatureExtractors
         private readonly int _fftSize;
 
         /// <summary>
+        /// Internal FFT transformer
+        /// </summary>
+        private readonly Fft _fft;
+
+        /// <summary>
+        /// Internal DCT transformer
+        /// </summary>
+        private readonly Dct _dct;
+
+        /// <summary>
         /// Size of overlap (in samples)
         /// </summary>
         private readonly int _hopSize;
@@ -148,6 +158,11 @@ namespace NWaves.FeatureExtractors
                     filter[j] = ps;
                 }
             }
+
+            // prepare everything for fft and dct
+
+            _fft = new Fft(_fftSize);
+            _dct = new Dct(GammatoneFilterBank.Length, featureCount);
         }
 
         /// <summary>
@@ -185,16 +200,12 @@ namespace NWaves.FeatureExtractors
 
             var d = _power != 0 ? 1.0 / _power : 0.0;
 
+            var spectrum = new double[_fftSize / 2 + 1];
             var block = new double[_fftSize];
             var zeroblock = new double[_fftSize - _windowSamples.Length];
 
             _ringBuffer = new SpectraRingBuffer(2 * M + 1, GammatoneFilterBank.Length);
-
-            // prepare everything for dct
-
-            var dct = new Dct();
-            dct.Init(GammatoneFilterBank.Length, FeatureCount);
-
+            
 
             // 0) pre-emphasis (if needed)
 
@@ -221,7 +232,7 @@ namespace NWaves.FeatureExtractors
 
                 // 2) calculate power spectrum
 
-                var spectrum = Transform.PowerSpectrum(block, _fftSize);
+                _fft.PowerSpectrum(block, spectrum);
 
 
                 // 3) apply gammatone filterbank
@@ -365,7 +376,7 @@ namespace NWaves.FeatureExtractors
                     // 6) dct-II (normalized)
 
                     var pnccs = new double[FeatureCount];
-                    dct.Dct2N(smoothedSpectrum, pnccs);
+                    _dct.Dct2N(smoothedSpectrum, pnccs);
                     
 
                     // add pncc vector to output sequence

@@ -10,9 +10,9 @@ NWaves is a .NET library for 1d signal processing focused specifically on audio 
 
 Already available:
 
-- [x] major DSP transforms (FFT, DCT, STFT)
+- [x] major DSP transforms (FFT, DCT, STFT, cepstrum)
 - [x] basic LTI digital filters (FIR, IIR, moving average (non-recursive and recursive), pre-emphasis)
-- [x] basic operations and filtering (convolution/deconvolution, cross-correlation, overlap-add, overlap-save)
+- [x] basic operations and filtering (convolution/deconvolution, cross-correlation, overlap-add, overlap-save, envelope detection, pitch tracking)
 - [x] simple filter design & analysis (zeros and poles, window method)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
@@ -34,9 +34,9 @@ Planned:
 
 ## Philosophy of NWaves
 
-NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and designed mostly for offline processing (it doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C++ or Asm, but it's not that *very* slow for many purposes either). Perhaps, in the future I'll work on optimized versions and add them to the project separately.
+NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and designed mostly for offline processing. It doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C++ or Asm, but it's not that *very* slow for many purposes either.
 
-In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOD-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in static classes, so that one wouldn't get lost in object-oriented labyrinths. Although you may suddenly find a little bit of fluent syntax (e.g., SignalBuilders) and some Strategy patterns (e.g. FeatureExtractor) in the project.
+In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOD-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in separate classes, so that one wouldn't get lost in object-oriented labyrinths. Although you may suddenly find a little bit of fluent syntax (e.g., SignalBuilders) and some Strategy patterns (e.g. FeatureExtractor) in the project.
 
 ## Quickstart
 
@@ -132,7 +132,7 @@ DiscreteSignal sinusoid =
 		.Build();
 
 DiscreteSignal noise = 
-	new WhiteNoiseBuilder()
+	new PinkNoiseBuilder()
 		.SetParameter("min", -1.5)
 		.SetParameter("max", 1.5)
 		.OfLength(800)
@@ -193,13 +193,55 @@ using (var stream = new FileStream("saved.wav", FileMode.Create))
 
 ```C#
 
-var spectrogram = Transform.Stft(signal, 512, 256, WindowTypes.Hamming);
+var fft = new Fft(1024);
 
-var magnitudeSpectrum = Transform.MagnitudeSpectrum(signal[1000, 1512]);
-var powerSpectrum = Transform.PowerSpectrum(signal, fftSize: 512, normalize: false);
-var logPowerSpectrum = Transform.LogPowerSpectrum(samples, 1024);
+// complex fft:
 
-var cepstrum = Transform.Cepstrum(signal, 20);
+double[] real = signal.First(1024).Samples;
+double[] imag = new double [1024];
+
+fft.Direct(real, imag);
+fft.Inverse(real, imag);
+
+
+// various spectra (post-processed results of complex fft):
+
+var magnitudeSpectrum = fft.MagnitudeSpectrum(signal[1000, 2024]);
+var powerSpectrum = fft.PowerSpectrum(signal.First(1024), normalize: false);
+var logPowerSpectrum = fft.LogPowerSpectrum(signal.Last(1024));
+
+
+// cepstrum:
+
+var cepstrum = new Cepstrum(20);
+var ceps = cepstrum.Direct(signal);
+
+
+// in all previous cases the result of each transform was
+// a newly created object of DiscreteSignal class.
+
+// If the sequence of blocks must be processed then 
+// it's better to work with reusable arrays in memory:
+
+var spectrum = new double[1024];
+
+fft.PowerSpectrum(signal[1000, 2024].Samples, spectrum);
+// do something with spectrum
+
+fft.PowerSpectrum(signal[2024, 3048].Samples, spectrum);
+// do something with spectrum
+
+fft.PowerSpectrum(signal[3048, 4072].Samples, spectrum);
+// do something with spectrum
+
+//...
+
+
+// Short-time Fourier Transform (spectrogram):
+
+var stft = new Stft(1024, 512, WindowTypes.Hamming);
+var spectrogram = stft.Direct(signal);
+var reconstructed = stft.Inverse(spectrogram);
 
 ```
 

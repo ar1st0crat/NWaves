@@ -38,6 +38,16 @@ namespace NWaves.FeatureExtractors
         private readonly int _fftSize;
 
         /// <summary>
+        /// Internal FFT transformer
+        /// </summary>
+        private readonly Fft _fft;
+
+        /// <summary>
+        /// Internal DCT transformer
+        /// </summary>
+        private readonly Dct _dct;
+
+        /// <summary>
         /// Size of overlap
         /// </summary>
         private readonly int _hopSize;
@@ -98,6 +108,11 @@ namespace NWaves.FeatureExtractors
             }
 
             MelFilterBank = FilterBanks.Mel(melFilterbankSize, _fftSize, samplingRate, lowFreq, highFreq);
+
+            // prepare everything for fft and dct
+
+            _fft = new Fft(_fftSize);
+            _dct = new Dct(MelFilterBank.Length, featureCount);
         }
 
         /// <summary>
@@ -118,23 +133,20 @@ namespace NWaves.FeatureExtractors
         public override IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
         {
             var featureVectors = new List<FeatureVector>();
+            
+            // reserve memory for reusable blocks
 
-            // prepare everything for dct
+            var spectrum = new double[_fftSize / 2 + 1];
+            var logMelSpectrum = new double[MelFilterBank.Length];
 
-            var dct = new Dct();
-            dct.Init(MelFilterBank.Length, FeatureCount);
+            var block = new double[_fftSize];
+            var zeroblock = new double[_fftSize - _windowSamples.Length];
 
 
             // 0) pre-emphasis (if needed)
 
             var filtered = (_preemphasisFilter != null) ? _preemphasisFilter.ApplyTo(signal) : signal;
             
-            
-            var logMelSpectrum = new double[MelFilterBank.Length];
-
-            var block = new double[_fftSize];
-            var zeroblock = new double[_fftSize - _windowSamples.Length];
-
             var i = 0;
             while (i + _windowSamples.Length < filtered.Length)
             {
@@ -154,7 +166,7 @@ namespace NWaves.FeatureExtractors
 
                 // 2) calculate power spectrum
 
-                var spectrum = Transform.PowerSpectrum(block, _fftSize);
+                _fft.PowerSpectrum(block, spectrum);
 
 
                 // 3) apply mel filterbank and take log() of the result
@@ -165,7 +177,7 @@ namespace NWaves.FeatureExtractors
                 // 4) dct-II
 
                 var mfccs = new double[FeatureCount];
-                dct.Dct2(logMelSpectrum, mfccs);
+                _dct.Dct2(logMelSpectrum, mfccs);
 
 
                 // 5) (optional) liftering

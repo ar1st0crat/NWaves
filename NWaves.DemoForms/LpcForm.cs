@@ -21,6 +21,8 @@ namespace NWaves.DemoForms
         private DiscreteSignal _signal;
         private List<FeatureVector> _lpcVectors;
 
+        private Fft _fft;
+
         public LpcForm()
         {
             InitializeComponent();
@@ -39,6 +41,8 @@ namespace NWaves.DemoForms
                 var waveFile = new WaveFile(stream);
                 _signal = waveFile[Channels.Left];
             }
+
+            _fft = new Fft(512);
             
             var lpcExtractor = new LpcExtractor(16, _signal.SamplingRate, WindowSize, OverlapSize);
 
@@ -56,7 +60,7 @@ namespace NWaves.DemoForms
         double[] ComputeSpectrum(int idx)
         {
             var pos = (int)(_signal.SamplingRate * OverlapSize * idx);
-            return Transform.LogPowerSpectrum(_signal[pos, pos + 512].Samples);
+            return _fft.LogPowerSpectrum(_signal[pos, pos + 512]).Samples;
         }
 
         double[] EstimateSpectrum(int idx)

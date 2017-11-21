@@ -393,7 +393,7 @@ namespace NWaves.Filters.Fda
                                 (itheta - gainArg * k4) *
                                 Complex.Pow(t * Math.Exp(b * t) / (-1.0/Math.Exp(b*t) + 1 + itheta*(1 - Math.Exp(b*t))), 4.0));
 
-                var ir = new DiscreteSignal(1, fftSize * 2) { [0] = 1.0 };
+                var ir = new DiscreteSignal(1, fftSize) { [0] = 1.0 };
 
                 var filter1 = new IirFilter(new[] { a0, a11, a2 }, new[] { b0, b1, b2 });
                 var filter2 = new IirFilter(new[] { a0, a12, a2 }, new[] { b0, b1, b2 });
@@ -410,7 +410,8 @@ namespace NWaves.Filters.Fda
                     ir.Samples[j] = ir[j] / gain;
                 }
 
-                erbFilterBank[i] = Transform.PowerSpectrum(ir.Samples, fftSize, false);
+                var fft = new Fft(fftSize);
+                erbFilterBank[i] = fft.PowerSpectrum(ir, false).Samples;
             }
 
             // normalize gain (by default)

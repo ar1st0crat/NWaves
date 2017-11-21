@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using NWaves.Utils;
 
-namespace NWaves.Tests.Misc
+namespace NWaves.Tests.MiscTests
 {
     [TestFixture]
     public class TestMiscFunctions

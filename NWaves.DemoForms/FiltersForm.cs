@@ -21,6 +21,7 @@ namespace NWaves.DemoForms
 
         private DiscreteSignal _signal;
         private List<double[]> _spectrogram;
+        private readonly Stft _stft = new Stft();
 
         private DiscreteSignal _filteredSignal;
         private List<double[]> _filteredSpectrogram;
@@ -358,7 +359,7 @@ namespace NWaves.DemoForms
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.OverlapAdd);
             DrawSignal(signalAfterFilteringPanel, _filteredSignal);
 
-            _filteredSpectrogram = Transform.Stft(_filteredSignal);
+            _filteredSpectrogram = _stft.Direct(_filteredSignal);
             DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
         }
 
@@ -369,7 +370,7 @@ namespace NWaves.DemoForms
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.OverlapSave);
             DrawSignal(signalAfterFilteringPanel, _filteredSignal);
 
-            _filteredSpectrogram = Transform.Stft(_filteredSignal);
+            _filteredSpectrogram = _stft.Direct(_filteredSignal);
             DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
         }
 
@@ -380,7 +381,7 @@ namespace NWaves.DemoForms
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.DifferenceEquation);
             DrawSignal(signalAfterFilteringPanel, _filteredSignal);
 
-            _filteredSpectrogram = Transform.Stft(_filteredSignal);
+            _filteredSpectrogram = _stft.Direct(_filteredSignal);
             DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
         }
 
@@ -406,7 +407,7 @@ namespace NWaves.DemoForms
 
             DrawSignal(signalBeforeFilteringPanel, _signal);
 
-            _spectrogram = Transform.Stft(_signal.Samples);
+            _spectrogram = _stft.Direct(_signal.Samples);
             DrawSpectrogram(spectrogramBeforeFilteringPanel, _spectrogram);
         }
 
@@ -498,7 +499,11 @@ namespace NWaves.DemoForms
             {
                 var x = cx + unitRadius * zeros.Real[i];
                 var y = cy + unitRadius * zeros.Imag[i];
-                g.DrawEllipse(redPen, (int)x - 4, (int)y - 4, 8, 8);
+                if (x - 4 > 0 && x + 4 < poleZeroPanel.Width &&
+                    y - 4 > 0 && y + 4 < poleZeroPanel.Height)
+                {
+                    g.DrawEllipse(redPen, (int) x - 4, (int) y - 4, 8, 8);
+                }
             }
 
             var poles = _filter.Poles;
@@ -511,8 +516,12 @@ namespace NWaves.DemoForms
             {
                 var x = cx + unitRadius * poles.Real[i];
                 var y = cy + unitRadius * poles.Imag[i];
-                g.DrawLine(redPen, (int)x - 6, (int)y - 6, (int)x + 6, (int)y + 6);
-                g.DrawLine(redPen, (int)x + 6, (int)y - 6, (int)x - 6, (int)y + 6);
+                if (x - 6 > 0 && x + 6 < poleZeroPanel.Width &&
+                    y - 6 > 0 && y + 6 < poleZeroPanel.Height)
+                {
+                    g.DrawLine(redPen, (int) x - 6, (int) y - 6, (int) x + 6, (int) y + 6);
+                    g.DrawLine(redPen, (int) x + 6, (int) y - 6, (int) x - 6, (int) y + 6);
+                }
             }
 
             redPen.Dispose();

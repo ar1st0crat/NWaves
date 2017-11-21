@@ -17,20 +17,21 @@ namespace NWaves.Operations
             var length = signal.Length - kernel.Length + 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(signal.Length);
+            var fft = new Fft(fftSize);
 
             signal = signal.ZeroPadded(fftSize);
             kernel = kernel.ZeroPadded(fftSize);
 
             // 1) do FFT of both signals
 
-            Transform.Fft(signal.Real, signal.Imag, fftSize);
-            Transform.Fft(kernel.Real, kernel.Imag, fftSize);
+            fft.Direct(signal.Real, signal.Imag);
+            fft.Direct(kernel.Real, kernel.Imag);
 
             for (var i = 0; i < fftSize; i++)
             {
                 signal.Real[i] += 1e-10;
-                kernel.Real[i] += 1e-10;
                 signal.Imag[i] += 1e-10;
+                kernel.Real[i] += 1e-10;
                 kernel.Imag[i] += 1e-10;
             }
 
@@ -40,25 +41,13 @@ namespace NWaves.Operations
 
             // 3) do inverse FFT of resulting spectrum
 
-            Transform.Ifft(spectrum.Real, spectrum.Imag, fftSize);
+            fft.Inverse(spectrum.Real, spectrum.Imag);
 
             // 4) return resulting meaningful part of the signal (truncate to N - M + 1)
 
             return new ComplexDiscreteSignal(signal.SamplingRate,
                                 FastCopy.ArrayFragment(spectrum.Real, length),
                                 FastCopy.ArrayFragment(spectrum.Imag, length));
-        }
-
-        /// <summary>
-        /// Fast deconvolution via FFT for real-valued signals
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="kernel"></param>
-        /// <returns></returns>
-        public static DiscreteSignal Deconvolve(DiscreteSignal signal, DiscreteSignal kernel)
-        {
-            var complexResult = Deconvolve(signal.ToComplex(), kernel.ToComplex());
-            return new DiscreteSignal(signal.SamplingRate, complexResult.Real);
         }
     }
 }

@@ -39,12 +39,12 @@
   <ItemGroup>
     <Compile Include="FilterTests\TestIirFilter.cs" />
     <Compile Include="FilterTests\TestMedianFilter.cs" />
-    <Compile Include="Misc\TestMiscFunctions.cs" />
-    <Compile Include="Operations\TestConvolution.cs" />
+    <Compile Include="MiscTests\TestMiscFunctions.cs" />
+    <Compile Include="OperationTests\TestConvolution.cs" />
     <Compile Include="SignalTests\TestComplexDiscreteSignal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SignalTests\TestDiscreteSignal.cs" />
-    <Compile Include="Transforms\TestDct.cs" />
+    <Compile Include="TransformTests\TestDct.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -2,7 +2,7 @@
 using NWaves.Operations;
 using NWaves.Signals;
 
-namespace NWaves.Tests.Operations
+namespace NWaves.Tests.OperationTests
 {
     [TestFixture]
     public class TestConvolution

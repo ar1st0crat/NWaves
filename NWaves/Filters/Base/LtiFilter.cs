@@ -44,7 +44,8 @@ namespace NWaves.Filters.Base
             var real = ImpulseResponse(length).Samples;
             var imag = new double[length];
 
-            Transform.Fft(real, imag, length);
+            var fft = new Fft(length);
+            fft.Direct(real, imag);
 
             return new ComplexDiscreteSignal(1, real, imag);
         }

@@ -15,9 +15,12 @@ namespace NWaves.Operations
         /// <returns></returns>
         public static DiscreteSignal Convolve(DiscreteSignal signal1, DiscreteSignal signal2)
         {
+            // prepare blocks in memory:
+
             var length = signal1.Length + signal2.Length - 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(length);
+            var fft = new Fft(fftSize);
 
             var real1 = new double[fftSize];
             var imag1 = new double[fftSize];
@@ -29,29 +32,33 @@ namespace NWaves.Operations
 
             // 1) do FFT of both signals
 
-            Transform.Fft(real1, imag1, fftSize);
-            Transform.Fft(real2, imag2, fftSize);
+            fft.Direct(real1, imag1);
+            fft.Direct(real2, imag2);
 
             // 2) do complex multiplication of spectra
 
-            var s1 = new ComplexDiscreteSignal(1, real1, imag1);    // memory-costless wrap into complex signal
-            var s2 = new ComplexDiscreteSignal(1, real2, imag2);    // memory-costless wrap into complex signal
-            var spectrum = s1.Multiply(s2);
+            for (var i = 0; i < fftSize; i++)
+            {
+                var re = (real1[i] * real2[i] - imag1[i] * imag2[i]);
+                var im = (real1[i] * imag2[i] + imag1[i] * real2[i]);
+                real1[i] = re;
+                imag1[i] = im;
+            }
 
             // 3) do inverse FFT of resulting spectrum
 
-            Transform.Ifft(spectrum.Real, spectrum.Imag, fftSize);
+            fft.Inverse(real1, imag1);
 
             // 3a) normalize
 
-            for (var i = 0; i < spectrum.Length; i++)
+            for (var i = 0; i < length; i++)
             {
-                spectrum.Real[i] /= fftSize;
+                real1[i] /= fftSize;
             }
 
             // 4) return resulting meaningful part of the signal (truncate size to N + M - 1)
 
-            return new DiscreteSignal(signal1.SamplingRate, FastCopy.ArrayFragment(spectrum.Real, length));
+            return new DiscreteSignal(signal1.SamplingRate, real1).First(length);
         }
 
         /// <summary>
@@ -65,14 +72,15 @@ namespace NWaves.Operations
             var length = signal1.Length + signal2.Length - 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(length);
+            var fft = new Fft(fftSize);
 
             signal1 = signal1.ZeroPadded(fftSize);
             signal2 = signal2.ZeroPadded(fftSize);
 
             // 1) do FFT of both signals
 
-            Transform.Fft(signal1.Real, signal1.Imag, fftSize);
-            Transform.Fft(signal2.Real, signal2.Imag, fftSize);
+            fft.Direct(signal1.Real, signal1.Imag);
+            fft.Direct(signal2.Real, signal2.Imag);
 
             // 2) do complex multiplication of spectra
 
@@ -80,7 +88,7 @@ namespace NWaves.Operations
             
             // 3) do inverse FFT of resulting spectrum
 
-            Transform.Ifft(spectrum.Real, spectrum.Imag, fftSize);
+            fft.Inverse(spectrum.Real, spectrum.Imag);
 
             // 3a) normalize
 
@@ -92,9 +100,48 @@ namespace NWaves.Operations
 
             // 4) return resulting meaningful part of the signal (truncate size to N + M - 1)
 
-            return new ComplexDiscreteSignal(signal1.SamplingRate, 
-                                FastCopy.ArrayFragment(spectrum.Real, length),
-                                FastCopy.ArrayFragment(spectrum.Imag, length));
+            return new ComplexDiscreteSignal(signal1.SamplingRate, spectrum.Real, spectrum.Imag).First(length);
+        }
+
+        /// <summary>
+        /// Fast convolution via FFT for arrays of samples (maximally in-place).
+        /// ALL arrays must have size equal to the size of FFT.
+        /// </summary>
+        /// <param name="real1">Real parts of the 1st signal (zero-padded)</param>
+        /// <param name="imag1">Imaginary parts of the 1st signal (zero-padded)</param>
+        /// <param name="real2">Real parts of the 2nd signal (zero-padded)</param>
+        /// <param name="imag2">Imaginary parts of the 2nd signal (zero-padded)</param>
+        /// <param name="res">Real parts of resulting convolution (zero-padded)</param>
+        public static void Convolve(double[] real1, double[] imag1, double[] real2, double[] imag2, double[] res)
+        {
+            var fftSize = res.Length;
+            var fft = new Fft(fftSize);
+
+            // 1) do FFT of both signals
+
+            fft.Direct(real1, imag1);
+            fft.Direct(real2, imag2);
+
+            // 2) do complex multiplication of spectra and normalize
+
+            for (var i = 0; i < res.Length; i++)
+            {
+                var re = (real1[i] * real2[i] - imag1[i] * imag2[i]);
+                var im = (real1[i] * imag2[i] + imag1[i] * real2[i]);
+                real1[i] = re;
+                imag1[i] = im;
+            }
+
+            // 3) do inverse FFT of resulting spectrum
+
+            fft.Inverse(real1, imag1);
+
+            // 3a) normalize
+
+            for (var i = 0; i < res.Length; i++)
+            {
+                res[i] = real1[i] / fftSize;
+            }
         }
 
         /// <summary>
@@ -134,6 +181,20 @@ namespace NWaves.Operations
         public static DiscreteSignal CrossCorrelate(DiscreteSignal signal1, DiscreteSignal signal2)
         {
             var reversedKernel = new DiscreteSignal(signal2.SamplingRate, signal2.Samples.Reverse());
+
+            return Convolve(signal1, reversedKernel);
+        }
+
+        /// <summary>
+        /// Fast cross-correlation via FFT
+        /// </summary>
+        /// <param name="signal1"></param>
+        /// <param name="signal2"></param>
+        /// <returns></returns>
+        public static ComplexDiscreteSignal CrossCorrelate(ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
+        {
+            var reversedKernel = 
+                new ComplexDiscreteSignal(signal2.SamplingRate, signal2.Real.Reverse(), signal2.Imag.Reverse());
 
             return Convolve(signal1, reversedKernel);
         }

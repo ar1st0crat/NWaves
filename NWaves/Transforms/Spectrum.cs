@@ -4,8 +4,50 @@ using NWaves.Utils;
 
 namespace NWaves.Transforms
 {
-    public static partial class Transform
+    /// <summary>
+    /// Class providing methods for direct and inverse Fast Fourier Transforms
+    /// and postprocessing: magnitude spectrum, power spectrum, logpower spectrum.
+    /// </summary>
+    public partial class Fft
     {
+        /// <summary>
+        /// The size of FFT
+        /// </summary>
+        private readonly int _fftSize;
+
+        /// <summary>
+        /// Intermediate buffer storing real parts of spectrum
+        /// </summary>
+        private readonly double[] _realSpectrum;
+
+        /// <summary>
+        /// Intermediate buffer storing imaginary parts of spectrum
+        /// </summary>
+        private readonly double[] _imagSpectrum;
+
+        /// <summary>
+        /// Just a buffer with zeros for quick memset
+        /// </summary>
+        private readonly double[] _zeroblock;
+
+        /// <summary>
+        /// Constructor accepting the size of FFT
+        /// </summary>
+        /// <param name="fftSize">Size of FFT</param>
+        public Fft(int fftSize = 512)
+        {
+            var pow = (int) Math.Log(fftSize, 2);
+            if (fftSize != 1 << pow)
+            {
+                throw new ArgumentException("FFT size must be a power of 2!");
+            }
+
+            _fftSize = fftSize;
+            _realSpectrum = new double[fftSize];
+            _imagSpectrum = new double[fftSize];
+            _zeroblock = new double[fftSize];
+        }
+
         /// <summary>
         /// Magnitude spectrum:
         /// 
@@ -13,31 +55,30 @@ namespace NWaves.Transforms
         /// 
         /// </summary>
         /// <param name="samples">Array of samples (samples parts)</param>
-        /// <param name="fftSize">Size of FFT</param>
+        /// <param name="spectrum">Magnitude spectrum</param>
         /// <param name="normalize">Normalization flag</param>
-        /// <returns>Left half of the magnitude spectrum</returns>
-        public static double[] MagnitudeSpectrum(double[] samples, int fftSize = 512, bool normalize = false)
+        public void MagnitudeSpectrum(double[] samples, double[] spectrum, bool normalize = false)
         {
-            double[] real, imag;
+            FastCopy.ToExistingArray(_zeroblock, _realSpectrum, _fftSize);
+            FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
+            FastCopy.ToExistingArray(samples, _realSpectrum, Math.Min(samples.Length, _fftSize));
 
-            ComplexSpectrum(samples, out real, out imag, fftSize);
+            Direct(_realSpectrum, _imagSpectrum);
 
-            var spectrum = new double[real.Length];
             if (normalize)
             {
                 for (var i = 0; i < spectrum.Length; i++)
                 {
-                    spectrum[i] = Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]) / fftSize;
+                    spectrum[i] = Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]) / _fftSize;
                 }
             }
             else
             {
                 for (var i = 0; i < spectrum.Length; i++)
                 {
-                    spectrum[i] = Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]);
+                    spectrum[i] = Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]);
                 }
             }
-            return spectrum;
         }
 
         /// <summary>
@@ -47,31 +88,30 @@ namespace NWaves.Transforms
         /// 
         /// </summary>
         /// <param name="samples">Array of samples (samples parts)</param>
-        /// <param name="fftSize">Size of FFT</param>
+        /// <param name="spectrum">Power spectrum</param>
         /// <param name="normalize">Normalization flag</param>
-        /// <returns>Left half of the magnitude spectrum</returns>
-        public static double[] PowerSpectrum(double[] samples, int fftSize = 512, bool normalize = true)
+        public void PowerSpectrum(double[] samples, double[] spectrum, bool normalize = true)
         {
-            double[] real, imag;
+            FastCopy.ToExistingArray(_zeroblock, _realSpectrum, _fftSize);
+            FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
+            FastCopy.ToExistingArray(samples, _realSpectrum, Math.Min(samples.Length, _fftSize));
 
-            ComplexSpectrum(samples, out real, out imag, fftSize);
+            Direct(_realSpectrum, _imagSpectrum);
 
-            var spectrum = new double[real.Length];
             if (normalize)
             {
                 for (var i = 0; i < spectrum.Length; i++)
                 {
-                    spectrum[i] = (real[i] * real[i] + imag[i] * imag[i]) / fftSize;
+                    spectrum[i] = (_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]) / _fftSize;
                 }
             }
             else
             {
                 for (var i = 0; i < spectrum.Length; i++)
                 {
-                    spectrum[i] = real[i] * real[i] + imag[i] * imag[i];
+                    spectrum[i] = _realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i];
                 }
             }
-            return spectrum;
         }
 
         /// <summary>
@@ -81,76 +121,60 @@ namespace NWaves.Transforms
         /// 
         /// </summary>
         /// <param name="samples">Array of samples (samples parts)</param>
-        /// <param name="fftSize">Size of FFT</param>
+        /// <param name="spectrum">Log-power spectrum</param>
         /// <returns>Left half of the log-power spectrum</returns>
-        public static double[] LogPowerSpectrum(double[] samples, int fftSize = 512)
+        public void LogPowerSpectrum(double[] samples, double[] spectrum)
         {
-            double[] real, imag;
+            FastCopy.ToExistingArray(_zeroblock, _realSpectrum, _fftSize);
+            FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
+            FastCopy.ToExistingArray(samples, _realSpectrum, Math.Min(samples.Length, _fftSize));
 
-            ComplexSpectrum(samples, out real, out imag, fftSize);
+            Direct(_realSpectrum, _imagSpectrum);
 
-            var spectrum = new double[real.Length];
             for (var i = 0; i < spectrum.Length; i++)
             {
-                spectrum[i] = 20 * Math.Log10(real[i] * real[i] + imag[i] * imag[i] + double.Epsilon);
+                spectrum[i] = 20 * Math.Log10(_realSpectrum[i] * _realSpectrum[i] + 
+                                              _imagSpectrum[i] * _imagSpectrum[i] + 
+                                              double.Epsilon);
             }
-            return spectrum;
-        }
-
-        /// <summary>
-        /// Method for computing complex spectrum without any post-processing
-        /// </summary>
-        /// <param name="samples"></param>
-        /// <param name="realSpectrum"></param>
-        /// <param name="imagSpectrum"></param>
-        /// <param name="fftSize"></param>
-        public static void ComplexSpectrum(double[] samples, out double[] realSpectrum, out double[] imagSpectrum, int fftSize = 512)
-        {
-            if (samples.Length < fftSize)
-            {
-                samples = FastCopy.PadZeros(samples, fftSize);
-            }
-            var imag = new double[samples.Length];
-
-            Fft(samples, imag, fftSize);
-
-            realSpectrum = FastCopy.ArrayFragment(samples, fftSize/2 + 1);
-            imagSpectrum = FastCopy.ArrayFragment(imag, fftSize/2 + 1);
         }
 
         /// <summary>
         /// Overloaded method for DiscreteSignal as an input
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="fftSize"></param>
         /// <param name="normalize"></param>
         /// <returns></returns>
-        public static double[] MagnitudeSpectrum(DiscreteSignal signal, int fftSize = 512, bool normalize = false)
+        public DiscreteSignal MagnitudeSpectrum(DiscreteSignal signal, bool normalize = false)
         {
-            return MagnitudeSpectrum(signal.Samples, fftSize, normalize);
+            var spectrum = new double[_fftSize / 2 + 1];
+            MagnitudeSpectrum(signal.Samples, spectrum, normalize);
+            return new DiscreteSignal(signal.SamplingRate, spectrum);
         }
 
         /// <summary>
         /// Overloaded method for DiscreteSignal as an input
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="fftSize"></param>
         /// <param name="normalize"></param>
         /// <returns></returns>
-        public static double[] PowerSpectrum(DiscreteSignal signal, int fftSize = 512, bool normalize = false)
+        public DiscreteSignal PowerSpectrum(DiscreteSignal signal, bool normalize = true)
         {
-            return PowerSpectrum(signal.Samples, fftSize, normalize);
+            var spectrum = new double[_fftSize / 2 + 1];
+            PowerSpectrum(signal.Samples, spectrum, normalize);
+            return new DiscreteSignal(signal.SamplingRate, spectrum);
         }
 
         /// <summary>
         /// Overloaded method for DiscreteSignal as an input
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="fftSize"></param>
         /// <returns></returns>
-        public static double[] LogPowerSpectrum(DiscreteSignal signal, int fftSize = 512)
+        public DiscreteSignal LogPowerSpectrum(DiscreteSignal signal)
         {
-            return LogPowerSpectrum(signal.Samples, fftSize);
+            var spectrum = new double[_fftSize / 2 + 1];
+            LogPowerSpectrum(signal.Samples, spectrum);
+            return new DiscreteSignal(signal.SamplingRate, spectrum);
         }
     }
 }

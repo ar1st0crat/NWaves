@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.Filters.Fda;
+using NWaves.Operations;
 using NWaves.Signals;
 
 namespace NWaves.DemoForms

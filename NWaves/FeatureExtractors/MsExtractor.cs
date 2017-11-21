@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Filters;
@@ -50,6 +51,11 @@ namespace NWaves.FeatureExtractors
         private readonly int _fftSize;
 
         /// <summary>
+        /// Internal FFT transformer
+        /// </summary>
+        private readonly Fft _fft;
+
+        /// <summary>
         /// Size of overlap
         /// </summary>
         private readonly int _hopSize;
@@ -58,6 +64,11 @@ namespace NWaves.FeatureExtractors
         /// Size of FFT applied to signal envelopes
         /// </summary>
         private readonly int _modulationFftSize;
+
+        /// <summary>
+        /// Internal FFT transformer for modulation FFT analysis
+        /// </summary>
+        private readonly Fft _modulationFft;
 
         /// <summary>
         /// Size of overlap during the analysis of signal envelopes
@@ -108,9 +119,12 @@ namespace NWaves.FeatureExtractors
 
             _fftSize = MathUtils.NextPowerOfTwo(windowLength);
             _hopSize = (int)(samplingRate * overlapSize);
+            _fft = new Fft(_fftSize);
 
             _modulationFftSize = modulationFftSize;
             _modulationHopSize = modulationOverlapSize;
+            _modulationFft = new Fft(_modulationFftSize);
+
             _samplingRate = samplingRate;
             
             if (preEmphasis > 0.0)
@@ -138,6 +152,8 @@ namespace NWaves.FeatureExtractors
         public override IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
         {
             var featureVectors = new List<FeatureVector>();
+
+            var spectrum = new double[_fftSize / 2 + 1];
             
             // 0) pre-emphasis (if needed)
 
@@ -175,7 +191,7 @@ namespace NWaves.FeatureExtractors
 
                     // 2) calculate power spectrum
 
-                    var spectrum = Transform.PowerSpectrum(block, _fftSize);
+                    _fft.PowerSpectrum(block, spectrum);
 
                     // 3) apply filterbank...
 
@@ -227,21 +243,26 @@ namespace NWaves.FeatureExtractors
                 }
             }
 
+            var modBlock = new double[_modulationFftSize];
+            var zeroModblock = new double[_modulationFftSize];
+            var modSpectrum = new double[_modulationFftSize / 2 + 1];
+
             var vector = new double[_envelopes.Length * (_modulationFftSize / 2 + 1)];
             var offset = 0;
 
             i = 0;
-            while (i + _modulationFftSize < envelopeLength)
+            while (i < envelopeLength)
             {
                 offset = 0;
                 foreach (var envelope in _envelopes)
                 {
-                    var x = FastCopy.ArrayFragment(envelope, _modulationFftSize, i);
+                    FastCopy.ToExistingArray(zeroModblock, modBlock, _modulationFftSize);
+                    FastCopy.ToExistingArray(envelope, modBlock, Math.Min(_modulationFftSize, envelopeLength - i), i);
 
-                    var spectrum = Transform.PowerSpectrum(x, _modulationFftSize);
-                    FastCopy.ToExistingArray(spectrum, vector, spectrum.Length, 0, offset);
+                    _modulationFft.PowerSpectrum(modBlock, modSpectrum);
+                    FastCopy.ToExistingArray(modSpectrum, vector, modSpectrum.Length, 0, offset);
 
-                    offset += spectrum.Length;
+                    offset += modSpectrum.Length;
                 }
 
                 featureVectors.Add(new FeatureVector
@@ -252,26 +273,6 @@ namespace NWaves.FeatureExtractors
 
                 i += _modulationHopSize;
             }
-
-            // process last portion of data (that needs to be zero-padded):
-
-            offset = 0;
-            foreach (var envelope in _envelopes)
-            {
-                var x = new double[_modulationFftSize];
-                FastCopy.ToExistingArray(envelope, x, envelopeLength - i, i);
-
-                var spectrum = Transform.PowerSpectrum(x, _modulationFftSize);
-                FastCopy.ToExistingArray(spectrum, vector, spectrum.Length, 0, offset);
-
-                offset += spectrum.Length;
-            }
-
-            featureVectors.Add(new FeatureVector
-            {
-                Features = vector,
-                TimePosition = (double)i / signal.SamplingRate
-            });
 
             return featureVectors;
         }
@@ -302,7 +303,7 @@ namespace NWaves.FeatureExtractors
         /// <returns></returns>
         public double[][] MakeSpectrum2D(IEnumerable<FeatureVector> featureVectors, int idx = 0)
         {
-            var length = (_filterBank != null) ? _filterBank.Length : _featuregram[0].Length;
+            var length = _filterBank?.Length ?? _featuregram[0].Length;
 
             var spectrum = new double[length][];
             var specSize = _modulationFftSize / 2 + 1;

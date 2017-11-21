@@ -142,7 +142,8 @@ namespace NWaves.Filters.Base
 
             Buffer.BlockCopy(Kernel, 0, real, 0, Kernel.Length * 8);
 
-            Transform.Fft(real, imag, length);
+            var fft = new Fft(length);
+            fft.Direct(real, imag);
 
             return new ComplexDiscreteSignal(1, real, imag);
         }

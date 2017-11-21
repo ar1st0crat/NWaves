@@ -46,7 +46,8 @@ namespace NWaves.Filters.Fda
                 imag = new double[fftSize];
             }
 
-            Transform.Ifft(real, imag, fftSize);
+            var fft = new Fft(fftSize);
+            fft.Inverse(real, imag);
 
             var kernel = new double[order];
 
@@ -72,7 +73,7 @@ namespace NWaves.Filters.Fda
         /// <returns></returns>
         public static FirFilter DesignFirLowPassFilter(int order, double freq, WindowTypes window = WindowTypes.Hamming)
         {
-            const int fftSize = 512;
+            int fftSize = Math.Max(512, MathUtils.NextPowerOfTwo(order * 4));
 
             var magnitudeResponse = new double[fftSize];
             var phaseResponse = new double[fftSize];

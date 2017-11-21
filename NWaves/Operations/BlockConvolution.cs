@@ -23,11 +23,13 @@ namespace NWaves.Operations
                 throw new ArgumentException("Kernel length must not exceed the size of FFT!");
             }
 
+            var fft = new Fft(fftSize);
+
             // pre-compute kernel's FFT:
 
             var kernelReal = FastCopy.PadZeros(kernel.Samples, fftSize);
             var kernelImag = new double[fftSize];
-            Transform.Fft(kernelReal, kernelImag, fftSize);
+            fft.Direct(kernelReal, kernelImag);
 
             // reserve space for current signal block:
 
@@ -44,7 +46,7 @@ namespace NWaves.Operations
 
             var hopSize = fftSize - m + 1;
             var i = 0;
-            while (i + hopSize < signal.Length)
+            while (i < signal.Length)
             {
                 // ============================== FFT CONVOLUTION SECTION =================================
 
@@ -53,15 +55,15 @@ namespace NWaves.Operations
                 //
                 //        var res = Convolve(signal[i, i + hopSize], kernel);
                 //
-                // ...but that would require too many unnecessary memory allocations.
+                // ...but that would require unnecessary memory allocations and calculations.
                 
                 FastCopy.ToExistingArray(zeroblock, blockReal, fftSize);
                 FastCopy.ToExistingArray(zeroblock, blockImag, fftSize);
-                FastCopy.ToExistingArray(signal.Samples, blockReal, hopSize, i);
+                FastCopy.ToExistingArray(signal.Samples, blockReal, Math.Min(hopSize, signal.Length - i), i);
 
                 // 1) do FFT of a signal block:
                 
-                Transform.Fft(blockReal, blockImag, fftSize);
+                fft.Direct(blockReal, blockImag);
 
                 // 2) do complex multiplication of spectra
 
@@ -73,48 +75,21 @@ namespace NWaves.Operations
 
                 // 3) do inverse FFT of resulting spectrum
 
-                Transform.Ifft(spectrumReal, spectrumImag, fftSize);
+                fft.Inverse(spectrumReal, spectrumImag);
 
                 // ========================================================================================
-
-
-                for (var j = 0; j < m - 1; j++)
+                
+                for (var j = 0; j < m - 1 && i + j < filtered.Length; j++)
                 {
                     filtered[i + j] += spectrumReal[j];
                 }
 
-                for (var j = m - 1; j < spectrumReal.Length; j++)
+                for (var j = m - 1; j < spectrumReal.Length && i + j < filtered.Length; j++)
                 {
                     filtered[i + j] = spectrumReal[j];
                 }
 
                 i += hopSize;
-            }
-
-
-            // process last portion of data:
-
-            FastCopy.ToExistingArray(zeroblock, blockReal, fftSize);
-            FastCopy.ToExistingArray(zeroblock, blockImag, fftSize);
-            FastCopy.ToExistingArray(signal.Samples, blockReal, signal.Length - i, i);
-
-            Transform.Fft(blockReal, blockImag, fftSize);
-
-            for (var j = 0; j < fftSize; j++)
-            {
-                spectrumReal[j] = (blockReal[j] * kernelReal[j] - blockImag[j] * kernelImag[j]) / fftSize;
-                spectrumImag[j] = (blockReal[j] * kernelImag[j] + blockImag[j] * kernelReal[j]) / fftSize;
-            }
-
-            Transform.Ifft(spectrumReal, spectrumImag, fftSize);
-            
-            for (var j = 0; j < m - 1 && i + j < filtered.Length; j++)
-            {
-                filtered[i + j] += spectrumReal[j];
-            }
-            for (var j = m - 1; i + j < filtered.Length; j++)
-            {
-                filtered[i + j] = spectrumReal[j];
             }
 
             return filtered;
@@ -136,11 +111,13 @@ namespace NWaves.Operations
                 throw new ArgumentException("Kernel length must not exceed the size of FFT!");
             }
 
+            var fft = new Fft(fftSize);
+
             // pre-compute kernel's FFT:
 
             var kernelReal = FastCopy.PadZeros(kernel.Samples, fftSize);
             var kernelImag = new double[fftSize];
-            Transform.Fft(kernelReal, kernelImag, fftSize);
+            fft.Direct(kernelReal, kernelImag);
 
             // reserve space for current signal block:
 
@@ -159,7 +136,7 @@ namespace NWaves.Operations
             
             var hopSize = fftSize - m + 1;
             var i = 0;
-            while (i + fftSize < signal.Length)
+            while (i < signal.Length)
             {
                 // ============================== FFT CONVOLUTION SECTION =================================
 
@@ -170,12 +147,12 @@ namespace NWaves.Operations
                 //
                 // ...but that would require too many unnecessary memory allocations.
 
-                FastCopy.ToExistingArray(signal.Samples, blockReal, fftSize, i);
+                FastCopy.ToExistingArray(signal.Samples, blockReal, Math.Min(fftSize, signal.Length - i), i);
                 FastCopy.ToExistingArray(zeroblock, blockImag, fftSize);
 
                 // 1) do FFT of a signal block:
 
-                Transform.Fft(blockReal, blockImag, fftSize);
+                fft.Direct(blockReal, blockImag);
 
                 // 2) do complex multiplication of spectra
 
@@ -187,38 +164,17 @@ namespace NWaves.Operations
 
                 // 3) do inverse FFT of resulting spectrum
 
-                Transform.Ifft(spectrumReal, spectrumImag, fftSize);
+                fft.Inverse(spectrumReal, spectrumImag);
 
                 // ========================================================================================
                 
 
-                for (var j = 0; j + m - 1 < spectrumReal.Length; j++)
+                for (var j = 0; j + m - 1 < spectrumReal.Length && i + j < filtered.Length; j++)
                 {
                     filtered[i + j] = spectrumReal[j + m - 1];
                 }
 
                 i += hopSize;
-            }
-
-            // process last portion of data:
-
-            FastCopy.ToExistingArray(zeroblock, blockReal, fftSize);
-            FastCopy.ToExistingArray(zeroblock, blockImag, fftSize);
-            FastCopy.ToExistingArray(signal.Samples, blockReal, signal.Length - i, i);
-
-            Transform.Fft(blockReal, blockImag, fftSize);
-
-            for (var j = 0; j < fftSize; j++)
-            {
-                spectrumReal[j] = (blockReal[j] * kernelReal[j] - blockImag[j] * kernelImag[j]) / fftSize;
-                spectrumImag[j] = (blockReal[j] * kernelImag[j] + blockImag[j] * kernelReal[j]) / fftSize;
-            }
-
-            Transform.Ifft(spectrumReal, spectrumImag, fftSize);
-
-            for (var j = 0; i + j < filtered.Length; j++)
-            {
-                filtered[i + j] = spectrumReal[j + m - 1];
             }
 
             return filtered;

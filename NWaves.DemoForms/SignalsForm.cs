@@ -26,6 +26,8 @@ namespace NWaves.DemoForms
         private readonly MciAudioRecorder _recorder = new MciAudioRecorder();
         private bool _isRecording;
 
+        private readonly Fft _fft = new Fft();
+
         public SignalsForm()
         {
             InitializeComponent();
@@ -211,8 +213,8 @@ namespace NWaves.DemoForms
 
             DrawSignal(generatedSignalPanel, _signal2);
 
-            var spectrum = Transform.PowerSpectrum(_signal2.First(512).Samples);
-            DrawSpectrum(spectrum);
+            var spectrum = _fft.PowerSpectrum(_signal2.First(512));
+            DrawSpectrum(spectrum.Samples);
         }
 
         private void signalOperationButton_Click(object sender, EventArgs e)
@@ -397,10 +399,10 @@ namespace NWaves.DemoForms
             
             while (i < spectrum.Length)
             {
-                if (Math.Abs(spectrum[i] * 500) < spectrumPanel.Height)
+                if (Math.Abs(spectrum[i] * 300) < spectrumPanel.Height)
                 {
-                    g.DrawLine(pen, i, offset, i, (float)-spectrum[i] * 500 + offset);
-                    g.DrawEllipse(pen, i - 1, (int)(-spectrum[i] * 500) + offset - 1, 3, 3);
+                    g.DrawLine(pen, i, offset, i, (float)-spectrum[i] * 300 + offset);
+                    g.DrawEllipse(pen, i - 1, (int)(-spectrum[i] * 300) + offset - 1, 3, 3);
                 }
                 i++;
             }

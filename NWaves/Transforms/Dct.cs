@@ -2,35 +2,38 @@
 
 namespace NWaves.Transforms
 {
-    // =======================================================================
-    // ===== See https://en.wikipedia.org/wiki/Discrete_cosine_transform =====
-    // =======================================================================
+    /// <summary>
+    ///  Class providing methods for Discrete Cosine Transforms of different types
+    /// 
+    /// See https://en.wikipedia.org/wiki/Discrete_cosine_transform
+    /// 
+    /// </summary>
     public class Dct
     {
         /// <summary>
-        /// DCT precalculated matrices
+        /// DCT precalculated cosine matrices
         /// </summary>
-        private double[][] _dct1;
-        private double[][] _dct2;
-        private double[][] _dct3;
-        private double[][] _dct4;
+        private readonly double[][] _dct1;
+        private readonly double[][] _dct2;
+        private readonly double[][] _dct3;
+        private readonly double[][] _dct4;
 
         /// <summary>
         /// Size of DCT
         /// </summary>
-        private int _dctSize;
+        private readonly int _dctSize;
 
         /// <summary>
         /// Precalculate DCT matrices
         /// </summary>
         /// <param name="length"></param>
         /// <param name="dctSize"></param>
-        public void Init(int length, int dctSize)
+        public Dct(int length, int dctSize)
         {
-            _dct1 = new double[length][];
-            _dct2 = new double[length][];
-            _dct3 = new double[length][];
-            _dct4 = new double[length][];
+            _dct1 = new double[dctSize][];
+            _dct2 = new double[dctSize][];
+            _dct3 = new double[dctSize][];
+            _dct4 = new double[dctSize][];
 
             _dctSize = dctSize;
 
@@ -38,39 +41,39 @@ namespace NWaves.Transforms
 
             var m = Math.PI / (length - 1);
 
-            for (var n = 1; n < length - 1; n++)
+            for (var k = 0; k < dctSize; k++)
             {
-                _dct1[n] = new double[dctSize];
+                _dct1[k] = new double[length];
 
-                for (var k = 0; k < dctSize; k++)
+                for (var n = 1; n < length - 1; n++)
                 {
-                    _dct1[n][k] = Math.Cos(m * n * k);
+                    _dct1[k][n] = Math.Cos(m * n * k);
                 }
             }
 
             // DCT-2
 
             m = Math.PI / (length << 1);
-            
-            for (var n = 0; n < length; n++)
-            {
-                _dct2[n] = new double[dctSize];
 
-                for (var k = 0; k < dctSize; k++)
+            for (var k = 0; k < dctSize; k++)
+            {
+                _dct2[k] = new double[length];
+
+                for (var n = 0; n < length; n++)
                 {
-                    _dct2[n][k] = Math.Cos(((n << 1) + 1) * k * m);
+                    _dct2[k][n] = Math.Cos(((n << 1) + 1) * k * m);
                 }
             }
 
             // DCT-3
 
-            for (var n = 1; n < length; n++)
+            for (var k = 0; k < dctSize; k++)
             {
-                _dct3[n] = new double[dctSize];
+                _dct3[k] = new double[length];
 
-                for (var k = 0; k < dctSize; k++)
+                for (var n = 1; n < length; n++)
                 {
-                    _dct3[n][k] = Math.Cos(((k << 1) + 1) * n * m);
+                    _dct3[k][n] = Math.Cos(((k << 1) + 1) * n * m);
                 }
             }
 
@@ -78,13 +81,13 @@ namespace NWaves.Transforms
 
             m = Math.PI / (length << 2);
 
-            for (var k = 0; k < length; k++)
+            for (var k = 0; k < dctSize; k++)
             {
-                _dct4[k] = new double[dctSize];
+                _dct4[k] = new double[length];
 
-                for (var n = 0; n < dctSize; n++)
+                for (var n = 0; n < length; n++)
                 {
-                    _dct4[k][n] = Math.Cos(((n << 1) + 1) * ((k << 1) + 1) * m);
+                    _dct4[k][n] = Math.Cos(((k << 1) + 1) * ((n << 1) + 1) * m);
                 }
             }
         }
@@ -100,7 +103,7 @@ namespace NWaves.Transforms
             
                 for (var n = 1; n < input.Length - 1; n++)
                 {
-                    output[k] += input[n] * _dct1[n][k];
+                    output[k] += input[n] * _dct1[k][n];
                 }
             }
         }
@@ -116,7 +119,7 @@ namespace NWaves.Transforms
 
                 for (var n = 0; n < input.Length; n++)
                 {
-                    output[k] += input[n] * _dct2[n][k];
+                    output[k] += input[n] * _dct2[k][n];
                 }
             }
         }
@@ -132,7 +135,7 @@ namespace NWaves.Transforms
 
                 for (var n = 0; n < input.Length; n++)
                 {
-                    output[k] += input[n] * _dct2[n][k];
+                    output[k] += input[n] * _dct2[k][n];
                 }
 
                 output[k] *= Math.Sqrt(2.0 / output.Length);
@@ -151,7 +154,7 @@ namespace NWaves.Transforms
 
                 for (var n = 1; n < input.Length; n++)
                 {
-                    output[k] += input[n] * _dct3[n][k];
+                    output[k] += input[n] * _dct3[k][n];
                 }
             }
         }
@@ -164,9 +167,9 @@ namespace NWaves.Transforms
             for (var k = 0; k < output.Length; k++)
             {
                 output[k] = 0.0;
-                for (var n = 0; n < _dctSize; n++)
+                for (var n = 0; n < input.Length; n++)
                 {
-                    output[k] += input[n] * _dct4[n][k];
+                    output[k] += input[n] * _dct4[k][n];
                 }
             }
         }

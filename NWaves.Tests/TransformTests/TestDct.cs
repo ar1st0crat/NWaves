@@ -1,21 +1,14 @@
 ﻿using NUnit.Framework;
 using NWaves.Transforms;
 
-namespace NWaves.Tests.Transforms
+namespace NWaves.Tests.TransformTests
 {
     [TestFixture]
     public class TestDct
     {
-        readonly Dct _dct = new Dct();
-        readonly Dct _invdct = new Dct();
+        readonly Dct _dct = new Dct(8, 6);
+        readonly Dct _invdct = new Dct(8, 8);
         readonly double[] _test = { 0.5, 0.2, 0.1, 0.6, 0.1, 0, 0.3, 0.8 };
-
-        [SetUp]
-        public void InitDct()
-        {
-            _dct.Init(8, 6);
-            _invdct.Init(8, 8);
-        }
 
         [Test]
         public void TestDct1()
