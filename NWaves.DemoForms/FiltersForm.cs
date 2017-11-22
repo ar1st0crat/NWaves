@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using NWaves.Signals;
 using NWaves.Audio;
@@ -12,6 +13,7 @@ using NWaves.Filters.Base;
 using NWaves.Filters.BiQuad;
 using NWaves.Filters.Fda;
 using NWaves.Transforms;
+using SciColorMaps;
 
 namespace NWaves.DemoForms
 {
@@ -21,7 +23,7 @@ namespace NWaves.DemoForms
 
         private DiscreteSignal _signal;
         private List<double[]> _spectrogram;
-        private readonly Stft _stft = new Stft();
+        private readonly Stft _stft = new Stft(256, fftSize: 256);
 
         private DiscreteSignal _filteredSignal;
         private List<double[]> _filteredSpectrogram;
@@ -532,13 +534,29 @@ namespace NWaves.DemoForms
             var g = panel.CreateGraphics();
             g.Clear(Color.White);
 
+            var spectraCount = spectrogram.Count;
+
+            var minValue = spectrogram.SelectMany(s => s).Min();
+            var maxValue = spectrogram.SelectMany(s => s).Max();
+
+            // post-process spectrogram for better visualization
+            for (var i = 0; i < spectraCount; i++)
+            {
+                spectrogram[i] = spectrogram[i].Select(s => (s * 3 < maxValue) ? s * 3 : s / 1.5).ToArray();
+            }
+            maxValue /= 12;
+
+            var cmap = new ColorMap("magma", minValue, maxValue);
+
+
             var spectrogramBitmap = new Bitmap(spectrogram.Count, spectrogram[0].Length);
 
             for (var i = 0; i < spectrogram.Count; i++)
             {
                 for (var j = 0; j < spectrogram[i].Length; j++)
                 {
-                    spectrogramBitmap.SetPixel(i, spectrogram[i].Length - 1 - j, Color.FromArgb(0, (byte)(spectrogram[i][j] * 200), 0));
+                    spectrogramBitmap.SetPixel(i, spectrogram[i].Length - 1 - j,  cmap.GetColor(spectrogram[i][j]));
+                        //Color.FromArgb(0, (byte)(spectrogram[i][j] * 200), 0));
                 }
             }
 

@@ -159,7 +159,7 @@ DiscreteSignal noisy =
 
 using (var stream = new FileStream("sample.wav", FileMode.Open))
 {
-	IAudioContainer waveFile = new WaveFile(stream);
+	var waveFile = new WaveFile(stream);
 
 	// address signals with Channels enum (Left, Right, Interleave):
 
@@ -250,11 +250,10 @@ var reconstructed = stft.Inverse(spectrogram);
 
 ```C#
 
-// the following five operations are based on FFT convolution:
+// the following four operations are based on FFT convolution:
 
 var filteredSignal = Operation.Convolve(signal, kernel);
 var correlated = Operation.CrossCorrelate(signal1, signal2);
-var deconvolved = Operation.Deconvolve(filteredSignal, kernel);
 
 var olaFiltered = Operation.OverlapAdd(signal, kernel, 2048);
 var olsFiltered = Operation.OverlapSave(signal, kernel, 2048);
@@ -403,6 +402,8 @@ File.Delete(filename);
 ### Demos
 
 ![filters](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/Filters.png)
+
+![pitch](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/pitch.png)
 
 ![winforms](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/WinForms.png)
 

@@ -66,8 +66,9 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="samples"></param>
         /// <param name="cepstrum"></param>
+        /// <param name="power"></param>
         /// <returns></returns>
-        public void Direct(double[] samples, double[] cepstrum)
+        public void Direct(double[] samples, double[] cepstrum, bool power = false)
         {
             FastCopy.ToExistingArray(_zeroblock, _realSpectrum, _fftSize);
             FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
@@ -76,28 +77,40 @@ namespace NWaves.Transforms
             // complex fft
             _fft.Direct(_realSpectrum, _imagSpectrum);
 
-            // complex logarithm
+            // logarithm of power spectrum
             for (var i = 0; i < _fftSize; i++)
             {
-                _realSpectrum[i] = Math.Log(Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]));
+                _realSpectrum[i] = Math.Log10(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i] + double.Epsilon);
+                _imagSpectrum[i] = 0.0;
             }
 
             // complex ifft
             _fft.Inverse(_realSpectrum, _imagSpectrum);
 
-            // take real truncated part
-            FastCopy.ToExistingArray(_realSpectrum, cepstrum, _cepstrumSize);
+            // take truncated part
+            if (power)
+            {
+                for (var i = 0; i < _cepstrumSize; i++)
+                {
+                    cepstrum[i] = (_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]) / _fftSize;
+                }
+            }
+            else
+            {
+                FastCopy.ToExistingArray(_realSpectrum, cepstrum, _cepstrumSize);
+            }
         }
 
         /// <summary>
         /// Method for computing real cepstrum of a signal
         /// </summary>
         /// <param name="signal"></param>
+        /// <param name="power"></param>
         /// <returns>Cepstrum signal</returns>
-        public DiscreteSignal Direct(DiscreteSignal signal)
+        public DiscreteSignal Direct(DiscreteSignal signal, bool power = false)
         {
             var cepstrum = new double[_cepstrumSize];
-            Direct(signal.Samples, cepstrum);
+            Direct(signal.Samples, cepstrum, power);
             return new DiscreteSignal(signal.SamplingRate, cepstrum);
         }
     }

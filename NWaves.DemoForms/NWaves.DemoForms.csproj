@@ -33,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="SciColorMaps, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ar1st0crat.SciColorMaps.1.0.2\lib\portable40-net40+sl5+win8+wpa81\SciColorMaps.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -70,6 +74,12 @@
     <Compile Include="ModulationSpectrumForm.Designer.cs">
       <DependentUpon>ModulationSpectrumForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="PitchForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PitchForm.Designer.cs">
+      <DependentUpon>PitchForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="SignalsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -90,6 +100,9 @@
     <EmbeddedResource Include="ModulationSpectrumForm.resx">
       <DependentUpon>ModulationSpectrumForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="PitchForm.resx">
+      <DependentUpon>PitchForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SignalsForm.resx">
       <DependentUpon>SignalsForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -102,6 +115,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

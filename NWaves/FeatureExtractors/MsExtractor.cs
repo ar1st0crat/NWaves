@@ -308,10 +308,12 @@ namespace NWaves.FeatureExtractors
             var spectrum = new double[length][];
             var specSize = _modulationFftSize / 2 + 1;
 
+            var fv = featureVectors.ToArray();
+
             var offset = 0;
             for (var i = 0; i < spectrum.Length; i++)
             {
-                spectrum[i] = FastCopy.ArrayFragment(featureVectors.ElementAt(idx).Features, specSize, offset);
+                spectrum[i] = FastCopy.ArrayFragment(fv[idx].Features, specSize, offset);
                 offset += specSize;
             }
 

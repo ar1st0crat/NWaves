@@ -60,8 +60,14 @@ namespace NWaves.DemoForms
 
         private void filtersToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = new FiltersForm();
-            form.ShowDialog();
+            var filtersForm = new FiltersForm();
+            filtersForm.ShowDialog();
+        }
+
+        private void pitchToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var pitchForm = new PitchForm();
+            pitchForm.ShowDialog();
         }
 
         private void mfccToolStripMenuItem_Click(object sender, EventArgs e)
