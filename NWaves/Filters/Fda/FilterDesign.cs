@@ -46,8 +46,7 @@ namespace NWaves.Filters.Fda
                 imag = new double[fftSize];
             }
 
-            var fft = new Fft(fftSize);
-            fft.Inverse(real, imag);
+            Fft.Inverse(real, imag, fftSize);
 
             var kernel = new double[order];
 

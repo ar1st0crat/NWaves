@@ -24,8 +24,8 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Descriptions (simply "mf0", "mf1", etc.)
         /// </summary>
-        public override IEnumerable<string> FeatureDescriptions =>
-            Enumerable.Range(0, FeatureCount).Select(i => "mf" + i);
+        public override string[] FeatureDescriptions =>
+            Enumerable.Range(0, FeatureCount).Select(i => "mf" + i).ToArray();
 
         /// <summary>
         /// Filterbank matrix of dimension [filterCount * (fftSize/2 + 1)]
@@ -148,8 +148,10 @@ namespace NWaves.FeatureExtractors
         /// Method for computing modulation spectra.
         /// </summary>
         /// <param name="signal"></param>
+        /// <param name="startSample">The number (position) of the first sample for processing</param>
+        /// <param name="endSample">The number (position) of last sample for processing</param>
         /// <returns></returns>
-        public override IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
+        public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
             var featureVectors = new List<FeatureVector>();
 

@@ -17,51 +17,52 @@ namespace NWaves.FeatureExtractors.Base
         /// <summary>
         /// String annotations (or simply names) of features
         /// </summary>
-        public abstract IEnumerable<string> FeatureDescriptions { get; }
+        public abstract string[] FeatureDescriptions { get; }
 
         /// <summary>
         /// String annotations (or simply names) of delta features (1st order derivatives)
         /// </summary>
-        public virtual IEnumerable<string> DeltaFeatureDescriptions
+        public virtual string[] DeltaFeatureDescriptions
         {
-            get { return FeatureDescriptions.Select(d => "delta_" + d); }
+            get { return FeatureDescriptions.Select(d => "delta_" + d).ToArray(); }
         }
 
         /// <summary>
         /// String annotations (or simply names) of delta-delta features (2nd order derivatives)
         /// </summary>
-        public virtual IEnumerable<string> DeltaDeltaFeatureDescriptions
+        public virtual string[] DeltaDeltaFeatureDescriptions
         {
-            get { return FeatureDescriptions.Select(d => "delta_delta_" + d); }
+            get { return FeatureDescriptions.Select(d => "delta_delta_" + d).ToArray(); }
         }
-
-        /// <summary>
-        /// Compute the sequence of feature vectors from the DiscreteSignal object
-        /// </summary>
-        /// <param name="signal">Discrete real-valued signal</param>
-        /// <returns>Sequence of feature vectors</returns>
-        public abstract IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal);
-
+        
         /// <summary>
         /// Compute the sequence of feature vectors from some fragment of a signal
         /// </summary>
         /// <param name="signal">Signal</param>
-        /// <param name="startPos">Sample number of fragment's beginning</param>
-        /// <param name="endPos">Sample number of fragment's end</param>
+        /// <param name="startSample">The number (position) of the first sample for processing</param>
+        /// <param name="endSample">The number (position) of last sample for processing</param>
         /// <returns>Sequence of feature vectors</returns>
-        public IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal, int startPos, int endPos)
+        public abstract List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample);
+
+        /// <summary>
+        /// Compute the sequence of feature vectors from the entire DiscreteSignal
+        /// </summary>
+        /// <param name="signal">Discrete real-valued signal</param>
+        /// <returns>Sequence of feature vectors</returns>
+        public List<FeatureVector> ComputeFrom(DiscreteSignal signal)
         {
-            return ComputeFrom(signal[startPos, endPos]);
+            return ComputeFrom(signal, 0, signal.Length);
         }
 
         /// <summary>
         /// Compute the sequence of feature vectors from custom sequence of samples
         /// </summary>
         /// <param name="samples">Sequence of real-valued samples</param>
+        /// <param name="samplingRate">The sampling rate of the sequence</param>
         /// <returns>Sequence of feature vectors</returns>
-        public IEnumerable<FeatureVector> ComputeFrom(IEnumerable<double> samples)
+        public List<FeatureVector> ComputeFrom(IEnumerable<double> samples, int samplingRate)
         {
-            return ComputeFrom(new DiscreteSignal(1, samples));
+            return ComputeFrom(new DiscreteSignal(samplingRate, samples));
         }
     }
 }

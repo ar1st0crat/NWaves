@@ -63,7 +63,7 @@ namespace NWaves.Transforms
             FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
             FastCopy.ToExistingArray(samples, _realSpectrum, Math.Min(samples.Length, _fftSize));
 
-            Direct(_realSpectrum, _imagSpectrum);
+            Direct(_realSpectrum, _imagSpectrum, _fftSize);
 
             if (normalize)
             {
@@ -96,7 +96,7 @@ namespace NWaves.Transforms
             FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
             FastCopy.ToExistingArray(samples, _realSpectrum, Math.Min(samples.Length, _fftSize));
 
-            Direct(_realSpectrum, _imagSpectrum);
+            Direct(_realSpectrum, _imagSpectrum, _fftSize);
 
             if (normalize)
             {
@@ -129,7 +129,7 @@ namespace NWaves.Transforms
             FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
             FastCopy.ToExistingArray(samples, _realSpectrum, Math.Min(samples.Length, _fftSize));
 
-            Direct(_realSpectrum, _imagSpectrum);
+            Direct(_realSpectrum, _imagSpectrum, _fftSize);
 
             for (var i = 0; i < spectrum.Length; i++)
             {

@@ -24,8 +24,8 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Descriptions (simply "mfcc0", "mfcc1", "mfcc2", etc.)
         /// </summary>
-        public override IEnumerable<string> FeatureDescriptions =>
-            Enumerable.Range(0, FeatureCount).Select(i => "mfcc" + i);
+        public override string[] FeatureDescriptions =>
+            Enumerable.Range(0, FeatureCount).Select(i => "mfcc" + i).ToArray();
 
         /// <summary>
         /// Mel Filterbank matrix of dimension [melFilterCount * (fftSize/2 + 1)]
@@ -129,8 +129,10 @@ namespace NWaves.FeatureExtractors
         /// 
         /// </summary>
         /// <param name="signal">Signal for analysis</param>
+        /// <param name="startSample">The number (position) of the first sample for processing</param>
+        /// <param name="endSample">The number (position) of last sample for processing</param>
         /// <returns>List of mfcc vectors</returns>
-        public override IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
+        public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
             var featureVectors = new List<FeatureVector>();
             
@@ -147,8 +149,9 @@ namespace NWaves.FeatureExtractors
 
             var filtered = (_preemphasisFilter != null) ? _preemphasisFilter.ApplyTo(signal) : signal;
             
-            var i = 0;
-            while (i + _windowSamples.Length < filtered.Length)
+
+            var i = startSample;
+            while (i + _windowSamples.Length < endSample)
             {
                 // prepare next block for processing
 

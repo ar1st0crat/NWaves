@@ -46,7 +46,7 @@ namespace NWaves.DemoForms
             
             var lpcExtractor = new LpcExtractor(16, _signal.SamplingRate, WindowSize, OverlapSize);
 
-            _lpcVectors = lpcExtractor.ComputeFrom(_signal).ToList();
+            _lpcVectors = lpcExtractor.ComputeFrom(_signal);
 
             FillFeaturesList(_lpcVectors, lpcExtractor.FeatureDescriptions);
             lpcListView.Items[0].Selected = true;
@@ -65,7 +65,7 @@ namespace NWaves.DemoForms
 
         double[] EstimateSpectrum(int idx)
         {
-            var vector = _lpcVectors[idx].Features.ToArray();
+            var vector = _lpcVectors[idx].Features.ToArray();  // make new copy of array of features
             var gain = Math.Sqrt(vector[0]);
             vector[0] = 1.0;
 

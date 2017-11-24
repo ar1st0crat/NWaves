@@ -23,13 +23,12 @@ namespace NWaves.Operations
                 throw new ArgumentException("Kernel length must not exceed the size of FFT!");
             }
 
-            var fft = new Fft(fftSize);
-
             // pre-compute kernel's FFT:
 
             var kernelReal = FastCopy.PadZeros(kernel.Samples, fftSize);
             var kernelImag = new double[fftSize];
-            fft.Direct(kernelReal, kernelImag);
+
+            Fft.Direct(kernelReal, kernelImag, fftSize);
 
             // reserve space for current signal block:
 
@@ -55,15 +54,16 @@ namespace NWaves.Operations
                 //
                 //        var res = Convolve(signal[i, i + hopSize], kernel);
                 //
-                // ...but that would require unnecessary memory allocations and calculations.
-                
+                // ...but that would require unnecessary memory allocations 
+                //    and recalculating of kernel FFT at each step.
+
                 FastCopy.ToExistingArray(zeroblock, blockReal, fftSize);
                 FastCopy.ToExistingArray(zeroblock, blockImag, fftSize);
                 FastCopy.ToExistingArray(signal.Samples, blockReal, Math.Min(hopSize, signal.Length - i), i);
 
                 // 1) do FFT of a signal block:
                 
-                fft.Direct(blockReal, blockImag);
+                Fft.Direct(blockReal, blockImag, fftSize);
 
                 // 2) do complex multiplication of spectra
 
@@ -75,7 +75,7 @@ namespace NWaves.Operations
 
                 // 3) do inverse FFT of resulting spectrum
 
-                fft.Inverse(spectrumReal, spectrumImag);
+                Fft.Inverse(spectrumReal, spectrumImag, fftSize);
 
                 // ========================================================================================
                 
@@ -111,13 +111,11 @@ namespace NWaves.Operations
                 throw new ArgumentException("Kernel length must not exceed the size of FFT!");
             }
 
-            var fft = new Fft(fftSize);
-
             // pre-compute kernel's FFT:
 
             var kernelReal = FastCopy.PadZeros(kernel.Samples, fftSize);
             var kernelImag = new double[fftSize];
-            fft.Direct(kernelReal, kernelImag);
+            Fft.Direct(kernelReal, kernelImag, fftSize);
 
             // reserve space for current signal block:
 
@@ -145,14 +143,15 @@ namespace NWaves.Operations
                 //
                 //        var res = Convolve(signal[i, i + fftSize], kernel);
                 //
-                // ...but that would require too many unnecessary memory allocations.
+                // ...but that would require unnecessary memory allocations 
+                //    and recalculating of kernel FFT at each step.
 
                 FastCopy.ToExistingArray(signal.Samples, blockReal, Math.Min(fftSize, signal.Length - i), i);
                 FastCopy.ToExistingArray(zeroblock, blockImag, fftSize);
 
                 // 1) do FFT of a signal block:
 
-                fft.Direct(blockReal, blockImag);
+                Fft.Direct(blockReal, blockImag, fftSize);
 
                 // 2) do complex multiplication of spectra
 
@@ -164,7 +163,7 @@ namespace NWaves.Operations
 
                 // 3) do inverse FFT of resulting spectrum
 
-                fft.Inverse(spectrumReal, spectrumImag);
+                Fft.Inverse(spectrumReal, spectrumImag, fftSize);
 
                 // ========================================================================================
                 

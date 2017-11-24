@@ -24,8 +24,8 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Descriptions (simply "spncc0", "spncc1", "spncc2", etc.)
         /// </summary>
-        public override IEnumerable<string> FeatureDescriptions =>
-            Enumerable.Range(0, FeatureCount).Select(i => "spncc" + i);
+        public override string[] FeatureDescriptions =>
+            Enumerable.Range(0, FeatureCount).Select(i => "spncc" + i).ToArray();
 
         /// <summary>
         /// Forgetting factor in formula (15) in [Kim & Stern, 2016]
@@ -144,8 +144,10 @@ namespace NWaves.FeatureExtractors
         /// 
         /// </summary>
         /// <param name="signal">Signal for analysis</param>
+        /// <param name="startSample">The number (position) of the first sample for processing</param>
+        /// <param name="endSample">The number (position) of last sample for processing</param>
         /// <returns>List of pncc vectors</returns>
-        public override IEnumerable<FeatureVector> ComputeFrom(DiscreteSignal signal)
+        public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
             var featureVectors = new List<FeatureVector>();
 
@@ -166,12 +168,12 @@ namespace NWaves.FeatureExtractors
             var filtered = (_preemphasisFilter != null) ? _preemphasisFilter.ApplyTo(signal) : signal;
 
 
-            var timePos = 0;
-            while (timePos + _windowSamples.Length < filtered.Length)
+            var i = startSample;
+            while (i + _windowSamples.Length < endSample)
             {
                 // prepare next block for processing
 
-                FastCopy.ToExistingArray(filtered.Samples, block, _windowSamples.Length, timePos);
+                FastCopy.ToExistingArray(filtered.Samples, block, _windowSamples.Length, i);
                 FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length, 0, _windowSamples.Length);
 
 
@@ -238,10 +240,10 @@ namespace NWaves.FeatureExtractors
                 featureVectors.Add(new FeatureVector
                 {
                     Features = spnccs,
-                    TimePosition = (double)timePos / signal.SamplingRate
+                    TimePosition = (double)i / signal.SamplingRate
                 });
 
-                timePos += _hopSize;
+                i += _hopSize;
             }
 
             return featureVectors;

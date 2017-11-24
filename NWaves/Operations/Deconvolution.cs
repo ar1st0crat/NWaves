@@ -17,15 +17,14 @@ namespace NWaves.Operations
             var length = signal.Length - kernel.Length + 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(signal.Length);
-            var fft = new Fft(fftSize);
-
+            
             signal = signal.ZeroPadded(fftSize);
             kernel = kernel.ZeroPadded(fftSize);
 
             // 1) do FFT of both signals
 
-            fft.Direct(signal.Real, signal.Imag);
-            fft.Direct(kernel.Real, kernel.Imag);
+            Fft.Direct(signal.Real, signal.Imag, fftSize);
+            Fft.Direct(kernel.Real, kernel.Imag, fftSize);
 
             for (var i = 0; i < fftSize; i++)
             {
@@ -41,7 +40,7 @@ namespace NWaves.Operations
 
             // 3) do inverse FFT of resulting spectrum
 
-            fft.Inverse(spectrum.Real, spectrum.Imag);
+            Fft.Inverse(spectrum.Real, spectrum.Imag, fftSize);
 
             // 4) return resulting meaningful part of the signal (truncate to N - M + 1)
 

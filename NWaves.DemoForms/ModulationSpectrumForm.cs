@@ -99,7 +99,7 @@ namespace NWaves.DemoForms
             var modulationHopSize = int.Parse(longTermHopSizeTextBox.Text);
 
             var mfccExtractor = new PnccExtractor(13, _signal.SamplingRate, windowSize: windowSize, overlapSize: overlapSize);
-            var vectors = mfccExtractor.ComputeFrom(_signal).ToList();
+            var vectors = mfccExtractor.ComputeFrom(_signal);
             
             //_extractor = new MsExtractor(_signal.SamplingRate,
             //                             windowSize, overlapSize, 

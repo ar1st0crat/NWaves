@@ -190,7 +190,7 @@ namespace NWaves.DemoForms
                 real[i] = cepstrum[i];
             }
 
-            _fft.Direct(real, imag);
+            Fft.Direct(real, imag, _fftSize);
 
             var avg = spectrum.Samples.Average();
 

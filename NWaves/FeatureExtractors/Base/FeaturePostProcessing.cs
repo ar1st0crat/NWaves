@@ -12,7 +12,7 @@ namespace NWaves.FeatureExtractors.Base
         /// Method for mean subtraction (in particular, CMN).
         /// </summary>
         /// <param name="vectors"></param>
-        public static void NormalizeMean(List<FeatureVector> vectors)
+        public static void NormalizeMean(IList<FeatureVector> vectors)
         {
             var featureCount = vectors[0].Features.Length;
 
@@ -33,9 +33,9 @@ namespace NWaves.FeatureExtractors.Base
         /// <param name="vectors"></param>
         /// <param name="previous"></param>
         /// <param name="next"></param>
-        public static void AddDeltas(List<FeatureVector> vectors, 
-                                     List<FeatureVector> previous = null,
-                                     List<FeatureVector> next = null)
+        public static void AddDeltas(IList<FeatureVector> vectors, 
+                                     IList<FeatureVector> previous = null,
+                                     IList<FeatureVector> next = null)
         {
             const int N = 2;
 

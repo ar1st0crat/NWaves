@@ -20,11 +20,6 @@ namespace NWaves.Transforms
         private readonly int _fftSize;
 
         /// <summary>
-        /// Internal FFT transformer
-        /// </summary>
-        private readonly Fft _fft;
-
-        /// <summary>
         /// Intermediate buffer storing real parts of spectrum
         /// </summary>
         private readonly double[] _realSpectrum;
@@ -53,7 +48,6 @@ namespace NWaves.Transforms
             }
 
             _fftSize = fftSize;
-            _fft = new Fft(_fftSize);
             _realSpectrum = new double[fftSize];
             _imagSpectrum = new double[fftSize];
             _zeroblock = new double[fftSize];
@@ -75,7 +69,7 @@ namespace NWaves.Transforms
             FastCopy.ToExistingArray(samples, _realSpectrum, Math.Min(samples.Length, _fftSize));
 
             // complex fft
-            _fft.Direct(_realSpectrum, _imagSpectrum);
+            Fft.Direct(_realSpectrum, _imagSpectrum, _fftSize);
 
             // logarithm of power spectrum
             for (var i = 0; i < _fftSize; i++)
@@ -85,7 +79,7 @@ namespace NWaves.Transforms
             }
 
             // complex ifft
-            _fft.Inverse(_realSpectrum, _imagSpectrum);
+            Fft.Inverse(_realSpectrum, _imagSpectrum, _fftSize);
 
             // take truncated part
             if (power)

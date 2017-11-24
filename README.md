@@ -193,18 +193,18 @@ using (var stream = new FileStream("saved.wav", FileMode.Create))
 
 ```C#
 
-var fft = new Fft(1024);
-
-// complex fft:
+// complex fft is available as the static method of Fft class:
 
 double[] real = signal.First(1024).Samples;
 double[] imag = new double [1024];
 
-fft.Direct(real, imag);
-fft.Inverse(real, imag);
+Fft.Direct(real, imag, 1024);
+Fft.Inverse(real, imag, 1024);
 
 
 // various spectra (post-processed results of complex fft):
+
+var fft = new Fft(1024);
 
 var magnitudeSpectrum = fft.MagnitudeSpectrum(signal[1000, 2024]);
 var powerSpectrum = fft.PowerSpectrum(signal.First(1024), normalize: false);
@@ -217,7 +217,7 @@ var cepstrum = new Cepstrum(20);
 var ceps = cepstrum.Direct(signal);
 
 
-// in all previous cases the result of each transform was
+// in four previous cases the result of each transform was
 // a newly created object of DiscreteSignal class.
 
 // If the sequence of blocks must be processed then 

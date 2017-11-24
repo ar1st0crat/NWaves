@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NWaves.Operations;
 using NWaves.Signals;
@@ -106,7 +105,7 @@ namespace NWaves.Filters.Base
 
             var samples = new double[input.Length];
 
-            // buffers for delay lines:
+            // buffer for delay lines:
             var wb = new double[kernel.Length];
             
             var wbpos = wb.Length - 1;
@@ -137,13 +136,10 @@ namespace NWaves.Filters.Base
         /// </summary>
         public override ComplexDiscreteSignal FrequencyResponse(int length = 512)
         {
-            var real = new double[length];
+            var real = FastCopy.PadZeros(Kernel, length);
             var imag = new double[length];
 
-            Buffer.BlockCopy(Kernel, 0, real, 0, Kernel.Length * 8);
-
-            var fft = new Fft(length);
-            fft.Direct(real, imag);
+            Fft.Direct(real, imag, length);
 
             return new ComplexDiscreteSignal(1, real, imag);
         }
