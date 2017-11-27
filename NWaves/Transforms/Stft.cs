@@ -60,20 +60,22 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Method for computing direct STFT of a signal.
+        /// Method for computing direct STFT of a signal block.
         /// STFT (spectrogram) is essentially the list of spectra in time.
         /// </summary>
         /// <param name="samples">The samples of signal</param>
+        /// <param name="startSample">The number (position) of the first sample for processing</param>
+        /// <param name="endSample">The number (position) of last sample for processing</param>
         /// <returns>Spectrogram of the signal</returns>
-        public List<double[]> Direct(double[] samples)
+        public List<double[]> Direct(double[] samples, int startSample, int endSample)
         {
-            var block = new double [_fftSize];
-            var zeroblock = new double [_fftSize - _windowSize];
-            
+            var block = new double[_fftSize];
+            var zeroblock = new double[_fftSize - _windowSize];
+
             var spectrogram = new List<double[]>();
 
-            var pos = 0;
-            for (; pos + _windowSize < samples.Length; pos += _hopSize)
+            var pos = startSample;
+            for (; pos + _windowSize < endSample; pos += _hopSize)
             {
                 FastCopy.ToExistingArray(samples, block, _windowSize, pos);
                 FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length, 0, _windowSize);
@@ -90,6 +92,17 @@ namespace NWaves.Transforms
             }
 
             return spectrogram;
+        }
+        
+        /// <summary>
+        /// Method for computing direct STFT of entire signal.
+        /// STFT (spectrogram) is essentially the list of spectra in time.
+        /// </summary>
+        /// <param name="samples">The samples of signal</param>
+        /// <returns>Spectrogram of the signal</returns>
+        public List<double[]> Direct(double[] samples)
+        {
+            return Direct(samples, 0, samples.Length);
         }
 
         /// <summary>

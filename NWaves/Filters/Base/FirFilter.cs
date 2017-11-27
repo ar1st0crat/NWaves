@@ -21,6 +21,12 @@ namespace NWaves.Filters.Base
         public double[] Kernel { get; set; }
 
         /// <summary>
+        /// If Kernel.Length exceeds this value, 
+        /// the filtering code will always call Overlap-Add routine.
+        /// </summary>
+        public const int FilterSizeForOptimizedProcessing = 64;
+
+        /// <summary>
         /// Parameterless constructor
         /// </summary>
         public FirFilter()
@@ -45,11 +51,16 @@ namespace NWaves.Filters.Base
         public override DiscreteSignal ApplyTo(DiscreteSignal signal, 
                                                FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
+            if (Kernel.Length >= FilterSizeForOptimizedProcessing && filteringOptions == FilteringOptions.Auto)
+            {
+                filteringOptions = FilteringOptions.OverlapAdd;
+            }
+
             switch (filteringOptions)
             {
-                case FilteringOptions.DifferenceEquation:
+                case FilteringOptions.Custom:
                 {
-                    return ApplyFilterDirectly(signal);
+                    return ApplyFilterCircularBuffer(signal);
                 }
                 case FilteringOptions.OverlapAdd:
                 {
@@ -63,7 +74,7 @@ namespace NWaves.Filters.Base
                 }
                 default:
                 {
-                    return ApplyFilterCircularBuffer(signal);
+                    return ApplyFilterDirectly(signal);
                 }
             }
         }

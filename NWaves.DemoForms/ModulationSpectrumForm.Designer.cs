@@ -67,6 +67,12 @@
             this.label7 = new System.Windows.Forms.Label();
             this.analysisFftTextBox = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
+            this.nextButton = new System.Windows.Forms.Button();
+            this.infoLabel = new System.Windows.Forms.Label();
+            this.prevButton = new System.Windows.Forms.Button();
+            this.temporalCheckBox = new System.Windows.Forms.CheckBox();
+            this.herzTextBox = new System.Windows.Forms.TextBox();
+            this.label16 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.envelopesPanel.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -79,7 +85,7 @@
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1151, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(1187, 28);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -111,13 +117,13 @@
             this.envelopesPanel.Controls.Add(this.band1ComboBox);
             this.envelopesPanel.Location = new System.Drawing.Point(12, 319);
             this.envelopesPanel.Name = "envelopesPanel";
-            this.envelopesPanel.Size = new System.Drawing.Size(1126, 370);
+            this.envelopesPanel.Size = new System.Drawing.Size(1168, 370);
             this.envelopesPanel.TabIndex = 1;
             // 
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(1016, 253);
+            this.label15.Location = new System.Drawing.Point(1055, 255);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(49, 17);
             this.label15.TabIndex = 7;
@@ -126,7 +132,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(1016, 168);
+            this.label14.Location = new System.Drawing.Point(1055, 170);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(49, 17);
             this.label14.TabIndex = 6;
@@ -135,7 +141,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(1016, 87);
+            this.label13.Location = new System.Drawing.Point(1055, 89);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(49, 17);
             this.label13.TabIndex = 5;
@@ -144,7 +150,7 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(1016, 6);
+            this.label12.Location = new System.Drawing.Point(1055, 8);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(49, 17);
             this.label12.TabIndex = 4;
@@ -153,7 +159,7 @@
             // band4ComboBox
             // 
             this.band4ComboBox.FormattingEnabled = true;
-            this.band4ComboBox.Location = new System.Drawing.Point(1071, 250);
+            this.band4ComboBox.Location = new System.Drawing.Point(1110, 252);
             this.band4ComboBox.Name = "band4ComboBox";
             this.band4ComboBox.Size = new System.Drawing.Size(52, 24);
             this.band4ComboBox.TabIndex = 3;
@@ -162,7 +168,7 @@
             // band3ComboBox
             // 
             this.band3ComboBox.FormattingEnabled = true;
-            this.band3ComboBox.Location = new System.Drawing.Point(1071, 165);
+            this.band3ComboBox.Location = new System.Drawing.Point(1110, 167);
             this.band3ComboBox.Name = "band3ComboBox";
             this.band3ComboBox.Size = new System.Drawing.Size(52, 24);
             this.band3ComboBox.TabIndex = 2;
@@ -171,7 +177,7 @@
             // band2ComboBox
             // 
             this.band2ComboBox.FormattingEnabled = true;
-            this.band2ComboBox.Location = new System.Drawing.Point(1071, 84);
+            this.band2ComboBox.Location = new System.Drawing.Point(1110, 86);
             this.band2ComboBox.Name = "band2ComboBox";
             this.band2ComboBox.Size = new System.Drawing.Size(52, 24);
             this.band2ComboBox.TabIndex = 1;
@@ -180,7 +186,7 @@
             // band1ComboBox
             // 
             this.band1ComboBox.FormattingEnabled = true;
-            this.band1ComboBox.Location = new System.Drawing.Point(1071, 3);
+            this.band1ComboBox.Location = new System.Drawing.Point(1110, 5);
             this.band1ComboBox.Name = "band1ComboBox";
             this.band1ComboBox.Size = new System.Drawing.Size(52, 24);
             this.band1ComboBox.TabIndex = 0;
@@ -248,9 +254,9 @@
             // modulationSpectrumPanel
             // 
             this.modulationSpectrumPanel.BackColor = System.Drawing.Color.White;
-            this.modulationSpectrumPanel.Location = new System.Drawing.Point(865, 42);
+            this.modulationSpectrumPanel.Location = new System.Drawing.Point(865, 65);
             this.modulationSpectrumPanel.Name = "modulationSpectrumPanel";
-            this.modulationSpectrumPanel.Size = new System.Drawing.Size(273, 271);
+            this.modulationSpectrumPanel.Size = new System.Drawing.Size(315, 248);
             this.modulationSpectrumPanel.TabIndex = 8;
             // 
             // lowFreqTextBox
@@ -350,18 +356,18 @@
             this.groupBox1.Controls.Add(this.analysisFftTextBox);
             this.groupBox1.Controls.Add(this.label8);
             this.groupBox1.ForeColor = System.Drawing.Color.MidnightBlue;
-            this.groupBox1.Location = new System.Drawing.Point(621, 42);
+            this.groupBox1.Location = new System.Drawing.Point(621, 60);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(230, 271);
+            this.groupBox1.Size = new System.Drawing.Size(238, 253);
             this.groupBox1.TabIndex = 28;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Extractor parameters";
             // 
             // computeButton
             // 
-            this.computeButton.Location = new System.Drawing.Point(22, 196);
+            this.computeButton.Location = new System.Drawing.Point(22, 185);
             this.computeButton.Name = "computeButton";
-            this.computeButton.Size = new System.Drawing.Size(181, 58);
+            this.computeButton.Size = new System.Drawing.Size(193, 58);
             this.computeButton.TabIndex = 36;
             this.computeButton.Text = ">>";
             this.computeButton.UseVisualStyleBackColor = true;
@@ -369,16 +375,16 @@
             // 
             // longTermHopSizeTextBox
             // 
-            this.longTermHopSizeTextBox.Location = new System.Drawing.Point(156, 157);
+            this.longTermHopSizeTextBox.Location = new System.Drawing.Point(156, 146);
             this.longTermHopSizeTextBox.Name = "longTermHopSizeTextBox";
-            this.longTermHopSizeTextBox.Size = new System.Drawing.Size(47, 22);
+            this.longTermHopSizeTextBox.Size = new System.Drawing.Size(59, 22);
             this.longTermHopSizeTextBox.TabIndex = 35;
-            this.longTermHopSizeTextBox.Text = "4";
+            this.longTermHopSizeTextBox.Text = "32";
             // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(19, 157);
+            this.label9.Location = new System.Drawing.Point(19, 146);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(130, 17);
             this.label9.TabIndex = 34;
@@ -386,16 +392,16 @@
             // 
             // longTermFftSizeTextBox
             // 
-            this.longTermFftSizeTextBox.Location = new System.Drawing.Point(156, 122);
+            this.longTermFftSizeTextBox.Location = new System.Drawing.Point(156, 111);
             this.longTermFftSizeTextBox.Name = "longTermFftSizeTextBox";
-            this.longTermFftSizeTextBox.Size = new System.Drawing.Size(47, 22);
+            this.longTermFftSizeTextBox.Size = new System.Drawing.Size(59, 22);
             this.longTermFftSizeTextBox.TabIndex = 33;
             this.longTermFftSizeTextBox.Text = "64";
             // 
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(19, 122);
+            this.label10.Location = new System.Drawing.Point(19, 111);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(131, 17);
             this.label10.TabIndex = 32;
@@ -403,16 +409,16 @@
             // 
             // hopSizeTextBox
             // 
-            this.hopSizeTextBox.Location = new System.Drawing.Point(156, 87);
+            this.hopSizeTextBox.Location = new System.Drawing.Point(156, 76);
             this.hopSizeTextBox.Name = "hopSizeTextBox";
-            this.hopSizeTextBox.Size = new System.Drawing.Size(47, 22);
+            this.hopSizeTextBox.Size = new System.Drawing.Size(59, 22);
             this.hopSizeTextBox.TabIndex = 31;
-            this.hopSizeTextBox.Text = "0,010";
+            this.hopSizeTextBox.Text = "0,03125";
             // 
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(19, 87);
+            this.label7.Location = new System.Drawing.Point(19, 76);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(87, 17);
             this.label7.TabIndex = 30;
@@ -420,26 +426,95 @@
             // 
             // analysisFftTextBox
             // 
-            this.analysisFftTextBox.Location = new System.Drawing.Point(156, 53);
+            this.analysisFftTextBox.Location = new System.Drawing.Point(156, 42);
             this.analysisFftTextBox.Name = "analysisFftTextBox";
-            this.analysisFftTextBox.Size = new System.Drawing.Size(47, 22);
+            this.analysisFftTextBox.Size = new System.Drawing.Size(59, 22);
             this.analysisFftTextBox.TabIndex = 29;
-            this.analysisFftTextBox.Text = "0,0256";
+            this.analysisFftTextBox.Text = "0,0625";
             // 
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(20, 53);
+            this.label8.Location = new System.Drawing.Point(20, 42);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(86, 17);
             this.label8.TabIndex = 28;
             this.label8.Text = "Window size";
             // 
+            // nextButton
+            // 
+            this.nextButton.BackColor = System.Drawing.Color.Transparent;
+            this.nextButton.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.nextButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.nextButton.Location = new System.Drawing.Point(1142, 31);
+            this.nextButton.Name = "nextButton";
+            this.nextButton.Size = new System.Drawing.Size(38, 34);
+            this.nextButton.TabIndex = 29;
+            this.nextButton.Text = ">";
+            this.nextButton.UseVisualStyleBackColor = false;
+            this.nextButton.Click += new System.EventHandler(this.nextButton_Click);
+            // 
+            // infoLabel
+            // 
+            this.infoLabel.AutoSize = true;
+            this.infoLabel.Location = new System.Drawing.Point(1040, 40);
+            this.infoLabel.Name = "infoLabel";
+            this.infoLabel.Size = new System.Drawing.Size(62, 17);
+            this.infoLabel.TabIndex = 30;
+            this.infoLabel.Text = "10x1024";
+            // 
+            // prevButton
+            // 
+            this.prevButton.BackColor = System.Drawing.Color.Transparent;
+            this.prevButton.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.prevButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.prevButton.Location = new System.Drawing.Point(1108, 31);
+            this.prevButton.Name = "prevButton";
+            this.prevButton.Size = new System.Drawing.Size(38, 34);
+            this.prevButton.TabIndex = 31;
+            this.prevButton.Text = "<";
+            this.prevButton.UseVisualStyleBackColor = false;
+            this.prevButton.Click += new System.EventHandler(this.prevButton_Click);
+            // 
+            // temporalCheckBox
+            // 
+            this.temporalCheckBox.AutoSize = true;
+            this.temporalCheckBox.Location = new System.Drawing.Point(865, 38);
+            this.temporalCheckBox.Name = "temporalCheckBox";
+            this.temporalCheckBox.Size = new System.Drawing.Size(104, 21);
+            this.temporalCheckBox.TabIndex = 32;
+            this.temporalCheckBox.Text = "time plot for";
+            this.temporalCheckBox.UseVisualStyleBackColor = true;
+            this.temporalCheckBox.CheckedChanged += new System.EventHandler(this.temporalCheckBox_CheckedChanged);
+            // 
+            // herzTextBox
+            // 
+            this.herzTextBox.Location = new System.Drawing.Point(965, 38);
+            this.herzTextBox.Name = "herzTextBox";
+            this.herzTextBox.Size = new System.Drawing.Size(27, 22);
+            this.herzTextBox.TabIndex = 33;
+            this.herzTextBox.Text = "4";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(994, 40);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(25, 17);
+            this.label16.TabIndex = 34;
+            this.label16.Text = "Hz";
+            // 
             // ModulationSpectrumForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1151, 701);
+            this.ClientSize = new System.Drawing.Size(1187, 701);
+            this.Controls.Add(this.label16);
+            this.Controls.Add(this.herzTextBox);
+            this.Controls.Add(this.temporalCheckBox);
+            this.Controls.Add(this.prevButton);
+            this.Controls.Add(this.infoLabel);
+            this.Controls.Add(this.nextButton);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.filterQTextBox);
             this.Controls.Add(this.label11);
@@ -515,5 +590,11 @@
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Button nextButton;
+        private System.Windows.Forms.Label infoLabel;
+        private System.Windows.Forms.Button prevButton;
+        private System.Windows.Forms.CheckBox temporalCheckBox;
+        private System.Windows.Forms.TextBox herzTextBox;
+        private System.Windows.Forms.Label label16;
     }
 }

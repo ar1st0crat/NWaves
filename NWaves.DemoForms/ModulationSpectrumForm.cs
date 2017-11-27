@@ -1,13 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.FeatureExtractors;
+using NWaves.FeatureExtractors.Base;
 using NWaves.Filters.Fda;
 using NWaves.Operations;
 using NWaves.Signals;
+using NWaves.Windows;
+using SciColorMaps;
 
 namespace NWaves.DemoForms
 {
@@ -15,6 +19,9 @@ namespace NWaves.DemoForms
     {
         private DiscreteSignal _signal;
         private MsExtractor _extractor;
+
+        private List<FeatureVector> _features;
+        private int _featIndex;
 
         private double[][] _filterbank;
 
@@ -73,6 +80,18 @@ namespace NWaves.DemoForms
                     break;
                 case "ERB":
                     _filterbank = FilterBanks.Erb(filterCount, fftSize, samplingRate, lowFreq, highFreq);
+
+                    // =====  ! SQUARE! =====
+
+                    foreach (var filter in _filterbank)
+                    {
+                        for (var j = 0; j < filter.Length; j++)
+                        {
+                            var squared = filter[j] * filter[j];
+                            filter[j] = squared;
+                        }
+                    }
+
                     break;
                 default:
                     _filterbank = FilterBanks.Fourier(filterCount, fftSize);
@@ -98,21 +117,54 @@ namespace NWaves.DemoForms
             var modulationFftSize = int.Parse(longTermFftSizeTextBox.Text);
             var modulationHopSize = int.Parse(longTermHopSizeTextBox.Text);
 
-            var mfccExtractor = new PnccExtractor(13, _signal.SamplingRate, windowSize: windowSize, overlapSize: overlapSize);
-            var vectors = mfccExtractor.ComputeFrom(_signal);
-            
+            // ===== test modulation spectrum for Mfcc features =====
+            //
+            //var mfccExtractor = new MfccExtractor(13, _signal.SamplingRate,
+            //                                          windowSize: windowSize,
+            //                                          overlapSize: overlapSize);
+            //var vectors = mfccExtractor.ComputeFrom(_signal);
+            //FeaturePostProcessing.NormalizeMean(vectors);
+
             //_extractor = new MsExtractor(_signal.SamplingRate,
-            //                             windowSize, overlapSize, 
+            //                             windowSize, overlapSize,
             //                             modulationFftSize, modulationHopSize,
-            //                             filterbank: _filterbank);
+            //                             featuregram: vectors.Select(v => v.Features));
+
             _extractor = new MsExtractor(_signal.SamplingRate,
                                          windowSize, overlapSize,
                                          modulationFftSize, modulationHopSize,
-                                         featuregram: vectors.Select(v => v.Features));
-            var features = _extractor.ComputeFrom(_signal);
+                                         filterbank: _filterbank, window: WindowTypes.Hamming);
+            _features = _extractor.ComputeFrom(_signal);
+            _featIndex = 0;
+
+            infoLabel.Text = $"{_features.Count}x{_features[0].Features.Length}";
 
             DrawEnvelopes(_extractor.Envelopes);
-            DrawModulationSpectrum(_extractor.MakeSpectrum2D(features));
+            DrawModulationSpectrum(_extractor.MakeSpectrum2D(_features[_featIndex]));
+        }
+
+        private void nextButton_Click(object sender, EventArgs e)
+        {
+            if (_featIndex < _features.Count - 1) _featIndex++;
+            DrawModulationSpectrum(_extractor.MakeSpectrum2D(_features[_featIndex]));
+        }
+        
+        private void temporalCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (temporalCheckBox.Checked)
+            {
+                DrawModulationSpectraHerz(_extractor.VectorsAtHerz(_features, double.Parse(herzTextBox.Text)));
+            }
+            else
+            {
+                DrawModulationSpectrum(_extractor.MakeSpectrum2D(_features[_featIndex]));
+            }
+        }
+
+        private void prevButton_Click(object sender, EventArgs e)
+        {
+            if (_featIndex > 0) _featIndex--;
+            DrawModulationSpectrum(_extractor.MakeSpectrum2D(_features[_featIndex]));
         }
 
         private void bandComboBox_TextChanged(object sender, EventArgs e)
@@ -175,7 +227,7 @@ namespace NWaves.DemoForms
                 int.Parse(band4ComboBox.Text)
             };
 
-            var stride = 1;
+            var stride = 2;
             for (var i = 0; i < 4; i++)
             {
                 var en = envNo[i] - 1;
@@ -183,13 +235,13 @@ namespace NWaves.DemoForms
                 g.DrawLine(blackPen, xOffset, offsets[i], envelopesPanel.Width - xOffset, offsets[i]);
                 g.DrawLine(blackPen, xOffset, offsets[i] - 70, xOffset, offsets[i]);
 
-                var x = 1;
-                for (var j = stride; j < envelopes[en].Length; j += stride)
+                var x = stride;
+                for (var j = 1; j < envelopes[en].Length; j++)
                 {
                     g.DrawLine(pen,
-                        xOffset + x - 1, (float)-envelopes[en][j-stride] * 1.5f + offsets[i],
+                        xOffset + x - stride, (float)-envelopes[en][j - 1] * 1.5f + offsets[i],
                         xOffset + x,     (float)-envelopes[en][j] * 1.5f + offsets[i]);
-                    x++;
+                    x += stride;
                 }
             }
 
@@ -198,6 +250,11 @@ namespace NWaves.DemoForms
 
         private void DrawModulationSpectrum(double[][] spectrum)
         {
+            var minValue = spectrum.SelectMany(s => s).Min();
+            var maxValue = spectrum.SelectMany(s => s).Max();
+            
+            var cmap = new MirrorColorMap(new ColorMap("bone", minValue, maxValue));
+
             var g = modulationSpectrumPanel.CreateGraphics();
             g.Clear(Color.White);
 
@@ -207,13 +264,34 @@ namespace NWaves.DemoForms
             {
                 for (var j = 0; j < spectrum[i].Length; j++)
                 {
-                    spectrumBitmap.SetPixel(j, spectrum.Length - 1 - i, Color.FromArgb((byte)(spectrum[i][j] * 5), 0, 0));
-                    
+                    spectrumBitmap.SetPixel(j, spectrum.Length - 1 - i, cmap.GetColor(spectrum[i][j]));
                 }
             }
 
             g.DrawImage(spectrumBitmap, 25, 25, modulationSpectrumPanel.Width - 25, modulationSpectrumPanel.Height - 25);
-            //spectrumBitmap.Width * 2, spectrumBitmap.Height * 16);
+        }
+
+        private void DrawModulationSpectraHerz(List<double[]> spectra)
+        {
+            var minValue = spectra.SelectMany(s => s).Min();
+            var maxValue = spectra.SelectMany(s => s).Max();
+
+            var cmap = new ColorMap("blues", minValue, maxValue);
+
+            var g = modulationSpectrumPanel.CreateGraphics();
+            g.Clear(Color.White);
+
+            var spectrumBitmap = new Bitmap(spectra.Count, spectra[0].Length);
+
+            for (var i = 0; i < spectra.Count; i++)
+            {
+                for (var j = 0; j < spectra[i].Length; j++)
+                {
+                    spectrumBitmap.SetPixel(i, spectra[i].Length - 1 - j, cmap.GetColor(spectra[i][j]));
+                }
+            }
+
+            g.DrawImage(spectrumBitmap, 25, 25, modulationSpectrumPanel.Width - 25, modulationSpectrumPanel.Height - 25);
         }
 
         #endregion
