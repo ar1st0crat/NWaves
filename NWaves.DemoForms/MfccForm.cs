@@ -38,8 +38,8 @@ namespace NWaves.DemoForms
             }
 
             var mfccExtractor = new MfccExtractor(13, _signal.SamplingRate,
-                                                      //windowSize: 0.05,
-                                                      //overlapSize: 0.025,
+                                                      //windowSize: 0.03125,
+                                                      //overlapSize: 0.015625,
                                                       melFilterbankSize: 20,
                                                       //lowFreq: 100,
                                                       //highFreq: 4200,

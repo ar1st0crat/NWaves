@@ -352,7 +352,7 @@ namespace NWaves.DemoForms
 
         #region drawing
 
-        private void DrawSignal(Control panel, DiscreteSignal signal, int step = 1)
+        private void DrawSignal(Control panel, DiscreteSignal signal, int stride = 1)
         {
             var g = panel.CreateGraphics();
             g.Clear(Color.White);
@@ -375,17 +375,22 @@ namespace NWaves.DemoForms
             }
 
             var i = 0;
-            var x = 0;
+            var x = 1;
 
-            while (i < signal.Length)
+            while (i < signal.Length - stride)
             {
-                if (Math.Abs(signal[i] * 150) < panel.Height)
+                var j = 0;
+                var min = 0.0;
+                var max = 0.0;
+                while (j < stride)
                 {
-                    g.DrawLine(pen, x, offset, x, (float)-signal[i] * 150 + offset);
-                    g.DrawEllipse(pen, x - 1, (int)(-signal[i] * 150) + offset - 1, 3, 3);
+                    if (signal[i + j] > max) max = signal[i + j];
+                    if (signal[i + j] < min) min = signal[i + j];
+                    j++;
                 }
+                g.DrawLine(pen, x, (float)-min * 150 + offset, x, (float)-max * 150 + offset);
                 x++;
-                i += step;
+                i += stride;
 
             }
 
@@ -405,11 +410,8 @@ namespace NWaves.DemoForms
             
             while (i < spectrum.Length)
             {
-                if (Math.Abs(spectrum[i] * 300) < spectrumPanel.Height)
-                {
-                    g.DrawLine(pen, i, offset, i, (float)-spectrum[i] * 300 + offset);
-                    g.DrawEllipse(pen, i - 1, (int)(-spectrum[i] * 300) + offset - 1, 3, 3);
-                }
+                g.DrawLine(pen, i, offset, i, (float)-spectrum[i] * 150 + offset);
+                g.DrawEllipse(pen, i - 1, (int)(-spectrum[i] * 150) + offset - 1, 3, 3);
                 i++;
             }
 

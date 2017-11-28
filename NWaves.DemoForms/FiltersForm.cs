@@ -437,7 +437,7 @@ namespace NWaves.DemoForms
 
         #region drawing
 
-        private void DrawSignal(Control panel, DiscreteSignal signal, int step = 256)
+        private void DrawSignal(Control panel, DiscreteSignal signal, int stride = 256)
         {
             var g = panel.CreateGraphics();
             g.Clear(Color.White);
@@ -449,15 +449,20 @@ namespace NWaves.DemoForms
             var i = 0;
             var x = 0;
 
-            while (i < signal.Length)
+            while (i < signal.Length - stride)
             {
-                if (Math.Abs(signal[i] * 160) < panel.Height)
+                var j = 0;
+                var min = 0.0;
+                var max = 0.0;
+                while (j < stride)
                 {
-                    g.DrawLine(pen, x, offset, x, (float)-signal[i] * 160 + offset);
-                    g.DrawEllipse(pen, x - 1, (int)(-signal[i] * 160) + offset - 1, 3, 3);
+                    if (signal[i + j] > max) max = signal[i + j];
+                    if (signal[i + j] < min) min = signal[i + j];
+                    j++;
                 }
+                g.DrawLine(pen, x, (float)-min * 70 + offset, x, (float)-max * 70 + offset);
                 x++;
-                i += step;
+                i += stride;
 
             }
 
@@ -556,7 +561,6 @@ namespace NWaves.DemoForms
                 for (var j = 0; j < spectrogram[i].Length; j++)
                 {
                     spectrogramBitmap.SetPixel(i, spectrogram[i].Length - 1 - j,  cmap.GetColor(spectrogram[i][j]));
-                        //Color.FromArgb(0, (byte)(spectrogram[i][j] * 200), 0));
                 }
             }
 

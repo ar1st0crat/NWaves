@@ -142,7 +142,9 @@ namespace NWaves.FeatureExtractors
 
             if (featuregram == null)
             {
-                _filterbank = filterbank ?? FilterBanks.Mel(18, _fftSize, samplingRate, 100, 4200);
+                _filterbank = filterbank ??
+                              FilterBanks.Triangular(_fftSize, samplingRate,
+                                  FilterBanks.MelBands(12, _fftSize, samplingRate, 100, 3200));
                 FeatureCount = _filterbank.Length * (_modulationFftSize / 2 + 1);
             }
             else

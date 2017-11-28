@@ -108,7 +108,8 @@ namespace NWaves.FeatureExtractors
                 _preemphasisFilter = new PreEmphasisFilter(preEmphasis);
             }
 
-            _melFilterBank = FilterBanks.Mel(melFilterbankSize, _fftSize, samplingRate, lowFreq, highFreq);
+            _melFilterBank = FilterBanks.Triangular(_fftSize, samplingRate, 
+                                FilterBanks.MelBands(melFilterbankSize, _fftSize, samplingRate, lowFreq, highFreq));
 
             // prepare everything for fft and dct
 

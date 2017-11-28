@@ -62,23 +62,22 @@ namespace NWaves.DemoForms
             var fftSize = int.Parse(fftSizeTextBox.Text);
             var lowFreq = double.Parse(lowFreqTextBox.Text);
             var highFreq = double.Parse(highFreqTextBox.Text);
-            
+
+            Tuple<double, double, double>[] bands;
+
             switch (filterbankComboBox.Text)
             {
                 case "Mel":
-                    _filterbank = FilterBanks.Mel(filterCount, fftSize, samplingRate, lowFreq, highFreq);
+                    bands = FilterBanks.MelBands(filterCount, fftSize, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
                     break;
                 case "Bark":
-                    _filterbank = FilterBanks.Bark(filterCount, fftSize, samplingRate, lowFreq, highFreq);
+                    bands = FilterBanks.BarkBands(filterCount, fftSize, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
                     break;
-                case "Critical bands (rectangular)":
-                    _filterbank = FilterBanks.CriticalBands(fftSize, samplingRate, lowFreq, highFreq);
-                    break;
-                case "Critical bands (BiQuad)":
-                    var q = double.Parse(filterQTextBox.Text);
-                    _filterbank = FilterBanks.CriticalBandsBiQuad(fftSize, samplingRate, lowFreq, highFreq, q);
+                case "Critical bands":
+                    bands = FilterBanks.CriticalBands(filterCount, fftSize, samplingRate, lowFreq, highFreq);
                     break;
                 case "ERB":
+                    bands = null;
                     _filterbank = FilterBanks.Erb(filterCount, fftSize, samplingRate, lowFreq, highFreq);
 
                     // =====  ! SQUARE! =====
@@ -94,8 +93,27 @@ namespace NWaves.DemoForms
 
                     break;
                 default:
-                    _filterbank = FilterBanks.Herz(filterCount, fftSize, samplingRate, lowFreq, highFreq);
+                    bands = FilterBanks.HerzBands(filterCount, fftSize, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
                     break;
+            }
+
+            if (bands != null)
+            {
+                switch (shapeComboBox.Text)
+                {
+                    case "Triangular":
+                        _filterbank = FilterBanks.Triangular(fftSize, samplingRate, bands);
+                        break;
+                    case "Trapezoidal":
+                        _filterbank = FilterBanks.Trapezoidal(fftSize, samplingRate, bands);
+                        break;
+                    case "BiQuad":
+                        _filterbank = FilterBanks.BiQuad(fftSize, samplingRate, bands);
+                        break;
+                    default:
+                        _filterbank = FilterBanks.Rectangular(fftSize, samplingRate, bands);
+                        break;
+                }
             }
 
             band1ComboBox.DataSource = Enumerable.Range(1, filterCount).ToArray();

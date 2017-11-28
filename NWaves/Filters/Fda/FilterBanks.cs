@@ -9,17 +9,18 @@ using NWaves.Transforms;
 namespace NWaves.Filters.Fda
 {
     /// <summary>
-    /// Static class with methods providing general shapes of filters:
+    /// Static class with methods providing general shapes of filter banks:
     /// 
     ///     - triangular
     ///     - rectangular
-    ///     - FIR bandpass (close to trapezoidal)
+    ///     - FIR bandpass (close to trapezoidal, slightly overlapping)
+    ///     - BiQuad bandpass
     /// 
-    /// ...and methods for obtaining the most widely used filterbanks:
+    /// ...and methods for obtaining the most widely used frequency bands:
     /// 
-    ///     - Herz filterbank
-    ///     - Mel filterbank
-    ///     - Bark filterbank
+    ///     - Herz bands
+    ///     - Mel bands
+    ///     - Bark bands
     ///     - Critical bands
     ///     - ERB filterbank
     /// 
@@ -27,92 +28,86 @@ namespace NWaves.Filters.Fda
     public static class FilterBanks
     {
         /// <summary>
-        /// General method returning universal triangular filterbank based on positions of center frequencies
+        /// Method returns universal triangular filterbank based on given frequencies.
         /// </summary>
-        /// <param name="length">Length of each filter frequency response</param>
-        /// <param name="frequencyPoints">Positions of center frequencies (including the leftmost and rightmost ones)</param>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
         /// <returns>Array of triangular filters</returns>
-        public static double[][] Triangular(int length, int[] frequencyPoints)
+        public static double[][] Triangular(int fftSize, int samplingRate, Tuple<double, double, double>[] frequencies)
         {
-            // ignore the leftmost and rightmost frequency positions
-            var filterCount = frequencyPoints.Length - 2;
-            
-            var filterBank = new double[filterCount][];
+            var herzResolution = (double)samplingRate / fftSize;
 
-            var leftSample = frequencyPoints[0];
-            var centerSample = frequencyPoints[1];
+            var left = frequencies.Select(f => (int)Math.Round(f.Item1 / herzResolution)).ToArray();
+            var center = frequencies.Select(f => (int)Math.Round(f.Item2 / herzResolution)).ToArray();
+            var right = frequencies.Select(f => (int)Math.Round(f.Item3 / herzResolution)).ToArray();
+
+            var filterCount = frequencies.Length;
+            var filterBank = new double[filterCount][];
 
             for (var i = 0; i < filterCount; i++)
             {
-                var rightSample = frequencyPoints[i + 2];
+                filterBank[i] = new double[fftSize / 2 + 1];
 
-                filterBank[i] = new double[length];
-
-                for (var j = leftSample; j < centerSample; j++)
+                for (var j = left[i]; j < center[i]; j++)
                 {
-                    filterBank[i][j] = (double)(j - leftSample) / (centerSample - leftSample);
+                    filterBank[i][j] = (double)(j - left[i]) / (center[i] - left[i]);
                 }
-                for (var j = centerSample; j < rightSample; j++)
+                for (var j = center[i]; j < right[i]; j++)
                 {
-                    filterBank[i][j] = (double)(rightSample - j) / (rightSample - centerSample);
+                    filterBank[i][j] = (double)(right[i] - j) / (right[i] - center[i]);
                 }
-
-                leftSample = centerSample;
-                centerSample = rightSample;
             }
 
             return filterBank;
         }
 
         /// <summary>
-        /// General method returning universal rectangular filterbank based on positions of range frequencies.
-        /// This filterbank is non-overlapping, so each frequency band is not described by three frequencies
-        /// (left, center, right) but two frequencies (left and right).
+        /// Method returns universal rectangular filterbank based on given frequencies.
         /// </summary>
-        /// <param name="length">Length of each filter frequency response</param>
-        /// <param name="frequencyPoints">Positions of frequencies (including the rightmost one)</param>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
         /// <returns>Array of rectangular filters</returns>
-        public static double[][] Rectangular(int length, int[] frequencyPoints)
+        public static double[][] Rectangular(int fftSize, int samplingRate, Tuple<double, double, double>[] frequencies)
         {
-            // ignore the rightmost frequency position
-            var filterCount = frequencyPoints.Length - 1;
+            var herzResolution = (double)samplingRate / fftSize;
 
+            var left = frequencies.Select(f => (int)Math.Round(f.Item1 / herzResolution)).ToArray();
+            var right = frequencies.Select(f => (int)Math.Round(f.Item3 / herzResolution)).ToArray();
+
+            var filterCount = frequencies.Length;
             var filterBank = new double[filterCount][];
-
-            var leftSample = frequencyPoints[0];
 
             for (var i = 0; i < filterCount; i++)
             {
-                var rightSample = frequencyPoints[i + 1];
+                filterBank[i] = new double[fftSize / 2 + 1];
 
-                filterBank[i] = new double[length];
-
-                for (var j = leftSample; j < rightSample; j++)
+                for (var j = left[i]; j < right[i]; j++)
                 {
                     filterBank[i][j] = 1;
                 }
-
-                leftSample = rightSample;
             }
 
             return filterBank;
         }
 
         /// <summary>
-        /// General method returning FIR bandpass (close to trapezoidal) filterbank based on positions of range frequencies.
+        /// Method returns FIR bandpass (close to trapezoidal) filterbank based on given frequencies.
         /// </summary>
-        /// <param name="length">Length of each filter frequency response</param>
-        /// <param name="frequencyPoints">Positions of frequencies (including the rightmost one)</param>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
         /// <returns>Array of trapezoidal FIR filters</returns>
-        public static double[][] Trapezoidal(int length, int[] frequencyPoints)
+        public static double[][] Trapezoidal(int fftSize, int samplingRate, Tuple<double, double, double>[] frequencies)
         {
-            var filterBank = Rectangular(length, frequencyPoints);
+            var filterBank = Rectangular(fftSize, samplingRate, frequencies);
 
             for (var i = 0; i < filterBank.Length; i++)
             {
-                var filter = FilterDesign.DesignFirFilter(length, filterBank[i]);
-                var filterResponse = filter.FrequencyResponse(2 * (length - 1)).Magnitude;
-                filterBank[i] = filterResponse.Take(length).ToArray();
+                var filter = FilterDesign.DesignFirFilter(fftSize / 4 + 1, filterBank[i]);
+                var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
+                filterBank[i] = filterResponse.Take(fftSize / 2 + 1).ToArray();
 
                 // normalize gain to 1.0
 
@@ -131,15 +126,46 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method creates rectangular herz filters of equal width and constant height = 1
+        /// Method returns BiQuad bandpass overlapping filters based on given frequencies.
         /// </summary>
-        /// <param name="combFilterCount">Number of filters</param>
-        /// <param name="fftSize">Size of FFT</param>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
+        /// <returns>Array of BiQuad bandpass filters</returns>
+        public static double[][] BiQuad(int fftSize, int samplingRate, Tuple<double, double, double>[] frequencies)
+        {
+            var center = frequencies.Select(f => f.Item2).ToArray();
+
+            var filterCount = frequencies.Length;
+            var filterBank = new double[filterCount][];
+
+            for (var i = 0; i < filterCount; i++)
+            {
+                var freq = center[i] / samplingRate;
+                var filter = new BandPassFilter(freq, 2.0);
+                var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
+
+                filterBank[i] = filterResponse.Take(fftSize / 2 + 1).ToArray();
+            }
+
+            return filterBank;
+        }
+
+        /// <summary>
+        /// This general method returns frequency tuples for uniformly spaced frequency bands on any scale.
+        /// </summary>
+        /// <param name="scaleMapper">The function that converts Hz to other frequency scale</param>
+        /// <param name="inverseMapper">The function that converts frequency from alternative scale back to Hz</param>
+        /// <param name="filterCount">Number of filters</param>
+        /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
-        /// <returns>Array of rectangular herz filters</returns>
-        public static double[][] Herz(int combFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0)
+        /// <param name="overlap">Flag indicating that bands should overlap</param>
+        /// <returns>Array of frequency tuples for each filter</returns>
+        public static Tuple<double, double, double>[] UniformBands(
+            Func<double, double> scaleMapper, Func<double, double> inverseMapper,
+            int filterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
         {
             if (lowFreq < 0)
             {
@@ -150,91 +176,103 @@ namespace NWaves.Filters.Fda
                 highFreq = samplingRate / 2.0;
             }
 
-            var herzResolution = (double)samplingRate / fftSize;
-            var bandSize = (highFreq - lowFreq) / combFilterCount;
+            var startingFrequency = scaleMapper(lowFreq);
 
-            var frequencyPositions = Enumerable.Range(0, combFilterCount + 1)
-                                               .Select(f => (int)((lowFreq + bandSize * f) / herzResolution))
-                                               .ToArray();
+            var frequencyTuples = new Tuple<double, double, double>[filterCount];
 
-            return Trapezoidal(fftSize / 2 + 1, frequencyPositions);
+            if (overlap)
+            {
+                var melResolution = (scaleMapper(highFreq) - scaleMapper(lowFreq)) / (filterCount + 1);
+
+                var frequencies = Enumerable.Range(0, filterCount + 2)
+                                            .Select(i => inverseMapper(startingFrequency + i * melResolution))
+                                            .ToArray();
+                
+                for (var i = 0; i < filterCount; i++)
+                {
+                    frequencyTuples[i] = new Tuple<double, double, double>
+                        (frequencies[i], frequencies[i + 1], frequencies[i + 2]);
+                }
+            }
+            else
+            {
+                var melResolution = (scaleMapper(highFreq) - scaleMapper(lowFreq)) / filterCount;
+
+                var frequencies = Enumerable.Range(0, filterCount + 1)
+                                            .Select(i => inverseMapper(startingFrequency + i * melResolution))
+                                            .ToArray();
+                
+                for (var i = 0; i < filterCount; i++)
+                {
+                    frequencyTuples[i] = new Tuple<double, double, double>
+                        (frequencies[i], (frequencies[i] + frequencies[i + 1]) / 2, frequencies[i + 1]);
+                }
+            }
+
+            return frequencyTuples;
         }
-        
+
         /// <summary>
-        /// Method creates triangular overlapping mel filters of constant height = 1
+        /// Method returns frequency tuples for uniformly spaced frequency bands on Herz scale.
+        /// </summary>
+        /// <param name="combFilterCount">Number of filters</param>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="lowFreq">Lower bound of the frequency range</param>
+        /// <param name="highFreq">Upper bound of the frequency range</param>
+        /// <param name="overlap">Flag indicating that bands should overlap</param>
+        /// <returns>Array of frequency tuples for each Herz filter</returns>
+        public static Tuple<double, double, double>[] HerzBands(
+            int combFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = false)
+        {
+            // "x => x" means map frequency 1-to-1 (in Hz as it is)
+            return UniformBands(x => x, x => x, combFilterCount, fftSize, samplingRate, lowFreq, highFreq, overlap);
+        }
+
+        /// <summary>
+        /// Method returns frequency tuples for uniformly spaced frequency bands on Mel scale.
         /// </summary>
         /// <param name="melFilterCount">Number of mel filters to create</param>
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
-        /// <returns>Array of mel filters</returns>
-        public static double[][] Mel(int melFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0)
+        /// <param name="overlap">Flag indicating that bands should overlap</param>
+        /// <returns>Array of frequency tuples for each Mel filter</returns>
+        public static Tuple<double, double, double>[] MelBands(
+            int melFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
         {
-            if (lowFreq < 0)
-            {
-                lowFreq = 0;
-            }
-            if (highFreq <= lowFreq)
-            {
-                highFreq = samplingRate / 2.0;
-            }
-
-            var herzResolution = (double)samplingRate / fftSize;
-            var melResolution = (HerzToMel(highFreq) - HerzToMel(lowFreq)) / (melFilterCount + 1);
-
-            var startingFrequency = HerzToMel(lowFreq);
-            var frequencyPositions = 
-                Enumerable.Range(0, melFilterCount + 2)
-                          .Select(i => (int)(MelToHerz(startingFrequency + i * melResolution) / herzResolution))
-                          .ToArray();
-            
-            return Triangular(fftSize / 2 + 1, frequencyPositions);
+            return UniformBands(HerzToMel, MelToHerz, melFilterCount, fftSize, samplingRate, lowFreq, highFreq, overlap);
         }
 
         /// <summary>
-        /// Method creates triangular overlapping bark filters of constant height = 1
+        /// Method returns frequency tuples for uniformly spaced frequency bands on Bark scale.
         /// </summary>
         /// <param name="barkFilterCount">Number of bark filters to create</param>
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
-        /// <returns>Array of bark filters</returns>
-        public static double[][] Bark(int barkFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0)
+        /// <param name="overlap">Flag indicating that bands should overlap</param>
+        /// <returns>Array of frequency tuples for each Bark filter</returns>
+        public static Tuple<double, double, double>[] BarkBands(
+            int barkFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
         {
-            if (lowFreq < 0)
-            {
-                lowFreq = 0;
-            }
-            if (highFreq <= lowFreq)
-            {
-                highFreq = samplingRate / 2.0;
-            }
-
-            var herzResolution = (double)samplingRate / fftSize;
-            var melResolution = (HerzToBark(highFreq) - HerzToBark(lowFreq)) / (barkFilterCount + 1);
-
-            var startingFrequency = HerzToBark(lowFreq);
-            var frequencyPositions =
-                Enumerable.Range(0, barkFilterCount + 2)
-                          .Select(i => (int)(BarkToHerz(startingFrequency + i * melResolution) / herzResolution))
-                          .ToArray();
-
-            return Triangular(fftSize / 2 + 1, frequencyPositions);
+            return UniformBands(HerzToBark, BarkToHerz, barkFilterCount, fftSize, samplingRate, lowFreq, highFreq, overlap);
         }
 
         /// <summary>
-        /// Method fills arrays of critical band central and edge frequencies in given range
-        /// and returns total number of filters that could be used inside the given frequency range.
+        /// Method returns frequency tuples for critical bands.
         /// </summary>
-        /// <param name="lowFreq"></param>
-        /// <param name="highFreq"></param>
-        /// <param name="samplingRate"></param>
-        /// <param name="centers"></param>
-        /// <param name="edges"></param>
-        /// <returns></returns>
-        public static int CriticalBandFrequencies(double lowFreq, double highFreq, double samplingRate, out double[] centers, out double[] edges)
+        /// <param name="filterCount">Number of filters to create</param>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="lowFreq">Lower bound of the frequency range</param>
+        /// <param name="highFreq">Upper bound of the frequency range</param>
+        /// <param name="overlap">Overlap parameter (is always false; added for consistency with other methods)</param>
+        /// <returns>Array of frequency tuples for each Critical Band filter</returns>
+        public static Tuple<double, double, double>[] CriticalBands(
+            int filterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = false)
         {
             if (lowFreq < 0)
             {
@@ -254,95 +292,42 @@ namespace NWaves.Filters.Fda
             var startIndex = 0;
             for (var i = 0; i < centerFrequencies.Length; i++)
             {
-                if (centerFrequencies[i] >= lowFreq)
-                {
-                    startIndex = i;
-                    break;
-                }
+                if (centerFrequencies[i] < lowFreq) continue;
+                startIndex = i;
+                break;
             }
+
             var endIndex = 0;
             for (var i = centerFrequencies.Length - 1; i >= 0; i--)
             {
-                if (centerFrequencies[i] <= highFreq)
-                {
-                    endIndex = i;
-                    break;
-                }
+                if (centerFrequencies[i] > highFreq) continue;
+                endIndex = i;
+                break;
             }
 
-            var filterCount = endIndex - startIndex + 1;
+            filterCount = Math.Min(endIndex - startIndex + 1, filterCount);
 
-            edges = edgeFrequencies.Skip(startIndex)
-                                   .Take(filterCount + 1)
-                                   .ToArray();
-
-            centers = centerFrequencies.Skip(startIndex)
+            var edges = edgeFrequencies.Skip(startIndex)
                                        .Take(filterCount + 1)
                                        .ToArray();
 
-            return filterCount;
-        }
+            var centers = centerFrequencies.Skip(startIndex)
+                                           .Take(filterCount)
+                                           .ToArray();
 
-        /// <summary>
-        /// Method creates trapezoidal bandpass (not very much overlapping) critical band filters.
-        /// </summary>
-        /// <param name="fftSize">Assumed size of FFT</param>
-        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
-        /// <param name="lowFreq">Lower bound of the frequency range</param>
-        /// <param name="highFreq">Upper bound of the frequency range</param>
-        /// <returns>Array of rectangular critical band filters</returns>
-        public static double[][] CriticalBands(int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0)
-        {
-            double[] edgeFrequencies, centerFrequencies;
-
-            CriticalBandFrequencies(lowFreq, highFreq, samplingRate, out centerFrequencies, out edgeFrequencies);
-
-            var herzResolution = (double)samplingRate / fftSize;
-            var frequencies = edgeFrequencies.Select(f => (int)Math.Floor(f / herzResolution)).ToArray();
-            return Trapezoidal(fftSize / 2 + 1, frequencies);
-        }
-
-        /// <summary>
-        /// Method creates BiQuad bandpass overlapping critical band filters
-        /// </summary>
-        /// <param name="fftSize">Assumed size of FFT</param>
-        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
-        /// <param name="lowFreq">Lower bound of the frequency range</param>
-        /// <param name="highFreq">Upper bound of the frequency range</param>
-        /// <param name="filterQ">Q-value of each filter</param>
-        /// <returns>Array of BiQuad critical band filters</returns>
-        public static double[][] CriticalBandsBiQuad(int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, double filterQ = 2.0)
-        {
-            double[] edgeFrequencies, centerFrequencies;
-
-            var filterCount = CriticalBandFrequencies(lowFreq, highFreq, samplingRate,
-                                                      out centerFrequencies, out edgeFrequencies);
-
-            var filterBank = new double[filterCount][];
-
-            var halfLn2 = Math.Log(2) / 2;
+            var frequencyTuples = new Tuple<double, double, double>[filterCount];
 
             for (var i = 0; i < filterCount; i++)
             {
-                var freq = centerFrequencies[i] / samplingRate;
-                var q = filterQ;
-                if (filterQ <= 0)
-                {
-                    var omega = 2 * Math.PI * freq;
-                    var bw = (edgeFrequencies[i + 1] - edgeFrequencies[i]) / samplingRate * 2 * Math.PI;
-                    q = 1 / (2 * Math.Sinh(halfLn2 * bw * omega / Math.Sin(omega)));
-                }
-                var filter = new BandPassFilter(freq, q);
-                var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
-                filterBank[i] = filterResponse.Take(fftSize / 2 + 1).ToArray();
+                frequencyTuples[i] = new Tuple<double, double, double>
+                    (edges[i], centers[i], edges[i + 1]);
             }
 
-            return filterBank;
+            return frequencyTuples;
         }
 
         /// <summary>
-        /// Method creates overlapping ERB filters
-        /// (ported from Malcolm Slaney's MATLAB code).
+        /// Method creates overlapping ERB filters (ported from Malcolm Slaney's MATLAB code).
         /// </summary>
         /// <param name="erbFilterCount">Number of ERB filters</param>
         /// <param name="fftSize">Assumed size of FFT</param>
@@ -351,7 +336,8 @@ namespace NWaves.Filters.Fda
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="normalizeGain">True if gain should be normalized; false if all filters should have same height 1.0</param>
         /// <returns>Array of ERB filters</returns>
-        public static double[][] Erb(int erbFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool normalizeGain = true)
+        public static double[][] Erb(
+            int erbFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool normalizeGain = true)
         {
             if (lowFreq < 0)
             {

@@ -297,16 +297,25 @@ var firFilter = FilterDesign.DesignFirFilter(43, magnitudeResponse);
 var highpassFilter = FilterDesign.LpToHp(lowpassFilter);
 
 
-// TODO:
+// sequence of filters:
 
-var filtered = signal.ApplyFilter(filter.CombineWith(new Reverb(params))
-                                        .CombineWith(new FirFilter(coeffs)));
+var cascade = filter * firFilter * notchFilter;
+var filtered = cascade.ApplyTo(signal);
+
+// equivalent to:
+
+var filtered = filter.ApplyTo(signal);
+filtered = firFilter.ApplyTo(filtered);
+filtered = notchFilter.ApplyTo(filtered);
+
+
+// TODO:
 
 var distortion = new DistortionEffect();
 var echo = new EchoEffect(delay: 20);
 var reverb = new ReverbEffect(1.9f);
 
-var filtered = signal.ApplyFilter(distortion + echo + reverb);
+var filtered = signal.ApplyFilter(distortion * echo * reverb);
 
 ```
 

@@ -55,8 +55,6 @@
             this.label5 = new System.Windows.Forms.Label();
             this.fftSizeTextBox = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.filterQTextBox = new System.Windows.Forms.TextBox();
-            this.label11 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.computeButton = new System.Windows.Forms.Button();
             this.longTermHopSizeTextBox = new System.Windows.Forms.TextBox();
@@ -73,6 +71,9 @@
             this.temporalCheckBox = new System.Windows.Forms.CheckBox();
             this.herzTextBox = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.shapeComboBox = new System.Windows.Forms.ComboBox();
+            this.overlapCheckBox = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             this.envelopesPanel.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -199,18 +200,18 @@
             "Herz",
             "Mel",
             "Bark",
-            "Critical bands (rectangular)",
-            "Critical bands (BiQuad)",
+            "Critical bands",
             "ERB"});
-            this.filterbankComboBox.Location = new System.Drawing.Point(93, 42);
+            this.filterbankComboBox.Location = new System.Drawing.Point(184, 42);
             this.filterbankComboBox.Name = "filterbankComboBox";
-            this.filterbankComboBox.Size = new System.Drawing.Size(260, 24);
+            this.filterbankComboBox.Size = new System.Drawing.Size(92, 24);
             this.filterbankComboBox.TabIndex = 2;
+            this.filterbankComboBox.Text = "Mel";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 42);
+            this.label1.Location = new System.Drawing.Point(104, 45);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(74, 17);
             this.label1.TabIndex = 3;
@@ -227,7 +228,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(370, 45);
+            this.label2.Location = new System.Drawing.Point(13, 45);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(35, 17);
             this.label2.TabIndex = 5;
@@ -235,9 +236,9 @@
             // 
             // filterCountTextBox
             // 
-            this.filterCountTextBox.Location = new System.Drawing.Point(411, 43);
+            this.filterCountTextBox.Location = new System.Drawing.Point(54, 43);
             this.filterCountTextBox.Name = "filterCountTextBox";
-            this.filterCountTextBox.Size = new System.Drawing.Size(52, 22);
+            this.filterCountTextBox.Size = new System.Drawing.Size(38, 22);
             this.filterCountTextBox.TabIndex = 6;
             this.filterCountTextBox.Text = "13";
             // 
@@ -261,7 +262,7 @@
             // 
             // lowFreqTextBox
             // 
-            this.lowFreqTextBox.Location = new System.Drawing.Point(93, 79);
+            this.lowFreqTextBox.Location = new System.Drawing.Point(105, 78);
             this.lowFreqTextBox.Name = "lowFreqTextBox";
             this.lowFreqTextBox.Size = new System.Drawing.Size(70, 22);
             this.lowFreqTextBox.TabIndex = 10;
@@ -278,7 +279,7 @@
             // 
             // highFreqTextBox
             // 
-            this.highFreqTextBox.Location = new System.Drawing.Point(93, 107);
+            this.highFreqTextBox.Location = new System.Drawing.Point(105, 107);
             this.highFreqTextBox.Name = "highFreqTextBox";
             this.highFreqTextBox.Size = new System.Drawing.Size(70, 22);
             this.highFreqTextBox.TabIndex = 12;
@@ -326,23 +327,6 @@
             this.label6.Size = new System.Drawing.Size(62, 17);
             this.label6.TabIndex = 13;
             this.label6.Text = "FFT size";
-            // 
-            // filterQTextBox
-            // 
-            this.filterQTextBox.Location = new System.Drawing.Point(516, 44);
-            this.filterQTextBox.Name = "filterQTextBox";
-            this.filterQTextBox.Size = new System.Drawing.Size(52, 22);
-            this.filterQTextBox.TabIndex = 26;
-            this.filterQTextBox.Text = "1,8";
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(491, 45);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(19, 17);
-            this.label11.TabIndex = 25;
-            this.label11.Text = "Q";
             // 
             // groupBox1
             // 
@@ -504,11 +488,47 @@
             this.label16.TabIndex = 34;
             this.label16.Text = "Hz";
             // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(369, 45);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(49, 17);
+            this.label11.TabIndex = 36;
+            this.label11.Text = "Shape";
+            // 
+            // shapeComboBox
+            // 
+            this.shapeComboBox.FormattingEnabled = true;
+            this.shapeComboBox.Items.AddRange(new object[] {
+            "Triangular",
+            "Rectangular",
+            "Trapezoidal",
+            "BiQuad"});
+            this.shapeComboBox.Location = new System.Drawing.Point(443, 42);
+            this.shapeComboBox.Name = "shapeComboBox";
+            this.shapeComboBox.Size = new System.Drawing.Size(169, 24);
+            this.shapeComboBox.TabIndex = 35;
+            this.shapeComboBox.Text = "Triangular";
+            // 
+            // overlapCheckBox
+            // 
+            this.overlapCheckBox.AutoSize = true;
+            this.overlapCheckBox.Location = new System.Drawing.Point(283, 43);
+            this.overlapCheckBox.Name = "overlapCheckBox";
+            this.overlapCheckBox.Size = new System.Drawing.Size(77, 21);
+            this.overlapCheckBox.TabIndex = 37;
+            this.overlapCheckBox.Text = "overlap";
+            this.overlapCheckBox.UseVisualStyleBackColor = true;
+            // 
             // ModulationSpectrumForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1187, 701);
+            this.Controls.Add(this.overlapCheckBox);
+            this.Controls.Add(this.label11);
+            this.Controls.Add(this.shapeComboBox);
             this.Controls.Add(this.label16);
             this.Controls.Add(this.herzTextBox);
             this.Controls.Add(this.temporalCheckBox);
@@ -516,8 +536,6 @@
             this.Controls.Add(this.infoLabel);
             this.Controls.Add(this.nextButton);
             this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.filterQTextBox);
-            this.Controls.Add(this.label11);
             this.Controls.Add(this.samplingRateTextBox);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.fftSizeTextBox);
@@ -570,8 +588,6 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox fftSizeTextBox;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.TextBox filterQTextBox;
-        private System.Windows.Forms.Label label11;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button computeButton;
         private System.Windows.Forms.TextBox longTermHopSizeTextBox;
@@ -596,5 +612,8 @@
         private System.Windows.Forms.CheckBox temporalCheckBox;
         private System.Windows.Forms.TextBox herzTextBox;
         private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.ComboBox shapeComboBox;
+        private System.Windows.Forms.CheckBox overlapCheckBox;
     }
 }
