@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.VisualBasic.CompilerServices;
 using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Utils;
@@ -270,6 +272,36 @@ namespace NWaves.Filters.Base
         {
             get { return TfToZp(A); }
             set { A = ZpToTf(value); Normalize(); }
+        }
+
+        /// <summary>
+        /// Sequential combination of two IIR filters
+        /// </summary>
+        /// <param name="filter1"></param>
+        /// <param name="filter2"></param>
+        /// <returns></returns>
+        public static IirFilter operator *(IirFilter filter1, IirFilter filter2)
+        {
+            var num1 = new DiscreteSignal(1, filter1.B);
+            var num2 = new DiscreteSignal(1, filter2.B);
+            var num = Operation.Convolve(num1, num2);
+
+            var den1 = new DiscreteSignal(1, filter1.A);
+            var den2 = new DiscreteSignal(1, filter2.A);
+            var den = Operation.Convolve(den1, den2);
+
+            return new IirFilter(num.Samples, den.Samples);
+        }
+
+        /// <summary>
+        /// Sequential combination of an IIR and a FIR filters
+        /// </summary>
+        /// <param name="filter1"></param>
+        /// <param name="filter2"></param>
+        /// <returns></returns>
+        public static IirFilter operator *(IirFilter filter1, FirFilter filter2)
+        {
+            return filter1 * filter2.AsIir();
         }
     }
 }

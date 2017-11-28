@@ -72,11 +72,11 @@ namespace NWaves.DemoForms
                     _filterbank = FilterBanks.Bark(filterCount, fftSize, samplingRate, lowFreq, highFreq);
                     break;
                 case "Critical bands (rectangular)":
-                    _filterbank = FilterBanks.CriticalBandsRectangular(fftSize, samplingRate, lowFreq, highFreq);
+                    _filterbank = FilterBanks.CriticalBands(fftSize, samplingRate, lowFreq, highFreq);
                     break;
                 case "Critical bands (BiQuad)":
                     var q = double.Parse(filterQTextBox.Text);
-                    _filterbank = FilterBanks.CriticalBands(fftSize, samplingRate, lowFreq, highFreq, q);
+                    _filterbank = FilterBanks.CriticalBandsBiQuad(fftSize, samplingRate, lowFreq, highFreq, q);
                     break;
                 case "ERB":
                     _filterbank = FilterBanks.Erb(filterCount, fftSize, samplingRate, lowFreq, highFreq);
@@ -94,7 +94,7 @@ namespace NWaves.DemoForms
 
                     break;
                 default:
-                    _filterbank = FilterBanks.Fourier(filterCount, fftSize);
+                    _filterbank = FilterBanks.Herz(filterCount, fftSize, samplingRate, lowFreq, highFreq);
                     break;
             }
 

@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
+    <Folder Include="FeatureExtractors\Mpeg7\" />
     <Folder Include="FeatureReconstructors\" />
   </ItemGroup>
   <ItemGroup>

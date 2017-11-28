@@ -35,7 +35,8 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Gammatone Filterbank matrix of dimension [filterCount * (fftSize/2 + 1)]
         /// </summary>
-        public double[][] GammatoneFilterBank { get; }
+        private readonly double[][] _gammatoneFilterBank;
+        public double[][] GammatoneFilterBank => _gammatoneFilterBank;
 
         /// <summary>
         /// Nonlinearity coefficient (if 0 then Log10 is applied)
@@ -111,10 +112,10 @@ namespace NWaves.FeatureExtractors
                 _preemphasisFilter = new PreEmphasisFilter(preEmphasis);
             }
 
-            GammatoneFilterBank = FilterBanks.Erb(filterbankSize, _fftSize, samplingRate, lowFreq, highFreq);
+            _gammatoneFilterBank = FilterBanks.Erb(filterbankSize, _fftSize, samplingRate, lowFreq, highFreq);
             
             // use power spectrum
-            foreach (var filter in GammatoneFilterBank)
+            foreach (var filter in _gammatoneFilterBank)
             {
                 for (var j = 0; j < filter.Length; j++)
                 {
@@ -126,7 +127,7 @@ namespace NWaves.FeatureExtractors
             // prepare everything for fft and dct
 
             _fft = new Fft(_fftSize);
-            _dct = new Dct(GammatoneFilterBank.Length, featureCount);
+            _dct = new Dct(_gammatoneFilterBank.Length, featureCount);
         }
 
         /// <summary>
@@ -151,17 +152,18 @@ namespace NWaves.FeatureExtractors
         {
             var featureVectors = new List<FeatureVector>();
 
-            var gammatoneSpectrum = new double[GammatoneFilterBank.Length];
+            var gammatoneSpectrum = new double[_gammatoneFilterBank.Length];
             
             const double meanPower = 1e10;
             var mean = 4e07;
 
             var d = _power != 0 ? 1.0 / _power : 0.0;
 
+            var block = new double[_fftSize];           // buffer for a signal block at each step
+            var zeroblock = new double[_fftSize];       // buffer of zeros for quick memset
+
             var spectrum = new double[_fftSize / 2 + 1];
-            var block = new double[_fftSize];
-            var zeroblock = new double[_fftSize - _windowSamples.Length];
-            
+
 
             // 0) pre-emphasis (if needed)
 
@@ -173,9 +175,9 @@ namespace NWaves.FeatureExtractors
             {
                 // prepare next block for processing
 
+                FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length);
                 FastCopy.ToExistingArray(filtered.Samples, block, _windowSamples.Length, i);
-                FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length, 0, _windowSamples.Length);
-
+                
 
                 // 1) apply window
 
@@ -192,7 +194,7 @@ namespace NWaves.FeatureExtractors
 
                 // 3) apply gammatone filterbank
 
-                ApplyFilterbank(spectrum, gammatoneSpectrum);
+                FilterBanks.Apply(_gammatoneFilterBank, spectrum, gammatoneSpectrum);
 
 
                 // 4) mean power normalization:
@@ -247,24 +249,6 @@ namespace NWaves.FeatureExtractors
             }
 
             return featureVectors;
-        }
-
-        /// <summary>
-        /// Method applies gammatone filters to spectrum.
-        /// </summary>
-        /// <param name="spectrum">Original spectrum</param>
-        /// <param name="gammatoneSpectrum">Output gammatone-spectral array</param>
-        private void ApplyFilterbank(double[] spectrum, double[] gammatoneSpectrum)
-        {
-            for (var i = 0; i < GammatoneFilterBank.Length; i++)
-            {
-                gammatoneSpectrum[i] = 0.0;
-
-                for (var j = 0; j < spectrum.Length; j++)
-                {
-                    gammatoneSpectrum[i] += GammatoneFilterBank[i][j] * spectrum[j];
-                }
-            }
         }
     }
 }

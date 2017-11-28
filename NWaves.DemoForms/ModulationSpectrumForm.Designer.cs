@@ -196,7 +196,7 @@
             // 
             this.filterbankComboBox.FormattingEnabled = true;
             this.filterbankComboBox.Items.AddRange(new object[] {
-            "Fourier",
+            "Herz",
             "Mel",
             "Bark",
             "Critical bands (rectangular)",

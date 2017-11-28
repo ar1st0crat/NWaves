@@ -23,20 +23,15 @@ namespace NWaves.FeatureExtractors
 
         /// <summary>
         /// Feature descriptions.
-        /// Initialized in constructor in the following manner:
+        /// Initialized in constructor in the following manner (example):
         /// 
-        ///     band_1_mf_0.5_Hz   band_1_mf_1.0_Hz   ...    band_1_mf_MAX_Hz
-        ///     band_2_mf_0.5_Hz   band_2_mf_1.0_Hz   ...    band_2_mf_MAX_Hz
+        ///     band_1_mf_0.5_Hz   band_1_mf_1.0_Hz   ...    band_1_mf_8.0_Hz
+        ///     band_2_mf_0.5_Hz   band_2_mf_1.0_Hz   ...    band_2_mf_8.0_Hz
         ///     ...
-        ///     band_N_mf_0.5_Hz   band_N_mf_1.0_Hz   ...    band_N_mf_MAX_Hz
+        ///     band_32_mf_0.5_Hz  band_32_mf_1.0_Hz  ...    band_32_mf_8.0_Hz
         /// 
         /// </summary>
         public override string[] FeatureDescriptions { get; }
-
-        /// <summary>
-        /// Filterbank matrix of dimension [filterCount * (fftSize/2 + 1)]
-        /// </summary>
-        private readonly double[][] _filterBank;
 
         /// <summary>
         /// The "featuregram": the sequence of (feature) vectors;
@@ -45,6 +40,12 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         private readonly double[][] _featuregram;
 
+        /// <summary>
+        /// Filterbank matrix of dimension [filterCount * (fftSize/2 + 1)]
+        /// </summary>
+        private readonly double[][] _filterbank;
+        public double[][] Filterbank => _filterbank;
+        
         /// <summary>
         /// Signal envelopes in different frequency bands
         /// </summary>
@@ -141,8 +142,8 @@ namespace NWaves.FeatureExtractors
 
             if (featuregram == null)
             {
-                _filterBank = filterbank ?? FilterBanks.Mel(18, _fftSize, samplingRate, 100, 4200);
-                FeatureCount = _filterBank.Length * (_modulationFftSize / 2 + 1);
+                _filterbank = filterbank ?? FilterBanks.Mel(18, _fftSize, samplingRate, 100, 4200);
+                FeatureCount = _filterbank.Length * (_modulationFftSize / 2 + 1);
             }
             else
             {
@@ -150,7 +151,7 @@ namespace NWaves.FeatureExtractors
                 FeatureCount = _featuregram[0].Length * (_modulationFftSize / 2 + 1);
             }
 
-            var length = _filterBank?.Length ?? _featuregram[0].Length;
+            var length = _filterbank?.Length ?? _featuregram[0].Length;
 
             var modulationSamplingRate = (double)_samplingRate / _hopSize;
             var resolution = modulationSamplingRate / _modulationFftSize;
@@ -189,7 +190,7 @@ namespace NWaves.FeatureExtractors
 
             if (_featuregram == null)
             {
-                _envelopes = new double[_filterBank.Length][];
+                _envelopes = new double[_filterbank.Length][];
                 for (var n = 0; n < _envelopes.Length; n++)
                 {
                     _envelopes[n] = new double[signal.Length / _hopSize];
@@ -198,9 +199,9 @@ namespace NWaves.FeatureExtractors
                 // ===================== compute local FFTs (do STFT) =======================
 
                 var spectrum = new double[_fftSize / 2 + 1];
-                var filteredSpectrum = new double[_filterBank.Length];
+                var filteredSpectrum = new double[_filterbank.Length];
 
-                var block = new double[_fftSize];           // buffer for a signal block at each step
+                var block = new double[_fftSize];           // buffer for currently processed signal block at each step
                 var zeroblock = new double[_fftSize];       // buffer of zeros for quick memset
 
                 while (i + _windowSamples.Length < endSample)
@@ -222,7 +223,7 @@ namespace NWaves.FeatureExtractors
 
                     // 3) apply filterbank...
 
-                    ApplyFilterbank(spectrum, filteredSpectrum);
+                    FilterBanks.Apply(_filterbank, spectrum, filteredSpectrum);
 
                     // ...and save results for future calculations
 
@@ -308,24 +309,6 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Method applies filters to spectrum.
-        /// </summary>
-        /// <param name="spectrum">Original spectrum</param>
-        /// <param name="filteredSpectrum">Output filtered spectrum</param>
-        private void ApplyFilterbank(double[] spectrum, double[] filteredSpectrum)
-        {
-            for (var i = 0; i < _filterBank.Length; i++)
-            {
-                filteredSpectrum[i] = 0.0;
-
-                for (var j = 0; j < spectrum.Length; j++)
-                {
-                    filteredSpectrum[i] += _filterBank[i][j] * spectrum[j];
-                }
-            }
-        }
-
-        /// <summary>
         /// Get 2D modulation spectrum from its flattened version.
         /// Axes are: [short-time-frequency] x [modulation-frequency].
         /// </summary>
@@ -333,7 +316,7 @@ namespace NWaves.FeatureExtractors
         /// <returns></returns>
         public double[][] MakeSpectrum2D(FeatureVector featureVector)
         {
-            var length = _filterBank?.Length ?? _featuregram[0].Length;
+            var length = _filterbank?.Length ?? _featuregram[0].Length;
 
             var spectrum = new double[length][];
             var spectrumSize = _modulationFftSize / 2 + 1;
@@ -357,7 +340,7 @@ namespace NWaves.FeatureExtractors
         /// <returns></returns>
         public List<double[]> VectorsAtHerz(IList<FeatureVector> featureVectors, double herz = 4)
         {
-            var length = _filterBank?.Length ?? _featuregram[0].Length;
+            var length = _filterbank?.Length ?? _featuregram[0].Length;
 
             var modulationSamplingRate = (double) _samplingRate / _hopSize;
             var resolution = modulationSamplingRate / _modulationFftSize;

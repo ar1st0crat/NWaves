@@ -30,7 +30,8 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Mel Filterbank matrix of dimension [melFilterCount * (fftSize/2 + 1)]
         /// </summary>
-        public double[][] MelFilterBank { get; }
+        private readonly double[][] _melFilterBank;
+        public double[][] MelFilterBank => _melFilterBank;
 
         /// <summary>
         /// Size of FFT
@@ -107,12 +108,12 @@ namespace NWaves.FeatureExtractors
                 _preemphasisFilter = new PreEmphasisFilter(preEmphasis);
             }
 
-            MelFilterBank = FilterBanks.Mel(melFilterbankSize, _fftSize, samplingRate, lowFreq, highFreq);
+            _melFilterBank = FilterBanks.Mel(melFilterbankSize, _fftSize, samplingRate, lowFreq, highFreq);
 
             // prepare everything for fft and dct
 
             _fft = new Fft(_fftSize);
-            _dct = new Dct(MelFilterBank.Length, featureCount);
+            _dct = new Dct(_melFilterBank.Length, featureCount);
         }
 
         /// <summary>
@@ -139,10 +140,10 @@ namespace NWaves.FeatureExtractors
             // reserve memory for reusable blocks
 
             var spectrum = new double[_fftSize / 2 + 1];
-            var logMelSpectrum = new double[MelFilterBank.Length];
+            var logMelSpectrum = new double[_melFilterBank.Length];
 
-            var block = new double[_fftSize];
-            var zeroblock = new double[_fftSize - _windowSamples.Length];
+            var block = new double[_fftSize];       // buffer for currently processed signal block at each step
+            var zeroblock = new double[_fftSize];   // just a buffer of zeros for quick memset
 
 
             // 0) pre-emphasis (if needed)
@@ -155,9 +156,9 @@ namespace NWaves.FeatureExtractors
             {
                 // prepare next block for processing
 
+                FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length);
                 FastCopy.ToExistingArray(filtered.Samples, block, _windowSamples.Length, i);
-                FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length, 0, _windowSamples.Length);
-
+                
 
                 // 1) apply window
 
@@ -174,7 +175,7 @@ namespace NWaves.FeatureExtractors
 
                 // 3) apply mel filterbank and take log() of the result
 
-                ApplyFilterbankAndLog(spectrum, logMelSpectrum);
+                FilterBanks.ApplyAndLog(_melFilterBank, spectrum, logMelSpectrum);
 
 
                 // 4) dct-II
@@ -200,26 +201,6 @@ namespace NWaves.FeatureExtractors
             }
 
             return featureVectors;
-        }
-
-        /// <summary>
-        /// Method applies mel filters to spectrum and then does Log10() on resulting spectrum.
-        /// </summary>
-        /// <param name="spectrum">Original spectrum</param>
-        /// <param name="logMelSpectrum">Output log-mel-spectral array</param>
-        private void ApplyFilterbankAndLog(double[] spectrum, double[] logMelSpectrum)
-        {
-            for (var i = 0; i < MelFilterBank.Length; i++)
-            {
-                logMelSpectrum[i] = 0.0;
-
-                for (var j = 0; j < spectrum.Length; j++)
-                {
-                    logMelSpectrum[i] += MelFilterBank[i][j] * spectrum[j];
-                }
-
-                logMelSpectrum[i] = Math.Log10(logMelSpectrum[i] + double.Epsilon);
-            }
         }
     }
 }

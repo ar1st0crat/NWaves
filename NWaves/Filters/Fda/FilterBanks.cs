@@ -9,15 +9,19 @@ using NWaves.Transforms;
 namespace NWaves.Filters.Fda
 {
     /// <summary>
-    /// Static class providing methods for obtaining the most widely used filterbanks:
+    /// Static class with methods providing general shapes of filters:
     /// 
-    ///     - Fourier (rectangular) filterbank
-    ///     - Mel (triangular) filterbank
-    ///     - Bark (triangular) filterbank
-    ///     - Critical bands BiQuad (Bark bandpass) filters
-    ///     - Critical bands trapezoidal (Bark bandpass) filters
+    ///     - triangular
+    ///     - rectangular
+    ///     - FIR bandpass (close to trapezoidal)
+    /// 
+    /// ...and methods for obtaining the most widely used filterbanks:
+    /// 
+    ///     - Herz filterbank
+    ///     - Mel filterbank
+    ///     - Bark filterbank
+    ///     - Critical bands
     ///     - ERB filterbank
-    ///     - Equal Loudness Curves
     /// 
     /// </summary>
     public static class FilterBanks
@@ -25,13 +29,15 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// General method returning universal triangular filterbank based on positions of center frequencies
         /// </summary>
-        /// <param name="filterCount">Number of filters to create</param>
-        /// <param name="length">Length of each filter's frequency response</param>
-        /// <param name="frequencyPoints">Positions of center frequencies</param>
+        /// <param name="length">Length of each filter frequency response</param>
+        /// <param name="frequencyPoints">Positions of center frequencies (including the leftmost and rightmost ones)</param>
         /// <returns>Array of triangular filters</returns>
-        public static double[][] Triangular(int filterCount, int length, int[] frequencyPoints)
+        public static double[][] Triangular(int length, int[] frequencyPoints)
         {
-            var filterBanks = new double[filterCount][];
+            // ignore the leftmost and rightmost frequency positions
+            var filterCount = frequencyPoints.Length - 2;
+            
+            var filterBank = new double[filterCount][];
 
             var leftSample = frequencyPoints[0];
             var centerSample = frequencyPoints[1];
@@ -40,70 +46,118 @@ namespace NWaves.Filters.Fda
             {
                 var rightSample = frequencyPoints[i + 2];
 
-                filterBanks[i] = new double[length];
+                filterBank[i] = new double[length];
 
                 for (var j = leftSample; j < centerSample; j++)
                 {
-                    filterBanks[i][j] = (double)(j - leftSample) / (centerSample - leftSample);
+                    filterBank[i][j] = (double)(j - leftSample) / (centerSample - leftSample);
                 }
                 for (var j = centerSample; j < rightSample; j++)
                 {
-                    filterBanks[i][j] = (double)(rightSample - j) / (rightSample - centerSample);
+                    filterBank[i][j] = (double)(rightSample - j) / (rightSample - centerSample);
                 }
 
                 leftSample = centerSample;
                 centerSample = rightSample;
             }
 
-            return filterBanks;
+            return filterBank;
         }
 
         /// <summary>
-        /// General method returning universal rectangular filterbank based on positions of center frequencies
+        /// General method returning universal rectangular filterbank based on positions of range frequencies.
+        /// This filterbank is non-overlapping, so each frequency band is not described by three frequencies
+        /// (left, center, right) but two frequencies (left and right).
         /// </summary>
-        /// <param name="filterCount">Number of filters to create</param>
-        /// <param name="length">Length of each filter's frequency response</param>
-        /// <param name="frequencyPoints">Positions of center frequencies</param>
+        /// <param name="length">Length of each filter frequency response</param>
+        /// <param name="frequencyPoints">Positions of frequencies (including the rightmost one)</param>
         /// <returns>Array of rectangular filters</returns>
-        public static double[][] Rectangular(int filterCount, int length, int[] frequencyPoints)
+        public static double[][] Rectangular(int length, int[] frequencyPoints)
         {
-            var filterBanks = new double[filterCount][];
+            // ignore the rightmost frequency position
+            var filterCount = frequencyPoints.Length - 1;
+
+            var filterBank = new double[filterCount][];
 
             var leftSample = frequencyPoints[0];
-            
+
             for (var i = 0; i < filterCount; i++)
             {
                 var rightSample = frequencyPoints[i + 1];
 
-                filterBanks[i] = new double[length];
+                filterBank[i] = new double[length];
 
                 for (var j = leftSample; j < rightSample; j++)
                 {
-                    filterBanks[i][j] = 1;
+                    filterBank[i][j] = 1;
                 }
 
                 leftSample = rightSample;
             }
 
-            return filterBanks;
+            return filterBank;
         }
 
         /// <summary>
-        /// Method creates rectangular Fourier filters of equal width and constant height = 1
+        /// General method returning FIR bandpass (close to trapezoidal) filterbank based on positions of range frequencies.
+        /// </summary>
+        /// <param name="length">Length of each filter frequency response</param>
+        /// <param name="frequencyPoints">Positions of frequencies (including the rightmost one)</param>
+        /// <returns>Array of trapezoidal FIR filters</returns>
+        public static double[][] Trapezoidal(int length, int[] frequencyPoints)
+        {
+            var filterBank = Rectangular(length, frequencyPoints);
+
+            for (var i = 0; i < filterBank.Length; i++)
+            {
+                var filter = FilterDesign.DesignFirFilter(length, filterBank[i]);
+                var filterResponse = filter.FrequencyResponse(2 * (length - 1)).Magnitude;
+                filterBank[i] = filterResponse.Take(length).ToArray();
+
+                // normalize gain to 1.0
+
+                var maxAmp = 0.0;
+                for (var j = 0; j < filterBank[i].Length; j++)
+                {
+                    if (filterBank[i][j] > maxAmp) maxAmp = filterBank[i][j];
+                }
+                for (var j = 0; j < filterBank[i].Length; j++)
+                {
+                    filterBank[i][j] /= maxAmp;
+                }
+            }
+
+            return filterBank;
+        }
+
+        /// <summary>
+        /// Method creates rectangular herz filters of equal width and constant height = 1
         /// </summary>
         /// <param name="combFilterCount">Number of filters</param>
         /// <param name="fftSize">Size of FFT</param>
-        /// <returns>Array of rectangular Fourier filters</returns>
-        public static double[][] Fourier(int combFilterCount, int fftSize)
+        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="lowFreq">Lower bound of the frequency range</param>
+        /// <param name="highFreq">Upper bound of the frequency range</param>
+        /// <returns>Array of rectangular herz filters</returns>
+        public static double[][] Herz(int combFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0)
         {
-            var size = fftSize / 2 + 1;
-            var bandSize = (double)size / combFilterCount;
+            if (lowFreq < 0)
+            {
+                lowFreq = 0;
+            }
+            if (highFreq <= lowFreq)
+            {
+                highFreq = samplingRate / 2.0;
+            }
+
+            var herzResolution = (double)samplingRate / fftSize;
+            var bandSize = (highFreq - lowFreq) / combFilterCount;
 
             var frequencyPositions = Enumerable.Range(0, combFilterCount + 1)
-                                               .Select(f => (int)(bandSize * f))
+                                               .Select(f => (int)((lowFreq + bandSize * f) / herzResolution))
                                                .ToArray();
-            
-            return Rectangular(combFilterCount, size, frequencyPositions);
+
+            return Trapezoidal(fftSize / 2 + 1, frequencyPositions);
         }
         
         /// <summary>
@@ -132,10 +186,10 @@ namespace NWaves.Filters.Fda
             var startingFrequency = HerzToMel(lowFreq);
             var frequencyPositions = 
                 Enumerable.Range(0, melFilterCount + 2)
-                          .Select(i => (int)Math.Floor((MelToHerz(startingFrequency + i * melResolution)) / herzResolution))
+                          .Select(i => (int)(MelToHerz(startingFrequency + i * melResolution) / herzResolution))
                           .ToArray();
-
-            return Triangular(melFilterCount, fftSize / 2 + 1, frequencyPositions);
+            
+            return Triangular(fftSize / 2 + 1, frequencyPositions);
         }
 
         /// <summary>
@@ -164,14 +218,14 @@ namespace NWaves.Filters.Fda
             var startingFrequency = HerzToBark(lowFreq);
             var frequencyPositions =
                 Enumerable.Range(0, barkFilterCount + 2)
-                          .Select(i => (int)Math.Floor((BarkToHerz(startingFrequency + i * melResolution)) / herzResolution))
+                          .Select(i => (int)(BarkToHerz(startingFrequency + i * melResolution) / herzResolution))
                           .ToArray();
 
-            return Triangular(barkFilterCount, fftSize / 2 + 1, frequencyPositions);
+            return Triangular(fftSize / 2 + 1, frequencyPositions);
         }
 
         /// <summary>
-        /// Method yields set of critical band central and edge frequencies in given range
+        /// Method fills arrays of critical band central and edge frequencies in given range
         /// and returns total number of filters that could be used inside the given frequency range.
         /// </summary>
         /// <param name="lowFreq"></param>
@@ -219,7 +273,7 @@ namespace NWaves.Filters.Fda
             var filterCount = endIndex - startIndex + 1;
 
             edges = edgeFrequencies.Skip(startIndex)
-                                   .Take(filterCount + 2)
+                                   .Take(filterCount + 1)
                                    .ToArray();
 
             centers = centerFrequencies.Skip(startIndex)
@@ -227,6 +281,25 @@ namespace NWaves.Filters.Fda
                                        .ToArray();
 
             return filterCount;
+        }
+
+        /// <summary>
+        /// Method creates trapezoidal bandpass (not very much overlapping) critical band filters.
+        /// </summary>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="lowFreq">Lower bound of the frequency range</param>
+        /// <param name="highFreq">Upper bound of the frequency range</param>
+        /// <returns>Array of rectangular critical band filters</returns>
+        public static double[][] CriticalBands(int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0)
+        {
+            double[] edgeFrequencies, centerFrequencies;
+
+            CriticalBandFrequencies(lowFreq, highFreq, samplingRate, out centerFrequencies, out edgeFrequencies);
+
+            var herzResolution = (double)samplingRate / fftSize;
+            var frequencies = edgeFrequencies.Select(f => (int)Math.Floor(f / herzResolution)).ToArray();
+            return Trapezoidal(fftSize / 2 + 1, frequencies);
         }
 
         /// <summary>
@@ -238,7 +311,7 @@ namespace NWaves.Filters.Fda
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="filterQ">Q-value of each filter</param>
         /// <returns>Array of BiQuad critical band filters</returns>
-        public static double[][] CriticalBands(int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, double filterQ = 2.0)
+        public static double[][] CriticalBandsBiQuad(int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, double filterQ = 2.0)
         {
             double[] edgeFrequencies, centerFrequencies;
 
@@ -262,48 +335,6 @@ namespace NWaves.Filters.Fda
                 var filter = new BandPassFilter(freq, q);
                 var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
                 filterBank[i] = filterResponse.Take(fftSize / 2 + 1).ToArray();
-            }
-
-            return filterBank;
-        }
-
-        /// <summary>
-        /// Method creates rectangular (in fact closer to trapezoidal) 
-        /// bandpass (not very much overlapping) critical band filters.
-        /// </summary>
-        /// <param name="fftSize">Assumed size of FFT</param>
-        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
-        /// <param name="lowFreq">Lower bound of the frequency range</param>
-        /// <param name="highFreq">Upper bound of the frequency range</param>
-        /// <returns>Array of rectangular critical band filters</returns>
-        public static double[][] CriticalBandsRectangular(int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0)
-        {
-            double[] edgeFrequencies, centerFrequencies;
-
-            var filterCount = CriticalBandFrequencies(lowFreq, highFreq, samplingRate, 
-                                                      out centerFrequencies, out edgeFrequencies);
-
-            var herzResolution = (double)samplingRate / fftSize;
-            var frequencies = edgeFrequencies.Select(f => (int)Math.Floor(f / herzResolution)).ToArray();
-            var filterBank = Rectangular(filterCount, fftSize / 2 + 1, frequencies);
-
-            for (var i = 0; i < filterCount; i++)
-            {
-                var filter = FilterDesign.DesignFirFilter(fftSize / 4 - 1, filterBank[i]);
-                var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
-                filterBank[i] = filterResponse.Take(fftSize / 2 + 1).ToArray();
-
-                // normalize gain to 1.0
-
-                var maxAmp = 0.0;
-                for (var j = 0; j < filterBank[i].Length; j++)
-                {
-                    if (filterBank[i][j] > maxAmp) maxAmp = filterBank[i][j];
-                }
-                for (var j = 0; j < filterBank[i].Length; j++)
-                {
-                    filterBank[i][j] /= maxAmp;
-                }
             }
 
             return filterBank;
@@ -400,10 +431,9 @@ namespace NWaves.Filters.Fda
                 var filter3 = new IirFilter(new[] { a0, a13, a2 }, new[] { b0, b1, b2 });
                 var filter4 = new IirFilter(new[] { a0, a14, a2 }, new[] { b0, b1, b2 });
 
-                ir = filter1.ApplyTo(ir);
-                ir = filter2.ApplyTo(ir);
-                ir = filter3.ApplyTo(ir);
-                ir = filter4.ApplyTo(ir);
+                var filter = filter1 * filter2 * filter3 * filter4;
+
+                ir = filter.ApplyTo(ir);
 
                 for (var j = 0; j < ir.Length; j++)
                 {
@@ -439,79 +469,6 @@ namespace NWaves.Filters.Fda
 
             return erbFilterBank;
         }
-
-
-        //public static double[] EqualLoudnessCurve(double phon)
-        //{
-        /*
-
-        function [spl, freq] = iso226(phon);
-        %
-        % Generates an Equal Loudness Contour as described in ISO 226
-        %
-        % Usage:  [SPL FREQ] = ISO226(PHON);
-        % 
-        %         PHON is the phon value in dB SPL that you want the equal
-        %           loudness curve to represent. (1phon = 1dB @ 1kHz)
-        %         SPL is the Sound Pressure Level amplitude returned for
-        %           each of the 29 frequencies evaluated by ISO226.
-        %         FREQ is the returned vector of frequencies that ISO226
-        %           evaluates to generate the contour.
-        %
-        % Desc:   This function will return the equal loudness contour for
-        %         your desired phon level.  The frequencies evaulated in this
-        %         function only span from 20Hz - 12.5kHz, and only 29 selective
-        %         frequencies are covered.  This is the limitation of the ISO
-        %         standard.
-        %
-        %         In addition the valid phon range should be 0 - 90 dB SPL.
-        %         Values outside this range do not have experimental values
-        %         and their contours should be treated as inaccurate.
-        %
-        %         If more samples are required you should be able to easily
-        %         interpolate these values using spline().
-        %
-        % Author: sparafucile17 03/01/05
-
-        %                /---------------------------------------\
-        %%%%%%%%%%%%%%%%%          TABLES FROM ISO226             %%%%%%%%%%%%%%%%%
-        %                \---------------------------------------/
-        f = [20 25 31.5 40 50 63 80 100 125 160 200 250 315 400 500 630 800 ...
-             1000 1250 1600 2000 2500 3150 4000 5000 6300 8000 10000 12500];
-
-        af = [0.532 0.506 0.480 0.455 0.432 0.409 0.387 0.367 0.349 0.330 0.315 ...
-              0.301 0.288 0.276 0.267 0.259 0.253 0.250 0.246 0.244 0.243 0.243 ...
-              0.243 0.242 0.242 0.245 0.254 0.271 0.301];
-
-        Lu = [-31.6 -27.2 -23.0 -19.1 -15.9 -13.0 -10.3 -8.1 -6.2 -4.5 -3.1 ...
-               -2.0  -1.1  -0.4   0.0   0.3   0.5   0.0 -2.7 -4.1 -1.0  1.7 ...
-                2.5   1.2  -2.1  -7.1 -11.2 -10.7  -3.1];
-
-        Tf = [ 78.5  68.7  59.5  51.1  44.0  37.5  31.5  26.5  22.1  17.9  14.4 ...
-               11.4   8.6   6.2   4.4   3.0   2.2   2.4   3.5   1.7  -1.3  -4.2 ...
-               -6.0  -5.4  -1.5   6.0  12.6  13.9  12.3];
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-
-        %Error Trapping
-        if((phon < 0) | (phon > 90))
-            disp('Phon value out of bounds!')
-            spl = 0;
-            freq = 0;
-        else
-            %Setup user-defined values for equation
-            Ln = phon;
-
-            %Deriving sound pressure level from loudness level (iso226 sect 4.1)
-            Af=4.47E-3 * (10.^(0.025*Ln) - 1.15) + (0.4*10.^(((Tf+Lu)/10)-9 )).^af;
-            Lp=((10./af).*log10(Af)) - Lu + 94;
-
-            %Return user data
-            spl = Lp;  
-            freq = f;
-        end
-
-        */
-        //}
 
         /// <summary>
         /// Method converts herz frequency to corresponding mel frequency
@@ -553,6 +510,46 @@ namespace NWaves.Filters.Fda
         public static double BarkToHerz(double bark)
         {
             return 1960 / (26.81 / (bark + 0.53) - 1);
+        }
+
+        /// <summary>
+        /// Method applies filters to spectrum and fills resulting filtered spectrum.
+        /// </summary>
+        /// <param name="filterbank"></param>
+        /// <param name="spectrum"></param>
+        /// <param name="filtered"></param>
+        public static void Apply(double[][] filterbank, double[] spectrum, double[] filtered)
+        {
+            for (var i = 0; i < filterbank.Length; i++)
+            {
+                filtered[i] = 0.0;
+
+                for (var j = 0; j < spectrum.Length; j++)
+                {
+                    filtered[i] += filterbank[i][j] * spectrum[j];
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Method applies filters to spectrum and then does Log10() on resulting spectrum.
+        /// </summary>
+        /// <param name="filterbank"></param>
+        /// <param name="spectrum"></param>
+        /// <param name="filtered"></param>
+        public static void ApplyAndLog(double[][] filterbank, double[] spectrum, double[] filtered)
+        {
+            for (var i = 0; i < filterbank.Length; i++)
+            {
+                filtered[i] = 0.0;
+
+                for (var j = 0; j < spectrum.Length; j++)
+                {
+                    filtered[i] += filterbank[i][j] * spectrum[j];
+                }
+
+                filtered[i] = Math.Log10(filtered[i] + double.Epsilon);
+            }
         }
     }
 }

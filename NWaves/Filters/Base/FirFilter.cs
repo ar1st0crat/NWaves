@@ -180,5 +180,40 @@ namespace NWaves.Filters.Base
             get { return null; }
             set { }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IirFilter AsIir()
+        {
+            return new IirFilter(Kernel, new []{ 1.0 });
+        }
+
+        /// <summary>
+        /// Sequential combination of two FIR filters
+        /// </summary>
+        /// <param name="filter1"></param>
+        /// <param name="filter2"></param>
+        /// <returns></returns>
+        public static FirFilter operator *(FirFilter filter1, FirFilter filter2)
+        {
+            var kernel1 = new DiscreteSignal(1, filter1.Kernel);
+            var kernel2 = new DiscreteSignal(1, filter2.Kernel);
+            var kernel = Operation.Convolve(kernel1, kernel2);
+
+            return new FirFilter(kernel.Samples);
+        }
+
+        /// <summary>
+        /// Sequential combination of a FIR and an IIR filters
+        /// </summary>
+        /// <param name="filter1"></param>
+        /// <param name="filter2"></param>
+        /// <returns></returns>
+        public static IirFilter operator *(FirFilter filter1, IirFilter filter2)
+        {
+            return filter1.AsIir() * filter2;
+        }
     }
 }

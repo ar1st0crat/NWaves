@@ -48,7 +48,7 @@ namespace NWaves.DemoForms
                                                       window: WindowTypes.Hamming);
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);
             //FeaturePostProcessing.NormalizeMean(_mfccVectors);
-            FeaturePostProcessing.AddDeltas(_mfccVectors);
+            //FeaturePostProcessing.AddDeltas(_mfccVectors);
 
             FillFeaturesList(_mfccVectors, mfccExtractor.FeatureDescriptions);
             mfccListView.Items[0].Selected = true;
