@@ -47,66 +47,6 @@ namespace NWaves.Signals
         public virtual int Length => Real.Length;
 
         /// <summary>
-        /// Get real-valued signal containing magnitudes of complex-valued samples
-        /// </summary>
-        public double[] Magnitude
-        {
-            get
-            {
-                var real = Real;
-                var imag = Imag;
-
-                var magnitude = new double[real.Length];
-                for (var i = 0; i < magnitude.Length; i++)
-                {
-                    magnitude[i] = Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]);
-                }
-
-                return magnitude;
-            }
-        }
-
-        /// <summary>
-        /// Get real-valued signal containing phases of complex-valued samples
-        /// </summary>
-        public double[] Phase
-        {
-            get
-            {
-                var real = Real;
-                var imag = Imag;
-
-                var phase = new double[real.Length];
-                for (var i = 0; i < phase.Length; i++)
-                {
-                    phase[i] = Math.Atan(imag[i] / real[i]);
-                }
-
-                return phase;
-            }
-        }
-
-        /// <summary>
-        /// Get real-valued signal containing log-powers of complex-valued samples
-        /// </summary>
-        public double[] LogPower
-        {
-            get
-            {
-                var real = Real;
-                var imag = Imag;
-
-                var logPower = new double[real.Length];
-                for (var i = 0; i < logPower.Length; i++)
-                {
-                    logPower[i] = 20 * Math.Log10(real[i] * real[i] + imag[i] * imag[i]);
-                }
-
-                return logPower;
-            }
-        }
-
-        /// <summary>
         /// The most efficient constructor for initializing complex signals
         /// </summary>
         /// <param name="samplingRate">Sampling rate of the signal</param>
@@ -286,6 +226,66 @@ namespace NWaves.Signals
         public static ComplexDiscreteSignal operator *(ComplexDiscreteSignal s, int times)
         {
             return s.Repeat(times);
+        }
+
+        /// <summary>
+        /// Get real-valued signal containing magnitudes of complex-valued samples
+        /// </summary>
+        public double[] Magnitude
+        {
+            get
+            {
+                var real = Real;
+                var imag = Imag;
+
+                var magnitude = new double[real.Length];
+                for (var i = 0; i < magnitude.Length; i++)
+                {
+                    magnitude[i] = Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]);
+                }
+
+                return magnitude;
+            }
+        }
+
+        /// <summary>
+        /// Get real-valued signal containing squared magnitudes of complex-valued samples
+        /// </summary>
+        public double[] Power
+        {
+            get
+            {
+                var real = Real;
+                var imag = Imag;
+
+                var magnitude = new double[real.Length];
+                for (var i = 0; i < magnitude.Length; i++)
+                {
+                    magnitude[i] = real[i] * real[i] + imag[i] * imag[i];
+                }
+
+                return magnitude;
+            }
+        }
+
+        /// <summary>
+        /// Get real-valued signal containing phases of complex-valued samples
+        /// </summary>
+        public double[] Phase
+        {
+            get
+            {
+                var real = Real;
+                var imag = Imag;
+
+                var phase = new double[real.Length];
+                for (var i = 0; i < phase.Length; i++)
+                {
+                    phase[i] = Math.Atan(imag[i] / real[i]);
+                }
+
+                return phase;
+            }
         }
     }
 }

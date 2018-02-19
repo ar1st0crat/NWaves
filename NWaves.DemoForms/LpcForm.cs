@@ -10,6 +10,7 @@ using NWaves.FeatureExtractors.Base;
 using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Transforms;
+using LevelScale = NWaves.Utils.Scale;
 
 namespace NWaves.DemoForms
 {
@@ -60,7 +61,11 @@ namespace NWaves.DemoForms
         double[] ComputeSpectrum(int idx)
         {
             var pos = (int)(_signal.SamplingRate * OverlapSize * idx);
-            return _fft.LogPowerSpectrum(_signal[pos, pos + 512]).Samples;
+
+            return _fft.PowerSpectrum(_signal[pos, pos + 512], normalize: false)
+                       .Samples
+                       .Select(s => LevelScale.ToDecibel(s))
+                       .ToArray();
         }
 
         double[] EstimateSpectrum(int idx)
@@ -71,7 +76,10 @@ namespace NWaves.DemoForms
 
             var lpcFilter = new IirFilter(new[] { gain }, vector);
 
-            return lpcFilter.FrequencyResponse().LogPower;
+            return lpcFilter.FrequencyResponse()
+                            .Power
+                            .Select(r => LevelScale.ToDecibel(r))
+                            .ToArray();
         }
 
         private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors, 

@@ -39,7 +39,8 @@
   <ItemGroup>
     <Compile Include="FilterTests\TestIirFilter.cs" />
     <Compile Include="FilterTests\TestMedianFilter.cs" />
-    <Compile Include="MiscTests\TestMiscFunctions.cs" />
+    <Compile Include="UtilTests\TestMathFunctions.cs" />
+    <Compile Include="UtilTests\TestScaleFunctions.cs" />
     <Compile Include="OperationTests\TestConvolution.cs" />
     <Compile Include="SignalTests\TestComplexDiscreteSignal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -54,6 +55,9 @@
       <Project>{3fbf1b3a-3bed-4f2f-8008-871acf83e352}</Project>
       <Name>NWaves</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

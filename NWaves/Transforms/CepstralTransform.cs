@@ -7,7 +7,7 @@ namespace NWaves.Transforms
     /// <summary>
     /// Class providing methods for direct and inverse cepstrum transforms
     /// </summary>
-    public class Cepstrum
+    public class CepstralTransform
     {
         /// <summary>
         /// Size of cepstrum
@@ -18,6 +18,11 @@ namespace NWaves.Transforms
         /// Size of FFT
         /// </summary>
         private readonly int _fftSize;
+
+        /// <summary>
+        /// FFT transformer
+        /// </summary>
+        private readonly Fft _fft;
 
         /// <summary>
         /// Intermediate buffer storing real parts of spectrum
@@ -39,20 +44,15 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="cepstrumSize"></param>
         /// <param name="fftSize"></param>
-        public Cepstrum(int cepstrumSize, int fftSize = 512)
+        public CepstralTransform(int cepstrumSize, int fftSize = 512)
         {
-            var pow = (int)Math.Log(fftSize, 2);
-            if (fftSize != 1 << pow)
-            {
-                throw new ArgumentException("FFT size must be a power of 2!");
-            }
-
+            _fft = new Fft(fftSize);
             _fftSize = fftSize;
+            _cepstrumSize = cepstrumSize;
+
             _realSpectrum = new double[fftSize];
             _imagSpectrum = new double[fftSize];
             _zeroblock = new double[fftSize];
-
-            _cepstrumSize = cepstrumSize;
         }
 
         /// <summary>
@@ -64,29 +64,33 @@ namespace NWaves.Transforms
         /// <returns></returns>
         public void Direct(double[] samples, double[] cepstrum, bool power = false)
         {
-            FastCopy.ToExistingArray(_zeroblock, _realSpectrum, _fftSize);
-            FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
-            FastCopy.ToExistingArray(samples, _realSpectrum, Math.Min(samples.Length, _fftSize));
-
             // complex fft
-            Fft.Direct(_realSpectrum, _imagSpectrum, _fftSize);
+
+            _fft.PowerSpectrum(samples, _realSpectrum, false);
+
 
             // logarithm of power spectrum
+
             for (var i = 0; i < _fftSize; i++)
             {
-                _realSpectrum[i] = Math.Log10(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i] + double.Epsilon);
+                _realSpectrum[i] = Math.Log10(_realSpectrum[i] + double.Epsilon);
                 _imagSpectrum[i] = 0.0;
             }
 
+
             // complex ifft
-            Fft.Inverse(_realSpectrum, _imagSpectrum, _fftSize);
+
+            _fft.Inverse(_realSpectrum, _imagSpectrum);
+
 
             // take truncated part
+
             if (power)
             {
                 for (var i = 0; i < _cepstrumSize; i++)
                 {
-                    cepstrum[i] = (_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]) / _fftSize;
+                    cepstrum[i] = (_realSpectrum[i] * _realSpectrum[i] + 
+                                   _imagSpectrum[i] * _imagSpectrum[i]) / _fftSize;
                 }
             }
             else

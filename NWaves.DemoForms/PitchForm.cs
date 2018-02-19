@@ -10,6 +10,7 @@ using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Windows;
 using SciColorMaps;
+using LevelScale = NWaves.Utils.Scale;
 
 namespace NWaves.DemoForms
 {
@@ -18,7 +19,7 @@ namespace NWaves.DemoForms
         private DiscreteSignal _signal;
 
         private Fft _fft;
-        private Cepstrum _cepstrum;
+        private CepstralTransform _cepstralTransform;
         private Stft _stft;
 
         private int _fftSize;
@@ -40,7 +41,7 @@ namespace NWaves.DemoForms
             cepstrumSizeTextBox.Text = _cepstrumSize.ToString();
 
             _fft = new Fft(_fftSize);
-            _cepstrum = new Cepstrum(_cepstrumSize, _fftSize);
+            _cepstralTransform = new CepstralTransform(_cepstrumSize, _fftSize);
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -93,7 +94,7 @@ namespace NWaves.DemoForms
             var pos = 0;
             while (pos + _fftSize < _signal.Length)
             {
-                var ceps = _cepstrum.Direct(_signal[pos, pos + _fftSize]);
+                var ceps = _cepstralTransform.Direct(_signal[pos, pos + _fftSize]);
                 
                 var pitch1 = (int)(0.0025 * _signal.SamplingRate);     // 2,5 ms = 400Hz
                 var pitch2 = (int)(0.0125 * _signal.SamplingRate);     // 12,5 ms = 80Hz
@@ -151,12 +152,12 @@ namespace NWaves.DemoForms
             {
                 _fftSize = fftSize;
                 _fft = new Fft(fftSize);
-                _cepstrum = new Cepstrum(cepstrumSize, _fftSize);
+                _cepstralTransform = new CepstralTransform(cepstrumSize, _fftSize);
             }
             if (cepstrumSize != _cepstrumSize)
             {
                 _cepstrumSize = cepstrumSize;
-                _cepstrum = new Cepstrum(_cepstrumSize, _fftSize);
+                _cepstralTransform = new CepstralTransform(_cepstrumSize, _fftSize);
             }
 
             var pos = _overlapSize * _specNo;
@@ -164,8 +165,12 @@ namespace NWaves.DemoForms
             var block = _signal[pos, pos + _fftSize];
             block.ApplyWindow(WindowTypes.Hamming);
 
-            var spectrum = _fft.LogPowerSpectrum(block);
-            var cepstrum = _cepstrum.Direct(block);
+            var spectrum = _fft.PowerSpectrum(block, normalize: false)
+                               .Samples
+                               .Select(s => LevelScale.ToDecibel(s))
+                               .ToArray();
+
+            var cepstrum = _cepstralTransform.Direct(block).Samples;
 
 
             var pitch1 = (int)(0.0025 * _signal.SamplingRate);     // 2,5 ms = 400Hz
@@ -190,16 +195,16 @@ namespace NWaves.DemoForms
                 real[i] = cepstrum[i];
             }
 
-            Fft.Direct(real, imag, _fftSize);
+            _fft.Direct(real, imag);
 
-            var avg = spectrum.Samples.Average();
+            var avg = spectrum.Average();
 
             var spectrumEstimate = real.Take(_fftSize / 2 + 1)
                                        .Select(s => s * 40 / _fftSize - avg)
                                        .ToArray();
 
-            DrawSpectrum(spectrum.Samples, spectrumEstimate, _fftSize / peakIndex);
-            DrawCepstrum(cepstrum.Samples, peakIndex);
+            DrawSpectrum(spectrum, spectrumEstimate, _fftSize / peakIndex);
+            DrawCepstrum(cepstrum, peakIndex);
         }
 
         private void UpdateAutoCorrelation()

@@ -23,12 +23,14 @@ namespace NWaves.Operations
                 throw new ArgumentException("Kernel length must not exceed the size of FFT!");
             }
 
+            var fft = new Fft(fftSize);
+
             // pre-compute kernel's FFT:
 
             var kernelReal = FastCopy.PadZeros(kernel.Samples, fftSize);
             var kernelImag = new double[fftSize];
 
-            Fft.Direct(kernelReal, kernelImag, fftSize);
+            fft.Direct(kernelReal, kernelImag);
 
             // reserve space for current signal block:
 
@@ -63,7 +65,7 @@ namespace NWaves.Operations
 
                 // 1) do FFT of a signal block:
                 
-                Fft.Direct(blockReal, blockImag, fftSize);
+                fft.Direct(blockReal, blockImag);
 
                 // 2) do complex multiplication of spectra
 
@@ -75,7 +77,7 @@ namespace NWaves.Operations
 
                 // 3) do inverse FFT of resulting spectrum
 
-                Fft.Inverse(spectrumReal, spectrumImag, fftSize);
+                fft.Inverse(spectrumReal, spectrumImag);
 
                 // ========================================================================================
                 
@@ -111,11 +113,13 @@ namespace NWaves.Operations
                 throw new ArgumentException("Kernel length must not exceed the size of FFT!");
             }
 
+            var fft = new Fft(fftSize);
+
             // pre-compute kernel's FFT:
 
             var kernelReal = FastCopy.PadZeros(kernel.Samples, fftSize);
             var kernelImag = new double[fftSize];
-            Fft.Direct(kernelReal, kernelImag, fftSize);
+            fft.Direct(kernelReal, kernelImag);
 
             // reserve space for current signal block:
 
@@ -151,7 +155,7 @@ namespace NWaves.Operations
 
                 // 1) do FFT of a signal block:
 
-                Fft.Direct(blockReal, blockImag, fftSize);
+                fft.Direct(blockReal, blockImag);
 
                 // 2) do complex multiplication of spectra
 
@@ -163,7 +167,7 @@ namespace NWaves.Operations
 
                 // 3) do inverse FFT of resulting spectrum
 
-                Fft.Inverse(spectrumReal, spectrumImag, fftSize);
+                fft.Inverse(spectrumReal, spectrumImag);
 
                 // ========================================================================================
                 

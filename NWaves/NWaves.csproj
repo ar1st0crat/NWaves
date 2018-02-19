@@ -106,11 +106,12 @@
     <Compile Include="Signals\ComplexDiscreteSignalExtensions.cs" />
     <Compile Include="Signals\DiscreteSignal.cs" />
     <Compile Include="Signals\DiscreteSignalExtensions.cs" />
-    <Compile Include="Transforms\Cepstrum.cs" />
+    <Compile Include="Transforms\CepstralTransform.cs" />
     <Compile Include="Transforms\Dct.cs" />
     <Compile Include="Transforms\Fft.cs" />
     <Compile Include="Transforms\Spectrum.cs" />
     <Compile Include="Transforms\Stft.cs" />
+    <Compile Include="Utils\Scale.cs" />
     <Compile Include="Windows\Window.cs" />
     <Compile Include="Windows\WindowExtensions.cs" />
     <Compile Include="Windows\WindowTypes.cs" />

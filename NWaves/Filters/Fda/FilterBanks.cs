@@ -5,6 +5,7 @@ using NWaves.Filters.Base;
 using NWaves.Filters.BiQuad;
 using NWaves.Signals;
 using NWaves.Transforms;
+using NWaves.Utils;
 
 namespace NWaves.Filters.Fda
 {
@@ -242,7 +243,7 @@ namespace NWaves.Filters.Fda
         public static Tuple<double, double, double>[] MelBands(
             int melFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
         {
-            return UniformBands(HerzToMel, MelToHerz, melFilterCount, fftSize, samplingRate, lowFreq, highFreq, overlap);
+            return UniformBands(Scale.HerzToMel, Scale.MelToHerz, melFilterCount, fftSize, samplingRate, lowFreq, highFreq, overlap);
         }
 
         /// <summary>
@@ -258,7 +259,7 @@ namespace NWaves.Filters.Fda
         public static Tuple<double, double, double>[] BarkBands(
             int barkFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
         {
-            return UniformBands(HerzToBark, BarkToHerz, barkFilterCount, fftSize, samplingRate, lowFreq, highFreq, overlap);
+            return UniformBands(Scale.HerzToBark, Scale.BarkToHerz, barkFilterCount, fftSize, samplingRate, lowFreq, highFreq, overlap);
         }
 
         /// <summary>
@@ -455,49 +456,7 @@ namespace NWaves.Filters.Fda
 
             return erbFilterBank;
         }
-
-        /// <summary>
-        /// Method converts herz frequency to corresponding mel frequency
-        /// </summary>
-        /// <param name="herz">Herz frequency</param>
-        /// <returns>Mel frequency</returns>
-        public static double HerzToMel(double herz)
-        {
-            return 1127.01048 * Math.Log(herz / 700 + 1);
-        }
-
-        /// <summary>
-        /// Method converts mel frequency to corresponding herz frequency
-        /// </summary>
-        /// <param name="mel">Mel frequency</param>
-        /// <returns>Herz frequency</returns>
-        public static double MelToHerz(double mel)
-        {
-            return (Math.Exp(mel / 1127.01048) - 1) * 700;
-        }
-
-        /// <summary>
-        /// Method converts herz frequency to corresponding bark frequency
-        /// (according to Traunmüller (1990))
-        /// </summary>
-        /// <param name="herz">Herz frequency</param>
-        /// <returns>Bark frequency</returns>
-        public static double HerzToBark(double herz)
-        {
-            return (26.81 * herz) / (1960 + herz) - 0.53;
-        }
-
-        /// <summary>
-        /// Method converts bark frequency to corresponding herz frequency
-        /// (according to Traunmüller (1990))
-        /// </summary>
-        /// <param name="bark">Bark frequency</param>
-        /// <returns>Herz frequency</returns>
-        public static double BarkToHerz(double bark)
-        {
-            return 1960 / (26.81 / (bark + 0.53) - 1);
-        }
-
+        
         /// <summary>
         /// Method applies filters to spectrum and fills resulting filtered spectrum.
         /// </summary>

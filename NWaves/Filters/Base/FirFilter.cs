@@ -150,7 +150,8 @@ namespace NWaves.Filters.Base
             var real = FastCopy.PadZeros(Kernel, length);
             var imag = new double[length];
 
-            Fft.Direct(real, imag, length);
+            var fft = new Fft(length);
+            fft.Direct(real, imag);
 
             return new ComplexDiscreteSignal(1, real, imag);
         }

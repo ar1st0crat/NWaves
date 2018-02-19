@@ -13,16 +13,15 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
-        /// <param name="n">Size of FFT</param>
-        public static void Direct(double[] re, double[] im, int n)
+        public void Direct(double[] re, double[] im)
         {
             double t1, t2;
             int i, j;
             int L, M, S;
 
-            L = n;
-            M = n >> 1;
-            S = n - 1;
+            L = _fftSize;
+            M = _fftSize >> 1;
+            S = _fftSize - 1;
             while (L >= 2)
             {
                 var l = L >> 1;
@@ -33,7 +32,7 @@ namespace NWaves.Transforms
                 var s = -Math.Sin(t1);
                 for (j = 0; j < l; j++)
                 {
-                    for (i = j; i < n; i += L)
+                    for (i = j; i < _fftSize; i += L)
                     {
                         var p = i + l;
                         t1 = re[i] + re[p];
@@ -78,16 +77,15 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
-        /// <param name="n">Size of FFT</param>
-        public static void Inverse(double[] re, double[] im, int n)
+        public void Inverse(double[] re, double[] im)
         {
             double t1, t2;
             int i, j;
             int L, M, S;
 
-            L = n;
-            M = n >> 1;
-            S = n - 1;
+            L = _fftSize;
+            M = _fftSize >> 1;
+            S = _fftSize - 1;
             while (L >= 2)
             {
                 var l = L >> 1;
@@ -98,7 +96,7 @@ namespace NWaves.Transforms
                 var s = Math.Sin(t1);
                 for (j = 0; j < l; j++)
                 {
-                    for (i = j; i < n; i += L)
+                    for (i = j; i < _fftSize; i += L)
                     {
                         var p = i + l;
                         t1 = re[i] + re[p];

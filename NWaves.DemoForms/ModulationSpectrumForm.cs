@@ -8,7 +8,6 @@ using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Filters.Fda;
-using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Windows;
 using SciColorMaps;
@@ -63,6 +62,7 @@ namespace NWaves.DemoForms
             var lowFreq = double.Parse(lowFreqTextBox.Text);
             var highFreq = double.Parse(highFreqTextBox.Text);
 
+            int scaleCoeff = 1;
             Tuple<double, double, double>[] bands;
 
             switch (filterbankComboBox.Text)
@@ -79,17 +79,21 @@ namespace NWaves.DemoForms
                 case "ERB":
                     bands = null;
                     _filterbank = FilterBanks.Erb(filterCount, fftSize, samplingRate, lowFreq, highFreq);
+                    
+                    // normalization coefficient (for plotting)
+                    scaleCoeff = (int)(1.0 / _filterbank.Max(f => f.Max()));
 
-                    // =====  ! SQUARE! =====
+                    // ====================================================
+                    // ===================  ! SQUARE ! ====================
 
-                    foreach (var filter in _filterbank)
-                    {
-                        for (var j = 0; j < filter.Length; j++)
-                        {
-                            var squared = filter[j] * filter[j];
-                            filter[j] = squared;
-                        }
-                    }
+                    //foreach (var filter in _filterbank)
+                    //{
+                    //    for (var j = 0; j < filter.Length; j++)
+                    //    {
+                    //        var squared = filter[j] * filter[j];
+                    //        filter[j] = squared;
+                    //    }
+                    //}
 
                     break;
                 default:
@@ -125,7 +129,7 @@ namespace NWaves.DemoForms
             band3ComboBox.Text = "3";
             band4ComboBox.Text = "4";
 
-            DrawFilterbank(_filterbank);
+            DrawFilterbank(_filterbank, scaleCoeff);
         }
 
         private void computeButton_Click(object sender, EventArgs e)
@@ -197,7 +201,7 @@ namespace NWaves.DemoForms
 
         #region drawing
 
-        private void DrawFilterbank(double[][] filterbank)
+        private void DrawFilterbank(double[][] filterbank, int scaleCoeff = 1)
         {
             var g = filterbankPanel.CreateGraphics();
             g.Clear(Color.White);
@@ -205,7 +209,8 @@ namespace NWaves.DemoForms
             var rand = new Random();
 
             var offset = filterbankPanel.Height - 20;
-
+            scaleCoeff *= 100/*px*/;
+          
             for (var j = 0; j < filterbank.Length; j++)
             {
                 var pen = new Pen(Color.FromArgb(rand.Next() % 255, rand.Next() % 255, rand.Next() % 255));
@@ -216,8 +221,8 @@ namespace NWaves.DemoForms
                 while (i < filterbank[j].Length)
                 {
                     g.DrawLine(pen,
-                        x - 2, (float)-filterbank[j][i - 1] * 100 + offset,
-                        x, (float)-filterbank[j][i] * 100 + offset);
+                        x - 2, (float)-filterbank[j][i - 1] * scaleCoeff + offset,
+                        x, (float)-filterbank[j][i] * scaleCoeff + offset);
                     x += 2;
                     i++;
                 }

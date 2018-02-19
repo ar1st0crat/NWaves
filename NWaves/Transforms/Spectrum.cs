@@ -63,7 +63,7 @@ namespace NWaves.Transforms
             FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
             FastCopy.ToExistingArray(samples, _realSpectrum, Math.Min(samples.Length, _fftSize));
 
-            Direct(_realSpectrum, _imagSpectrum, _fftSize);
+            Direct(_realSpectrum, _imagSpectrum);
 
             if (normalize)
             {
@@ -96,7 +96,7 @@ namespace NWaves.Transforms
             FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
             FastCopy.ToExistingArray(samples, _realSpectrum, Math.Min(samples.Length, _fftSize));
 
-            Direct(_realSpectrum, _imagSpectrum, _fftSize);
+            Direct(_realSpectrum, _imagSpectrum);
 
             if (normalize)
             {
@@ -111,31 +111,6 @@ namespace NWaves.Transforms
                 {
                     spectrum[i] = _realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i];
                 }
-            }
-        }
-
-        /// <summary>
-        /// Log power spectrum:
-        /// 
-        ///     spectrum = 20 * log10(re * re + im * im)
-        /// 
-        /// </summary>
-        /// <param name="samples">Array of samples (samples parts)</param>
-        /// <param name="spectrum">Log-power spectrum</param>
-        /// <returns>Left half of the log-power spectrum</returns>
-        public void LogPowerSpectrum(double[] samples, double[] spectrum)
-        {
-            FastCopy.ToExistingArray(_zeroblock, _realSpectrum, _fftSize);
-            FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
-            FastCopy.ToExistingArray(samples, _realSpectrum, Math.Min(samples.Length, _fftSize));
-
-            Direct(_realSpectrum, _imagSpectrum, _fftSize);
-
-            for (var i = 0; i < spectrum.Length; i++)
-            {
-                spectrum[i] = 20 * Math.Log10(_realSpectrum[i] * _realSpectrum[i] + 
-                                              _imagSpectrum[i] * _imagSpectrum[i] + 
-                                              double.Epsilon);
             }
         }
 
@@ -162,18 +137,6 @@ namespace NWaves.Transforms
         {
             var spectrum = new double[_fftSize / 2 + 1];
             PowerSpectrum(signal.Samples, spectrum, normalize);
-            return new DiscreteSignal(signal.SamplingRate, spectrum);
-        }
-
-        /// <summary>
-        /// Overloaded method for DiscreteSignal as an input
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public DiscreteSignal LogPowerSpectrum(DiscreteSignal signal)
-        {
-            var spectrum = new double[_fftSize / 2 + 1];
-            LogPowerSpectrum(signal.Samples, spectrum);
             return new DiscreteSignal(signal.SamplingRate, spectrum);
         }
     }

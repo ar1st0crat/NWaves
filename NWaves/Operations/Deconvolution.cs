@@ -7,7 +7,14 @@ namespace NWaves.Operations
     public static partial class Operation
     {
         /// <summary>
-        /// Fast deconvolution via FFT for general complex-valued case
+        /// Fast deconvolution via FFT for general complex-valued case.
+        /// 
+        /// 
+        /// NOTE!
+        /// 
+        /// Deconvolution is an experimental feature.
+        /// It's problematic due to division by zero.
+        /// 
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="kernel"></param>
@@ -17,14 +24,15 @@ namespace NWaves.Operations
             var length = signal.Length - kernel.Length + 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(signal.Length);
-            
+            var fft = new Fft(fftSize);
+
             signal = signal.ZeroPadded(fftSize);
             kernel = kernel.ZeroPadded(fftSize);
 
             // 1) do FFT of both signals
 
-            Fft.Direct(signal.Real, signal.Imag, fftSize);
-            Fft.Direct(kernel.Real, kernel.Imag, fftSize);
+            fft.Direct(signal.Real, signal.Imag);
+            fft.Direct(kernel.Real, kernel.Imag);
 
             for (var i = 0; i < fftSize; i++)
             {
@@ -40,7 +48,7 @@ namespace NWaves.Operations
 
             // 3) do inverse FFT of resulting spectrum
 
-            Fft.Inverse(spectrum.Real, spectrum.Imag, fftSize);
+            fft.Inverse(spectrum.Real, spectrum.Imag);
 
             // 4) return resulting meaningful part of the signal (truncate to N - M + 1)
 

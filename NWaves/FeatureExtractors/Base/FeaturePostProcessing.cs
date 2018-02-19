@@ -83,8 +83,8 @@ namespace NWaves.FeatureExtractors.Base
                     var num = 0.0;
                     for (var n = 1; n <= N; n++)
                     {
-                        num += sequence[i + n].Features[j + featureCount] * n;
-                        num -= sequence[i - n].Features[j + featureCount] * n;
+                        num += n * (sequence[i + n].Features[j + featureCount] -
+                                    sequence[i - n].Features[j + featureCount]);
                     }
                     vectors[i - N].Features[j + 2 * featureCount] = num / 10;
                 }

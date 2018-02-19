@@ -20,6 +20,7 @@ namespace NWaves.Operations
             var length = signal1.Length + signal2.Length - 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(length);
+            var fft = new Fft(fftSize);
 
             var real1 = new double[fftSize];
             var imag1 = new double[fftSize];
@@ -31,8 +32,8 @@ namespace NWaves.Operations
 
             // 1) do FFT of both signals
 
-            Fft.Direct(real1, imag1, fftSize);
-            Fft.Direct(real2, imag2, fftSize);
+            fft.Direct(real1, imag1);
+            fft.Direct(real2, imag2);
 
             // 2) do complex multiplication of spectra and normalize
 
@@ -46,7 +47,7 @@ namespace NWaves.Operations
 
             // 3) do inverse FFT of resulting spectrum
 
-            Fft.Inverse(real1, imag1, fftSize);
+            fft.Inverse(real1, imag1);
 
             // 4) return resulting meaningful part of the signal (truncate size to N + M - 1)
 
@@ -64,14 +65,15 @@ namespace NWaves.Operations
             var length = signal1.Length + signal2.Length - 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(length);
+            var fft = new Fft(fftSize);
 
             signal1 = signal1.ZeroPadded(fftSize);
             signal2 = signal2.ZeroPadded(fftSize);
 
             // 1) do FFT of both signals
 
-            Fft.Direct(signal1.Real, signal1.Imag, fftSize);
-            Fft.Direct(signal2.Real, signal2.Imag, fftSize);
+            fft.Direct(signal1.Real, signal1.Imag);
+            fft.Direct(signal2.Real, signal2.Imag);
 
             // 2) do complex multiplication of spectra
 
@@ -79,7 +81,7 @@ namespace NWaves.Operations
             
             // 3) do inverse FFT of resulting spectrum
 
-            Fft.Inverse(spectrum.Real, spectrum.Imag, fftSize);
+            fft.Inverse(spectrum.Real, spectrum.Imag);
 
             // 3a) normalize
 
@@ -104,15 +106,19 @@ namespace NWaves.Operations
         /// <param name="real2">Real parts of the 2nd signal (zero-padded)</param>
         /// <param name="imag2">Imaginary parts of the 2nd signal (zero-padded)</param>
         /// <param name="res">Real parts of resulting convolution (zero-padded if center == 0)</param>
-        /// <param name="center">Position of central sample for the case of 2*M-1 convolution (if it is set then resulting array has length of M)</param>
+        /// <param name="center">
+        /// Position of central sample for the case of 2*M-1 convolution 
+        /// (if it is set then resulting array has length of M)
+        /// </param>
         public static void Convolve(double[] real1, double[] imag1, double[] real2, double[] imag2, double[] res, int center = 0)
         {
             var fftSize = real1.Length;
-            
+            var fft = new Fft(fftSize);
+
             // 1) do FFT of both signals
 
-            Fft.Direct(real1, imag1, fftSize);
-            Fft.Direct(real2, imag2, fftSize);
+            fft.Direct(real1, imag1);
+            fft.Direct(real2, imag2);
 
             // 2) do complex multiplication of spectra and normalize
 
@@ -126,7 +132,7 @@ namespace NWaves.Operations
 
             // 3) do inverse FFT of resulting spectrum
 
-            Fft.Inverse(real1, imag1, fftSize);
+            fft.Inverse(real1, imag1);
 
             // 4) return output array
 

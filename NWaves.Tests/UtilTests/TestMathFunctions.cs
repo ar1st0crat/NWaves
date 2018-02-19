@@ -2,10 +2,10 @@
 using NUnit.Framework;
 using NWaves.Utils;
 
-namespace NWaves.Tests.MiscTests
+namespace NWaves.Tests.UtilTests
 {
     [TestFixture]
-    public class TestMiscFunctions
+    public class TestMathFunctions
     {
         [Test]
         public void TestNextPowerOfTwo()

@@ -114,7 +114,7 @@ var delayed = signal1 + 1000;
 var copy = signal.Copy();
 
 // equivalent to:
-var copy = new Signal(signal.SamplingRate, signal.Samples, allocateNew: true);
+var copy = new DiscreteSignal(signal.SamplingRate, signal.Samples, allocateNew: true);
 
 ```
 
@@ -169,8 +169,8 @@ using (var stream = new FileStream("sample.wav", FileMode.Open))
 
 	// or simply like this:
 
-	var signalLeft = waveFile.Signals[0];
-	var signalRight = waveFile.Signals[1];
+	signalLeft = waveFile.Signals[0];
+	signalRight = waveFile.Signals[1];
 }
 
 ```
@@ -193,28 +193,48 @@ using (var stream = new FileStream("saved.wav", FileMode.Create))
 
 ```C#
 
-// complex fft is available as the static method of Fft class:
+// For each transform there's a corresponding transformer object.
+// Each transformer object has Direct() and Inverse() methods.
+
+
+// Complex FFT transformer:
+
+var fft = new Fft(1024);
+
+
+// 1) Handling complex arrays directly:
 
 double[] real = signal.First(1024).Samples;
 double[] imag = new double [1024];
 
-Fft.Direct(real, imag, 1024);
-Fft.Inverse(real, imag, 1024);
+// in-place FFT
+fft.Direct(real, imag);
+
+// ...do something with real and imaginary parts of the spectrum...
+
+// in-place IFFT
+fft.Inverse(real, imag);
 
 
-// various spectra (post-processed results of complex fft):
+// 2) Often we don't need to deal with complex arrays
+//    and we don't want to transform samples in-place;
+//    instead we need some real-valued post-processed results of complex fft:
 
-var fft = new Fft(1024);
+var magnitudeSpectrum = 
+    fft.MagnitudeSpectrum(signal[1000, 2024]);
 
-var magnitudeSpectrum = fft.MagnitudeSpectrum(signal[1000, 2024]);
-var powerSpectrum = fft.PowerSpectrum(signal.First(1024), normalize: false);
-var logPowerSpectrum = fft.LogPowerSpectrum(signal.Last(1024));
+var powerSpectrum = 
+    fft.PowerSpectrum(signal.First(1024), normalize: false);
+
+var logPowerSpectrum = 
+    fft.LogPowerSpectrum(signal.Last(1024));
 
 
-// cepstrum:
 
-var cepstrum = new Cepstrum(20);
-var ceps = cepstrum.Direct(signal);
+// Cepstral transformer:
+
+var ct = new CepstralTransform(20);
+var cepstrum = ct.Direct(signal);
 
 
 // in four previous cases the result of each transform was
@@ -255,8 +275,11 @@ var reconstructed = stft.Inverse(spectrogram);
 var filteredSignal = Operation.Convolve(signal, kernel);
 var correlated = Operation.CrossCorrelate(signal1, signal2);
 
-var olaFiltered = Operation.OverlapAdd(signal, kernel, 2048);
-var olsFiltered = Operation.OverlapSave(signal, kernel, 2048);
+// block convolution (each block contains 4096 samples)
+
+var olaFiltered = Operation.OverlapAdd(signal, kernel, 4096);
+var olsFiltered = Operation.OverlapSave(signal, kernel, 4096);
+
 
 // TODO:
 
@@ -324,13 +347,13 @@ var filtered = signal.ApplyFilter(distortion * echo * reverb);
 
 ```C#
 
-var lpcExtractor = new LpcFeatureExtractor(16, signal.SamplingRate, windowSize: 0.032, overlapSize: 0.015);
+var lpcExtractor = new LpcExtractor(16, signal.SamplingRate, windowSize: 0.032, overlapSize: 0.015);
 var lpcVectors = lpcExtractor.ComputeFrom(signal);
 
-var mfccExtractor = new MfccFeatureExtractor(13, signal.SamplingRate, melFilterbanks: 24, preEmphasis: 0.95);
+var mfccExtractor = new MfccExtractor(13, signal.SamplingRate, melFilterbanks: 24, preEmphasis: 0.95);
 var mfccVectors = mfccExtractor.ComputeFrom(signal).Take(15);
 
-var pnccExtractor = new PnccFeatureExtractor(13, signal.SamplingRate);
+var pnccExtractor = new PnccExtractor(13, signal.SamplingRate);
 var pnccVectors = pnccExtractor.ComputeFrom(signal.First(10000));
 FeaturePostProcessing.NormalizeMean(pnccVectors);
 
