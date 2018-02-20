@@ -20,7 +20,7 @@ namespace NWaves.Signals.Builders
         private double _frequency;
 
         /// <summary>
-        /// Phase of the sinusoid (in radians)
+        /// Initial phase of the sinusoid (in radians)
         /// </summary>
         private double _phase;
 
@@ -45,7 +45,7 @@ namespace NWaves.Signals.Builders
         /// 
         /// </summary>
         /// <returns></returns>
-        public override DiscreteSignal Generate()
+        protected override DiscreteSignal Generate()
         {
             if (_frequency <= 0)
             {

@@ -18,12 +18,18 @@ namespace NWaves.Signals.Builders
         /// </summary>
         private double _high;
 
+        /// <summary>
+        /// Root-Mean-Square (RMS) value
+        /// </summary>
+        private double? _rms;
+
         public PinkNoiseBuilder()
         {
             ParameterSetters = new Dictionary<string, Action<double>>
             {
                 { "low, lo, min",  param => _low = param },
-                { "high, hi, max", param => _high = param }
+                { "high, hi, max", param => _high = param },
+                { "rms", param => _rms = param }
             };
 
             _low = -1.0;
@@ -34,14 +40,16 @@ namespace NWaves.Signals.Builders
         /// Method implements Paul Kellet's algorithm.
         /// </summary>
         /// <returns></returns>
-        public override DiscreteSignal Generate()
+        protected override DiscreteSignal Generate()
         {
             if (_high < _low)
             {
-                throw new FormatException("Upper level must be greater than he lower one!");
+                throw new FormatException("Upper level must be greater than the lower one!");
             }
 
             var rand = new Random();
+
+            double scaleCoeff = _rms.HasValue ? 0.33 : 0.11;
 
             double b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
 
@@ -57,7 +65,7 @@ namespace NWaves.Signals.Builders
                 b4 = 0.55000 * b4 + white * 0.5329522;
                 b5 = -0.7616 * b5 - white * 0.0168980;
                 pink[n] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-                pink[n] *= 0.11;
+                pink[n] *= scaleCoeff;
                 b6 = white * 0.115926;
             }
 

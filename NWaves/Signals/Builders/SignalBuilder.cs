@@ -32,12 +32,12 @@ namespace NWaves.Signals.Builders
         /// <summary>
         /// The length of the signal
         /// </summary>
-        protected int Length { get; set; }
+        protected int Length { get; set; } = 1;
 
         /// <summary>
         /// Sampling rate of the signal
         /// </summary>
-        protected int SamplingRate { get; set; }
+        protected int SamplingRate { get; set; } = 1;
 
         /// <summary>
         /// Dictionary of setters for each parameter
@@ -81,7 +81,7 @@ namespace NWaves.Signals.Builders
         /// (must be implemented in subclasses).
         /// </summary>
         /// <returns>Generated signal</returns>
-        public abstract DiscreteSignal Generate();
+        protected abstract DiscreteSignal Generate();
 
         /// <summary>
         /// Final or intermediate build step
@@ -131,6 +131,7 @@ namespace NWaves.Signals.Builders
             {
                 throw new ArgumentException("Sampling rate must be positive!");
             }
+
             SamplingRate = samplingRate;
 
             return this;

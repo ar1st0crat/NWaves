@@ -30,7 +30,7 @@ namespace NWaves.Signals.Builders
         /// Method generates simple sequence of rectangular pulses.
         /// </summary>
         /// <returns></returns>
-        public override DiscreteSignal Generate()
+        protected override DiscreteSignal Generate()
         {
             if (_period <= _pulse)
             {

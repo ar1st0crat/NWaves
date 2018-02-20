@@ -227,7 +227,10 @@ var powerSpectrum =
     fft.PowerSpectrum(signal.First(1024), normalize: false);
 
 var logPowerSpectrum = 
-    fft.LogPowerSpectrum(signal.Last(1024));
+    fft.PowerSpectrum(signal.Last(1024))
+       .Samples
+       .Select(s => Scale.ToDecibel(s))
+       .ToArray();
 
 
 

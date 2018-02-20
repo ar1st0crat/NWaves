@@ -47,7 +47,7 @@ namespace NWaves.Signals.Builders
         ///       N = fs / freq
         /// </summary>
         /// <returns></returns>
-        public override DiscreteSignal Generate()
+        protected override DiscreteSignal Generate()
         {
             if (_frequency <= 0)
             {
@@ -56,7 +56,7 @@ namespace NWaves.Signals.Builders
 
             if (_high < _low)
             {
-                throw new FormatException("Upper level must be greater than he lower one!");
+                throw new FormatException("Upper level must be greater than the lower one!");
             }
 
             var n = SamplingRate / _frequency;

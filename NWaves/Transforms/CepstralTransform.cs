@@ -15,11 +15,6 @@ namespace NWaves.Transforms
         private readonly int _cepstrumSize;
 
         /// <summary>
-        /// Size of FFT
-        /// </summary>
-        private readonly int _fftSize;
-
-        /// <summary>
         /// FFT transformer
         /// </summary>
         private readonly Fft _fft;
@@ -33,11 +28,6 @@ namespace NWaves.Transforms
         /// Intermediate buffer storing imaginary parts of spectrum
         /// </summary>
         private readonly double[] _imagSpectrum;
-
-        /// <summary>
-        /// Just a buffer with zeros for quick memset
-        /// </summary>
-        private readonly double[] _zeroblock;
         
         /// <summary>
         /// Constructor with necessary parameters
@@ -47,12 +37,11 @@ namespace NWaves.Transforms
         public CepstralTransform(int cepstrumSize, int fftSize = 512)
         {
             _fft = new Fft(fftSize);
-            _fftSize = fftSize;
+
             _cepstrumSize = cepstrumSize;
 
             _realSpectrum = new double[fftSize];
             _imagSpectrum = new double[fftSize];
-            _zeroblock = new double[fftSize];
         }
 
         /// <summary>
@@ -71,7 +60,7 @@ namespace NWaves.Transforms
 
             // logarithm of power spectrum
 
-            for (var i = 0; i < _fftSize; i++)
+            for (var i = 0; i < _realSpectrum.Length; i++)
             {
                 _realSpectrum[i] = Math.Log10(_realSpectrum[i] + double.Epsilon);
                 _imagSpectrum[i] = 0.0;
@@ -90,7 +79,7 @@ namespace NWaves.Transforms
                 for (var i = 0; i < _cepstrumSize; i++)
                 {
                     cepstrum[i] = (_realSpectrum[i] * _realSpectrum[i] + 
-                                   _imagSpectrum[i] * _imagSpectrum[i]) / _fftSize;
+                                   _imagSpectrum[i] * _imagSpectrum[i]) / _realSpectrum.Length;
                 }
             }
             else
