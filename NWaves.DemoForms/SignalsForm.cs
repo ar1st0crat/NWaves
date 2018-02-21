@@ -9,6 +9,7 @@ using NWaves.Audio.Mci;
 using NWaves.Signals;
 using NWaves.Signals.Builders;
 using NWaves.Transforms;
+using LevelScale = NWaves.Utils.Scale;
 
 namespace NWaves.DemoForms
 {
@@ -211,6 +212,10 @@ namespace NWaves.DemoForms
 
             builderParametersListBox.Items.Clear();
             builderParametersListBox.Items.AddRange(signalBuilder.GetParametersInfo());
+            builderParametersListBox.Items.Add("");
+            builderParametersListBox.Items.Add("min:" + _signal2.Samples.Min());
+            builderParametersListBox.Items.Add("max:" + _signal2.Samples.Max());
+            builderParametersListBox.Items.Add("avg:" + _signal2.Samples.Average());
 
             if (_signal1 != null)
             {
@@ -220,8 +225,12 @@ namespace NWaves.DemoForms
 
             DrawSignal(generatedSignalPanel, _signal2);
 
-            var spectrum = _fft.PowerSpectrum(_signal2.First(512));
-            DrawSpectrum(spectrum.Samples);
+            var spectrum = _fft.PowerSpectrum(_signal2.First(512))
+                               .Samples
+                               .Select(s => LevelScale.ToDecibel(s))
+                               .ToArray();
+
+            DrawSpectrum(spectrum);
         }
 
         private void signalOperationButton_Click(object sender, EventArgs e)
@@ -403,16 +412,20 @@ namespace NWaves.DemoForms
             var g = spectrumPanel.CreateGraphics();
             g.Clear(Color.White);
 
-            var offset = spectrumPanel.Height - 20;
+            const int xOffset = 20;
+            const int yOffset = 50;
 
             var pen = new Pen(Color.Black);
-            
-            var i = 0;
+
+            g.DrawLine(pen, xOffset, yOffset, xOffset * 2 + spectrum.Length, yOffset);
+            g.DrawLine(pen, xOffset, 20, xOffset, spectrumPanel.Height - 20);
+
+            var i = 1;
             
             while (i < spectrum.Length)
             {
-                g.DrawLine(pen, i, offset, i, (float)-spectrum[i] * 150 + offset);
-                g.DrawEllipse(pen, i - 1, (int)(-spectrum[i] * 150) + offset - 1, 3, 3);
+                g.DrawLine(pen, i-1 + xOffset, (float)-spectrum[i-1] + yOffset, 
+                                i   + xOffset, (float)-spectrum[i]   + yOffset);
                 i++;
             }
 

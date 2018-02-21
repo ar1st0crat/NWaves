@@ -159,33 +159,143 @@ namespace NWaves.Signals
             }
         }
 
+        #region time-domain characteristics
+
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="s1"></param>
-        /// <param name="s2"></param>
+        /// <param name="startPos">Starting sample</param>
+        /// <param name="endPos">Ending sample (exclusive)</param>
         /// <returns></returns>
+        public double Energy(int startPos, int endPos)
+        {
+            var total = 0.0;
+            for (var i = startPos; i < endPos; i++)
+            {
+                total += Samples[i] * Samples[i];
+            }
+
+            return total / (endPos - startPos);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public double Energy()
+        {
+            return Energy(0, Length);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="startPos"></param>
+        /// <param name="endPos"></param>
+        /// <returns></returns>
+        public double Rms(int startPos, int endPos)
+        {
+            return Math.Sqrt(Energy(startPos, endPos));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public double Rms()
+        {
+            return Math.Sqrt(Energy(0, Length));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public double ZeroCrossingRate(int startPos, int endPos)
+        {
+            var rate = 0;
+            for (var i = startPos + 1; i < endPos; i++)
+            {
+                if ((Samples[i - 1] >= 0) != (Samples[i] >= 0))
+                {
+                    rate++;
+                }
+            }
+
+            return (double)rate / (endPos - startPos - 1);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public double ZeroCrossingRate()
+        {
+            return ZeroCrossingRate(0, Length);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public double Entropy(int startPos, int endPos)
+        {
+            var sum = 0.0;
+            for (var i = startPos; i < endPos; i++)
+            {
+                sum += Math.Abs(Samples[i]);
+            }
+
+            var entropy = 0.0;
+            for (var i = startPos; i < endPos; i++)
+            {
+                var p = Math.Abs(Samples[i]) / sum;
+                entropy -= p * Math.Log(p + double.Epsilon, 2);
+            }
+
+            return entropy;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public double Entropy()
+        {
+            return Entropy(0, Length);
+        }
+
+        #endregion
+
+        #region overloaded operators
+
+        /// <summary>
+        /// Overloaded + (signal concatentaion)
+        /// </summary>
+        /// <param name="s1">Left signal</param>
+        /// <param name="s2">Right signal</param>
+        /// <returns>Concatenated signal</returns>
         public static DiscreteSignal operator +(DiscreteSignal s1, DiscreteSignal s2)
         {
             return s1.Concatenate(s2);
         }
 
         /// <summary>
-        /// 
+        /// Overloaded + (signal delay late)
         /// </summary>
-        /// <param name="s"></param>
-        /// <param name="delay"></param>
-        /// <returns></returns>
+        /// <param name="s">Signal</param>
+        /// <param name="delay">Number of samples to delay</param>
+        /// <returns>Delayed signal</returns>
         public static DiscreteSignal operator +(DiscreteSignal s, int delay)
         {
             return s.Delay(delay);
         }
 
         /// <summary>
-        /// 
+        /// Overloaded - (signal delay early)
         /// </summary>
-        /// <param name="s"></param>
-        /// <param name="delay"></param>
+        /// <param name="s">Signal</param>
+        /// <param name="delay">Number of samples to delay</param>
         /// <returns></returns>
         public static DiscreteSignal operator -(DiscreteSignal s, int delay)
         {
@@ -193,14 +303,16 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Overloaded * (signal repetition)
         /// </summary>
-        /// <param name="s"></param>
-        /// <param name="times"></param>
-        /// <returns></returns>
+        /// <param name="s">Signal</param>
+        /// <param name="times">Repeat times</param>
+        /// <returns>Repeated signal</returns>
         public static DiscreteSignal operator *(DiscreteSignal s, int times)
         {
             return s.Repeat(times);
         }
+
+        #endregion
     }
 }

@@ -11,16 +11,17 @@ NWaves is a .NET library for 1d signal processing focused specifically on audio 
 Already available:
 
 - [x] major DSP transforms (FFT, DCT, STFT, cepstrum)
-- [x] basic LTI digital filters (FIR, IIR, moving average (non-recursive and recursive), pre-emphasis)
+- [x] basic LTI digital filters (FIR, IIR, moving average (non-recursive and recursive), pre-emphasis, DC removal)
 - [x] basic operations and filtering (convolution/deconvolution, cross-correlation, overlap-add, overlap-save, envelope detection, pitch tracking)
 - [x] simple filter design & analysis (zeros and poles, window method, getting high-pass from a low-pass filter and vice versa, combining filters)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
-- [x] median filter
+- [x] non-linear filters (median filter)
 - [x] windowing functions (Hamming, Blackman, Hann, cepstral liftering)
-- [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB)
+- [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB) and perceptual weighting (A, B, C)
 - [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, modulation spectra), post-processing (CMN, deltas) and CSV serialization
-- [x] sound synthesis and signal builders (sinusoid, white/pink/red noise, triangle, sawtooth, square, periodic pulse)
+- [x] sound synthesis and signal builders (sinusoid, white/pink/red/grey noise, triangle, sawtooth, square, periodic pulse)
+- [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] simple audio playback and recording (Windows only)
 
 Planned:

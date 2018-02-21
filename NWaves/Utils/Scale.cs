@@ -3,11 +3,17 @@
 namespace NWaves.Utils
 {
     /// <summary>
-    /// Static class providing methods for converting between different scales:
+    /// Static class providing methods for 
     /// 
+    /// 1) converting between different scales:
     ///     - decibel
     ///     - mel
     ///     - bark
+    /// 
+    /// 2) loudness weighting:
+    ///     - A-weighting
+    ///     - B-weighting
+    ///     - C-weighting
     /// 
     /// </summary>
     public static class Scale
@@ -20,7 +26,7 @@ namespace NWaves.Utils
         /// <returns>Decibel level</returns>
         public static double ToDecibel(double value, double valueReference = 1.0)
         {
-            return 20 * Math.Log10(value / valueReference);
+            return 20 * Math.Log10(value / valueReference + double.Epsilon);
         }
 
         /// <summary>
@@ -31,7 +37,7 @@ namespace NWaves.Utils
         /// <returns>Decibel level</returns>
         public static double ToDecibelPower(double value, double valueReference = 1.0)
         {
-            return 10 * Math.Log10(value / valueReference);
+            return 10 * Math.Log10(value / valueReference + double.Epsilon);
         }
 
         /// <summary>
@@ -96,6 +102,52 @@ namespace NWaves.Utils
         public static double BarkToHerz(double bark)
         {
             return 1960 / (26.81 / (bark + 0.53) - 1);
+        }
+
+        /// <summary>
+        /// Method for obtaining a perceptual loudness weight
+        /// </summary>
+        /// <param name="freq">Frequency</param>
+        /// <param name="weightingType">Weighting type (A, B, C)</param>
+        /// <returns>Weight value in dB</returns>
+        public static double LoudnessWeighting(double freq, string weightingType = "A")
+        {
+            var level2 = freq * freq;
+
+            switch (weightingType.ToUpper())
+            {
+                case "B":
+                {
+                    var r = (level2 * freq * 148693636) /
+                             (
+                                (level2 + 424.36) *
+                                 Math.Sqrt(level2 + 25122.25) *
+                                (level2 + 148693636)
+                             );
+                    return 20 * Math.Log10(r) + 0.17;
+                }
+                    
+                case "C":
+                {
+                    var r = (level2 * 148693636) /
+                             (
+                                 (level2 + 424.36) *
+                                 (level2 + 148693636)
+                             );
+                    return 20 * Math.Log10(r) + 0.06;
+                }
+
+                default:
+                {
+                    var r = (level2 * level2 * 148693636) / 
+                             (
+                                 (level2 + 424.36) * 
+                                  Math.Sqrt((level2 + 11599.29) * (level2 + 544496.41)) * 
+                                 (level2 + 148693636)
+                             );
+                    return 20 * Math.Log10(r) + 2.0;
+                }
+            }
         }
     }
 }
