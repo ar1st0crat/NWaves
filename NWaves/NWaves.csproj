@@ -46,11 +46,13 @@
     <Compile Include="Audio\Mci\Mci.cs" />
     <Compile Include="Audio\Mci\MciAudioPlayer.cs" />
     <Compile Include="Audio\Mci\MciAudioRecorder.cs" />
-    <Compile Include="Effects\Chorus.cs" />
-    <Compile Include="Effects\Distortion.cs" />
-    <Compile Include="Effects\Flanger.cs" />
-    <Compile Include="Effects\Reverb.cs" />
-    <Compile Include="Effects\Wahwah.cs" />
+    <Compile Include="Effects\ChorusEffect.cs" />
+    <Compile Include="Effects\DistortionEffect.cs" />
+    <Compile Include="Effects\FlangerEffect.cs" />
+    <Compile Include="Effects\OverdriveEffect.cs" />
+    <Compile Include="Effects\ReverbEffect.cs" />
+    <Compile Include="Effects\TremoloEffect.cs" />
+    <Compile Include="Effects\WahwahEffect.cs" />
     <Compile Include="FeatureExtractors\Base\FeatureVector.cs" />
     <Compile Include="FeatureExtractors\Base\FeatureExtractor.cs" />
     <Compile Include="FeatureExtractors\Base\FeaturePostProcessing.cs" />
@@ -89,6 +91,7 @@
     <Compile Include="Operations\Convolution.cs" />
     <Compile Include="Operations\Deconvolution.cs" />
     <Compile Include="Operations\Envelope.cs" />
+    <Compile Include="Operations\Modulation.cs" />
     <Compile Include="Operations\Resampling.cs" />
     <Compile Include="Operations\SpectralSubtraction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

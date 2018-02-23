@@ -1,6 +1,6 @@
 ﻿namespace NWaves.Effects
 {
-    public class Distortion
+    public class ReverbEffect
     {
     }
 }

@@ -8,8 +8,8 @@ namespace NWaves.Operations
         /// <summary>
         /// Method for detecting the envelope of a signal
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="lowpassCutoff"></param>
+        /// <param name="signal">Signal</param>
+        /// <param name="lowpassCutoff">LP filter cutoff frequency</param>
         /// <returns></returns>
         public static DiscreteSignal Envelope(DiscreteSignal signal, double lowpassCutoff = 0.05)
         {
@@ -22,10 +22,10 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// 
+        /// Full rectification
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <returns>Fully rectified signal</returns>
         public static DiscreteSignal FullRectify(DiscreteSignal signal)
         {
             var s = signal.Copy();
@@ -40,10 +40,10 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// 
+        /// Half rectification
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <returns>Half rectified signal</returns>
         public static DiscreteSignal HalfRectify(DiscreteSignal signal)
         {
             var s = signal.Copy();

@@ -119,7 +119,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Constructor for initializing complex signals with any integer enumerables
         /// </summary>
         /// <param name="samplingRate"></param>
         /// <param name="samples"></param>

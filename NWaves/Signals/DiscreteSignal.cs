@@ -38,8 +38,8 @@ namespace NWaves.Signals
         /// <summary>
         /// The most efficient constructor for initializing discrete signals
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="samples"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="samples">Array of samples</param>
         /// <param name="allocateNew">Set to true if new memory should be allocated for data</param>
         public DiscreteSignal(int samplingRate, double[] samples, bool allocateNew = false)
         {
@@ -53,21 +53,21 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Constructor for creating a signal from collection of samples
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="samples"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="samples">Collection of samples</param>
         public DiscreteSignal(int samplingRate, IEnumerable<double> samples)
             : this(samplingRate, samples?.ToArray())
         {
         }
 
         /// <summary>
-        /// 
+        /// Constructor for creating a signal of specified length filled with specified values
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="length"></param>
-        /// <param name="value"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="length">Number of samples</param>
+        /// <param name="value">Value of each sample</param>
         public DiscreteSignal(int samplingRate, int length, double value = 0.0)
         {
             if (samplingRate <= 0)
@@ -78,7 +78,7 @@ namespace NWaves.Signals
             SamplingRate = samplingRate;
 
             var samples = new double[length];
-            for (var i = 0; i < length; i++)
+            for (var i = 0; i < samples.Length; i++)
             {
                 samples[i] = value;
             }
@@ -87,11 +87,11 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Constructor for creating a signal from collection of integer samples
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="samples"></param>
-        /// <param name="normalizeFactor"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="samples">Collection of integer samples</param>
+        /// <param name="normalizeFactor">Some normalization coefficient</param>
         public DiscreteSignal(int samplingRate, IEnumerable<int> samples, double normalizeFactor = 1.0)
         {
             if (samplingRate <= 0)
@@ -121,10 +121,10 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Sample indexer
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">Index</param>
+        /// <returns>Sample by index</returns>
         public virtual double this[int index]
         {
             get { return Samples[index]; }
@@ -162,11 +162,11 @@ namespace NWaves.Signals
         #region time-domain characteristics
 
         /// <summary>
-        /// 
+        /// Energy of a signal fragment
         /// </summary>
         /// <param name="startPos">Starting sample</param>
         /// <param name="endPos">Ending sample (exclusive)</param>
-        /// <returns></returns>
+        /// <returns>Energy</returns>
         public double Energy(int startPos, int endPos)
         {
             var total = 0.0;
@@ -179,38 +179,40 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Energy of entire signal
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Energy</returns>
         public double Energy()
         {
             return Energy(0, Length);
         }
 
         /// <summary>
-        /// 
+        /// RMS of a signal fragment
         /// </summary>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <returns></returns>
+        /// <param name="startPos">Starting sample</param>
+        /// <param name="endPos">Ending sample (exclusive)</param>
+        /// <returns>RMS</returns>
         public double Rms(int startPos, int endPos)
         {
             return Math.Sqrt(Energy(startPos, endPos));
         }
 
         /// <summary>
-        /// 
+        /// RMS of entire signal
         /// </summary>
-        /// <returns></returns>
+        /// <returns>RMS</returns>
         public double Rms()
         {
             return Math.Sqrt(Energy(0, Length));
         }
 
         /// <summary>
-        /// 
+        /// Zero-crossing rate of a signal fragment
         /// </summary>
-        /// <returns></returns>
+        /// <param name="startPos">Starting sample</param>
+        /// <param name="endPos">Ending sample (exclusive)</param>
+        /// <returns>Zero-crossing rate</returns>
         public double ZeroCrossingRate(int startPos, int endPos)
         {
             var rate = 0;
@@ -226,18 +228,20 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Zero-crossing rate of entire signal
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Zero-crossing rate</returns>
         public double ZeroCrossingRate()
         {
             return ZeroCrossingRate(0, Length);
         }
 
         /// <summary>
-        /// 
+        /// Entropy of a signal fragment
         /// </summary>
-        /// <returns></returns>
+        /// <param name="startPos">Starting sample</param>
+        /// <param name="endPos">Ending sample (exclusive)</param>
+        /// <returns>Entropy</returns>
         public double Entropy(int startPos, int endPos)
         {
             var sum = 0.0;
@@ -257,9 +261,9 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// Entropy of entire signal
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Entropy</returns>
         public double Entropy()
         {
             return Entropy(0, Length);

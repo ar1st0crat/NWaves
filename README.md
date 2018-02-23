@@ -12,7 +12,7 @@ Already available:
 
 - [x] major DSP transforms (FFT, DCT, STFT, cepstrum)
 - [x] basic LTI digital filters (FIR, IIR, moving average (non-recursive and recursive), pre-emphasis, DC removal)
-- [x] basic operations and filtering (convolution/deconvolution, cross-correlation, overlap-add, overlap-save, envelope detection, pitch tracking)
+- [x] basic operations (convolution/deconvolution, cross-correlation, overlap-add, overlap-save, rectification, envelope detection, pitch tracking)
 - [x] simple filter design & analysis (zeros and poles, window method, getting high-pass from a low-pass filter and vice versa, combining filters)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
