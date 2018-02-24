@@ -6,7 +6,8 @@ using NWaves.Signals;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class for overdrive effect
+    /// Class for overdrive effect.
+    /// DAFX book [Udo Zolzer], p.118.
     /// </summary>
     public class OverdriveEffect : IFilter
     {

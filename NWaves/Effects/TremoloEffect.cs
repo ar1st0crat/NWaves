@@ -39,7 +39,7 @@ namespace NWaves.Effects
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
                                       FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
-            return Operation.ModulateAmplitude(signal, Frequency, TremoloIndex);
+            return Modulate.Amplitude(signal, Frequency, TremoloIndex);
         }
     }
 }

@@ -52,6 +52,7 @@
     <Compile Include="Effects\OverdriveEffect.cs" />
     <Compile Include="Effects\ReverbEffect.cs" />
     <Compile Include="Effects\TremoloEffect.cs" />
+    <Compile Include="Effects\TubeDistortionEffect.cs" />
     <Compile Include="Effects\WahwahEffect.cs" />
     <Compile Include="FeatureExtractors\Base\FeatureVector.cs" />
     <Compile Include="FeatureExtractors\Base\FeatureExtractor.cs" />
@@ -91,7 +92,7 @@
     <Compile Include="Operations\Convolution.cs" />
     <Compile Include="Operations\Deconvolution.cs" />
     <Compile Include="Operations\Envelope.cs" />
-    <Compile Include="Operations\Modulation.cs" />
+    <Compile Include="Operations\Modulate.cs" />
     <Compile Include="Operations\Resampling.cs" />
     <Compile Include="Operations\SpectralSubtraction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

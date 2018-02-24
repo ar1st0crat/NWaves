@@ -11,24 +11,27 @@ NWaves is a .NET library for 1d signal processing focused specifically on audio 
 Already available:
 
 - [x] major DSP transforms (FFT, DCT, STFT, cepstrum)
-- [x] basic LTI digital filters (FIR, IIR, moving average (non-recursive and recursive), pre-emphasis, DC removal)
-- [x] basic operations (convolution/deconvolution, cross-correlation, overlap-add, overlap-save, rectification, envelope detection, pitch tracking)
-- [x] simple filter design & analysis (zeros and poles, window method, getting high-pass from a low-pass filter and vice versa, combining filters)
+- [x] basic LTI digital filters (FIR, IIR, moving average, pre-emphasis, DC removal)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
-- [x] non-linear filters (median filter)
+- [x] basic operations (convolution/deconvolution, cross-correlation, rectification, envelope detection)
+- [x] block convolution (overlap-add, overlap-save)
+- [x] modulation (AM, ring, FM, PM)
+- [x] simple filter design & analysis (zeros and poles, window method, HP from/to LP, combining filters)
+- [x] non-linear filters (median filter, overdrive and distortion effects)
 - [x] windowing functions (Hamming, Blackman, Hann, cepstral liftering)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB) and perceptual weighting (A, B, C)
 - [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, modulation spectra), post-processing (CMN, deltas) and CSV serialization
 - [x] sound synthesis and signal builders (sinusoid, white/pink/red/grey noise, triangle, sawtooth, square, periodic pulse)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
+- [x] pitch tracking
 - [x] simple audio playback and recording (Windows only)
 
 Planned:
 
 - [ ] more transforms (CQT, DWT, Mellin, Hilbert, Haar, Hadamard)
 - [ ] more operations (resampling, spectral subtraction, adaptive filtering)
-- [ ] more feature extraction (MPEG7 descriptors and lots of others)
+- [ ] more feature extraction (MIR descriptors and lots of others)
 - [ ] more sound synthesis (ADSR, etc.)
 - [ ] sound effects (WahWah, Reverb, Vibrato, Chorus, Flanger, PitchShift, etc.)
 
