@@ -58,6 +58,7 @@
             this.stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.recordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.filtersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pitchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mfccToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lpcToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.modulationSpectrumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -66,7 +67,7 @@
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.pitchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.effectsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -256,7 +257,8 @@
             this.pitchToolStripMenuItem,
             this.mfccToolStripMenuItem,
             this.lpcToolStripMenuItem,
-            this.modulationSpectrumToolStripMenuItem});
+            this.modulationSpectrumToolStripMenuItem,
+            this.effectsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1207, 28);
@@ -335,6 +337,13 @@
             this.filtersToolStripMenuItem.Text = "Filters";
             this.filtersToolStripMenuItem.Click += new System.EventHandler(this.filtersToolStripMenuItem_Click);
             // 
+            // pitchToolStripMenuItem
+            // 
+            this.pitchToolStripMenuItem.Name = "pitchToolStripMenuItem";
+            this.pitchToolStripMenuItem.Size = new System.Drawing.Size(53, 24);
+            this.pitchToolStripMenuItem.Text = "P&itch";
+            this.pitchToolStripMenuItem.Click += new System.EventHandler(this.pitchToolStripMenuItem_Click);
+            // 
             // mfccToolStripMenuItem
             // 
             this.mfccToolStripMenuItem.Name = "mfccToolStripMenuItem";
@@ -401,12 +410,12 @@
             this.label8.TabIndex = 24;
             this.label8.Text = "Spectrum";
             // 
-            // pitchToolStripMenuItem
+            // effectsToolStripMenuItem
             // 
-            this.pitchToolStripMenuItem.Name = "pitchToolStripMenuItem";
-            this.pitchToolStripMenuItem.Size = new System.Drawing.Size(53, 24);
-            this.pitchToolStripMenuItem.Text = "P&itch";
-            this.pitchToolStripMenuItem.Click += new System.EventHandler(this.pitchToolStripMenuItem_Click);
+            this.effectsToolStripMenuItem.Name = "effectsToolStripMenuItem";
+            this.effectsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
+            this.effectsToolStripMenuItem.Text = "&Effects";
+            this.effectsToolStripMenuItem.Click += new System.EventHandler(this.effectsToolStripMenuItem_Click);
             // 
             // SignalsForm
             // 
@@ -489,6 +498,7 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.ToolStripMenuItem modulationSpectrumToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pitchToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem effectsToolStripMenuItem;
     }
 }
 

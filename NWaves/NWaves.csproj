@@ -48,11 +48,14 @@
     <Compile Include="Audio\Mci\MciAudioRecorder.cs" />
     <Compile Include="Effects\ChorusEffect.cs" />
     <Compile Include="Effects\DistortionEffect.cs" />
+    <Compile Include="Effects\EchoEffect.cs" />
     <Compile Include="Effects\FlangerEffect.cs" />
     <Compile Include="Effects\OverdriveEffect.cs" />
+    <Compile Include="Effects\PhaserEffect.cs" />
     <Compile Include="Effects\ReverbEffect.cs" />
     <Compile Include="Effects\TremoloEffect.cs" />
     <Compile Include="Effects\TubeDistortionEffect.cs" />
+    <Compile Include="Effects\VibratoEffect.cs" />
     <Compile Include="Effects\WahwahEffect.cs" />
     <Compile Include="FeatureExtractors\Base\FeatureVector.cs" />
     <Compile Include="FeatureExtractors\Base\FeatureExtractor.cs" />
@@ -78,7 +81,10 @@
     <Compile Include="Filters\BiQuad\NotchFilter.cs" />
     <Compile Include="Filters\BiQuad\PeakFilter.cs" />
     <Compile Include="Filters\ButterworthFilter.cs" />
+    <Compile Include="Filters\CombFirFilter.cs" />
+    <Compile Include="Filters\CombIirFilter.cs" />
     <Compile Include="Filters\DcRemovalFilter.cs" />
+    <Compile Include="Filters\DeEmphasisFilter.cs" />
     <Compile Include="Filters\Fda\FilterDesign.cs" />
     <Compile Include="Filters\Fda\FilterBanks.cs" />
     <Compile Include="Filters\MedianFilter.cs" />

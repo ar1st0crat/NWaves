@@ -41,7 +41,7 @@ namespace NWaves.Effects
 
                 return 2 * s;
             });
-
+            
             return new DiscreteSignal(signal.SamplingRate, output);
         }
     }

@@ -26,7 +26,7 @@ namespace NWaves.Effects
         /// </summary>
         /// <param name="gain"></param>
         /// <param name="mix"></param>
-        public DistortionEffect(double gain = 1.0, double mix = 0.5)
+        public DistortionEffect(double gain = 20.0, double mix = 0.9)
         {
             Gain = gain;
             Mix = mix;
@@ -56,9 +56,9 @@ namespace NWaves.Effects
 
             var maxZ = tempZ.Max(z => Math.Abs(z));
             var tempY = tempZ.Zip(signal.Samples, (z, x) => Mix * z * maxAmp / maxZ + (1 - Mix) * x);
-            var maxY = tempY.Max(y => Math.Abs(y));
 
-            var output = tempY.Select(y => y * maxAmp / maxY).ToArray();
+            var maxY = tempY.Max(y => Math.Abs(y));
+            var output = tempY.Select(y => y * maxAmp / maxY);
 
             return new DiscreteSignal(signal.SamplingRate, output);
         }

@@ -62,8 +62,8 @@ namespace NWaves.Effects
         /// <param name="dist"></param>
         /// <param name="rh"></param>
         /// <param name="rl"></param>
-        public TubeDistortionEffect(double gain = 1.0,
-                                    double mix = 0.5,
+        public TubeDistortionEffect(double gain = 20.0,
+                                    double mix = 0.9,
                                     double q = -0.2,
                                     double dist = 5,
                                     double rh = 0.995,
@@ -105,8 +105,8 @@ namespace NWaves.Effects
                 tempZ = signal.Samples.Select(s =>
                 {
                     var q = Gain * s / maxAmp;
-                    return Math.Abs(q - Q) < 1e-10 ? 
-                           1.0 / Dist : 
+                    return Math.Abs(q - Q) < 1e-10 ?
+                           1.0 / Dist :
                            q / (1 - Math.Exp(-Dist * q));
                 });
             }
@@ -116,18 +116,17 @@ namespace NWaves.Effects
                 {
                     var q = Gain * s / maxAmp;
                     return Math.Abs(q - Q) < 1e-10 ?
-                           1.0 / Dist + Q / (1 - Math.Exp(Dist * Q)):
+                           1.0 / Dist + Q / (1 - Math.Exp(Dist * Q)) :
                            (q - Q) / (1 - Math.Exp(-Dist * (q - Q))) + Q / (1 - Math.Exp(Dist * Q));
                 });
             }
 
             var maxZ = tempZ.Max(z => Math.Abs(z));
-
             var tempY = tempZ.Zip(signal.Samples, (z, x) => Mix * z * maxAmp / maxZ + (1 - Mix) * x);
-            var maxY = tempY.Max(y => Math.Abs(y));
 
-            var output = tempY.Select(y => y * maxAmp / maxY).ToArray();
-            
+            var maxY = tempY.Max(y => Math.Abs(y));
+            var output = tempY.Select(y => y * maxAmp / maxY);
+
             return _outputFilter.ApplyTo(new DiscreteSignal(signal.SamplingRate, output));
         }
     }

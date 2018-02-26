@@ -29,22 +29,22 @@ namespace NWaves.Signals
         /// <summary>
         /// Number of samples per unit of time (1 second)
         /// </summary>
-        public virtual int SamplingRate { get; }
+        public int SamplingRate { get; }
 
         /// <summary>
         /// Array or real parts of samples
         /// </summary>
-        public virtual double[] Real { get; }
+        public double[] Real { get; }
 
         /// <summary>
         /// Array or imaginary parts of samples
         /// </summary>
-        public virtual double[] Imag { get; }
+        public double[] Imag { get; }
 
         /// <summary>
         /// Length of the signal
         /// </summary>
-        public virtual int Length => Real.Length;
+        public int Length => Real.Length;
 
         /// <summary>
         /// The most efficient constructor for initializing complex signals
@@ -157,7 +157,7 @@ namespace NWaves.Signals
         /// <summary>
         /// Indexer works only with array of real parts of samples. Use it with caution.
         /// </summary>
-        public virtual double this[int index]
+        public double this[int index]
         { 
             get { return Real[index]; }
             set { Real[index] = value; }
@@ -178,7 +178,7 @@ namespace NWaves.Signals
         /// <param name="endPos">Position of the last sample (exclusive)</param>
         /// <returns>Slice of the signal</returns>
         /// <exception>Overflow possible if endPos is less than startPos</exception>
-        public virtual ComplexDiscreteSignal this[int startPos, int endPos]
+        public ComplexDiscreteSignal this[int startPos, int endPos]
         {
             get
             {

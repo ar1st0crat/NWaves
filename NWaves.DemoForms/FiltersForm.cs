@@ -23,10 +23,11 @@ namespace NWaves.DemoForms
 
         private DiscreteSignal _signal;
         private List<double[]> _spectrogram;
-        private readonly Stft _stft = new Stft(256, fftSize: 256);
-
+        
         private DiscreteSignal _filteredSignal;
         private List<double[]> _filteredSpectrogram;
+
+        private readonly Stft _stft = new Stft(256, fftSize: 256);
 
         private string _waveFileName;
 
@@ -72,7 +73,7 @@ namespace NWaves.DemoForms
                     
                     //numeratorListBox.DataSource = (_filter as IirFilter).B;
                     //denominatorListBox.DataSource = (_filter as IirFilter).A;
-                    numeratorListBox.DataSource = (_filter as FirFilter).Kernel;
+                    numeratorListBox.DataSource = (_filter as FirFilter)?.Kernel;
 
                     filterParamsDataGrid.RowCount = 2;
                     filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
@@ -252,8 +253,8 @@ namespace NWaves.DemoForms
                     break;
             }
 
-            numeratorListBox.DataSource = (_filter as IirFilter).B;
-            denominatorListBox.DataSource = (_filter as IirFilter).A;
+            numeratorListBox.DataSource = (_filter as IirFilter)?.B;
+            denominatorListBox.DataSource = (_filter as IirFilter)?.A;
             filterParamsDataGrid.RowCount = parameters.Length;
             for (var i = 0; i < parameters.Length; i++)
             {

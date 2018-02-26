@@ -16,24 +16,23 @@ namespace NWaves.Signals
     /// Method implementations are LINQ-less for better performance.
     /// 
     /// In the earliest versions of NWaves there was also an ISignal interface, however it was refactored out.
-    /// If there's a need, just inherit from this base class, all methods are virtual.
     /// </summary>
     public class DiscreteSignal
     {
         /// <summary>
         /// Number of samples per unit of time (1 second)
         /// </summary>
-        public virtual int SamplingRate { get; }
+        public int SamplingRate { get; }
 
         /// <summary>
         /// Real-valued array of samples
         /// </summary>
-        public virtual double[] Samples { get; }
+        public double[] Samples { get; }
 
         /// <summary>
         /// Length of the signal
         /// </summary>
-        public virtual int Length => Samples.Length;
+        public int Length => Samples.Length;
 
         /// <summary>
         /// The most efficient constructor for initializing discrete signals
@@ -125,7 +124,7 @@ namespace NWaves.Signals
         /// </summary>
         /// <param name="index">Index</param>
         /// <returns>Sample by index</returns>
-        public virtual double this[int index]
+        public double this[int index]
         {
             get { return Samples[index]; }
             set { Samples[index] = value; }
@@ -144,7 +143,7 @@ namespace NWaves.Signals
         /// <param name="endPos"></param>
         /// <returns>Slice of the signal</returns>
         /// <exception>Overflow possible if endPos is less than startPos</exception>
-        public virtual DiscreteSignal this[int startPos, int endPos]
+        public DiscreteSignal this[int startPos, int endPos]
         {
             get
             {

@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NWaves.Filters;
 using NWaves.Filters.Base;
 using NWaves.Signals;
 
@@ -35,6 +36,21 @@ namespace NWaves.Tests.FilterTests
         public void TestFilterImplementedViaCircularBuffer()
         {
             AssertFilterOutput(_filter.ApplyFilterCircularBuffer(_signal));
+        }
+
+        [Test]
+        public void TestFilterCombinations()
+        {
+            var pre = new PreEmphasisFilter();
+            var de = new DeEmphasisFilter();
+
+            var filter = pre * de;
+
+            var samples = new[] { 1.0, 0.1, -0.4, 0.2 };
+            var signal = new DiscreteSignal(1, samples);
+            var filtered = filter.ApplyTo(signal);
+
+            Assert.That(signal.Samples, Is.EqualTo(filtered.Samples).Within(1e-10));
         }
 
         private static void AssertFilterOutput(DiscreteSignal output)
