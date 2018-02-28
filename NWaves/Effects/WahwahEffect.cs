@@ -12,6 +12,41 @@ namespace NWaves.Effects
     public class WahwahEffect : IFilter
     {
         /// <summary>
+        /// 
+        /// </summary>
+        public double Q { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double LfoFrequency { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double MinFrequency { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public double MaxFrequency { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lfoFrequency"></param>
+        /// <param name="minFrequency"></param>
+        /// <param name="maxFrequency"></param>
+        /// <param name="q"></param>
+        public WahwahEffect(double lfoFrequency = 1.0, double minFrequency = 300, double maxFrequency = 3000, double q = 0.5)
+        {
+            LfoFrequency = lfoFrequency;
+            MinFrequency = minFrequency;
+            MaxFrequency = maxFrequency;
+            Q = q;
+        }
+        
+        /// <summary>
         /// Method implements simple wah-wah effect
         /// </summary>
         /// <param name="signal"></param>
@@ -20,21 +55,19 @@ namespace NWaves.Effects
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
                                       FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
-            var damp = 0.25;
-
             var x = signal.Samples;
+            var samplingRateInverted = 2 * Math.PI / signal.SamplingRate;
 
-            var triangle = new TriangleWaveBuilder()
-                                    .SetParameter("lo", 300.0)
-                                    .SetParameter("hi", 2000.0)
-                                    .SetParameter("freq", 1.5)
+            var lfo = new TriangleWaveBuilder()
+                                    .SetParameter("lo", MinFrequency)
+                                    .SetParameter("hi", MaxFrequency)
+                                    .SetParameter("freq", LfoFrequency)
                                     .OfLength(signal.Length)
                                     .SampledAt(signal.SamplingRate)
                                     .Build();
 
-            var f = 2 * Math.Sin(2 * Math.PI * triangle[0] / signal.SamplingRate);
-            var q = 2 * damp;
-
+            var f = 2 * Math.Sin(lfo[0] * samplingRateInverted);
+            
             var yh = new double[x.Length];
             var yb = new double[x.Length];
             var yl = new double[x.Length];
@@ -45,10 +78,10 @@ namespace NWaves.Effects
 
             for (var i = 1; i < signal.Length; i++)
             {
-                yh[i] = x[i] - yl[i - 1] - q * yb[i - 1];
+                yh[i] = x[i] - yl[i - 1] - Q * yb[i - 1];
                 yb[i] = f * yh[i] + yb[i - 1];
                 yl[i] = f * yb[i] + yl[i - 1];
-                f = 2 * Math.Sin(2 * Math.PI * triangle[i] / signal.SamplingRate);
+                f = 2 * Math.Sin(lfo[i] * samplingRateInverted);
             }
 
             var maxYb = yb.Max(y => Math.Abs(y));

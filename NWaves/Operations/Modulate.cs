@@ -63,7 +63,7 @@ namespace NWaves.Operations
         public static DiscreteSignal Frequency(DiscreteSignal baseband,
                                                double carrierAmplitude,
                                                double carrierFrequency,
-                                               double deviation = 100/*Hz*/)
+                                               double deviation = 0.1/*Hz*/)
         {
             var samplingRate = baseband.SamplingRate;
 

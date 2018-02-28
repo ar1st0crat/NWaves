@@ -10,7 +10,7 @@ NWaves is a .NET library for 1d signal processing focused specifically on audio 
 
 Already available:
 
-- [x] major DSP transforms (FFT, DCT, STFT, cepstrum)
+- [x] major DSP transforms (FFT, DCT, STFT, Hilbert, cepstrum)
 - [x] basic LTI digital filters (FIR, IIR, moving average, pre-emphasis, DC removal)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
@@ -21,19 +21,21 @@ Already available:
 - [x] non-linear filters (median filter, overdrive and distortion effects)
 - [x] windowing functions (Hamming, Blackman, Hann, cepstral liftering)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB) and perceptual weighting (A, B, C)
-- [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, modulation spectra), post-processing (CMN, deltas) and CSV serialization
+- [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, modulation spectra) and CSV serialization
+- [x] feature post-processing (CMN, deltas)
 - [x] sound synthesis and signal builders (sinusoid, white/pink/red/grey noise, triangle, sawtooth, square, periodic pulse)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking
+- [x] sound effects (echo, tremolo, wahwah, phaser, distortion)
 - [x] simple audio playback and recording (Windows only)
 
 Planned:
 
-- [ ] more transforms (CQT, DWT, Mellin, Hilbert, Haar, Hadamard)
+- [ ] more transforms (CQT, DWT, Mellin, Haar, Hadamard)
 - [ ] more operations (resampling, spectral subtraction, adaptive filtering)
 - [ ] more feature extraction (MIR descriptors and lots of others)
 - [ ] more sound synthesis (ADSR, etc.)
-- [ ] sound effects (WahWah, Reverb, Vibrato, Chorus, Flanger, PitchShift, etc.)
+- [ ] more sound effects (Reverb, Vibrato, Chorus, Flanger, PitchShift, etc.)
 
 
 ## Philosophy of NWaves
@@ -240,17 +242,30 @@ var logPowerSpectrum =
 
 // Cepstral transformer:
 
-var ct = new CepstralTransform(20);
+var ct = new CepstralTransform(20, fftSize: 512);
 var cepstrum = ct.Direct(signal);
 
 
-// in four previous cases the result of each transform was
+// Hilbert transformer
+
+var ht = new HilbertTransform(1024);
+var result = ht.Direct(signal);
+
+// HilbertTransform class also provides method
+// for computing complex analytic signal.
+// Thus, previous line is equivalent to:
+
+var result = ht.AnalyticSignal(signal).Imag;
+
+
+// in previous five cases the result of each transform was
 // a newly created object of DiscreteSignal class.
 
 // If the sequence of blocks must be processed then 
 // it's better to work with reusable arrays in memory:
 
 var spectrum = new double[1024];
+var cepstrum = new double[20];
 
 fft.PowerSpectrum(signal[1000, 2024].Samples, spectrum);
 // do something with spectrum
@@ -260,6 +275,9 @@ fft.PowerSpectrum(signal[2024, 3048].Samples, spectrum);
 
 fft.PowerSpectrum(signal[3048, 4072].Samples, spectrum);
 // do something with spectrum
+
+ct.Direct(signal[5000, 5512].Samples, cepstrum)
+// do something with cepstrum
 
 //...
 

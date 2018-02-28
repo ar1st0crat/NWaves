@@ -96,9 +96,21 @@ namespace NWaves.DemoForms
                 var decay = double.Parse(echoDecayTextBox.Text);
                 effect = new EchoEffect(delay, decay);
             }
+            else if (wahwahRadioButton.Checked)
+            {
+                var lfoFrequency = double.Parse(lfoFreqTextBox.Text);
+                var minFrequency = double.Parse(minFreqTextBox.Text);
+                var maxFrequency = double.Parse(maxFreqTextBox.Text);
+                var q = double.Parse(lfoQTextBox.Text);
+                effect = new WahwahEffect(lfoFrequency, minFrequency, maxFrequency, q);
+            }
             else
             {
-                effect = new WahwahEffect();
+                var lfoFrequency = double.Parse(lfoFreqTextBox.Text);
+                var minFrequency = double.Parse(minFreqTextBox.Text);
+                var maxFrequency = double.Parse(maxFreqTextBox.Text);
+                var q = double.Parse(lfoQTextBox.Text);
+                effect = new PhaserEffect(lfoFrequency, minFrequency, maxFrequency, q);
             }
 
             _filteredSignal = effect.ApplyTo(_signal, FilteringOptions.Auto);

@@ -120,6 +120,7 @@
     <Compile Include="Transforms\CepstralTransform.cs" />
     <Compile Include="Transforms\Dct.cs" />
     <Compile Include="Transforms\Fft.cs" />
+    <Compile Include="Transforms\HilbertTransform.cs" />
     <Compile Include="Transforms\Spectrum.cs" />
     <Compile Include="Transforms\Stft.cs" />
     <Compile Include="Utils\Scale.cs" />

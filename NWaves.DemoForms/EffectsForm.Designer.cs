@@ -40,6 +40,15 @@
             this.stopFilteredButton = new System.Windows.Forms.Button();
             this.applyEffectButton = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
+            this.lfoQTextBox = new System.Windows.Forms.TextBox();
+            this.lfoFreqTextBox = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.maxFreqTextBox = new System.Windows.Forms.TextBox();
+            this.minFreqTextBox = new System.Windows.Forms.TextBox();
+            this.phaserRadioButton = new System.Windows.Forms.RadioButton();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.tremoloIndexTextBox = new System.Windows.Forms.TextBox();
@@ -171,6 +180,15 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label13);
+            this.groupBox1.Controls.Add(this.label14);
+            this.groupBox1.Controls.Add(this.lfoQTextBox);
+            this.groupBox1.Controls.Add(this.lfoFreqTextBox);
+            this.groupBox1.Controls.Add(this.label11);
+            this.groupBox1.Controls.Add(this.label12);
+            this.groupBox1.Controls.Add(this.maxFreqTextBox);
+            this.groupBox1.Controls.Add(this.minFreqTextBox);
+            this.groupBox1.Controls.Add(this.phaserRadioButton);
             this.groupBox1.Controls.Add(this.label9);
             this.groupBox1.Controls.Add(this.label10);
             this.groupBox1.Controls.Add(this.tremoloIndexTextBox);
@@ -199,6 +217,84 @@
             this.groupBox1.TabIndex = 31;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Sound Effects";
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(678, 68);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(19, 17);
+            this.label13.TabIndex = 30;
+            this.label13.Text = "Q";
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(566, 68);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(37, 17);
+            this.label14.TabIndex = 29;
+            this.label14.Text = "Freq";
+            // 
+            // lfoQTextBox
+            // 
+            this.lfoQTextBox.Location = new System.Drawing.Point(727, 65);
+            this.lfoQTextBox.Name = "lfoQTextBox";
+            this.lfoQTextBox.Size = new System.Drawing.Size(41, 22);
+            this.lfoQTextBox.TabIndex = 28;
+            this.lfoQTextBox.Text = "0,5";
+            // 
+            // lfoFreqTextBox
+            // 
+            this.lfoFreqTextBox.Location = new System.Drawing.Point(610, 65);
+            this.lfoFreqTextBox.Name = "lfoFreqTextBox";
+            this.lfoFreqTextBox.Size = new System.Drawing.Size(54, 22);
+            this.lfoFreqTextBox.TabIndex = 27;
+            this.lfoFreqTextBox.Text = "1,2";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(678, 40);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(33, 17);
+            this.label11.TabIndex = 26;
+            this.label11.Text = "Max";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(566, 40);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(30, 17);
+            this.label12.TabIndex = 25;
+            this.label12.Text = "Min";
+            // 
+            // maxFreqTextBox
+            // 
+            this.maxFreqTextBox.Location = new System.Drawing.Point(727, 37);
+            this.maxFreqTextBox.Name = "maxFreqTextBox";
+            this.maxFreqTextBox.Size = new System.Drawing.Size(41, 22);
+            this.maxFreqTextBox.TabIndex = 24;
+            this.maxFreqTextBox.Text = "2000";
+            // 
+            // minFreqTextBox
+            // 
+            this.minFreqTextBox.Location = new System.Drawing.Point(610, 37);
+            this.minFreqTextBox.Name = "minFreqTextBox";
+            this.minFreqTextBox.Size = new System.Drawing.Size(54, 22);
+            this.minFreqTextBox.TabIndex = 23;
+            this.minFreqTextBox.Text = "300";
+            // 
+            // phaserRadioButton
+            // 
+            this.phaserRadioButton.AutoSize = true;
+            this.phaserRadioButton.Location = new System.Drawing.Point(467, 38);
+            this.phaserRadioButton.Name = "phaserRadioButton";
+            this.phaserRadioButton.Size = new System.Drawing.Size(74, 21);
+            this.phaserRadioButton.TabIndex = 22;
+            this.phaserRadioButton.Text = "Phaser";
+            this.phaserRadioButton.UseVisualStyleBackColor = true;
             // 
             // label9
             // 
@@ -339,7 +435,7 @@
             // wahwahRadioButton
             // 
             this.wahwahRadioButton.AutoSize = true;
-            this.wahwahRadioButton.Location = new System.Drawing.Point(7, 172);
+            this.wahwahRadioButton.Location = new System.Drawing.Point(467, 64);
             this.wahwahRadioButton.Name = "wahwahRadioButton";
             this.wahwahRadioButton.Size = new System.Drawing.Size(87, 21);
             this.wahwahRadioButton.TabIndex = 5;
@@ -493,5 +589,14 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TextBox echoDecayTextBox;
         private System.Windows.Forms.TextBox echoDelayTextBox;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.TextBox lfoQTextBox;
+        private System.Windows.Forms.TextBox lfoFreqTextBox;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.TextBox maxFreqTextBox;
+        private System.Windows.Forms.TextBox minFreqTextBox;
+        private System.Windows.Forms.RadioButton phaserRadioButton;
     }
 }
