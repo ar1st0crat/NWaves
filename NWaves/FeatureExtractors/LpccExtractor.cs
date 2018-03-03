@@ -10,6 +10,9 @@ using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors
 {
+    /// <summary>
+    /// Linear Prediction Cepstral Coefficients extractor
+    /// </summary>
     public class LpccExtractor : FeatureExtractor
     {
         /// <summary>
@@ -24,24 +27,24 @@ namespace NWaves.FeatureExtractors
             Enumerable.Range(0, FeatureCount).Select(i => "lpcc" + i).ToArray();
 
         /// <summary>
-        /// Coefficients of the liftering window
-        /// </summary>
-        private readonly double[] _lifterCoeffs;
-
-        /// <summary>
         /// Order of an LPC-filter
         /// </summary>
         private readonly int _order;
 
         /// <summary>
-        /// Size of analysis window
+        /// Length of analysis window (in ms)
         /// </summary>
-        private readonly int _windowSize;
+        private readonly double _windowSize;
 
         /// <summary>
-        /// Size of overlap
+        /// Length of overlap (in ms)
         /// </summary>
-        private readonly int _hopSize;
+        private readonly double _hopSize;
+
+        /// <summary>
+        /// Size of liftering window
+        /// </summary>
+        private readonly int _lifterSize;
 
         /// <summary>
         /// Type of the window function
@@ -49,51 +52,33 @@ namespace NWaves.FeatureExtractors
         private readonly WindowTypes _window;
 
         /// <summary>
-        /// Samples of the window
+        /// Pre-emphasis coefficient
         /// </summary>
-        private readonly double[] _windowSamples;
-
-        /// <summary>
-        /// Pre-emphasis filter (if needed)
-        /// </summary>
-        private readonly PreEmphasisFilter _preemphasisFilter;
-
-        /// <summary>
-        /// Size of FFT
-        /// </summary>
-        private readonly int _fftSize;
+        private readonly double _preEmphasis;
 
         /// <summary>
         /// Main constructor
         /// </summary>
         /// <param name="featureCount"></param>
-        /// <param name="samplingRate"></param>
         /// <param name="windowSize"></param>
-        /// <param name="overlapSize"></param>
+        /// <param name="hopSize"></param>
         /// <param name="lifterSize"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
-        public LpccExtractor(int featureCount, int samplingRate,
-                             double windowSize = 0.0256, double overlapSize = 0.010, int lifterSize = 22,
+        public LpccExtractor(int featureCount,
+                             double windowSize = 0.0256, double hopSize = 0.010, int lifterSize = 22,
                              double preEmphasis = 0.0, WindowTypes window = WindowTypes.Rectangular)
         {
             FeatureCount = featureCount;
-            _lifterCoeffs = Window.Liftering(featureCount, lifterSize);
 
             _order = featureCount;
 
-            _windowSize = (int)(samplingRate * windowSize);
-            _windowSamples = Window.OfType(window, _windowSize);
             _window = window;
-
-            _hopSize = (int)(samplingRate * overlapSize);
-
-            if (preEmphasis > 0.0)
-            {
-                _preemphasisFilter = new PreEmphasisFilter(preEmphasis);
-            }
-
-            _fftSize = MathUtils.NextPowerOfTwo(2 * _windowSize - 1);
+            _windowSize = windowSize;
+            _hopSize = hopSize;
+            
+            _lifterSize = lifterSize;
+            _preEmphasis = preEmphasis;
         }
 
         /// <summary>
@@ -108,46 +93,63 @@ namespace NWaves.FeatureExtractors
         /// <returns></returns>
         public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
-            var featureVectors = new List<FeatureVector>();
+            // ====================================== PREPARE =======================================
 
-            var blockReal = new double[_fftSize];       // buffer for real parts of the currently processed block
-            var blockImag = new double[_fftSize];       // buffer for imaginary parts of the currently processed block
-            var reversedReal = new double[_fftSize];    // buffer for real parts of currently processed reversed block
-            var reversedImag = new double[_fftSize];    // buffer for imaginary parts of currently processed reversed block
-            var zeroblock = new double[_fftSize];       // just a buffer of zeros for quick memset
+            var hopSize = (int)(signal.SamplingRate * _hopSize);
+            var windowSize = (int)(signal.SamplingRate * _windowSize);
+            var windowSamples = Window.OfType(_window, windowSize);
+            var fftSize = MathUtils.NextPowerOfTwo(2 * windowSize - 1);
 
-            var cc = new double[_windowSize];           // buffer for (truncated) cross-correlation signal
-            var lpc = new double[_order + 1];           // buffer for LPC coefficients
+            var lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
+
+
+            var blockReal = new double[fftSize];       // buffer for real parts of the currently processed block
+            var blockImag = new double[fftSize];       // buffer for imaginary parts of the currently processed block
+            var reversedReal = new double[fftSize];    // buffer for real parts of currently processed reversed block
+            var reversedImag = new double[fftSize];    // buffer for imaginary parts of currently processed reversed block
+            var zeroblock = new double[fftSize];       // just a buffer of zeros for quick memset
+
+            var cc = new double[windowSize];           // buffer for (truncated) cross-correlation signal
+            var lpc = new double[_order + 1];          // buffer for LPC coefficients
 
 
             // 0) pre-emphasis (if needed)
 
-            var filtered = (_preemphasisFilter != null) ? _preemphasisFilter.ApplyTo(signal) : signal;
+            if (_preEmphasis > 0.0)
+            {
+                var preemphasisFilter = new PreEmphasisFilter(_preEmphasis);
+                signal = preemphasisFilter.ApplyTo(signal);
+            }
+
+
+            // ================================= MAIN PROCESSING ==================================
+
+            var featureVectors = new List<FeatureVector>();
 
             var i = startSample;
-            while (i + _windowSize < endSample)
+            while (i + windowSize < endSample)
             {
                 // prepare all blocks in memory for the current step:
 
-                FastCopy.ToExistingArray(zeroblock, blockReal, _fftSize);
-                FastCopy.ToExistingArray(zeroblock, blockImag, _fftSize);
-                FastCopy.ToExistingArray(zeroblock, reversedReal, _fftSize);
-                FastCopy.ToExistingArray(zeroblock, reversedImag, _fftSize);
+                FastCopy.ToExistingArray(zeroblock, blockReal, fftSize);
+                FastCopy.ToExistingArray(zeroblock, blockImag, fftSize);
+                FastCopy.ToExistingArray(zeroblock, reversedReal, fftSize);
+                FastCopy.ToExistingArray(zeroblock, reversedImag, fftSize);
 
-                FastCopy.ToExistingArray(filtered.Samples, blockReal, _windowSize, i);
+                FastCopy.ToExistingArray(signal.Samples, blockReal, windowSize, i);
 
                 // 1) apply window
 
                 if (_window != WindowTypes.Rectangular)
                 {
-                    blockReal.ApplyWindow(_windowSamples);
+                    blockReal.ApplyWindow(windowSamples);
                 }
 
                 // 2) autocorrelation
 
-                Operation.CrossCorrelate(blockReal, blockImag, reversedReal, reversedImag, cc, _windowSize);
+                Operation.CrossCorrelate(blockReal, blockImag, reversedReal, reversedImag, cc, windowSize);
 
-                // 3) levinson-durbin
+                // 3) Levinson-Durbin
 
                 FastCopy.ToExistingArray(zeroblock, lpc, lpc.Length);
                 var err = LpcExtractor.LevinsonDurbin(cc, lpc, _order);
@@ -169,7 +171,11 @@ namespace NWaves.FeatureExtractors
                 }
 
                 // (optional) liftering
-                lpcc.ApplyWindow(_lifterCoeffs);
+
+                if (lifterCoeffs != null)
+                {
+                    lpcc.ApplyWindow(lifterCoeffs);
+                }
 
 
                 // add LPC vector to output sequence
@@ -180,7 +186,7 @@ namespace NWaves.FeatureExtractors
                     TimePosition = (double)i / signal.SamplingRate
                 });
 
-                i += _hopSize;
+                i += hopSize;
             }
 
             return featureVectors;

@@ -35,8 +35,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
-    <Folder Include="FeatureExtractors\Mpeg7\" />
-    <Folder Include="FeatureReconstructors\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\Channels.cs" />
@@ -60,6 +58,7 @@
     <Compile Include="FeatureExtractors\Base\FeatureVector.cs" />
     <Compile Include="FeatureExtractors\Base\FeatureExtractor.cs" />
     <Compile Include="FeatureExtractors\Base\FeaturePostProcessing.cs" />
+    <Compile Include="FeatureExtractors\Multi\SpectralFeaturesExtractor.cs" />
     <Compile Include="FeatureExtractors\LpccExtractor.cs" />
     <Compile Include="FeatureExtractors\LpcExtractor.cs" />
     <Compile Include="FeatureExtractors\MfccExtractor.cs" />
@@ -67,6 +66,10 @@
     <Compile Include="FeatureExtractors\PnccExtractor.cs" />
     <Compile Include="FeatureExtractors\Serializers\CsvFeatureSerializer.cs" />
     <Compile Include="FeatureExtractors\SpnccExtractor.cs" />
+    <Compile Include="FeatureExtractors\Multi\TimeDomainFeaturesExtractor.cs" />
+    <Compile Include="Features\Harmonic.cs" />
+    <Compile Include="Features\Spectral.cs" />
+    <Compile Include="Features\Temporal.cs" />
     <Compile Include="Filters\Base\LtiFilter.cs" />
     <Compile Include="Filters\Base\FilteringOptions.cs" />
     <Compile Include="Filters\Base\FirFilter.cs" />

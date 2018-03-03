@@ -152,8 +152,7 @@ namespace NWaves.DemoForms
             //                             modulationFftSize, modulationHopSize,
             //                             featuregram: vectors.Select(v => v.Features));
 
-            _extractor = new MsExtractor(_signal.SamplingRate,
-                                         windowSize, overlapSize,
+            _extractor = new MsExtractor(windowSize, overlapSize,
                                          modulationFftSize, modulationHopSize,
                                          filterbank: _filterbank, window: WindowTypes.Hamming);
             _features = _extractor.ComputeFrom(_signal);
@@ -175,7 +174,7 @@ namespace NWaves.DemoForms
         {
             if (temporalCheckBox.Checked)
             {
-                DrawModulationSpectraHerz(_extractor.VectorsAtHerz(_features, double.Parse(herzTextBox.Text)));
+                DrawModulationSpectraHerz(_extractor.VectorsAtHerz(_features, _signal.SamplingRate, double.Parse(herzTextBox.Text)));
             }
             else
             {

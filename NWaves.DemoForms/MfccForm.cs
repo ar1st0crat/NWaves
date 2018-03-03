@@ -37,13 +37,13 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            var mfccExtractor = new MfccExtractor(13, _signal.SamplingRate,
+            var mfccExtractor = new MfccExtractor(13,
                                                       //windowSize: 0.03125,
                                                       //overlapSize: 0.015625,
                                                       melFilterbankSize: 20,
                                                       //lowFreq: 100,
                                                       //highFreq: 4200,
-                                                      lifterSize: 22,
+                                                      //lifterSize: 22,
                                                       preEmphasis: 0.95,
                                                       window: WindowTypes.Hamming);
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);
@@ -53,7 +53,7 @@ namespace NWaves.DemoForms
             FillFeaturesList(_mfccVectors, mfccExtractor.FeatureDescriptions);
             mfccListView.Items[0].Selected = true;
 
-            PlotMelFilterbank(mfccExtractor.MelFilterBank);
+            PlotMelFilterbank(mfccExtractor.FilterBank);
             PlotMfcc(_mfccVectors[0].Features);
 
             using (var csvFile = new FileStream("mfccs.csv", FileMode.Create))

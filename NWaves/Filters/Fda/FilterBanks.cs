@@ -24,6 +24,7 @@ namespace NWaves.Filters.Fda
     ///     - Bark bands
     ///     - Critical bands
     ///     - ERB filterbank
+    ///     - Octaves (from MPEG-7)
     /// 
     /// </summary>
     public static class FilterBanks
@@ -164,7 +165,7 @@ namespace NWaves.Filters.Fda
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
         /// <returns>Array of frequency tuples for each filter</returns>
-        public static Tuple<double, double, double>[] UniformBands(
+        private static Tuple<double, double, double>[] UniformBands(
             Func<double, double> scaleMapper, Func<double, double> inverseMapper,
             int filterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
         {
@@ -443,7 +444,7 @@ namespace NWaves.Filters.Fda
                 var sum = 0.0;
                 for (var j = 0; j < filter.Length; j++)
                 {
-                    sum += Math.Abs(filter[j]*filter[j]);
+                    sum += Math.Abs(filter[j] * filter[j]);
                 }
 
                 var weight = Math.Sqrt(sum*samplingRate/fftSize);
@@ -475,7 +476,7 @@ namespace NWaves.Filters.Fda
                 }
             }
         }
-        
+
         /// <summary>
         /// Method applies filters to spectrum and then does Log10() on resulting spectrum.
         /// </summary>

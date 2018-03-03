@@ -67,7 +67,7 @@ namespace NWaves.DemoForms
             // obtain spectrogram
 
             _stft = new Stft(_fftSize, _overlapSize, WindowTypes.Rectangular, _fftSize);
-            var spectrogram = _stft.Direct(_signal.Samples);
+            var spectrogram = _stft.Spectrogram(_signal.Samples);
 
             var spectraCount = spectrogram.Count;
 
@@ -75,9 +75,15 @@ namespace NWaves.DemoForms
             var maxValue = spectrogram.SelectMany(s => s).Max();
 
             // post-process spectrogram for better visualization
+
             for (var i = 0; i < spectraCount; i++)
             {
-                spectrogram[i] = spectrogram[i].Select(s => (s * 3 < maxValue) ? s * 3 : s / 1.5).ToArray();
+                spectrogram[i] = spectrogram[i].Select(s =>
+                {
+                    var sqrt = Math.Sqrt(s);
+                    return sqrt*3 < maxValue ? sqrt*3 : sqrt/1.5;
+                })
+                .ToArray();
             }
             maxValue /= 12;
 

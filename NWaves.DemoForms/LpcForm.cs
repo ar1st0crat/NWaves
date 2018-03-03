@@ -17,12 +17,13 @@ namespace NWaves.DemoForms
     public partial class LpcForm : Form
     {
         private const double WindowSize = 0.032;
-        private const double OverlapSize = 0.010;
+        private const double HopSize = 0.010;
 
         private DiscreteSignal _signal;
         private List<FeatureVector> _lpcVectors;
 
         private Fft _fft;
+
 
         public LpcForm()
         {
@@ -45,7 +46,7 @@ namespace NWaves.DemoForms
 
             _fft = new Fft(512);
             
-            var lpcExtractor = new LpcExtractor(16, _signal.SamplingRate, WindowSize, OverlapSize);
+            var lpcExtractor = new LpcExtractor(16, WindowSize, HopSize);
 
             _lpcVectors = lpcExtractor.ComputeFrom(_signal);
 
@@ -60,7 +61,7 @@ namespace NWaves.DemoForms
 
         double[] ComputeSpectrum(int idx)
         {
-            var pos = (int)(_signal.SamplingRate * OverlapSize * idx);
+            var pos = (int)(_signal.SamplingRate * HopSize * idx);
 
             return _fft.PowerSpectrum(_signal[pos, pos + 512], normalize: false)
                        .Samples

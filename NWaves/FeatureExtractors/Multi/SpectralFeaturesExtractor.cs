@@ -1,0 +1,172 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using NWaves.FeatureExtractors.Base;
+using NWaves.Features;
+using NWaves.Signals;
+using NWaves.Transforms;
+using NWaves.Utils;
+
+namespace NWaves.FeatureExtractors.Multi
+{
+    /// <summary>
+    /// Extractor of spectral features
+    /// </summary>
+    public class SpectralFeaturesExtractor : FeatureExtractor
+    {
+        public const string FeatureSet = "centroid, flatness, rolloff, bandwidth, contrast";
+
+        /// <summary>
+        /// String annotations (or simply names) of features
+        /// </summary>
+        public override string[] FeatureDescriptions { get; }
+
+        /// <summary>
+        /// Number of features to extract
+        /// </summary>
+        public override int FeatureCount => FeatureDescriptions.Length;
+
+        /// <summary>
+        /// Size of used FFT
+        /// </summary>
+        private readonly int _fftSize;
+
+        /// <summary>
+        /// Length of overlap (in ms)
+        /// </summary>
+        private readonly double _hopSize;
+
+        /// <summary>
+        /// Length of analysis window (in ms)
+        /// </summary>
+        private readonly double _windowSize;
+
+        /// <summary>
+        /// Extractor functions
+        /// </summary>
+        private readonly Func<double[], double>[] _extractors;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="featureList"></param>
+        /// <param name="parameters"></param>
+        /// <param name="windowSize"></param>
+        /// <param name="hopSize"></param>
+        /// <param name="fftSize"></param>
+        public SpectralFeaturesExtractor(string featureList,
+                                         double windowSize = 0.0256, double hopSize = 0.010, int fftSize = 0,
+                                         IReadOnlyDictionary<string, object> parameters = null)
+        {
+            if (featureList == "all" || featureList == "full")
+            {
+                featureList = FeatureSet;
+            }
+
+            var features = featureList.Split(',', '+', '-', ';', ':');
+
+            _extractors = features.Select<string, Func<double[], double>>(f =>
+            {
+                var parameter = f.Trim().ToLower();
+                switch (parameter)
+                {
+                    case "sc":
+                    case "centroid":
+                        return Spectral.Centroid;
+
+                    case "sfm":
+                    case "flatness":
+                        if (parameters?.ContainsKey("minLevel") ?? false)
+                        {
+                            var minLevel = (double) parameters["minLevel"];
+                            return spectrum => Spectral.Flatness(spectrum, minLevel);
+                        }
+                        else
+                        {
+                            return spectrum => Spectral.Flatness(spectrum);
+                        }
+
+                    case "rolloff":
+                        if (parameters?.ContainsKey("rolloffPercent") ?? false)
+                        {
+                            var rollofPercent = (double) parameters["rolloffPercent"];
+                            return spectrum => Spectral.Rolloff(spectrum, rollofPercent);
+                        }
+                        else
+                        {
+                            return spectrum => Spectral.Rolloff(spectrum);
+                        }
+
+                    case "sbw":
+                    case "bandwidth":
+                        return Spectral.Bandwidth;
+
+                    case "contrast":
+                        return Spectral.Contrast;
+
+                    default:
+                        throw new ArgumentException($"Unknown parameter: {parameter}");
+                }
+            }).ToArray();
+
+            FeatureDescriptions = features;
+
+            _windowSize = windowSize;
+            _hopSize = hopSize;
+            _fftSize = fftSize;
+        }
+
+        /// <summary>
+        /// Compute the sequence of feature vectors from some fragment of a signal
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="startSample">The number (position) of the first sample for processing</param>
+        /// <param name="endSample">The number (position) of last sample for processing</param>
+        /// <returns>Sequence of feature vectors</returns>
+        public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
+        {
+            var windowSize = (int)(signal.SamplingRate * _windowSize);
+            var hopSize = (int)(signal.SamplingRate * _hopSize);
+            var fftSize = _fftSize >= windowSize ? _fftSize : MathUtils.NextPowerOfTwo(windowSize);
+
+            var featureVectors = new List<FeatureVector>();
+            var featureCount = FeatureCount;
+
+            var fft = new Fft(fftSize);
+
+            // reserve memory for reusable blocks
+
+            var spectrum = new double[fftSize / 2 + 1];  // buffer for magnitude spectrum
+            var block = new double[fftSize];             // buffer for currently processed block
+            var zeroblock = new double[fftSize];         // just a buffer of zeros for quick memset
+
+            var i = startSample;
+            while (i + windowSize < endSample)
+            {
+                // prepare all blocks in memory for the current step:
+
+                FastCopy.ToExistingArray(zeroblock, block, fftSize);
+                FastCopy.ToExistingArray(signal.Samples, block, windowSize, i);
+
+                fft.MagnitudeSpectrum(block, spectrum);
+
+                var featureVector = new double[featureCount];
+
+                for (var j = 0; j < featureCount; j++)
+                {
+                    featureVector[j] = _extractors[j](spectrum);
+                }
+
+                featureVectors.Add(new FeatureVector
+                {
+                    Features = featureVector,
+                    TimePosition = (double)i / signal.SamplingRate
+                });
+
+                i += hopSize;
+            }
+
+            return featureVectors;
+        }
+    }
+}

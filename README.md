@@ -10,14 +10,14 @@ NWaves is a .NET library for 1d signal processing focused specifically on audio 
 
 Already available:
 
-- [x] major DSP transforms (FFT, DCT, STFT, Hilbert, cepstrum)
-- [x] basic LTI digital filters (FIR, IIR, moving average, pre-emphasis, DC removal)
+- [x] major DSP transforms (FFT, DCT, STFT, Hilbert, cepstral)
+- [x] basic LTI digital filters (FIR, IIR, comb, moving average, pre/de-emphasis, DC removal)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
-- [x] basic operations (convolution/deconvolution, cross-correlation, rectification, envelope detection)
+- [x] basic operations (convolution, cross-correlation, rectification, envelope detection)
 - [x] block convolution (overlap-add, overlap-save)
 - [x] modulation (AM, ring, FM, PM)
-- [x] simple filter design & analysis (zeros and poles, window method, HP from/to LP, combining filters)
+- [x] basic filter design & analysis (zeros and poles, window method, HP from/to LP, combining filters)
 - [x] non-linear filters (median filter, overdrive and distortion effects)
 - [x] windowing functions (Hamming, Blackman, Hann, cepstral liftering)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB) and perceptual weighting (A, B, C)
@@ -42,7 +42,7 @@ Planned:
 
 NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and designed mostly for offline processing. It doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C++ or Asm, but it's not that *very* slow for many purposes either.
 
-In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOD-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in separate classes, so that one wouldn't get lost in object-oriented labyrinths. Although you may suddenly find a little bit of fluent syntax (e.g., SignalBuilders) and some Strategy patterns (e.g. FeatureExtractor) in the project.
+In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOD-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in separate classes, so that one wouldn't get lost in object-oriented labyrinths.
 
 ## Quickstart
 
@@ -50,8 +50,8 @@ In the beginning... there were interfaces and factories here and there, and NWav
 
 ```C#
 
-// Create signal {0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75} sampled at 8 kHz:
-var constants = new DiscreteSignal(8000, 10, 0.75);
+// Create signal {0.75, 0.75, 0.75, 0.75, 0.75} sampled at 8 kHz:
+var constants = new DiscreteSignal(8000, 5, 0.75);
 
 
 // Create signal {0.0, 1.0, 2.0, ..., 99.0} sampled at 22050 Hz
@@ -372,13 +372,13 @@ var filtered = signal.ApplyFilter(distortion * echo * reverb);
 
 ```C#
 
-var lpcExtractor = new LpcExtractor(16, signal.SamplingRate, windowSize: 0.032, overlapSize: 0.015);
+var lpcExtractor = new LpcExtractor(16, windowSize: 0.032, hopSize: 0.015);
 var lpcVectors = lpcExtractor.ComputeFrom(signal);
 
-var mfccExtractor = new MfccExtractor(13, signal.SamplingRate, melFilterbanks: 24, preEmphasis: 0.95);
+var mfccExtractor = new MfccExtractor(13, melFilterbanks: 24, preEmphasis: 0.95);
 var mfccVectors = mfccExtractor.ComputeFrom(signal).Take(15);
 
-var pnccExtractor = new PnccExtractor(13, signal.SamplingRate);
+var pnccExtractor = new PnccExtractor(13);
 var pnccVectors = pnccExtractor.ComputeFrom(signal.First(10000));
 FeaturePostProcessing.NormalizeMean(pnccVectors);
 

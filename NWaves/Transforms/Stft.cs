@@ -64,55 +64,114 @@ namespace NWaves.Transforms
         /// STFT (spectrogram) is essentially the list of spectra in time.
         /// </summary>
         /// <param name="samples">The samples of signal</param>
-        /// <param name="startSample">The number (position) of the first sample for processing</param>
-        /// <param name="endSample">The number (position) of last sample for processing</param>
-        /// <returns>Spectrogram of the signal</returns>
-        public List<double[]> Direct(double[] samples, int startSample, int endSample)
+        /// <returns>STFT of the signal</returns>
+        public List<ComplexDiscreteSignal> Direct(double[] samples)
         {
-            var block = new double[_fftSize];
-            var zeroblock = new double[_fftSize - _windowSize];
+            var stft = new List<ComplexDiscreteSignal>();
 
-            var spectrogram = new List<double[]>();
-
-            var pos = startSample;
-            for (; pos + _windowSize < endSample; pos += _hopSize)
+            for (var pos = 0; pos + _windowSize < samples.Length; pos += _hopSize)
             {
-                FastCopy.ToExistingArray(samples, block, _windowSize, pos);
-                FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length, 0, _windowSize);
+                var re = new double[_fftSize];
+                var im = new double[_fftSize];
+                FastCopy.ToExistingArray(samples, re, _windowSize, pos);
 
                 if (_window != WindowTypes.Rectangular)
                 {
-                    block.ApplyWindow(_windowSamples);
+                    re.ApplyWindow(_windowSamples);
                 }
+                
+                _fft.Direct(re, im);
 
-                var spectrum = new double[_fftSize / 2 + 1];
-                _fft.MagnitudeSpectrum(block, spectrum);
-
-                spectrogram.Add(spectrum);
+                stft.Add(new ComplexDiscreteSignal(1, re, im));
             }
 
-            return spectrogram;
+            return stft;
         }
-        
+
         /// <summary>
-        /// Method for computing direct STFT of entire signal.
-        /// STFT (spectrogram) is essentially the list of spectra in time.
+        /// Inverse STFT
         /// </summary>
-        /// <param name="samples">The samples of signal</param>
-        /// <returns>Spectrogram of the signal</returns>
-        public List<double[]> Direct(double[] samples)
+        /// <param name="stft"></param>
+        /// <returns></returns>
+        public double[] Inverse(List<ComplexDiscreteSignal> stft)
         {
-            return Direct(samples, 0, samples.Length);
+            var spectraCount = stft.Count;
+            var samples = new double[spectraCount * _hopSize];
+
+            var pos = 0;
+            for (var i = 0; i < spectraCount; i++)
+            {
+                var re = FastCopy.EntireArray(stft[i].Real);
+                var im = FastCopy.EntireArray(stft[i].Imag);
+                
+                if (_window != WindowTypes.Rectangular)
+                {
+                    re.ApplyWindow(_windowSamples);
+                }
+
+                _fft.Inverse(re, im);
+
+                for (var j = 0; j < re.Length; j++)
+                {
+                    samples[pos + j] += re[j];
+                }
+
+                pos += _windowSize;
+            }
+
+            return samples;
         }
 
         /// <summary>
         /// Overloaded method for DiscreteSignal as an input
         /// </summary>
         /// <param name="signal">The signal under analysis</param>
-        /// <returns>Spectrogram of the signal</returns>
-        public List<double[]> Direct(DiscreteSignal signal)
+        /// <returns>STFT of the signal</returns>
+        public List<ComplexDiscreteSignal> Direct(DiscreteSignal signal)
         {
             return Direct(signal.Samples);
+        }
+
+        /// <summary>
+        /// Method for computing a spectrogram.
+        /// The spectrogram is essentially a list of power spectra in time.
+        /// </summary>
+        /// <param name="samples">The samples of signal</param>
+        /// <returns>Spectrogram of the signal</returns>
+        public List<double[]> Spectrogram(double[] samples)
+        {
+            var block = new double[_fftSize];
+            var zeroblock = new double[_fftSize];
+
+            var spectrogram = new List<double[]>();
+
+            for (var pos = 0; pos + _windowSize < samples.Length; pos += _hopSize)
+            {
+                FastCopy.ToExistingArray(zeroblock, block, _fftSize);
+                FastCopy.ToExistingArray(samples, block, _windowSize, pos);
+                
+                if (_window != WindowTypes.Rectangular)
+                {
+                    block.ApplyWindow(_windowSamples);
+                }
+
+                var spectrum = new double[_fftSize / 2 + 1];
+                _fft.PowerSpectrum(block, spectrum);
+
+                spectrogram.Add(spectrum);
+            }
+
+            return spectrogram;
+        }
+
+        /// <summary>
+        /// Overloaded method for DiscreteSignal as an input
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <returns>Spectrogram of the signal</returns>
+        public List<double[]> Spectrogram(DiscreteSignal signal)
+        {
+            return Spectrogram(signal.Samples);
         }
     }
 }

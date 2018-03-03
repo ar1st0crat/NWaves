@@ -362,7 +362,7 @@ namespace NWaves.DemoForms
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.OverlapAdd);
             DrawSignal(signalAfterFilteringPanel, _filteredSignal);
 
-            _filteredSpectrogram = _stft.Direct(_filteredSignal);
+            _filteredSpectrogram = _stft.Spectrogram(_filteredSignal);
             DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
         }
 
@@ -373,7 +373,7 @@ namespace NWaves.DemoForms
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.OverlapSave);
             DrawSignal(signalAfterFilteringPanel, _filteredSignal);
 
-            _filteredSpectrogram = _stft.Direct(_filteredSignal);
+            _filteredSpectrogram = _stft.Spectrogram(_filteredSignal);
             DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
         }
 
@@ -384,7 +384,7 @@ namespace NWaves.DemoForms
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.DifferenceEquation);
             DrawSignal(signalAfterFilteringPanel, _filteredSignal);
 
-            _filteredSpectrogram = _stft.Direct(_filteredSignal);
+            _filteredSpectrogram = _stft.Spectrogram(_filteredSignal);
             DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
         }
 
@@ -410,7 +410,7 @@ namespace NWaves.DemoForms
 
             DrawSignal(signalBeforeFilteringPanel, _signal);
 
-            _spectrogram = _stft.Direct(_signal.Samples);
+            _spectrogram = _stft.Spectrogram(_signal.Samples);
             DrawSpectrogram(spectrogramBeforeFilteringPanel, _spectrogram);
         }
 
@@ -546,9 +546,15 @@ namespace NWaves.DemoForms
             var maxValue = spectrogram.SelectMany(s => s).Max();
 
             // post-process spectrogram for better visualization
+
             for (var i = 0; i < spectraCount; i++)
             {
-                spectrogram[i] = spectrogram[i].Select(s => (s * 3 < maxValue) ? s * 3 : s / 1.5).ToArray();
+                spectrogram[i] = spectrogram[i].Select(s =>
+                {
+                    var sqrt = Math.Sqrt(s);
+                    return (sqrt*3 < maxValue) ? sqrt*3 : sqrt/1.5;
+                })
+                .ToArray();
             }
             maxValue /= 12;
 
