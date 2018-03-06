@@ -37,12 +37,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Extractor functions
         /// </summary>
-        private readonly Func<int, int, double>[] _extractors;
-
-        /// <summary>
-        /// Currently processed signal
-        /// </summary>
-        private DiscreteSignal _signal;
+        private readonly Func<DiscreteSignal, int, int, double>[] _extractors;
 
         /// <summary>
         /// Constructor
@@ -62,7 +57,7 @@ namespace NWaves.FeatureExtractors.Multi
 
             var features = featureList.Split(',', '+', '-', ';', ':');
 
-            _extractors = features.Select<string, Func<int, int, double>>(f =>
+            _extractors = features.Select<string, Func<DiscreteSignal, int, int, double>>(f =>
             {
                 var parameter = f.Trim().ToLower();
                 switch (parameter)
@@ -70,17 +65,17 @@ namespace NWaves.FeatureExtractors.Multi
                     case "e":
                     case "en":
                     case "energy":
-                        return _signal.Energy;
+                        return (signal, start, end) => signal.Energy(start, end);
 
                     case "rms":
-                        return _signal.Rms;
+                        return (signal, start, end) => signal.Rms(start, end);
 
                     case "zcr":
                     case "zero-crossing-rate":
-                        return _signal.ZeroCrossingRate;
+                        return (signal, start, end) => signal.ZeroCrossingRate(start, end);
 
                     case "entropy":
-                        return _signal.Entropy;
+                        return (signal, start, end) => signal.Entropy(start, end);
 
                     default:
                         throw new ArgumentException($"Unknown parameter: {parameter}");
@@ -105,23 +100,17 @@ namespace NWaves.FeatureExtractors.Multi
             var windowSize = (int)(signal.SamplingRate * _windowSize);
             var hopSize = (int)(signal.SamplingRate * _hopSize);
 
-            _signal = signal;
-
             var featureVectors = new List<FeatureVector>();
             var featureCount = FeatureCount;
-            
-            var block = new double[windowSize];     // buffer for currently processed block
             
             var i = startSample;
             while (i + windowSize < endSample)
             {
-                FastCopy.ToExistingArray(signal.Samples, block, windowSize, i);
-
                 var featureVector = new double[featureCount];
 
                 for (var j = 0; j < featureCount; j++)
                 {
-                    featureVector[j] = _extractors[j](i, i + windowSize);
+                    featureVector[j] = _extractors[j](signal, i, i + windowSize);
                 }
 
                 featureVectors.Add(new FeatureVector

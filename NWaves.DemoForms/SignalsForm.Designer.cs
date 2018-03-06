@@ -62,12 +62,13 @@
             this.mfccToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lpcToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.modulationSpectrumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.effectsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.effectsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.featuresToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -258,7 +259,8 @@
             this.mfccToolStripMenuItem,
             this.lpcToolStripMenuItem,
             this.modulationSpectrumToolStripMenuItem,
-            this.effectsToolStripMenuItem});
+            this.effectsToolStripMenuItem,
+            this.featuresToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1207, 28);
@@ -365,6 +367,13 @@
             this.modulationSpectrumToolStripMenuItem.Text = "Mo&dulation Spectrum";
             this.modulationSpectrumToolStripMenuItem.Click += new System.EventHandler(this.modulationSpectrumToolStripMenuItem_Click);
             // 
+            // effectsToolStripMenuItem
+            // 
+            this.effectsToolStripMenuItem.Name = "effectsToolStripMenuItem";
+            this.effectsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
+            this.effectsToolStripMenuItem.Text = "&Effects";
+            this.effectsToolStripMenuItem.Click += new System.EventHandler(this.effectsToolStripMenuItem_Click);
+            // 
             // label4
             // 
             this.label4.AutoSize = true;
@@ -410,12 +419,12 @@
             this.label8.TabIndex = 24;
             this.label8.Text = "Spectrum";
             // 
-            // effectsToolStripMenuItem
+            // featuresToolStripMenuItem
             // 
-            this.effectsToolStripMenuItem.Name = "effectsToolStripMenuItem";
-            this.effectsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
-            this.effectsToolStripMenuItem.Text = "&Effects";
-            this.effectsToolStripMenuItem.Click += new System.EventHandler(this.effectsToolStripMenuItem_Click);
+            this.featuresToolStripMenuItem.Name = "featuresToolStripMenuItem";
+            this.featuresToolStripMenuItem.Size = new System.Drawing.Size(76, 24);
+            this.featuresToolStripMenuItem.Text = "Fea&tures";
+            this.featuresToolStripMenuItem.Click += new System.EventHandler(this.featuresToolStripMenuItem_Click);
             // 
             // SignalsForm
             // 
@@ -499,6 +508,7 @@
         private System.Windows.Forms.ToolStripMenuItem modulationSpectrumToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pitchToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem effectsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem featuresToolStripMenuItem;
     }
 }
 

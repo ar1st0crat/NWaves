@@ -214,13 +214,21 @@ namespace NWaves.Signals
         /// <returns>Zero-crossing rate</returns>
         public double ZeroCrossingRate(int startPos, int endPos)
         {
+            const double disbalance = 1e-4;
+
+            var prevSample = Samples[startPos] + disbalance;
+
             var rate = 0;
             for (var i = startPos + 1; i < endPos; i++)
             {
-                if ((Samples[i - 1] >= 0) != (Samples[i] >= 0))
+                var sample = Samples[i] + disbalance;
+
+                if ((sample >= 0) != (prevSample >= 0))
                 {
                     rate++;
                 }
+
+                prevSample = sample;
             }
 
             return (double)rate / (endPos - startPos - 1);

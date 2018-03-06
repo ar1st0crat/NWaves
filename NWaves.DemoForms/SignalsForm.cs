@@ -96,6 +96,12 @@ namespace NWaves.DemoForms
             effectsForm.ShowDialog();
         }
 
+        private void featuresToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var featuresForm = new FeaturesForm();
+            featuresForm.ShowDialog();
+        }
+
         private void OpenSignal()
         {
             var ofd = new OpenFileDialog();

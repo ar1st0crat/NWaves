@@ -46,6 +46,7 @@
     <Compile Include="Audio\Mci\MciAudioRecorder.cs" />
     <Compile Include="Effects\ChorusEffect.cs" />
     <Compile Include="Effects\DistortionEffect.cs" />
+    <Compile Include="Effects\DelayEffect.cs" />
     <Compile Include="Effects\EchoEffect.cs" />
     <Compile Include="Effects\FlangerEffect.cs" />
     <Compile Include="Effects\OverdriveEffect.cs" />
@@ -84,8 +85,8 @@
     <Compile Include="Filters\BiQuad\NotchFilter.cs" />
     <Compile Include="Filters\BiQuad\PeakFilter.cs" />
     <Compile Include="Filters\ButterworthFilter.cs" />
-    <Compile Include="Filters\CombFirFilter.cs" />
-    <Compile Include="Filters\CombIirFilter.cs" />
+    <Compile Include="Filters\CombFeedforwardFilter.cs" />
+    <Compile Include="Filters\CombFeedbackFilter.cs" />
     <Compile Include="Filters\DcRemovalFilter.cs" />
     <Compile Include="Filters\DeEmphasisFilter.cs" />
     <Compile Include="Filters\Fda\FilterDesign.cs" />
@@ -102,6 +103,7 @@
     <Compile Include="Operations\Deconvolution.cs" />
     <Compile Include="Operations\Envelope.cs" />
     <Compile Include="Operations\Modulate.cs" />
+    <Compile Include="Operations\PhaseVocoder.cs" />
     <Compile Include="Operations\Resampling.cs" />
     <Compile Include="Operations\SpectralSubtraction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

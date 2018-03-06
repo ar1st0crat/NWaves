@@ -56,6 +56,12 @@
     <Compile Include="EffectsForm.Designer.cs">
       <DependentUpon>EffectsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="FeaturesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FeaturesForm.Designer.cs">
+      <DependentUpon>FeaturesForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="FiltersForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -96,6 +102,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="EffectsForm.resx">
       <DependentUpon>EffectsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FeaturesForm.resx">
+      <DependentUpon>FeaturesForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FiltersForm.resx">
       <DependentUpon>FiltersForm.cs</DependentUpon>

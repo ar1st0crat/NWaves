@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace NWaves.FeatureExtractors.Base
@@ -89,6 +90,50 @@ namespace NWaves.FeatureExtractors.Base
                     vectors[i - N].Features[j + 2 * featureCount] = num / 10;
                 }
             }
+        }
+
+        /// <summary>
+        /// Join different collections of feature vectors.
+        /// Time positions must coincide.
+        /// </summary>
+        /// <param name="vectors"></param>
+        /// <returns></returns>
+        public static FeatureVector[] Join(params IList<FeatureVector>[] vectors)
+        {
+            var vectorCount = vectors.Length;
+
+            if (vectorCount == 0)
+            {
+                throw new ArgumentException("Empty collection of feature vectors!");
+            }
+
+            if (vectorCount == 1)
+            {
+                return vectors.ElementAt(0).ToArray();
+            }
+
+            var length = vectors.Sum(v => v[0].Features.Length);
+            var joined = new FeatureVector[vectors[0].Count];
+            
+            for (var i = 0; i < joined.Length; i++)
+            {
+                var features = new double[length];
+
+                var offset = 0;
+                for (var j = 0; j < vectorCount; j++)
+                {
+                    Buffer.BlockCopy(vectors[j][i].Features, 0, features, offset, vectors[j][i].Features.Length * 8);
+                    offset += vectors[j][i].Features.Length * 8;
+                }
+
+                joined[i] = new FeatureVector
+                {
+                    TimePosition = vectors[0][i].TimePosition,
+                    Features = features
+                };
+            }
+
+            return joined;
         }
     }
 }

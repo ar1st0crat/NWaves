@@ -14,7 +14,7 @@ namespace NWaves.FeatureExtractors.Multi
     /// </summary>
     public class SpectralFeaturesExtractor : FeatureExtractor
     {
-        public const string FeatureSet = "centroid, flatness, rolloff, bandwidth, contrast";
+        public const string FeatureSet = "centroid, spread, flatness, rolloff, crest, bandwidth, c1+c2+c3+c4+c5+c6";
 
         /// <summary>
         /// String annotations (or simply names) of features
@@ -44,7 +44,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Extractor functions
         /// </summary>
-        private readonly Func<double[], double>[] _extractors;
+        private readonly Func<double[], double[], double>[] _extractors;
 
         /// <summary>
         /// Constructor
@@ -65,7 +65,7 @@ namespace NWaves.FeatureExtractors.Multi
 
             var features = featureList.Split(',', '+', '-', ';', ':');
 
-            _extractors = features.Select<string, Func<double[], double>>(f =>
+            _extractors = features.Select<string, Func<double[], double[], double>>(f =>
             {
                 var parameter = f.Trim().ToLower();
                 switch (parameter)
@@ -74,35 +74,47 @@ namespace NWaves.FeatureExtractors.Multi
                     case "centroid":
                         return Spectral.Centroid;
 
+                    case "ss":
+                    case "spread":
+                        return Spectral.Spread;
+
                     case "sfm":
                     case "flatness":
                         if (parameters?.ContainsKey("minLevel") ?? false)
                         {
                             var minLevel = (double) parameters["minLevel"];
-                            return spectrum => Spectral.Flatness(spectrum, minLevel);
+                            return (spectrum, freqs) => Spectral.Flatness(spectrum, freqs, minLevel);
                         }
                         else
                         {
-                            return spectrum => Spectral.Flatness(spectrum);
+                            return (spectrum, freqs) => Spectral.Flatness(spectrum, freqs);
                         }
 
                     case "rolloff":
                         if (parameters?.ContainsKey("rolloffPercent") ?? false)
                         {
-                            var rollofPercent = (double) parameters["rolloffPercent"];
-                            return spectrum => Spectral.Rolloff(spectrum, rollofPercent);
+                            var rolloffPercent = (double) parameters["rolloffPercent"];
+                            return (spectrum, freqs) => Spectral.Rolloff(spectrum, freqs, rolloffPercent);
                         }
                         else
                         {
-                            return spectrum => Spectral.Rolloff(spectrum);
+                            return (spectrum, freqs) => Spectral.Rolloff(spectrum, freqs);
                         }
+
+                    case "crest":
+                        return (spectrum, freqs) => Spectral.Crest(spectrum);
 
                     case "sbw":
                     case "bandwidth":
-                        return Spectral.Bandwidth;
+                        return (spectrum, freqs) => Spectral.Bandwidth(spectrum, freqs);
 
-                    case "contrast":
-                        return Spectral.Contrast;
+                    case "c1":
+                    case "c2":
+                    case "c3":
+                    case "c4":
+                    case "c5":
+                    case "c6":
+                        return (spectrum, freqs) => Spectral.Contrast(spectrum, int.Parse(parameter.Substring(1)));
 
                     default:
                         throw new ArgumentException($"Unknown parameter: {parameter}");
@@ -129,6 +141,12 @@ namespace NWaves.FeatureExtractors.Multi
             var hopSize = (int)(signal.SamplingRate * _hopSize);
             var fftSize = _fftSize >= windowSize ? _fftSize : MathUtils.NextPowerOfTwo(windowSize);
 
+            var resolution = (double)signal.SamplingRate / fftSize;
+
+            var frequencies = Enumerable.Range(0, fftSize + 1)
+                                        .Select(f => f * resolution)
+                                        .ToArray();
+
             var featureVectors = new List<FeatureVector>();
             var featureCount = FeatureCount;
 
@@ -154,7 +172,7 @@ namespace NWaves.FeatureExtractors.Multi
 
                 for (var j = 0; j < featureCount; j++)
                 {
-                    featureVector[j] = _extractors[j](spectrum);
+                    featureVector[j] = _extractors[j](spectrum, frequencies);
                 }
 
                 featureVectors.Add(new FeatureVector
