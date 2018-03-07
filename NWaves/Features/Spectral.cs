@@ -167,29 +167,86 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// 
+        /// Spectral contrast (array of *bandCount* values)
         /// </summary>
         /// <param name="spectrum"></param>
+        /// <param name="frequencies"></param>
+        /// <param name="minFrequency"></param>
+        /// <param name="bandCount"></param>
         /// <returns></returns>
-        public static double Contrast(double[] spectrum, int bandNo)
+        public static double[] Contrast(double[] spectrum, double[] frequencies, double minFrequency = 200.0, int bandCount = 6)
         {
-            var minFrequency = 200.0;
-            var bandCount = 6;
+            const double alpha = 0.02;
 
-            var octaves = new double[bandCount + 2];
+            var contrasts = new double[bandCount];
 
-            octaves[0] = minFrequency;
-            for (var i = 1; i <= bandCount + 1; i++)
+            var octaveLow = minFrequency;
+            var octaveHigh = 2 * octaveLow;
+
+            for (var n = 0; n < bandCount; n++)
             {
-                octaves[i] = octaves[i - 1] * 2;
+                var bandSpectrum = spectrum.Where((s, i) => frequencies[i] >= octaveLow && frequencies[i] <= octaveHigh)
+                                           .OrderBy(s => s)
+                                           .ToArray();
+
+                var selectedCount = Math.Max(alpha * bandSpectrum.Length, 1);
+
+                var avgPeaks = 0.0;
+                var avgValleys = 0.0;
+
+                for (var i = 0; i < selectedCount; i++)
+                {
+                    avgValleys += bandSpectrum[i];
+                    avgPeaks += bandSpectrum[bandSpectrum.Length - i - 1];
+                }
+
+                avgPeaks /= selectedCount;
+                avgValleys /= selectedCount;
+
+                contrasts[n] = Math.Log10(avgPeaks / avgValleys);
+
+                octaveLow *= 2;
+                octaveHigh *= 2;
             }
 
-            var valleys = new double[bandCount + 1, spectrum.Length];
-            var peaks = new double[bandCount + 1, spectrum.Length];
+            return contrasts;
+        }
 
+        /// <summary>
+        /// Spectral contrast in one particular spectral band (#bandNo).
+        /// This function is called from SpectralFeatureExtractor.
+        /// </summary>
+        /// <param name="spectrum"></param>
+        /// <param name="frequencies"></param>
+        /// <param name="bandNo"></param>
+        /// <param name="minFrequency"></param>
+        /// <returns></returns>
+        public static double Contrast(double[] spectrum, double[] frequencies, int bandNo, double minFrequency = 200.0)
+        {
+            const double alpha = 0.02;
 
+            var octaveLow = minFrequency * Math.Pow(2, bandNo - 1);
+            var octaveHigh = 2 * octaveLow;
 
-            return 0.0;
+            var bandSpectrum = spectrum.Where((s,i) => frequencies[i] >= octaveLow && frequencies[i] <= octaveHigh)
+                                       .OrderBy(s => s)
+                                       .ToArray();
+
+            var selectedCount = Math.Max(alpha * bandSpectrum.Length, 1);
+
+            var avgPeaks = 0.0;
+            var avgValleys = 0.0;
+
+            for (var i = 0; i < selectedCount; i++)
+            {
+                avgValleys += bandSpectrum[i];
+                avgPeaks += bandSpectrum[bandSpectrum.Length - i - 1];
+            }
+
+            avgPeaks /= selectedCount;
+            avgValleys /= selectedCount;
+
+            return Math.Log10(avgPeaks / avgValleys);
         }
     }
 }

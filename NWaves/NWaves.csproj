@@ -51,6 +51,7 @@
     <Compile Include="Effects\FlangerEffect.cs" />
     <Compile Include="Effects\OverdriveEffect.cs" />
     <Compile Include="Effects\PhaserEffect.cs" />
+    <Compile Include="Effects\PitchShiftEffect.cs" />
     <Compile Include="Effects\ReverbEffect.cs" />
     <Compile Include="Effects\TremoloEffect.cs" />
     <Compile Include="Effects\TubeDistortionEffect.cs" />
@@ -103,7 +104,7 @@
     <Compile Include="Operations\Deconvolution.cs" />
     <Compile Include="Operations\Envelope.cs" />
     <Compile Include="Operations\Modulate.cs" />
-    <Compile Include="Operations\PhaseVocoder.cs" />
+    <Compile Include="Filters\PhaseVocoder.cs" />
     <Compile Include="Operations\Resampling.cs" />
     <Compile Include="Operations\SpectralSubtraction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

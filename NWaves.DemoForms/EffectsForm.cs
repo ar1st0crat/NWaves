@@ -96,6 +96,12 @@ namespace NWaves.DemoForms
                 var decay = double.Parse(echoDecayTextBox.Text);
                 effect = new EchoEffect(delay, decay);
             }
+            else if (delayRadioButton.Checked)
+            {
+                var delay = double.Parse(echoDelayTextBox.Text);
+                var decay = double.Parse(echoDecayTextBox.Text);
+                effect = new DelayEffect(delay, decay);
+            }
             else if (wahwahRadioButton.Checked)
             {
                 var lfoFrequency = double.Parse(lfoFreqTextBox.Text);
@@ -103,6 +109,11 @@ namespace NWaves.DemoForms
                 var maxFrequency = double.Parse(maxFreqTextBox.Text);
                 var q = double.Parse(lfoQTextBox.Text);
                 effect = new WahwahEffect(lfoFrequency, minFrequency, maxFrequency, q);
+            }
+            else if (pitchShiftRadioButton.Checked)
+            {
+                var shift = double.Parse(pitchShiftTextBox.Text);
+                effect = new PitchShiftEffect(shift);
             }
             else
             {

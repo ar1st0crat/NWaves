@@ -23,10 +23,11 @@ Already available:
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB) and perceptual weighting (A, B, C)
 - [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, modulation spectra) and CSV serialization
 - [x] feature post-processing (CMN, deltas)
+- [x] spectral features (centroid, spread, flatness, bandwidth, rolloff, contrast, crest)
 - [x] sound synthesis and signal builders (sinusoid, white/pink/red/grey noise, triangle, sawtooth, square, periodic pulse)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking
-- [x] sound effects (echo, tremolo, wahwah, phaser, distortion)
+- [x] sound effects (delay, echo, tremolo, wahwah, phaser, distortion, pitch shift)
 - [x] simple audio playback and recording (Windows only)
 
 Planned:
@@ -35,7 +36,7 @@ Planned:
 - [ ] more operations (resampling, spectral subtraction, adaptive filtering)
 - [ ] more feature extraction (MIR descriptors and lots of others)
 - [ ] more sound synthesis (ADSR, etc.)
-- [ ] more sound effects (Reverb, Vibrato, Chorus, Flanger, PitchShift, etc.)
+- [ ] more sound effects (Reverb, Vibrato, Chorus, Flanger, etc.)
 
 
 ## Philosophy of NWaves

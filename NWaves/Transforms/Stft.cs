@@ -47,7 +47,7 @@ namespace NWaves.Transforms
         /// <param name="hopSize">Hop (overlap) size</param>
         /// <param name="window">Type of the window function to apply</param>
         /// <param name="fftSize">Size of FFT</param>
-        public Stft(int windowSize = 512, int hopSize = 256, WindowTypes window = WindowTypes.Rectangular, int fftSize = 512)
+        public Stft(int windowSize = 512, int hopSize = 256, WindowTypes window = WindowTypes.Hann, int fftSize = 512)
         {
             _fftSize = fftSize >= windowSize ? fftSize : MathUtils.NextPowerOfTwo(windowSize);
             _fft = new Fft(_fftSize);
@@ -96,7 +96,7 @@ namespace NWaves.Transforms
         public double[] Inverse(List<ComplexDiscreteSignal> stft)
         {
             var spectraCount = stft.Count;
-            var samples = new double[spectraCount * _hopSize];
+            var samples = new double[spectraCount * _hopSize + _windowSize];
 
             var pos = 0;
             for (var i = 0; i < spectraCount; i++)
@@ -116,7 +116,7 @@ namespace NWaves.Transforms
                     samples[pos + j] += re[j];
                 }
 
-                pos += _windowSize;
+                pos += _hopSize;
             }
 
             return samples;

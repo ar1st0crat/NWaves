@@ -114,7 +114,7 @@ namespace NWaves.FeatureExtractors.Multi
                     case "c4":
                     case "c5":
                     case "c6":
-                        return (spectrum, freqs) => Spectral.Contrast(spectrum, int.Parse(parameter.Substring(1)));
+                        return (spectrum, freqs) => Spectral.Contrast(spectrum, freqs, int.Parse(parameter.Substring(1)));
 
                     default:
                         throw new ArgumentException($"Unknown parameter: {parameter}");

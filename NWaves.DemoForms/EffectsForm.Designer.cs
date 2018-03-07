@@ -74,6 +74,10 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pitchShiftRadioButton = new System.Windows.Forms.RadioButton();
+            this.label15 = new System.Windows.Forms.Label();
+            this.pitchShiftTextBox = new System.Windows.Forms.TextBox();
+            this.delayRadioButton = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -180,6 +184,10 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.delayRadioButton);
+            this.groupBox1.Controls.Add(this.label15);
+            this.groupBox1.Controls.Add(this.pitchShiftTextBox);
+            this.groupBox1.Controls.Add(this.pitchShiftRadioButton);
             this.groupBox1.Controls.Add(this.label13);
             this.groupBox1.Controls.Add(this.label14);
             this.groupBox1.Controls.Add(this.lfoQTextBox);
@@ -333,7 +341,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(256, 149);
+            this.label7.Location = new System.Drawing.Point(256, 163);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(48, 17);
             this.label7.TabIndex = 17;
@@ -342,7 +350,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(145, 149);
+            this.label8.Location = new System.Drawing.Point(145, 163);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(44, 17);
             this.label8.TabIndex = 16;
@@ -350,7 +358,7 @@
             // 
             // echoDecayTextBox
             // 
-            this.echoDecayTextBox.Location = new System.Drawing.Point(306, 146);
+            this.echoDecayTextBox.Location = new System.Drawing.Point(306, 160);
             this.echoDecayTextBox.Name = "echoDecayTextBox";
             this.echoDecayTextBox.Size = new System.Drawing.Size(41, 22);
             this.echoDecayTextBox.TabIndex = 15;
@@ -358,7 +366,7 @@
             // 
             // echoDelayTextBox
             // 
-            this.echoDelayTextBox.Location = new System.Drawing.Point(189, 146);
+            this.echoDelayTextBox.Location = new System.Drawing.Point(189, 160);
             this.echoDelayTextBox.Name = "echoDelayTextBox";
             this.echoDelayTextBox.Size = new System.Drawing.Size(54, 22);
             this.echoDelayTextBox.TabIndex = 14;
@@ -520,6 +528,43 @@
             this.openToolStripMenuItem.Text = "&Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
+            // pitchShiftRadioButton
+            // 
+            this.pitchShiftRadioButton.AutoSize = true;
+            this.pitchShiftRadioButton.Location = new System.Drawing.Point(467, 149);
+            this.pitchShiftRadioButton.Name = "pitchShiftRadioButton";
+            this.pitchShiftRadioButton.Size = new System.Drawing.Size(88, 21);
+            this.pitchShiftRadioButton.TabIndex = 31;
+            this.pitchShiftRadioButton.Text = "PitchShift";
+            this.pitchShiftRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(566, 151);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(23, 17);
+            this.label15.TabIndex = 33;
+            this.label15.Text = "by";
+            // 
+            // pitchShiftTextBox
+            // 
+            this.pitchShiftTextBox.Location = new System.Drawing.Point(610, 146);
+            this.pitchShiftTextBox.Name = "pitchShiftTextBox";
+            this.pitchShiftTextBox.Size = new System.Drawing.Size(41, 22);
+            this.pitchShiftTextBox.TabIndex = 32;
+            this.pitchShiftTextBox.Text = "1,2";
+            // 
+            // delayRadioButton
+            // 
+            this.delayRadioButton.AutoSize = true;
+            this.delayRadioButton.Location = new System.Drawing.Point(7, 172);
+            this.delayRadioButton.Name = "delayRadioButton";
+            this.delayRadioButton.Size = new System.Drawing.Size(65, 21);
+            this.delayRadioButton.TabIndex = 34;
+            this.delayRadioButton.Text = "Delay";
+            this.delayRadioButton.UseVisualStyleBackColor = true;
+            // 
             // EffectsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -598,5 +643,9 @@
         private System.Windows.Forms.TextBox maxFreqTextBox;
         private System.Windows.Forms.TextBox minFreqTextBox;
         private System.Windows.Forms.RadioButton phaserRadioButton;
+        private System.Windows.Forms.RadioButton delayRadioButton;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.TextBox pitchShiftTextBox;
+        private System.Windows.Forms.RadioButton pitchShiftRadioButton;
     }
 }
