@@ -12,12 +12,12 @@ namespace NWaves.Filters
     public class PhaseVocoder : IFilter
     {
         /// <summary>
-        /// 
+        /// Hop size at analysis stage (STFT decomposition)
         /// </summary>
         private readonly int _hopAnalysis;
 
         /// <summary>
-        /// 
+        /// Hop size at synthesis stage (STFT merging)
         /// </summary>
         private readonly int _hopSynthesis;
 
@@ -57,23 +57,6 @@ namespace NWaves.Filters
         {
             var stftAnalysis = new Stft(_fftAnalysis, _hopAnalysis, fftSize: _fftAnalysis);
             var frames = stftAnalysis.Direct(signal);
-
-            /*
-             omega_bins = 2*np.pi*np.arange(len(frame))/len(frame)
-        magnitude, phase = utilities.complex_cartesianToPolar(frame)
-
-        delta_phase = phase - self.last_phase
-        self.last_phase = phase
-
-        delta_phase_unwrapped =  delta_phase - self.input_hop * omega_bins
-        delta_phase_rewrapped = np.mod(delta_phase_unwrapped + np.pi, 2*np.pi) - np.pi
-        
-        true_freq = omega_bins + delta_phase_rewrapped/self.input_hop
-        
-        self.phase_accumulator += self.output_hop * true_freq
-        
-        return utilities.complex_polarToCartesian(magnitude, self.phase_accumulator)
-             */
 
             var omega = Enumerable.Range(0, _fftAnalysis)
                                   .Select(f => 2 * Math.PI * f / _fftAnalysis)

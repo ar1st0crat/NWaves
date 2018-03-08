@@ -1,6 +1,7 @@
 ﻿using System;
 using NWaves.Filters;
 using NWaves.Filters.Base;
+using NWaves.Operations;
 using NWaves.Signals;
 
 namespace NWaves.Effects
@@ -49,11 +50,21 @@ namespace NWaves.Effects
             var hopSynthesis = (int)(hopAnalysis * _shift);
 
             var vocoder = new PhaseVocoder(hopAnalysis, hopSynthesis, _fftSize, _fftSize);
-            signal = vocoder.ApplyTo(signal);
+            var stretched = vocoder.ApplyTo(signal);
             
-            // resample
+            // resample / interpolate
 
-            return signal;
+            var resampled = stretched;// Operation.Resample(stretched, (int)(_shift * signal.SamplingRate));//new double[signal.Length];
+
+            //for (var i = 0; i < resampled.Length - _fftSize; i++)
+            //{
+            //    var left = (int)(_shift * i);
+            //    var right = (int)(_shift * (i + 1));
+
+            //    resampled[i] = (stretched[left] + stretched[right]) / 2;
+            //}
+
+            return stretched;//new DiscreteSignal(signal.SamplingRate, resampled.Samples);
         }
     }
 }

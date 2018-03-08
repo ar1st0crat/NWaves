@@ -18,6 +18,18 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Greatest Common Divisor
+        /// </summary>
+        public static int Gcd(int n, int m)
+        {
+            while (m != 0)
+            {
+                m = n % (n = m);
+            }
+            return n;
+        }
+
+        /// <summary>
         /// Method implementing Durand-Kerner algorithm for finding complex roots of polynomials.
         /// </summary>
         /// <param name="re"></param>

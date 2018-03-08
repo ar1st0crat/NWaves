@@ -126,7 +126,7 @@ namespace NWaves.DemoForms
 
             _filteredSignal = effect.ApplyTo(_signal, FilteringOptions.Auto);
 
-            DrawSignal(signalAfterFilteringPanel, _signal);
+            DrawSignal(signalAfterFilteringPanel, _filteredSignal);
 
             _filteredSpectrogram = _stft.Spectrogram(_filteredSignal.Samples);
             DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);

@@ -14,7 +14,7 @@ Already available:
 - [x] basic LTI digital filters (FIR, IIR, comb, moving average, pre/de-emphasis, DC removal)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
-- [x] basic operations (convolution, cross-correlation, rectification, envelope detection)
+- [x] basic operations (convolution, cross-correlation, rectification, envelope detection, resampling)
 - [x] block convolution (overlap-add, overlap-save)
 - [x] modulation (AM, ring, FM, PM)
 - [x] basic filter design & analysis (zeros and poles, window method, HP from/to LP, combining filters)
@@ -33,7 +33,7 @@ Already available:
 Planned:
 
 - [ ] more transforms (CQT, DWT, Mellin, Haar, Hadamard)
-- [ ] more operations (resampling, spectral subtraction, adaptive filtering)
+- [ ] more operations (spectral subtraction, adaptive filtering)
 - [ ] more feature extraction (MIR descriptors and lots of others)
 - [ ] more sound synthesis (ADSR, etc.)
 - [ ] more sound effects (Reverb, Vibrato, Chorus, Flanger, etc.)

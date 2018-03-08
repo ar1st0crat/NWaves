@@ -12,6 +12,7 @@ using NWaves.Filters;
 using NWaves.Filters.Base;
 using NWaves.Filters.BiQuad;
 using NWaves.Filters.Fda;
+using NWaves.Operations;
 using NWaves.Transforms;
 using SciColorMaps;
 
@@ -32,6 +33,7 @@ namespace NWaves.DemoForms
         private string _waveFileName;
 
         private readonly MciAudioPlayer _player = new MciAudioPlayer();
+
 
         public FiltersForm()
         {
@@ -113,7 +115,35 @@ namespace NWaves.DemoForms
 
             filterParamsDataGrid.RowCount = 0;
         }
-        
+
+        private void changeOrderButton_Click(object sender, EventArgs e)
+        {
+            var b = int.Parse(orderNumeratorTextBox.Text) + 1;
+            var a = int.Parse(orderDenominatorTextBox.Text) + 1;
+
+            filterParamsDataGrid.RowCount = b + a;
+
+            var pos = 0;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "b0";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = 1;
+            pos++;
+            for (var i = 1; i < b; i++, pos++)
+            {
+                filterParamsDataGrid.Rows[pos].Cells[0].Value = "b" + i;
+                filterParamsDataGrid.Rows[pos].Cells[1].Value = 0;
+            }
+            filterParamsDataGrid.Rows[pos].Cells[0].Value = "a0";
+            filterParamsDataGrid.Rows[pos].Cells[1].Value = 1;
+            pos++;
+            for (var i = 1; i < a; i++, pos++)
+            {
+                filterParamsDataGrid.Rows[pos].Cells[0].Value = "a" + i;
+                filterParamsDataGrid.Rows[pos].Cells[1].Value = 0;
+            }
+        }
+
+        #region filter analysis
+
         private void AnalyzeCustomIirFilter()
         {
             var b = new List<double>();
@@ -327,31 +357,7 @@ namespace NWaves.DemoForms
             orderDenominatorTextBox.Text = "0";
         }
 
-        private void changeOrderButton_Click(object sender, EventArgs e)
-        {
-            var b = int.Parse(orderNumeratorTextBox.Text) + 1;
-            var a = int.Parse(orderDenominatorTextBox.Text) + 1;
-
-            filterParamsDataGrid.RowCount = b + a;
-
-            var pos = 0;
-            filterParamsDataGrid.Rows[0].Cells[0].Value = "b0";
-            filterParamsDataGrid.Rows[0].Cells[1].Value = 1;
-            pos++;
-            for (var i = 1; i < b; i++, pos++)
-            {
-                filterParamsDataGrid.Rows[pos].Cells[0].Value = "b" + i;
-                filterParamsDataGrid.Rows[pos].Cells[1].Value = 0;
-            }
-            filterParamsDataGrid.Rows[pos].Cells[0].Value = "a0";
-            filterParamsDataGrid.Rows[pos].Cells[1].Value = 1;
-            pos++;
-            for (var i = 1; i < a; i++, pos++)
-            {
-                filterParamsDataGrid.Rows[pos].Cells[0].Value = "a" + i;
-                filterParamsDataGrid.Rows[pos].Cells[1].Value = 0;
-            }
-        }
+        #endregion
 
         #region filtering
 
@@ -389,7 +395,50 @@ namespace NWaves.DemoForms
         }
 
         #endregion
-        
+
+        #region resampling
+
+        private void interpolateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_signal == null) return;
+
+            var factor = int.Parse(resampleTextBox.Text);
+
+            _filteredSignal = Operation.Interpolate(_signal, factor);
+            DrawSignal(signalAfterFilteringPanel, _filteredSignal);
+
+            _filteredSpectrogram = _stft.Spectrogram(_filteredSignal);
+            DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
+        }
+
+        private void decimateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_signal == null) return;
+
+            var factor = int.Parse(resampleTextBox.Text);
+
+            _filteredSignal = Operation.Decimate(_signal, factor);
+            DrawSignal(signalAfterFilteringPanel, _filteredSignal);
+
+            _filteredSpectrogram = _stft.Spectrogram(_filteredSignal);
+            DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
+        }
+
+        private void customToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_signal == null) return;
+
+            var rate = int.Parse(resampleTextBox.Text);
+
+            _filteredSignal = Operation.Resample(_signal, rate);
+            DrawSignal(signalAfterFilteringPanel, _filteredSignal);
+
+            _filteredSpectrogram = _stft.Spectrogram(_filteredSignal);
+            DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
+        }
+
+        #endregion
+
         #region File menu
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)

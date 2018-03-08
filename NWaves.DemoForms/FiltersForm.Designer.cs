@@ -65,6 +65,11 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.changeOrderButton = new System.Windows.Forms.Button();
+            this.resampleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.interpolateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.decimateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.customToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resampleTextBox = new System.Windows.Forms.ToolStripTextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.filterParamsDataGrid)).BeginInit();
             this.SuspendLayout();
@@ -114,10 +119,12 @@
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.filterToolStripMenuItem});
+            this.filterToolStripMenuItem,
+            this.resampleToolStripMenuItem,
+            this.resampleTextBox});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(968, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(968, 31);
             this.menuStrip1.TabIndex = 5;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -129,7 +136,7 @@
             this.toolStripSeparator1,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(44, 24);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(44, 27);
             this.fileToolStripMenuItem.Text = "&File";
             // 
             // openToolStripMenuItem
@@ -165,7 +172,7 @@
             this.overlapSaveToolStripMenuItem,
             this.differenceEquationToolStripMenuItem});
             this.filterToolStripMenuItem.Name = "filterToolStripMenuItem";
-            this.filterToolStripMenuItem.Size = new System.Drawing.Size(54, 24);
+            this.filterToolStripMenuItem.Size = new System.Drawing.Size(54, 27);
             this.filterToolStripMenuItem.Text = "Fi&lter";
             // 
             // overlapAddToolStripMenuItem
@@ -404,6 +411,44 @@
             this.changeOrderButton.UseVisualStyleBackColor = true;
             this.changeOrderButton.Click += new System.EventHandler(this.changeOrderButton_Click);
             // 
+            // resampleToolStripMenuItem
+            // 
+            this.resampleToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.interpolateToolStripMenuItem,
+            this.decimateToolStripMenuItem,
+            this.customToolStripMenuItem});
+            this.resampleToolStripMenuItem.Name = "resampleToolStripMenuItem";
+            this.resampleToolStripMenuItem.Size = new System.Drawing.Size(86, 27);
+            this.resampleToolStripMenuItem.Text = "&Resample";
+            // 
+            // interpolateToolStripMenuItem
+            // 
+            this.interpolateToolStripMenuItem.Name = "interpolateToolStripMenuItem";
+            this.interpolateToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.interpolateToolStripMenuItem.Text = "&Interpolate";
+            this.interpolateToolStripMenuItem.Click += new System.EventHandler(this.interpolateToolStripMenuItem_Click);
+            // 
+            // decimateToolStripMenuItem
+            // 
+            this.decimateToolStripMenuItem.Name = "decimateToolStripMenuItem";
+            this.decimateToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.decimateToolStripMenuItem.Text = "&Decimate";
+            this.decimateToolStripMenuItem.Click += new System.EventHandler(this.decimateToolStripMenuItem_Click);
+            // 
+            // customToolStripMenuItem
+            // 
+            this.customToolStripMenuItem.Name = "customToolStripMenuItem";
+            this.customToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.customToolStripMenuItem.Text = "&Custom";
+            this.customToolStripMenuItem.Click += new System.EventHandler(this.customToolStripMenuItem_Click);
+            // 
+            // resampleTextBox
+            // 
+            this.resampleTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.resampleTextBox.Name = "resampleTextBox";
+            this.resampleTextBox.Size = new System.Drawing.Size(60, 27);
+            this.resampleTextBox.Text = "2";
+            // 
             // FiltersForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -485,5 +530,10 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Button changeOrderButton;
+        private System.Windows.Forms.ToolStripMenuItem resampleToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem interpolateToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem decimateToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem customToolStripMenuItem;
+        private System.Windows.Forms.ToolStripTextBox resampleTextBox;
     }
 }

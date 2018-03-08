@@ -104,16 +104,13 @@ namespace NWaves.Transforms
                 var re = FastCopy.EntireArray(stft[i].Real);
                 var im = FastCopy.EntireArray(stft[i].Imag);
                 
-                if (_window != WindowTypes.Rectangular)
-                {
-                    re.ApplyWindow(_windowSamples);
-                }
-
                 _fft.Inverse(re, im);
 
+                // windowing and reconstruction
+                
                 for (var j = 0; j < re.Length; j++)
                 {
-                    samples[pos + j] += re[j];
+                    samples[pos + j] += re[j] * _windowSamples[j] * 2 / _fftSize;
                 }
 
                 pos += _hopSize;
