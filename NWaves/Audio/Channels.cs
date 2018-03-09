@@ -17,6 +17,11 @@
         Right,
 
         /// <summary>
+        /// Mono as average from all channels
+        /// </summary>
+        Average = 254,
+
+        /// <summary>
         /// Interleaved channels
         /// </summary>
         Interleave = 255

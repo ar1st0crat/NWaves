@@ -47,18 +47,12 @@ namespace NWaves.DemoForms
             using (var stream = new FileStream(_waveFileName, FileMode.Open))
             {
                 var waveFile = new WaveFile(stream);
-                _signal = waveFile[Channels.Left];
-
-                var truncLength = _signal.SamplingRate * 5;
-                if (truncLength < _signal.Length)
-                {
-                    _signal = _signal.First(truncLength);
-                }
+                _signal = waveFile[Channels.Average];
             }
 
             DrawSignal(signalBeforeFilteringPanel, _signal);
 
-            _spectrogram = _stft.Spectrogram(_signal.Samples);
+            _spectrogram = _stft.Spectrogram(_signal);
             DrawSpectrogram(spectrogramBeforeFilteringPanel, _spectrogram);
         }
 

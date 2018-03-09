@@ -8,6 +8,16 @@ namespace NWaves.Utils
     static class MathUtils
     {
         /// <summary>
+        /// Sinc-function
+        /// </summary>
+        /// <param name="x">Argument</param>
+        /// <returns>sinc(x)</returns>
+        public static double Sinc(double x)
+        {
+            return Math.Abs(x) > 1e-10 ? Math.Sin(Math.PI*x) / (Math.PI*x) : 1.0;
+        }
+
+        /// <summary>
         /// Method for computing next power of 2 (closest to the given number)
         /// </summary>
         /// <param name="n">Number</param>
@@ -27,6 +37,45 @@ namespace NWaves.Utils
                 m = n % (n = m);
             }
             return n;
+        }
+
+        /// <summary>
+        /// Modulo function that works correctly with negative numbers (as np.mod)
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static double Mod(double a, double b)
+        {
+            return ((a % b) + b) % b;
+        }
+
+        /// <summary>
+        /// Linear interpolation (as numpy.interp)
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        public static double[] InterpolateLinear(double[] x, double[] y, double[] arg)
+        {
+            var interp = new double[arg.Length];
+
+            var left = 0;
+            var right = 1;
+
+            for (var i = 0; i < arg.Length; i++)
+            {
+                while (arg[i] > x[right] && right < x.Length - 1)
+                {
+                    right++;
+                    left++;
+                }
+
+                interp[i] = y[left] + (y[right] - y[left]) * (arg[i] - x[left]) / (x[right] - x[left]);
+            }
+
+            return interp;
         }
 
         /// <summary>

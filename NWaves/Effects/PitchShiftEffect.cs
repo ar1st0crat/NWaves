@@ -1,13 +1,13 @@
-﻿using System;
-using NWaves.Filters;
+﻿using System.Linq;
 using NWaves.Filters.Base;
 using NWaves.Operations;
 using NWaves.Signals;
+using NWaves.Utils;
 
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Pitch Shift effect based on phase vocoder
+    /// Pitch Shift effect based on classic phase vocoder
     /// </summary>
     public class PitchShiftEffect : IFilter
     {
@@ -41,30 +41,20 @@ namespace NWaves.Effects
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
                                       FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
-            if (Math.Abs(_shift - 1.0) < 1e-10)
-            {
-                return signal;
-            }
-
-            var hopAnalysis = _fftSize / 4;
-            var hopSynthesis = (int)(hopAnalysis * _shift);
-
-            var vocoder = new PhaseVocoder(hopAnalysis, hopSynthesis, _fftSize, _fftSize);
-            var stretched = vocoder.ApplyTo(signal);
+            // 1) just stretch
+            var stretched = Operation.TimeStretch(signal, _shift, _fftSize);
             
-            // resample / interpolate
+            // 2) and interpolate
+            var resampled = MathUtils.InterpolateLinear(
+                                            Enumerable.Range(0, stretched.Length)   // [0.0, 1.0, 2.0, 3.0, ...]
+                                                      .Select(s => (double)s)
+                                                      .ToArray(),
+                                            stretched.Samples,                      // stretched at 0.0, 1.0, 2.0, ...
+                                            Enumerable.Range(0, signal.Length)      
+                                                      .Select(s => _shift * s)
+                                                      .ToArray());                  // [0.0, _shift, 2*_shift, ...]
 
-            var resampled = stretched;// Operation.Resample(stretched, (int)(_shift * signal.SamplingRate));//new double[signal.Length];
-
-            //for (var i = 0; i < resampled.Length - _fftSize; i++)
-            //{
-            //    var left = (int)(_shift * i);
-            //    var right = (int)(_shift * (i + 1));
-
-            //    resampled[i] = (stretched[left] + stretched[right]) / 2;
-            //}
-
-            return stretched;//new DiscreteSignal(signal.SamplingRate, resampled.Samples);
+            return new DiscreteSignal(signal.SamplingRate, resampled);
         }
     }
 }

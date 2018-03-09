@@ -281,7 +281,7 @@ namespace NWaves.Signals
                 var phase = new double[real.Length];
                 for (var i = 0; i < phase.Length; i++)
                 {
-                    phase[i] = Math.Atan(imag[i] / real[i]);
+                    phase[i] = Math.Atan2(imag[i], real[i]);
                 }
 
                 return phase;

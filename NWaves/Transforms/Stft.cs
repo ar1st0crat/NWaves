@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using NWaves.Signals;
 using NWaves.Utils;
 using NWaves.Windows;
@@ -41,13 +43,19 @@ namespace NWaves.Transforms
         private readonly double[] _windowSamples;
 
         /// <summary>
+        /// Normalization factor
+        /// </summary>
+        private readonly double _norm;
+
+
+        /// <summary>
         /// Constructor with necessary parameters
         /// </summary>
         /// <param name="windowSize">Size of window</param>
         /// <param name="hopSize">Hop (overlap) size</param>
         /// <param name="window">Type of the window function to apply</param>
         /// <param name="fftSize">Size of FFT</param>
-        public Stft(int windowSize = 512, int hopSize = 256, WindowTypes window = WindowTypes.Hann, int fftSize = 512)
+        public Stft(int windowSize = 512, int hopSize = 256, WindowTypes window = WindowTypes.Hann, int fftSize = 0)
         {
             _fftSize = fftSize >= windowSize ? fftSize : MathUtils.NextPowerOfTwo(windowSize);
             _fft = new Fft(_fftSize);
@@ -57,6 +65,10 @@ namespace NWaves.Transforms
             _windowSize = windowSize;
             _window = window;
             _windowSamples = Window.OfType(_window, _windowSize);
+
+            // TODO: pad center!
+
+            _norm = 1.0 / (_windowSamples.Sum(s => s*s) * _fftSize / _hopSize);// * 2.0 * Math.Sqrt((double)_fftSize / _hopSize));
         }
 
         /// <summary>
@@ -97,7 +109,7 @@ namespace NWaves.Transforms
         {
             var spectraCount = stft.Count;
             var samples = new double[spectraCount * _hopSize + _windowSize];
-
+            
             var pos = 0;
             for (var i = 0; i < spectraCount; i++)
             {
@@ -110,7 +122,7 @@ namespace NWaves.Transforms
                 
                 for (var j = 0; j < re.Length; j++)
                 {
-                    samples[pos + j] += re[j] * _windowSamples[j] * 2 / _fftSize;
+                    samples[pos + j] += re[j] * _windowSamples[j] * _norm;
                 }
 
                 pos += _hopSize;

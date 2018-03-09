@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
+    <Folder Include="Filters\Adaptive\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\Channels.cs" />
@@ -90,7 +91,7 @@
     <Compile Include="Filters\CombFeedbackFilter.cs" />
     <Compile Include="Filters\DcRemovalFilter.cs" />
     <Compile Include="Filters\DeEmphasisFilter.cs" />
-    <Compile Include="Filters\Fda\FilterDesign.cs" />
+    <Compile Include="Filters\Fda\DesignFilter.cs" />
     <Compile Include="Filters\Fda\FilterBanks.cs" />
     <Compile Include="Filters\MedianFilter.cs" />
     <Compile Include="Filters\MovingAverageFilter.cs" />
@@ -98,7 +99,6 @@
     <Compile Include="Filters\OnePole\HighPassFilter.cs" />
     <Compile Include="Filters\OnePole\LowPassFilter.cs" />
     <Compile Include="Filters\PreEmphasisFilter.cs" />
-    <Compile Include="Operations\AdaptiveFiltering.cs" />
     <Compile Include="Operations\BlockConvolution.cs" />
     <Compile Include="Operations\Convolution.cs" />
     <Compile Include="Operations\Deconvolution.cs" />
@@ -107,6 +107,7 @@
     <Compile Include="Filters\PhaseVocoder.cs" />
     <Compile Include="Operations\Resampling.cs" />
     <Compile Include="Operations\SpectralSubtraction.cs" />
+    <Compile Include="Operations\TimeStretch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Audio\WaveFile.cs" />
     <Compile Include="Audio\WaveFormat.cs" />

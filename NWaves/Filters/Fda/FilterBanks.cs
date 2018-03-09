@@ -107,7 +107,7 @@ namespace NWaves.Filters.Fda
 
             for (var i = 0; i < filterBank.Length; i++)
             {
-                var filter = FilterDesign.DesignFirFilter(fftSize / 4 + 1, filterBank[i]);
+                var filter = DesignFilter.Fir(fftSize / 4 + 1, filterBank[i]);
                 var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
                 filterBank[i] = filterResponse.Take(fftSize / 2 + 1).ToArray();
 

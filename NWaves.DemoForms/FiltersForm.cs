@@ -42,6 +42,8 @@ namespace NWaves.DemoForms
 
         private void buttonAnalyzeFilter_Click(object sender, EventArgs e)
         {
+            Cursor.Current = Cursors.WaitCursor;
+
             switch (filterTypesComboBox.Text)
             {
                 case "Custom IIR":
@@ -71,7 +73,7 @@ namespace NWaves.DemoForms
                     break;
                 case "Butterworth":
                     //_filter = new ButterworthFilter(0.15, 4);
-                    _filter = (_filter == null) ? FilterDesign.DesignFirLowPassFilter(31, 0.1) : FilterDesign.LpToHp(_filter as FirFilter);
+                    _filter = (_filter == null) ? DesignFilter.FirLp(31, 0.1) : DesignFilter.LpToHp(_filter as FirFilter);
                     
                     //numeratorListBox.DataSource = (_filter as IirFilter).B;
                     //denominatorListBox.DataSource = (_filter as IirFilter).A;
@@ -89,6 +91,8 @@ namespace NWaves.DemoForms
 
             DrawFrequencyResponse();
             DrawPoleZeroPlot();
+
+            Cursor.Current = Cursors.Default;
         }
 
         private void filterTypesComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -428,6 +432,8 @@ namespace NWaves.DemoForms
         {
             if (_signal == null) return;
 
+            Cursor.Current = Cursors.WaitCursor;
+
             var rate = int.Parse(resampleTextBox.Text);
 
             _filteredSignal = Operation.Resample(_signal, rate);
@@ -435,6 +441,8 @@ namespace NWaves.DemoForms
 
             _filteredSpectrogram = _stft.Spectrogram(_filteredSignal);
             DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
+
+            Cursor.Current = Cursors.Default;
         }
 
         #endregion

@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 using NWaves.Operations;
-using NWaves.Signals.Builders;
+using NWaves.Signals;
 
 namespace NWaves.Tests.OperationTests
 {
@@ -8,19 +8,17 @@ namespace NWaves.Tests.OperationTests
     public class TestResampling
     {
         [Test]
-        public void TestDecimation()
+        public void TestSameSamplingRate()
         {
-            var sinusoid = new SinusoidBuilder()
-                                    .SetParameter("amp", 1)
-                                    .SetParameter("freq", 100)
-                                    .SampledAt(16000)
-                                    .OfLength(200)
-                                    .Build();
+            var signal = new DiscreteSignal(16000, new [] {1.0, -2, 3, 1, 4, -2, 1, -5, 3});
 
-            var decimated = Operation.Decimate(sinusoid, 2);
+            var resampled = Operation.Resample(signal, 16000);
 
-            // TODO:
-            //Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(resampled.Samples, Is.EqualTo(resampled.Samples).Within(1e-10));
+                Assert.That(resampled, Is.Not.SameAs(signal));
+            });
         }
     }
 }

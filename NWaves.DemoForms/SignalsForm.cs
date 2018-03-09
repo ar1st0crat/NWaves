@@ -102,6 +102,13 @@ namespace NWaves.DemoForms
             featuresForm.ShowDialog();
         }
 
+        private void stftButton_Click(object sender, EventArgs e)
+        {
+            var stftForm = new StftForm();
+            stftForm.ShowDialog();
+        }
+
+
         private void OpenSignal()
         {
             var ofd = new OpenFileDialog();

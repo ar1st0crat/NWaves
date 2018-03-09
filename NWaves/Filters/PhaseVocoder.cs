@@ -3,6 +3,7 @@ using System.Linq;
 using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Transforms;
+using NWaves.Utils;
 
 namespace NWaves.Filters
 {
@@ -55,14 +56,14 @@ namespace NWaves.Filters
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
                                       FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
-            var stftAnalysis = new Stft(_fftAnalysis, _hopAnalysis, fftSize: _fftAnalysis);
+            var stftAnalysis = new Stft(_fftAnalysis, _hopAnalysis);
             var frames = stftAnalysis.Direct(signal);
 
             var omega = Enumerable.Range(0, _fftAnalysis)
                                   .Select(f => 2 * Math.PI * f / _fftAnalysis)
                                   .ToArray();
 
-            var prevPhase = new double [_fftAnalysis];
+            var prevPhase = new double[_fftAnalysis];
             var phaseTotal = new double[_fftAnalysis];
 
             for (var i = 0; i < frames.Count; i++)
@@ -75,11 +76,11 @@ namespace NWaves.Filters
                     var delta = phase[j] - prevPhase[j];
                     
                     var deltaUnwrapped = delta - _hopAnalysis * omega[j];
-                    var deltaWrapped = (deltaUnwrapped + Math.PI) % (2 * Math.PI) - Math.PI;
+                    var deltaWrapped = MathUtils.Mod(deltaUnwrapped + Math.PI, 2 * Math.PI) - Math.PI;
 
                     var freq = omega[j] + deltaWrapped / _hopAnalysis;
-                    phaseTotal[j] += freq * _hopSynthesis;
                     
+                    phaseTotal[j] += _hopSynthesis * freq;
                     prevPhase[j] = phase[j];
                 }
 
@@ -90,7 +91,7 @@ namespace NWaves.Filters
                                 );
             }
 
-            var stftSynthesis = new Stft(_fftSynthesis, _hopSynthesis, fftSize: _fftSynthesis);
+            var stftSynthesis = new Stft(_fftSynthesis, _hopSynthesis);
             return new DiscreteSignal(signal.SamplingRate, stftSynthesis.Inverse(frames));
         }
     }

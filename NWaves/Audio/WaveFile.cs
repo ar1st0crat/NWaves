@@ -216,7 +216,8 @@ namespace NWaves.Audio
         /// 
         ///     waveFile[Channels.Left] -> waveFile.Signals[0]
         ///     waveFile[Channels.Right] -> waveFile.Signals[1]
-        ///     waveFile[Channels.Interleave] -> returns interleaved signal
+        ///     waveFile[Channels.Average] -> returns channel-averaged (new) signal
+        ///     waveFile[Channels.Interleave] -> returns interleaved (new) signal
         /// 
         /// </summary>
         /// <param name="channel">Channel enum</param>
@@ -225,22 +226,40 @@ namespace NWaves.Audio
         {
             get
             {
-                if (channel != Channels.Interleave)
+                if (channel != Channels.Interleave && channel != Channels.Average)
                 {
                     return Signals[(int)channel];
                 }
 
-                // in case of interleaving first check if our signal is mono
+                // in case of averaging or interleaving first check if our signal is mono
 
                 if (WaveFmt.ChannelCount == 1)
                 {
                     return Signals[0];
                 }
 
-                // if it ain't mono, we start ACTUALLY interleaving:
-
                 var length = Signals[0].Length;
 
+                // 1) AVERAGING
+
+                if (channel == Channels.Average)
+                {
+                    var avgSamples = new double [length];
+
+                    for (var i = 0; i < avgSamples.Length; i++)
+                    {
+                        for (var j = 0; j < Signals.Count; j++)
+                        {
+                            avgSamples[i] += Signals[j][i];
+                        }
+                        avgSamples[i] /= Signals.Count;
+                    }
+
+                    return new DiscreteSignal(WaveFmt.SamplingRate, avgSamples);
+                }
+
+                // 2) if it ain't mono, we start ACTUALLY interleaving:
+                
                 var samples = new double[WaveFmt.ChannelCount * length];
 
                 var idx = 0;

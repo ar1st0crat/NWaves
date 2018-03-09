@@ -63,12 +63,13 @@
             this.lpcToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.modulationSpectrumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.effectsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.featuresToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.featuresToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stftButton = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -374,6 +375,13 @@
             this.effectsToolStripMenuItem.Text = "&Effects";
             this.effectsToolStripMenuItem.Click += new System.EventHandler(this.effectsToolStripMenuItem_Click);
             // 
+            // featuresToolStripMenuItem
+            // 
+            this.featuresToolStripMenuItem.Name = "featuresToolStripMenuItem";
+            this.featuresToolStripMenuItem.Size = new System.Drawing.Size(76, 24);
+            this.featuresToolStripMenuItem.Text = "Fea&tures";
+            this.featuresToolStripMenuItem.Click += new System.EventHandler(this.featuresToolStripMenuItem_Click);
+            // 
             // label4
             // 
             this.label4.AutoSize = true;
@@ -419,18 +427,22 @@
             this.label8.TabIndex = 24;
             this.label8.Text = "Spectrum";
             // 
-            // featuresToolStripMenuItem
+            // stftButton
             // 
-            this.featuresToolStripMenuItem.Name = "featuresToolStripMenuItem";
-            this.featuresToolStripMenuItem.Size = new System.Drawing.Size(76, 24);
-            this.featuresToolStripMenuItem.Text = "Fea&tures";
-            this.featuresToolStripMenuItem.Click += new System.EventHandler(this.featuresToolStripMenuItem_Click);
+            this.stftButton.Location = new System.Drawing.Point(1135, 305);
+            this.stftButton.Name = "stftButton";
+            this.stftButton.Size = new System.Drawing.Size(62, 28);
+            this.stftButton.TabIndex = 25;
+            this.stftButton.Text = "More...";
+            this.stftButton.UseVisualStyleBackColor = true;
+            this.stftButton.Click += new System.EventHandler(this.stftButton_Click);
             // 
             // SignalsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1207, 735);
+            this.Controls.Add(this.stftButton);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label6);
@@ -509,6 +521,7 @@
         private System.Windows.Forms.ToolStripMenuItem pitchToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem effectsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem featuresToolStripMenuItem;
+        private System.Windows.Forms.Button stftButton;
     }
 }
 

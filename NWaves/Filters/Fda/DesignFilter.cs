@@ -10,7 +10,7 @@ namespace NWaves.Filters.Fda
     /// <summary>
     /// Static class providing basic methods for filter design & analysis
     /// </summary>
-    public static class FilterDesign
+    public static class DesignFilter
     {
         /// <summary>
         /// Method for FIR filter design using window method
@@ -20,7 +20,7 @@ namespace NWaves.Filters.Fda
         /// <param name="phaseResponse"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static FirFilter DesignFirFilter(int order, double[] magnitudeResponse, double[] phaseResponse = null, WindowTypes window = WindowTypes.Hamming)
+        public static FirFilter Fir(int order, double[] magnitudeResponse, double[] phaseResponse = null, WindowTypes window = WindowTypes.Blackman)
         {
             if (order % 2 == 0)
             {
@@ -66,14 +66,21 @@ namespace NWaves.Filters.Fda
 
         /// <summary>
         /// Method for ideal lowpass FIR filter design using window method
+        /// (and sinc-window by default).
         /// </summary>
         /// <param name="order"></param>
         /// <param name="freq"></param>
+        /// <param name="sinc"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static FirFilter DesignFirLowPassFilter(int order, double freq, WindowTypes window = WindowTypes.Hamming)
+        public static FirFilter FirLp(int order, double freq, bool sinc = true, WindowTypes window = WindowTypes.Blackman)
         {
-            int fftSize = Math.Max(512, MathUtils.NextPowerOfTwo(order * 4));
+            if (sinc)
+            {
+                return FirLpSinc(order, freq, window);
+            }
+
+            var fftSize = Math.Max(512, MathUtils.NextPowerOfTwo(order * 4));
 
             var magnitudeResponse = new double[fftSize];
             var phaseResponse = new double[fftSize];
@@ -84,7 +91,37 @@ namespace NWaves.Filters.Fda
                 magnitudeResponse[i] = 1.0;
             }
 
-            return DesignFirFilter(order, magnitudeResponse, phaseResponse, window);
+            return Fir(order, magnitudeResponse, phaseResponse, window);
+        }
+
+        /// <summary>
+        /// Method for ideal lowpass FIR filter design using sinc-window method
+        /// </summary>
+        /// <param name="order"></param>
+        /// <param name="freq"></param>
+        /// <param name="window"></param>
+        /// <returns></returns>
+        private static FirFilter FirLpSinc(int order, double freq, WindowTypes window = WindowTypes.Blackman)
+        {
+            if (order % 2 == 0)
+            {
+                throw new ArgumentException("The order of a filter must be an odd number!");
+            }
+
+            var kernel = new double[order];
+
+            var middle = order / 2;
+            var freq2Pi = 2 * Math.PI * freq;
+
+            kernel[middle] = 2 * freq;
+            for (var i = 1; i <= middle; i++)
+            {
+                kernel[middle - i] = kernel[middle + i] = Math.Sin(freq2Pi * i) / (Math.PI * i);
+            }
+
+            kernel.ApplyWindow(window);
+
+            return new FirFilter(kernel);
         }
 
         /// <summary>
