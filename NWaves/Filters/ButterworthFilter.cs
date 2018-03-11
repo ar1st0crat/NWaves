@@ -1,29 +1,12 @@
 ﻿using System;
+using System.Linq;
 using NWaves.Filters.Base;
 using NWaves.Signals;
 
 namespace NWaves.Filters
 {
-    /// ========================= ATTENTION! ===========================
-    /// this code does not produce right Butterworth filter coefficients
-    /// 
-    /// The idea is as follows:
-    ///     - compute poles for continuous case
-    ///     - transform them to discrete analogs
-    ///     - get filter coefficients from poles 
-    ///       (based on successive polynomial multiplications)
-    /// ================================================================
-
     /// <summary>
     /// Class for Butterworth IIR filter.
-    /// 
-    /// First, all poles are computed by formula
-    /// 
-    ///     poles[K] = freq * [-sin(pi * (2K+1) / 2n) + j cos(pi * (2K+1) / 2n)]
-    /// 
-    ///                        for K = 0, 1, ..., order - 1.
-    /// 
-    /// Then poles are converted to TF denominator coefficients.
     /// </summary>
     public class ButterworthFilter : IirFilter
     {
@@ -34,24 +17,58 @@ namespace NWaves.Filters
         /// <param name="order"></param>
         public ButterworthFilter(double freq, int order)
         {
+            // Calculation of filter coefficients is based on Neil Robertson'post:
+            // https://www.dsprelated.com/showarticle/1119.php
+
             var re = new double[order];
             var im = new double[order];
+            
+            var scaleFreq = Math.Tan(Math.PI * freq);
 
-            var fs = 1;//8000;
-            //freq *= fs;
+            // 1) poles of analog filter (scaled)
 
             for (var k = 0; k < order; k++)
             {
-                var rp = freq * -Math.Sin(Math.PI * (2 * k + 1) / (2 * order));
-                var ip = freq *  Math.Cos(Math.PI * (2 * k + 1) / (2 * order));
-
-                //re[k] = Math.Exp(rp / fs) * Math.Cos(ip / fs) / order;
-                //im[k] = Math.Exp(rp / fs) * Math.Sin(ip / fs) / order;
-                re[k] = Math.Exp(rp * freq) * Math.Cos(ip * freq);
-                im[k] = Math.Exp(rp * freq) * Math.Sin(ip * freq);
+                var theta = Math.PI * (2 * k + 1) / (2 * order);
+                re[k] = scaleFreq * -Math.Sin(theta);
+                im[k] = scaleFreq *  Math.Cos(theta);
             }
 
-            Poles = new ComplexDiscreteSignal(1, new[] { 1.0, -re[0] }, new[] { 0.0, -im[0] });
+            // 2) switch to z-domain (bilinear transform)
+
+            for (var k = 0; k < order; k++)
+            {
+                var den = (1 - re[k]) * (1 - re[k]) + im[k] * im[k];
+                re[k] = (1 - re[k] * re[k] - im[k] * im[k]) / den;
+                im[k] = 2 * im[k] / den;
+            }
+
+            // equivalent to:
+
+            //for (var k = 0; k < order; k++)
+            //{
+            //      var c1 = new Complex(1 + re[k],  im[k]);
+            //      var c2 = new Complex(1 - re[k], -im[k]);
+            //      var c = c1 / c2;
+
+            //      re[k] = c.Real;
+            //      im[k] = c.Imaginary;
+            //}
+
+            
+            // 3) polynomial coefficients
+
+            var z = Enumerable.Repeat(-1, order).ToArray();
+
+            B = ZpToTf(new ComplexDiscreteSignal(1, z));
+            A = ZpToTf(new ComplexDiscreteSignal(1, re, im));
+
+            var ampScale = A.Sum() / B.Sum();
+
+            for (var i = 0; i < B.Length; i++)
+            {
+                B[i] *= ampScale;
+            }
         }
     }
 }

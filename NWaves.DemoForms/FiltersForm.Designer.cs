@@ -43,6 +43,11 @@
             this.overlapAddToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.overlapSaveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.differenceEquationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resampleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.interpolateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.decimateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.customToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resampleTextBox = new System.Windows.Forms.ToolStripTextBox();
             this.analyzeFilterButton = new System.Windows.Forms.Button();
             this.filterTypesComboBox = new System.Windows.Forms.ComboBox();
             this.filterParamsDataGrid = new System.Windows.Forms.DataGridView();
@@ -65,11 +70,6 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.changeOrderButton = new System.Windows.Forms.Button();
-            this.resampleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.interpolateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.decimateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.customToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.resampleTextBox = new System.Windows.Forms.ToolStripTextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.filterParamsDataGrid)).BeginInit();
             this.SuspendLayout();
@@ -196,6 +196,44 @@
             this.differenceEquationToolStripMenuItem.Text = "Difference &Equation";
             this.differenceEquationToolStripMenuItem.Click += new System.EventHandler(this.differenceEquationToolStripMenuItem_Click);
             // 
+            // resampleToolStripMenuItem
+            // 
+            this.resampleToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.interpolateToolStripMenuItem,
+            this.decimateToolStripMenuItem,
+            this.customToolStripMenuItem});
+            this.resampleToolStripMenuItem.Name = "resampleToolStripMenuItem";
+            this.resampleToolStripMenuItem.Size = new System.Drawing.Size(86, 27);
+            this.resampleToolStripMenuItem.Text = "&Resample";
+            // 
+            // interpolateToolStripMenuItem
+            // 
+            this.interpolateToolStripMenuItem.Name = "interpolateToolStripMenuItem";
+            this.interpolateToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
+            this.interpolateToolStripMenuItem.Text = "&Interpolate";
+            this.interpolateToolStripMenuItem.Click += new System.EventHandler(this.interpolateToolStripMenuItem_Click);
+            // 
+            // decimateToolStripMenuItem
+            // 
+            this.decimateToolStripMenuItem.Name = "decimateToolStripMenuItem";
+            this.decimateToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
+            this.decimateToolStripMenuItem.Text = "&Decimate";
+            this.decimateToolStripMenuItem.Click += new System.EventHandler(this.decimateToolStripMenuItem_Click);
+            // 
+            // customToolStripMenuItem
+            // 
+            this.customToolStripMenuItem.Name = "customToolStripMenuItem";
+            this.customToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
+            this.customToolStripMenuItem.Text = "&Custom";
+            this.customToolStripMenuItem.Click += new System.EventHandler(this.customToolStripMenuItem_Click);
+            // 
+            // resampleTextBox
+            // 
+            this.resampleTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.resampleTextBox.Name = "resampleTextBox";
+            this.resampleTextBox.Size = new System.Drawing.Size(60, 27);
+            this.resampleTextBox.Text = "2";
+            // 
             // analyzeFilterButton
             // 
             this.analyzeFilterButton.Location = new System.Drawing.Point(13, 322);
@@ -224,7 +262,7 @@
             "Moving average recursive",
             "Pre-emphasis",
             "Butterworth",
-            "Chebyshev"});
+            "Custom LP/HP"});
             this.filterTypesComboBox.Location = new System.Drawing.Point(12, 50);
             this.filterTypesComboBox.Name = "filterTypesComboBox";
             this.filterTypesComboBox.Size = new System.Drawing.Size(190, 24);
@@ -410,44 +448,6 @@
             this.changeOrderButton.Text = "Change";
             this.changeOrderButton.UseVisualStyleBackColor = true;
             this.changeOrderButton.Click += new System.EventHandler(this.changeOrderButton_Click);
-            // 
-            // resampleToolStripMenuItem
-            // 
-            this.resampleToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.interpolateToolStripMenuItem,
-            this.decimateToolStripMenuItem,
-            this.customToolStripMenuItem});
-            this.resampleToolStripMenuItem.Name = "resampleToolStripMenuItem";
-            this.resampleToolStripMenuItem.Size = new System.Drawing.Size(86, 27);
-            this.resampleToolStripMenuItem.Text = "&Resample";
-            // 
-            // interpolateToolStripMenuItem
-            // 
-            this.interpolateToolStripMenuItem.Name = "interpolateToolStripMenuItem";
-            this.interpolateToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
-            this.interpolateToolStripMenuItem.Text = "&Interpolate";
-            this.interpolateToolStripMenuItem.Click += new System.EventHandler(this.interpolateToolStripMenuItem_Click);
-            // 
-            // decimateToolStripMenuItem
-            // 
-            this.decimateToolStripMenuItem.Name = "decimateToolStripMenuItem";
-            this.decimateToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
-            this.decimateToolStripMenuItem.Text = "&Decimate";
-            this.decimateToolStripMenuItem.Click += new System.EventHandler(this.decimateToolStripMenuItem_Click);
-            // 
-            // customToolStripMenuItem
-            // 
-            this.customToolStripMenuItem.Name = "customToolStripMenuItem";
-            this.customToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
-            this.customToolStripMenuItem.Text = "&Custom";
-            this.customToolStripMenuItem.Click += new System.EventHandler(this.customToolStripMenuItem_Click);
-            // 
-            // resampleTextBox
-            // 
-            this.resampleTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.resampleTextBox.Name = "resampleTextBox";
-            this.resampleTextBox.Size = new System.Drawing.Size(60, 27);
-            this.resampleTextBox.Text = "2";
             // 
             // FiltersForm
             // 

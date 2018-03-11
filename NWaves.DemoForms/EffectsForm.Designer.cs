@@ -40,6 +40,10 @@
             this.stopFilteredButton = new System.Windows.Forms.Button();
             this.applyEffectButton = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.delayRadioButton = new System.Windows.Forms.RadioButton();
+            this.label15 = new System.Windows.Forms.Label();
+            this.pitchShiftTextBox = new System.Windows.Forms.TextBox();
+            this.pitchShiftRadioButton = new System.Windows.Forms.RadioButton();
             this.label13 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.lfoQTextBox = new System.Windows.Forms.TextBox();
@@ -74,10 +78,7 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.pitchShiftRadioButton = new System.Windows.Forms.RadioButton();
-            this.label15 = new System.Windows.Forms.Label();
-            this.pitchShiftTextBox = new System.Windows.Forms.TextBox();
-            this.delayRadioButton = new System.Windows.Forms.RadioButton();
+            this.pitchShiftCheckBox = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -184,6 +185,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.pitchShiftCheckBox);
             this.groupBox1.Controls.Add(this.delayRadioButton);
             this.groupBox1.Controls.Add(this.label15);
             this.groupBox1.Controls.Add(this.pitchShiftTextBox);
@@ -225,6 +227,43 @@
             this.groupBox1.TabIndex = 31;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Sound Effects";
+            // 
+            // delayRadioButton
+            // 
+            this.delayRadioButton.AutoSize = true;
+            this.delayRadioButton.Location = new System.Drawing.Point(7, 172);
+            this.delayRadioButton.Name = "delayRadioButton";
+            this.delayRadioButton.Size = new System.Drawing.Size(65, 21);
+            this.delayRadioButton.TabIndex = 34;
+            this.delayRadioButton.Text = "Delay";
+            this.delayRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(573, 163);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(23, 17);
+            this.label15.TabIndex = 33;
+            this.label15.Text = "by";
+            // 
+            // pitchShiftTextBox
+            // 
+            this.pitchShiftTextBox.Location = new System.Drawing.Point(610, 158);
+            this.pitchShiftTextBox.Name = "pitchShiftTextBox";
+            this.pitchShiftTextBox.Size = new System.Drawing.Size(41, 22);
+            this.pitchShiftTextBox.TabIndex = 32;
+            this.pitchShiftTextBox.Text = "1,2";
+            // 
+            // pitchShiftRadioButton
+            // 
+            this.pitchShiftRadioButton.AutoSize = true;
+            this.pitchShiftRadioButton.Location = new System.Drawing.Point(460, 161);
+            this.pitchShiftRadioButton.Name = "pitchShiftRadioButton";
+            this.pitchShiftRadioButton.Size = new System.Drawing.Size(107, 21);
+            this.pitchShiftRadioButton.TabIndex = 31;
+            this.pitchShiftRadioButton.Text = "Time stretch";
+            this.pitchShiftRadioButton.UseVisualStyleBackColor = true;
             // 
             // label13
             // 
@@ -528,42 +567,15 @@
             this.openToolStripMenuItem.Text = "&Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
-            // pitchShiftRadioButton
+            // pitchShiftCheckBox
             // 
-            this.pitchShiftRadioButton.AutoSize = true;
-            this.pitchShiftRadioButton.Location = new System.Drawing.Point(467, 149);
-            this.pitchShiftRadioButton.Name = "pitchShiftRadioButton";
-            this.pitchShiftRadioButton.Size = new System.Drawing.Size(88, 21);
-            this.pitchShiftRadioButton.TabIndex = 31;
-            this.pitchShiftRadioButton.Text = "PitchShift";
-            this.pitchShiftRadioButton.UseVisualStyleBackColor = true;
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(566, 151);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(23, 17);
-            this.label15.TabIndex = 33;
-            this.label15.Text = "by";
-            // 
-            // pitchShiftTextBox
-            // 
-            this.pitchShiftTextBox.Location = new System.Drawing.Point(610, 146);
-            this.pitchShiftTextBox.Name = "pitchShiftTextBox";
-            this.pitchShiftTextBox.Size = new System.Drawing.Size(41, 22);
-            this.pitchShiftTextBox.TabIndex = 32;
-            this.pitchShiftTextBox.Text = "1,2";
-            // 
-            // delayRadioButton
-            // 
-            this.delayRadioButton.AutoSize = true;
-            this.delayRadioButton.Location = new System.Drawing.Point(7, 172);
-            this.delayRadioButton.Name = "delayRadioButton";
-            this.delayRadioButton.Size = new System.Drawing.Size(65, 21);
-            this.delayRadioButton.TabIndex = 34;
-            this.delayRadioButton.Text = "Delay";
-            this.delayRadioButton.UseVisualStyleBackColor = true;
+            this.pitchShiftCheckBox.AutoSize = true;
+            this.pitchShiftCheckBox.Location = new System.Drawing.Point(670, 159);
+            this.pitchShiftCheckBox.Name = "pitchShiftCheckBox";
+            this.pitchShiftCheckBox.Size = new System.Drawing.Size(91, 21);
+            this.pitchShiftCheckBox.TabIndex = 35;
+            this.pitchShiftCheckBox.Text = "Pitch shift";
+            this.pitchShiftCheckBox.UseVisualStyleBackColor = true;
             // 
             // EffectsForm
             // 
@@ -647,5 +659,6 @@
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.TextBox pitchShiftTextBox;
         private System.Windows.Forms.RadioButton pitchShiftRadioButton;
+        private System.Windows.Forms.CheckBox pitchShiftCheckBox;
     }
 }

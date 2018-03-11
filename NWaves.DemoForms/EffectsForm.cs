@@ -8,6 +8,7 @@ using NWaves.Audio;
 using NWaves.Audio.Mci;
 using NWaves.Effects;
 using NWaves.Filters.Base;
+using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Transforms;
 using SciColorMaps;
@@ -107,7 +108,7 @@ namespace NWaves.DemoForms
             else if (pitchShiftRadioButton.Checked)
             {
                 var shift = double.Parse(pitchShiftTextBox.Text);
-                effect = new PitchShiftEffect(shift);
+                effect = pitchShiftCheckBox.Checked ? new PitchShiftEffect(shift) : null;
             }
             else
             {
@@ -118,7 +119,9 @@ namespace NWaves.DemoForms
                 effect = new PhaserEffect(lfoFrequency, minFrequency, maxFrequency, q);
             }
 
-            _filteredSignal = effect.ApplyTo(_signal, FilteringOptions.Auto);
+            _filteredSignal = effect != null ? 
+                              effect.ApplyTo(_signal, FilteringOptions.Auto) : 
+                              Operation.TimeStretch(_signal, double.Parse(pitchShiftTextBox.Text));
 
             DrawSignal(signalAfterFilteringPanel, _filteredSignal);
 

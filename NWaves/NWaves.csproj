@@ -101,13 +101,14 @@
     <Compile Include="Filters\PreEmphasisFilter.cs" />
     <Compile Include="Operations\BlockConvolution.cs" />
     <Compile Include="Operations\Convolution.cs" />
-    <Compile Include="Operations\Deconvolution.cs" />
     <Compile Include="Operations\Envelope.cs" />
     <Compile Include="Operations\Modulate.cs" />
-    <Compile Include="Filters\PhaseVocoder.cs" />
+    <Compile Include="Operations\Tsm\PhaseVocoder.cs" />
     <Compile Include="Operations\Resampling.cs" />
     <Compile Include="Operations\SpectralSubtraction.cs" />
     <Compile Include="Operations\TimeStretch.cs" />
+    <Compile Include="Operations\Tsm\Psola.cs" />
+    <Compile Include="Operations\Tsm\Wsola.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Audio\WaveFile.cs" />
     <Compile Include="Audio\WaveFormat.cs" />

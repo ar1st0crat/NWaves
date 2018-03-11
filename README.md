@@ -14,7 +14,7 @@ Already available:
 - [x] basic LTI digital filters (FIR, IIR, comb, moving average, pre/de-emphasis, DC removal)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
-- [x] basic operations (convolution, cross-correlation, rectification, envelope detection, resampling)
+- [x] basic operations (convolution, cross-correlation, rectification, envelope detection, resampling, time stretching)
 - [x] block convolution (overlap-add, overlap-save)
 - [x] modulation (AM, ring, FM, PM)
 - [x] basic filter design & analysis (zeros and poles, window method, HP from/to LP, combining filters)
@@ -283,11 +283,13 @@ ct.Direct(signal[5000, 5512].Samples, cepstrum)
 //...
 
 
-// Short-time Fourier Transform (spectrogram):
+// Short-Time Fourier Transform:
 
 var stft = new Stft(1024, 512, WindowTypes.Hamming);
-var spectrogram = stft.Direct(signal);
-var reconstructed = stft.Inverse(spectrogram);
+var timefreq = stft.Direct(signal);
+var reconstructed = stft.Inverse(timefreq);
+
+var spectrogram = stft.Spectrogram(4096, 1024);
 
 ```
 
@@ -307,15 +309,16 @@ var olaFiltered = Operation.OverlapAdd(signal, kernel, 4096);
 var olsFiltered = Operation.OverlapSave(signal, kernel, 4096);
 
 
-// TODO:
+// resampling:
 
-var resampled = Operation.Resample(signal, 22050);
+var resampled = Operation.Resample(signal, 16000);
 var decimated = Operation.Decimate(signal, 3);
+var interpolated = Operation.Interpolate(signal, 4);
 
 ```
 
 
-### Filters and effects (that are filters as well):
+### Filters and effects:
 
 ```C#
 
@@ -341,9 +344,10 @@ var poles = filter.Poles;
 
 // some filter design:
 
-var firFilter = FilterDesign.DesignFirFilter(43, magnitudeResponse);
+var firFilter = DesignFilter.Fir(43, magnitudeResponse);
 
-var highpassFilter = FilterDesign.LpToHp(lowpassFilter);
+var lowpassFilter = DesignFilter.FirLp(43, 0.12);
+var highpassFilter = DesignFilter.LpToHp(lowpassFilter);
 
 
 // sequence of filters:
@@ -358,13 +362,10 @@ filtered = firFilter.ApplyTo(filtered);
 filtered = notchFilter.ApplyTo(filtered);
 
 
-// TODO:
+var pitchShift = new PitchShiftEffect(1.2);
+var wahwah = new WahWahEffect(lfoFrequency: 2/*Hz*/);
 
-var distortion = new DistortionEffect();
-var echo = new EchoEffect(delay: 20);
-var reverb = new ReverbEffect(1.9f);
-
-var filtered = signal.ApplyFilter(distortion * echo * reverb);
+var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
 
 ```
 

@@ -136,7 +136,7 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static ComplexDiscreteSignal First(this ComplexDiscreteSignal signal, int sampleCount)
         {
-            if (sampleCount <= 0 || sampleCount >= signal.Length)
+            if (sampleCount <= 0 || sampleCount > signal.Length)
             {
                 throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
             }
@@ -155,7 +155,7 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static ComplexDiscreteSignal Last(this ComplexDiscreteSignal signal, int sampleCount)
         {
-            if (sampleCount <= 0 || sampleCount >= signal.Length)
+            if (sampleCount <= 0 || sampleCount > signal.Length)
             {
                 throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
             }

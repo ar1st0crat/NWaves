@@ -5,12 +5,12 @@ using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
 
-namespace NWaves.Filters
+namespace NWaves.Operations.Tsm
 {
     /// <summary>
-    /// Conventional Phase Vocoder
+    /// Waveform-Synchronized Overlap-Add
     /// </summary>
-    public class PhaseVocoder : IFilter
+    public class Wsola : IFilter
     {
         /// <summary>
         /// Hop size at analysis stage (STFT decomposition)
@@ -39,7 +39,7 @@ namespace NWaves.Filters
         /// <param name="hopSynthesis"></param>
         /// <param name="fftAnalysis"></param>
         /// <param name="fftSynthesis"></param>
-        public PhaseVocoder(int hopAnalysis, int hopSynthesis, int fftAnalysis = 0, int fftSynthesis = 0)
+        public Wsola(int hopAnalysis, int hopSynthesis, int fftAnalysis = 0, int fftSynthesis = 0)
         {
             _hopAnalysis = hopAnalysis;
             _hopSynthesis = hopSynthesis;
@@ -48,7 +48,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Phase Vocoder algorithm
+        /// WSOLA algorithm
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="filteringOptions"></param>
@@ -74,12 +74,12 @@ namespace NWaves.Filters
                 for (var j = 0; j < frames[i].Length; j++)
                 {
                     var delta = phase[j] - prevPhase[j];
-                    
+
                     var deltaUnwrapped = delta - _hopAnalysis * omega[j];
                     var deltaWrapped = MathUtils.Mod(deltaUnwrapped + Math.PI, 2 * Math.PI) - Math.PI;
 
                     var freq = omega[j] + deltaWrapped / _hopAnalysis;
-                    
+
                     phaseTotal[j] += _hopSynthesis * freq;
                     prevPhase[j] = phase[j];
                 }

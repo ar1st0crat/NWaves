@@ -72,18 +72,30 @@ namespace NWaves.DemoForms
                     AnalyzePreemphasisFilter();
                     break;
                 case "Butterworth":
-                    //_filter = new ButterworthFilter(0.15, 4);
+                    _filter = new ButterworthFilter(0.1, 5);
+
+                    numeratorListBox.DataSource = (_filter as IirFilter).B;
+                    denominatorListBox.DataSource = (_filter as IirFilter).A;
+
+                    filterParamsDataGrid.RowCount = 2;
+                    filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+                    filterParamsDataGrid.Rows[0].Cells[1].Value = "5";
+                    filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
+                    filterParamsDataGrid.Rows[1].Cells[1].Value = "0,15";
+                    orderNumeratorTextBox.Text = "6";
+                    orderDenominatorTextBox.Text = "6";
+
+                    break;
+                case "Custom LP/HP":
                     _filter = (_filter == null) ? DesignFilter.FirLp(31, 0.1) : DesignFilter.LpToHp(_filter as FirFilter);
-                    
-                    //numeratorListBox.DataSource = (_filter as IirFilter).B;
-                    //denominatorListBox.DataSource = (_filter as IirFilter).A;
+
                     numeratorListBox.DataSource = (_filter as FirFilter)?.Kernel;
 
                     filterParamsDataGrid.RowCount = 2;
                     filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
-                    filterParamsDataGrid.Rows[0].Cells[1].Value = "4";
+                    filterParamsDataGrid.Rows[0].Cells[1].Value = "31";
                     filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
-                    filterParamsDataGrid.Rows[1].Cells[1].Value = "0,15";
+                    filterParamsDataGrid.Rows[1].Cells[1].Value = "0,1";
                     orderNumeratorTextBox.Text = "0";
                     orderDenominatorTextBox.Text = "4";
                     break;

@@ -163,7 +163,7 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal Last(this DiscreteSignal signal, int sampleCount)
         {
-            if (sampleCount <= 0 || sampleCount >= signal.Length)
+            if (sampleCount <= 0 || sampleCount > signal.Length)
             {
                 throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
             }
