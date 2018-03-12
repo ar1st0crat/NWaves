@@ -9,7 +9,6 @@ using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Windows;
-using SciColorMaps;
 using LevelScale = NWaves.Utils.Scale;
 
 namespace NWaves.DemoForms
@@ -42,6 +41,13 @@ namespace NWaves.DemoForms
 
             _fft = new Fft(_fftSize);
             _cepstralTransform = new CepstralTransform(_cepstrumSize, _fftSize);
+
+            cepstrumPanel.Gain = 0.2;
+            cepstrumPanel.Stride = 1;
+            cepstrumPanel.ForeColor = Color.Blue;
+            autoCorrPanel.Gain = 5;
+            autoCorrPanel.Stride = 1;
+            autoCorrPanel.ForeColor = Color.SeaGreen;
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -64,33 +70,6 @@ namespace NWaves.DemoForms
             UpdateSpectra();
             UpdateAutoCorrelation();
             
-            // obtain spectrogram
-
-            _stft = new Stft(_fftSize, _overlapSize, WindowTypes.Rectangular, _fftSize);
-            var spectrogram = _stft.Spectrogram(_signal.Samples);
-
-            var spectraCount = spectrogram.Count;
-
-            var minValue = spectrogram.SelectMany(s => s).Min();
-            var maxValue = spectrogram.SelectMany(s => s).Max();
-
-            // post-process spectrogram for better visualization
-
-            for (var i = 0; i < spectraCount; i++)
-            {
-                spectrogram[i] = spectrogram[i].Select(s =>
-                {
-                    var sqrt = Math.Sqrt(s);
-                    return sqrt*3 < maxValue ? sqrt*3 : sqrt/1.5;
-                })
-                .ToArray();
-            }
-            maxValue /= 12;
-
-            var cmap = new ColorMap("viridis", minValue, maxValue);
-
-
-
             // track pitch
 
             var pitches = new List<double>();
@@ -121,8 +100,16 @@ namespace NWaves.DemoForms
                 pos += _overlapSize;
             }
 
-            DrawSpectrogram(spectrogram, pitches, cmap);
 
+            // obtain spectrogram
+
+            _stft = new Stft(_fftSize, _overlapSize, WindowTypes.Rectangular);
+            var spectrogram = _stft.Spectrogram(_signal);
+
+            spectrogramPanel.ColorMapName = "viridis";
+            spectrogramPanel.Spectrogram = spectrogram.Select(s => s.Take(224).ToArray()).ToList();
+            spectrogramPanel.Markline = pitches.Select(p => _signal.SamplingRate / p).ToArray();
+            
             _specNo = 0;
         }
 
@@ -160,6 +147,7 @@ namespace NWaves.DemoForms
                 _fft = new Fft(fftSize);
                 _cepstralTransform = new CepstralTransform(cepstrumSize, _fftSize);
             }
+
             if (cepstrumSize != _cepstrumSize)
             {
                 _cepstrumSize = cepstrumSize;
@@ -170,11 +158,6 @@ namespace NWaves.DemoForms
 
             var block = _signal[pos, pos + _fftSize];
             block.ApplyWindow(WindowTypes.Hamming);
-
-            var spectrum = _fft.PowerSpectrum(block, normalize: false)
-                               .Samples
-                               .Select(s => LevelScale.ToDecibel(s))
-                               .ToArray();
 
             var cepstrum = _cepstralTransform.Direct(block).Samples;
 
@@ -201,16 +184,24 @@ namespace NWaves.DemoForms
                 real[i] = cepstrum[i];
             }
 
-            _fft.Direct(real, imag);
+            var spectrum = _fft.PowerSpectrum(block, normalize: false).Samples;
 
-            var avg = spectrum.Average();
+            var avg = spectrum.Average(s => LevelScale.ToDecibel(s));
+
+            _fft.Direct(real, imag);
 
             var spectrumEstimate = real.Take(_fftSize / 2 + 1)
                                        .Select(s => s * 40 / _fftSize - avg)
                                        .ToArray();
 
-            DrawSpectrum(spectrum, spectrumEstimate, _fftSize / peakIndex);
-            DrawCepstrum(cepstrum, peakIndex);
+            spectrumPanel.Line = spectrum;
+            spectrumPanel.ToDecibel();
+            spectrumPanel.Markline = spectrumEstimate;
+            spectrumPanel.Mark = _fftSize / peakIndex;
+            spectrumPanel.Legend = string.Format("{0:F2} Hz", (double)_signal.SamplingRate / peakIndex);
+
+            cepstrumPanel.Line = cepstrum;
+            cepstrumPanel.Mark = peakIndex;
         }
 
         private void UpdateAutoCorrelation()
@@ -235,169 +226,8 @@ namespace NWaves.DemoForms
                 }
             }
 
-            DrawAutoCorrelation(autoCorrelation.Samples, peakIndex);
+            autoCorrPanel.Line = autoCorrelation.Samples;
+            autoCorrPanel.Mark = peakIndex;
         }
-
-        #region drawing
-
-        private void DrawSpectrum(double[] spectrum, double[] estimate = null, int peakIndex = 0)
-        {
-            var g = spectrumPanel.CreateGraphics();
-            g.Clear(Color.White);
-
-            var xOffset = 15;
-            var yOffset = 15;
-            var offset = spectrumPanel.Height / 2;
-
-            var blackPen = new Pen(Color.Black);
-            g.DrawLine(blackPen, xOffset, offset, spectrumPanel.Width - xOffset, offset);
-            g.DrawLine(blackPen, xOffset, yOffset, xOffset, spectrumPanel.Height - yOffset);
-            blackPen.Dispose();
-
-            var pen = new Pen(Color.Blue);
-            
-            var i = 1;
-            var x = xOffset + 1;
-
-            while (i < spectrum.Length)
-            {
-                if (Math.Abs(spectrum[i]) < spectrumPanel.Height)
-                {
-                    g.DrawLine(pen, x - 1, (float)-spectrum[i - 1] + offset, x, (float)-spectrum[i] + offset);
-                }
-                x++;
-                i++;
-            }
-
-            pen.Dispose();
-
-            var redPen = new Pen(Color.Red, 2);
-            g.DrawLine(redPen, peakIndex + xOffset, yOffset, peakIndex + xOffset, spectrumPanel.Height - yOffset);
-
-            if (estimate != null)
-            {
-                i = 1;
-                x = xOffset + 1;
-
-                while (i < estimate.Length)
-                {
-                    if (Math.Abs(estimate[i]) < spectrumPanel.Height)
-                    {
-                        g.DrawLine(redPen, x - 1, (float)-estimate[i - 1] + offset, x, (float)-estimate[i] + offset);
-                    }
-                    x++;
-                    i++;
-                }
-            }
-
-            var info = string.Format("{0:F2} Hz", (double)_signal.SamplingRate * peakIndex / _fftSize);
-            g.DrawString(info, new Font("arial", 16), new SolidBrush(Color.Red), 100, 30);
-
-            redPen.Dispose();
-        }
-
-        private void DrawCepstrum(double[] cepstrum, int peakIndex = 0)
-        {
-            var g = cepstrumPanel.CreateGraphics();
-            g.Clear(Color.White);
-
-            var xOffset = 15;
-            var yOffset = 15;
-            var offset = spectrumPanel.Height / 2;
-
-            var blackPen = new Pen(Color.Black);
-            g.DrawLine(blackPen, xOffset, offset, spectrumPanel.Width - xOffset, offset);
-            g.DrawLine(blackPen, xOffset, yOffset, xOffset, spectrumPanel.Height - yOffset);
-            
-            blackPen.Dispose();
-            
-            var pen = new Pen(Color.Blue);
-
-            var i = 2;
-            var x = xOffset + 2;
-
-            while (i < cepstrum.Length)
-            {
-                if (Math.Abs(cepstrum[i] / 5) < spectrumPanel.Height)
-                {
-                    g.DrawLine(pen, x - 1, (float)-cepstrum[i - 1] / 5 + offset, x, (float)-cepstrum[i] / 5 + offset);
-                }
-                x++;
-                i++;
-            }
-
-            pen.Dispose();
-
-            var redPen = new Pen(Color.Red, 2);
-            g.DrawLine(redPen, peakIndex + xOffset, yOffset, peakIndex + xOffset, spectrumPanel.Height - yOffset);
-            redPen.Dispose();
-        }
-
-        private void DrawAutoCorrelation(double[] autocorr, int peakIndex = 0)
-        {
-            var g = autoCorrPanel.CreateGraphics();
-            g.Clear(Color.White);
-
-            var xOffset = 15;
-            var yOffset = 15;
-            var offset = spectrumPanel.Height / 2;
-
-            var blackPen = new Pen(Color.Black);
-            g.DrawLine(blackPen, xOffset, offset, spectrumPanel.Width - xOffset, offset);
-            g.DrawLine(blackPen, xOffset, yOffset, xOffset, spectrumPanel.Height - yOffset);
-
-            blackPen.Dispose();
-
-            var pen = new Pen(Color.Blue);
-
-            var i = 1;
-            var x = xOffset + 1;
-
-            while (i < autocorr.Length)
-            {
-                if (Math.Abs(autocorr[i] * 5) < autoCorrPanel.Height)
-                {
-                    g.DrawLine(pen, x - 1, (float)-autocorr[i - 1] * 5 + offset, x, (float)-autocorr[i] * 5 + offset);
-                }
-                x++;
-                i++;
-            }
-
-            pen.Dispose();
-
-            var redPen = new Pen(Color.Red, 2);
-            g.DrawLine(redPen, peakIndex + xOffset, yOffset, peakIndex + xOffset, spectrumPanel.Height - yOffset);
-            redPen.Dispose();
-        }
-
-        private void DrawSpectrogram(List<double[]> spectrogram, List<double> pitches, ColorMap cmap)
-        {
-            var g = spectrogramPanel.CreateGraphics();
-            g.Clear(Color.White);
-            
-            var spectrogramBitmap = new Bitmap(spectrogram.Count, spectrogram[0].Length);
-
-            for (var i = 0; i < spectrogram.Count; i++)
-            {
-                for (var j = 0; j < spectrogram[i].Length; j++)
-                {
-                    spectrogramBitmap.SetPixel(i, j, cmap.GetColor(spectrogram[i][j]));
-                }
-            }
-
-            g.DrawImage(spectrogramBitmap, 0, 0);
-
-            var pen = new Pen(Color.DeepPink, 7);
-
-            for (var i = 1; i < pitches.Count; i++)
-            {
-                g.DrawLine(pen, i - 1, (int)(_signal.SamplingRate / pitches[i - 1]),
-                                i,     (int)(_signal.SamplingRate / pitches[i]));
-            }
-
-            pen.Dispose();
-        }
-
-        #endregion
     }
 }

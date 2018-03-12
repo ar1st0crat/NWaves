@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NWaves.Operations;
 using NWaves.Signals;
@@ -29,7 +30,7 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Parameterless constructor
         /// </summary>
-        public FirFilter()
+        protected FirFilter()
         {
         }
 
@@ -153,7 +154,7 @@ namespace NWaves.Filters.Base
             var fft = new Fft(length);
             fft.Direct(real, imag);
 
-            return new ComplexDiscreteSignal(1, real, imag);
+            return new ComplexDiscreteSignal(1, real.Take(length / 2), imag.Take(length / 2));
         }
 
         /// <summary>
@@ -189,6 +190,33 @@ namespace NWaves.Filters.Base
         public IirFilter AsIir()
         {
             return new IirFilter(Kernel, new []{ 1.0 });
+        }
+
+        /// <summary>
+        /// Load kernel from csv file
+        /// </summary>
+        /// <param name="stream"></param>
+        public static FirFilter FromCsv(Stream stream)
+        {
+            using (var reader = new StreamReader(stream))
+            {
+                var content = reader.ReadToEnd();
+                var kernel = content.Split(';').Select(double.Parse).ToArray();
+                return new FirFilter(kernel);
+            }
+        }
+
+        /// <summary>
+        /// Serialize kernel to csv file
+        /// </summary>
+        /// <param name="stream"></param>
+        public void Serialize(Stream stream)
+        {
+            using (var writer = new StreamWriter(stream))
+            {
+                var content = string.Join(";", Kernel.Select(k => k.ToString()));
+                writer.WriteLine(content);
+            }
         }
 
         /// <summary>

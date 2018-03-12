@@ -21,6 +21,10 @@ namespace NWaves.DemoForms
         public MfccForm()
         {
             InitializeComponent();
+
+            mfccPanel.ForeColor = Color.SeaGreen;
+            mfccPanel.Thickness = 2;
+            mfccPanel.Stride = 20;
         }
 
         private async void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -53,8 +57,9 @@ namespace NWaves.DemoForms
             FillFeaturesList(_mfccVectors, mfccExtractor.FeatureDescriptions);
             mfccListView.Items[0].Selected = true;
 
-            PlotMelFilterbank(mfccExtractor.FilterBank);
-            PlotMfcc(_mfccVectors[0].Features);
+            melFilterBankPanel.Groups = mfccExtractor.FilterBank;
+            
+            mfccPanel.Line = _mfccVectors[0].Features;
 
             using (var csvFile = new FileStream("mfccs.csv", FileMode.Create))
             {
@@ -90,65 +95,7 @@ namespace NWaves.DemoForms
 
         private void mfccListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
-            PlotMfcc(_mfccVectors[e.ItemIndex].Features);
-        }
-
-        private void PlotMelFilterbank(double[][] filterbank)
-        {
-            var g = melFilterBankPanel.CreateGraphics();
-            g.Clear(Color.White);
-
-            var rand = new Random();
-
-            var offset = melFilterBankPanel.Height - 20;
-
-            for (var j = 0; j < filterbank.Length; j++)
-            {
-                var pen = new Pen(Color.FromArgb(rand.Next() % 255, rand.Next() % 255, rand.Next() % 255));
-
-                var i = 1;
-                var x = 2;
-
-                while (i < filterbank[j].Length)
-                {
-                    g.DrawLine(pen, 
-                        x-2, (float)-filterbank[j][i - 1] * 100 + offset, 
-                        x,   (float)-filterbank[j][i] * 100 + offset);
-                    x += 2;
-                    i++;
-                }
-
-                pen.Dispose();
-            }
-        }
-
-        private void PlotMfcc(double[] mfcc, bool includeFirstCoeff = false)
-        {
-            var g = mfccPanel.CreateGraphics();
-            g.Clear(Color.White);
-
-            var xOffset = 30;
-            var yOffset = mfccPanel.Height / 2;
-
-            var stride = 20;
-
-            var blackPen = new Pen(Color.Black);
-            g.DrawLine(blackPen, xOffset, yOffset, xOffset + mfcc.Length * stride, yOffset);
-            g.DrawLine(blackPen, xOffset, xOffset, xOffset, mfccPanel.Height - xOffset);
-            blackPen.Dispose();
-
-            var pen = new Pen(Color.Green, 3);
-
-            var i = includeFirstCoeff ? 1 : 2;
-            var x = xOffset + stride;
-
-            for (; i < mfcc.Length; i++)
-            {
-                g.DrawLine(pen, x - stride, (float)-mfcc[i - 1] + yOffset, x, (float)-mfcc[i] + yOffset);
-                x += stride;
-            }
-
-            pen.Dispose();
+            mfccPanel.Line = _mfccVectors[e.ItemIndex].Features;
         }
     }
 }

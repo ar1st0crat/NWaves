@@ -1,4 +1,6 @@
-﻿namespace NWaves.DemoForms
+﻿using NWaves.DemoForms.UserControls;
+
+namespace NWaves.DemoForms
 {
     partial class FeaturesForm
     {
@@ -32,7 +34,7 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.featuresListView = new System.Windows.Forms.ListView();
-            this.featurePlotPanel = new System.Windows.Forms.Panel();
+            this.featurePlotPanel = new LinePlot();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -58,7 +60,7 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(129, 26);
             this.openToolStripMenuItem.Text = "&Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
@@ -72,6 +74,7 @@
             this.featuresListView.TabIndex = 5;
             this.featuresListView.UseCompatibleStateImageBehavior = false;
             this.featuresListView.View = System.Windows.Forms.View.Details;
+            this.featuresListView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.featuresListView_ColumnClick);
             // 
             // featurePlotPanel
             // 
@@ -105,6 +108,6 @@
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
         private System.Windows.Forms.ListView featuresListView;
-        private System.Windows.Forms.Panel featurePlotPanel;
+        private LinePlot featurePlotPanel;
     }
 }

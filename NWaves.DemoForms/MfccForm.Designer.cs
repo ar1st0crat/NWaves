@@ -1,4 +1,6 @@
-﻿namespace NWaves.DemoForms
+﻿using NWaves.DemoForms.UserControls;
+
+namespace NWaves.DemoForms
 {
     partial class MfccForm
     {
@@ -31,8 +33,8 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.melFilterBankPanel = new System.Windows.Forms.Panel();
-            this.mfccPanel = new System.Windows.Forms.Panel();
+            this.melFilterBankPanel = new GroupPlot();
+            this.mfccPanel = new LinePlot();
             this.mfccListView = new System.Windows.Forms.ListView();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -115,8 +117,8 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
-        private System.Windows.Forms.Panel melFilterBankPanel;
-        private System.Windows.Forms.Panel mfccPanel;
+        private GroupPlot melFilterBankPanel;
+        private LinePlot mfccPanel;
         private System.Windows.Forms.ListView mfccListView;
     }
 }

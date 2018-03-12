@@ -1,4 +1,6 @@
-﻿namespace NWaves.DemoForms
+﻿using NWaves.DemoForms.UserControls;
+
+namespace NWaves.DemoForms
 {
     partial class EffectsForm
     {
@@ -32,14 +34,13 @@
             this.playSignalButton = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.spectrogramAfterFilteringPanel = new System.Windows.Forms.Panel();
-            this.signalAfterFilteringPanel = new System.Windows.Forms.Panel();
-            this.spectrogramBeforeFilteringPanel = new System.Windows.Forms.Panel();
-            this.signalBeforeFilteringPanel = new System.Windows.Forms.Panel();
+            this.spectrogramAfterFilteringPanel = new SpectrogramPlot();
+            this.spectrogramBeforeFilteringPanel = new SpectrogramPlot();
             this.stopButton = new System.Windows.Forms.Button();
             this.stopFilteredButton = new System.Windows.Forms.Button();
             this.applyEffectButton = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.pitchShiftCheckBox = new System.Windows.Forms.CheckBox();
             this.delayRadioButton = new System.Windows.Forms.RadioButton();
             this.label15 = new System.Windows.Forms.Label();
             this.pitchShiftTextBox = new System.Windows.Forms.TextBox();
@@ -78,14 +79,15 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.pitchShiftCheckBox = new System.Windows.Forms.CheckBox();
+            this.signalAfterFilteringPanel = new SignalPlot();
+            this.signalBeforeFilteringPanel = new SignalPlot();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // playFilteredSignalButton
             // 
-            this.playFilteredSignalButton.Location = new System.Drawing.Point(571, 291);
+            this.playFilteredSignalButton.Location = new System.Drawing.Point(831, 291);
             this.playFilteredSignalButton.Name = "playFilteredSignalButton";
             this.playFilteredSignalButton.Size = new System.Drawing.Size(59, 26);
             this.playFilteredSignalButton.TabIndex = 27;
@@ -95,7 +97,7 @@
             // 
             // playSignalButton
             // 
-            this.playSignalButton.Location = new System.Drawing.Point(118, 291);
+            this.playSignalButton.Location = new System.Drawing.Point(347, 291);
             this.playSignalButton.Name = "playSignalButton";
             this.playSignalButton.Size = new System.Drawing.Size(59, 26);
             this.playSignalButton.TabIndex = 26;
@@ -123,39 +125,27 @@
             // 
             // spectrogramAfterFilteringPanel
             // 
-            this.spectrogramAfterFilteringPanel.BackColor = System.Drawing.SystemColors.Window;
+            this.spectrogramAfterFilteringPanel.AutoScroll = true;
+            this.spectrogramAfterFilteringPanel.BackColor = System.Drawing.Color.White;
             this.spectrogramAfterFilteringPanel.Location = new System.Drawing.Point(480, 476);
             this.spectrogramAfterFilteringPanel.Name = "spectrogramAfterFilteringPanel";
-            this.spectrogramAfterFilteringPanel.Size = new System.Drawing.Size(475, 137);
+            this.spectrogramAfterFilteringPanel.Size = new System.Drawing.Size(475, 152);
+            this.spectrogramAfterFilteringPanel.Spectrogram = null;
             this.spectrogramAfterFilteringPanel.TabIndex = 23;
-            // 
-            // signalAfterFilteringPanel
-            // 
-            this.signalAfterFilteringPanel.BackColor = System.Drawing.SystemColors.Window;
-            this.signalAfterFilteringPanel.Location = new System.Drawing.Point(480, 316);
-            this.signalAfterFilteringPanel.Name = "signalAfterFilteringPanel";
-            this.signalAfterFilteringPanel.Size = new System.Drawing.Size(475, 153);
-            this.signalAfterFilteringPanel.TabIndex = 21;
             // 
             // spectrogramBeforeFilteringPanel
             // 
-            this.spectrogramBeforeFilteringPanel.BackColor = System.Drawing.SystemColors.Window;
+            this.spectrogramBeforeFilteringPanel.AutoScroll = true;
+            this.spectrogramBeforeFilteringPanel.BackColor = System.Drawing.Color.White;
             this.spectrogramBeforeFilteringPanel.Location = new System.Drawing.Point(13, 475);
             this.spectrogramBeforeFilteringPanel.Name = "spectrogramBeforeFilteringPanel";
-            this.spectrogramBeforeFilteringPanel.Size = new System.Drawing.Size(461, 138);
+            this.spectrogramBeforeFilteringPanel.Size = new System.Drawing.Size(461, 153);
+            this.spectrogramBeforeFilteringPanel.Spectrogram = null;
             this.spectrogramBeforeFilteringPanel.TabIndex = 22;
-            // 
-            // signalBeforeFilteringPanel
-            // 
-            this.signalBeforeFilteringPanel.BackColor = System.Drawing.SystemColors.Window;
-            this.signalBeforeFilteringPanel.Location = new System.Drawing.Point(13, 316);
-            this.signalBeforeFilteringPanel.Name = "signalBeforeFilteringPanel";
-            this.signalBeforeFilteringPanel.Size = new System.Drawing.Size(461, 153);
-            this.signalBeforeFilteringPanel.TabIndex = 20;
             // 
             // stopButton
             // 
-            this.stopButton.Location = new System.Drawing.Point(183, 291);
+            this.stopButton.Location = new System.Drawing.Point(412, 291);
             this.stopButton.Name = "stopButton";
             this.stopButton.Size = new System.Drawing.Size(59, 26);
             this.stopButton.TabIndex = 28;
@@ -165,7 +155,7 @@
             // 
             // stopFilteredButton
             // 
-            this.stopFilteredButton.Location = new System.Drawing.Point(636, 291);
+            this.stopFilteredButton.Location = new System.Drawing.Point(896, 291);
             this.stopFilteredButton.Name = "stopFilteredButton";
             this.stopFilteredButton.Size = new System.Drawing.Size(59, 26);
             this.stopFilteredButton.TabIndex = 29;
@@ -227,6 +217,16 @@
             this.groupBox1.TabIndex = 31;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Sound Effects";
+            // 
+            // pitchShiftCheckBox
+            // 
+            this.pitchShiftCheckBox.AutoSize = true;
+            this.pitchShiftCheckBox.Location = new System.Drawing.Point(670, 159);
+            this.pitchShiftCheckBox.Name = "pitchShiftCheckBox";
+            this.pitchShiftCheckBox.Size = new System.Drawing.Size(91, 21);
+            this.pitchShiftCheckBox.TabIndex = 35;
+            this.pitchShiftCheckBox.Text = "Pitch shift";
+            this.pitchShiftCheckBox.UseVisualStyleBackColor = true;
             // 
             // delayRadioButton
             // 
@@ -567,21 +567,33 @@
             this.openToolStripMenuItem.Text = "&Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
-            // pitchShiftCheckBox
+            // signalAfterFilteringPanel
             // 
-            this.pitchShiftCheckBox.AutoSize = true;
-            this.pitchShiftCheckBox.Location = new System.Drawing.Point(670, 159);
-            this.pitchShiftCheckBox.Name = "pitchShiftCheckBox";
-            this.pitchShiftCheckBox.Size = new System.Drawing.Size(91, 21);
-            this.pitchShiftCheckBox.TabIndex = 35;
-            this.pitchShiftCheckBox.Text = "Pitch shift";
-            this.pitchShiftCheckBox.UseVisualStyleBackColor = true;
+            this.signalAfterFilteringPanel.AutoScroll = true;
+            this.signalAfterFilteringPanel.BackColor = System.Drawing.Color.White;
+            this.signalAfterFilteringPanel.Location = new System.Drawing.Point(480, 316);
+            this.signalAfterFilteringPanel.Name = "signalAfterFilteringPanel";
+            this.signalAfterFilteringPanel.Signal = null;
+            this.signalAfterFilteringPanel.Size = new System.Drawing.Size(475, 153);
+            this.signalAfterFilteringPanel.Stride = 256;
+            this.signalAfterFilteringPanel.TabIndex = 21;
+            // 
+            // signalBeforeFilteringPanel
+            // 
+            this.signalBeforeFilteringPanel.AutoScroll = true;
+            this.signalBeforeFilteringPanel.BackColor = System.Drawing.Color.White;
+            this.signalBeforeFilteringPanel.Location = new System.Drawing.Point(13, 316);
+            this.signalBeforeFilteringPanel.Name = "signalBeforeFilteringPanel";
+            this.signalBeforeFilteringPanel.Signal = null;
+            this.signalBeforeFilteringPanel.Size = new System.Drawing.Size(461, 153);
+            this.signalBeforeFilteringPanel.Stride = 256;
+            this.signalBeforeFilteringPanel.TabIndex = 20;
             // 
             // EffectsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(970, 625);
+            this.ClientSize = new System.Drawing.Size(970, 640);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.applyEffectButton);
             this.Controls.Add(this.stopFilteredButton);
@@ -613,10 +625,8 @@
         private System.Windows.Forms.Button playSignalButton;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Panel spectrogramAfterFilteringPanel;
-        private System.Windows.Forms.Panel signalAfterFilteringPanel;
-        private System.Windows.Forms.Panel spectrogramBeforeFilteringPanel;
-        private System.Windows.Forms.Panel signalBeforeFilteringPanel;
+        private SpectrogramPlot spectrogramAfterFilteringPanel;
+        private SpectrogramPlot spectrogramBeforeFilteringPanel;
         private System.Windows.Forms.Button stopButton;
         private System.Windows.Forms.Button stopFilteredButton;
         private System.Windows.Forms.Button applyEffectButton;
@@ -660,5 +670,7 @@
         private System.Windows.Forms.TextBox pitchShiftTextBox;
         private System.Windows.Forms.RadioButton pitchShiftRadioButton;
         private System.Windows.Forms.CheckBox pitchShiftCheckBox;
+        private SignalPlot signalAfterFilteringPanel;
+        private SignalPlot signalBeforeFilteringPanel;
     }
 }

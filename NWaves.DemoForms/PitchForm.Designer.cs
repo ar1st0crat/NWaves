@@ -1,4 +1,6 @@
-﻿namespace NWaves.DemoForms
+﻿using NWaves.DemoForms.UserControls;
+
+namespace NWaves.DemoForms
 {
     partial class PitchForm
     {
@@ -31,23 +33,23 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.spectrumPanel = new System.Windows.Forms.Panel();
-            this.cepstrumPanel = new System.Windows.Forms.Panel();
+            this.spectrumPanel = new NWaves.DemoForms.UserControls.LinePlot();
+            this.cepstrumPanel = new NWaves.DemoForms.UserControls.LinePlot();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.prevButton = new System.Windows.Forms.Button();
             this.nextButton = new System.Windows.Forms.Button();
             this.specNoComboBox = new System.Windows.Forms.ComboBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
             this.cepstrumSizeTextBox = new System.Windows.Forms.TextBox();
             this.overlapSizeTextBox = new System.Windows.Forms.TextBox();
             this.fftSizeTextBox = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.spectrogramPanel = new System.Windows.Forms.Panel();
+            this.spectrogramPanel = new NWaves.DemoForms.UserControls.SpectrogramPlot();
             this.label6 = new System.Windows.Forms.Label();
-            this.autoCorrPanel = new System.Windows.Forms.Panel();
+            this.autoCorrPanel = new NWaves.DemoForms.UserControls.LinePlot();
             this.menuStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -80,24 +82,36 @@
             // 
             // spectrumPanel
             // 
+            this.spectrumPanel.AutoScroll = true;
             this.spectrumPanel.BackColor = System.Drawing.Color.White;
+            this.spectrumPanel.ForeColor = System.Drawing.Color.Blue;
+            this.spectrumPanel.Legend = null;
             this.spectrumPanel.Location = new System.Drawing.Point(14, 347);
+            this.spectrumPanel.Mark = null;
+            this.spectrumPanel.Markline = null;
             this.spectrumPanel.Name = "spectrumPanel";
-            this.spectrumPanel.Size = new System.Drawing.Size(524, 256);
+            this.spectrumPanel.Size = new System.Drawing.Size(550, 256);
+            this.spectrumPanel.Stride = 1;
             this.spectrumPanel.TabIndex = 1;
             // 
             // cepstrumPanel
             // 
+            this.cepstrumPanel.AutoScroll = true;
             this.cepstrumPanel.BackColor = System.Drawing.Color.White;
-            this.cepstrumPanel.Location = new System.Drawing.Point(553, 347);
+            this.cepstrumPanel.Gain = 1D;
+            this.cepstrumPanel.Line = null;
+            this.cepstrumPanel.Location = new System.Drawing.Point(570, 347);
+            this.cepstrumPanel.Mark = null;
             this.cepstrumPanel.Name = "cepstrumPanel";
-            this.cepstrumPanel.Size = new System.Drawing.Size(311, 256);
+            this.cepstrumPanel.Size = new System.Drawing.Size(304, 256);
+            this.cepstrumPanel.Stride = 20;
             this.cepstrumPanel.TabIndex = 2;
+            this.cepstrumPanel.Thickness = 1;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(241, 327);
+            this.label1.Location = new System.Drawing.Point(260, 327);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(68, 17);
             this.label1.TabIndex = 3;
@@ -157,6 +171,33 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Parameters";
             // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(13, 135);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(97, 17);
+            this.label5.TabIndex = 16;
+            this.label5.Text = "Cepstrum size";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(13, 94);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(87, 17);
+            this.label4.TabIndex = 15;
+            this.label4.Text = "Overlap size";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(13, 53);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(62, 17);
+            this.label3.TabIndex = 14;
+            this.label3.Text = "FFT size";
+            // 
             // cepstrumSizeTextBox
             // 
             this.cepstrumSizeTextBox.Location = new System.Drawing.Point(121, 130);
@@ -178,39 +219,16 @@
             this.fftSizeTextBox.Size = new System.Drawing.Size(55, 22);
             this.fftSizeTextBox.TabIndex = 11;
             // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(13, 53);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(62, 17);
-            this.label3.TabIndex = 14;
-            this.label3.Text = "FFT size";
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(13, 94);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(87, 17);
-            this.label4.TabIndex = 15;
-            this.label4.Text = "Overlap size";
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(13, 135);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(97, 17);
-            this.label5.TabIndex = 16;
-            this.label5.Text = "Cepstrum size";
-            // 
             // spectrogramPanel
             // 
+            this.spectrogramPanel.AutoScroll = true;
             this.spectrogramPanel.BackColor = System.Drawing.Color.White;
+            this.spectrogramPanel.ColorMapName = "magma";
             this.spectrogramPanel.Location = new System.Drawing.Point(12, 55);
+            this.spectrogramPanel.Markline = null;
             this.spectrogramPanel.Name = "spectrogramPanel";
             this.spectrogramPanel.Size = new System.Drawing.Size(973, 256);
+            this.spectrogramPanel.Spectrogram = null;
             this.spectrogramPanel.TabIndex = 2;
             // 
             // label6
@@ -224,11 +242,17 @@
             // 
             // autoCorrPanel
             // 
+            this.autoCorrPanel.AutoScroll = true;
             this.autoCorrPanel.BackColor = System.Drawing.Color.White;
+            this.autoCorrPanel.Gain = 1D;
+            this.autoCorrPanel.Line = null;
             this.autoCorrPanel.Location = new System.Drawing.Point(880, 347);
+            this.autoCorrPanel.Mark = null;
             this.autoCorrPanel.Name = "autoCorrPanel";
             this.autoCorrPanel.Size = new System.Drawing.Size(311, 256);
+            this.autoCorrPanel.Stride = 20;
             this.autoCorrPanel.TabIndex = 5;
+            this.autoCorrPanel.Thickness = 1;
             // 
             // PitchForm
             // 
@@ -264,8 +288,8 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
-        private System.Windows.Forms.Panel spectrumPanel;
-        private System.Windows.Forms.Panel cepstrumPanel;
+        private LinePlot spectrumPanel;
+        private LinePlot cepstrumPanel;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button prevButton;
@@ -278,8 +302,8 @@
         private System.Windows.Forms.TextBox cepstrumSizeTextBox;
         private System.Windows.Forms.TextBox overlapSizeTextBox;
         private System.Windows.Forms.TextBox fftSizeTextBox;
-        private System.Windows.Forms.Panel spectrogramPanel;
+        private SpectrogramPlot spectrogramPanel;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Panel autoCorrPanel;
+        private LinePlot autoCorrPanel;
     }
 }

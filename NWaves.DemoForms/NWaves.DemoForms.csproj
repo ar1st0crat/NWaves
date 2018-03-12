@@ -92,6 +92,30 @@
     <Compile Include="PitchForm.Designer.cs">
       <DependentUpon>PitchForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\GroupPlot.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UserControls\GroupPlot.Designer.cs">
+      <DependentUpon>GroupPlot.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\PoleZeroPlot.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UserControls\PoleZeroPlot.Designer.cs">
+      <DependentUpon>PoleZeroPlot.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\LinePlot.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UserControls\LinePlot.Designer.cs">
+      <DependentUpon>LinePlot.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\SignalPlot.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UserControls\SignalPlot.Designer.cs">
+      <DependentUpon>SignalPlot.cs</DependentUpon>
+    </Compile>
     <Compile Include="SignalsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -100,6 +124,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserControls\SpectrogramPlot.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UserControls\SpectrogramPlot.Designer.cs">
+      <DependentUpon>SpectrogramPlot.cs</DependentUpon>
+    </Compile>
     <Compile Include="StftForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -127,6 +157,18 @@
     <EmbeddedResource Include="PitchForm.resx">
       <DependentUpon>PitchForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="UserControls\GroupPlot.resx">
+      <DependentUpon>GroupPlot.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UserControls\PoleZeroPlot.resx">
+      <DependentUpon>PoleZeroPlot.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UserControls\LinePlot.resx">
+      <DependentUpon>LinePlot.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UserControls\SignalPlot.resx">
+      <DependentUpon>SignalPlot.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SignalsForm.resx">
       <DependentUpon>SignalsForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -139,6 +181,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="UserControls\SpectrogramPlot.resx">
+      <DependentUpon>SpectrogramPlot.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="StftForm.resx">
       <DependentUpon>StftForm.cs</DependentUpon>
     </EmbeddedResource>

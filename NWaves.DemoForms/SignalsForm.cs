@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -33,6 +32,10 @@ namespace NWaves.DemoForms
         public SignalsForm()
         {
             InitializeComponent();
+
+            signalPanel.Gain = 100;
+            generatedSignalPanel.Gain = 150;
+            superimposedSignalPanel.Gain = 100;
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -126,7 +129,7 @@ namespace NWaves.DemoForms
                 _signal1 = waveFile[Channels.Left];
             }
 
-            DrawSignal(signalPanel, _signal1, 53);
+            signalPanel.Signal = _signal1;
         }
 
         private void openFileButton_Click(object sender, EventArgs e)
@@ -239,17 +242,17 @@ namespace NWaves.DemoForms
             if (_signal1 != null)
             {
                 _signal3 = _signal1.Superimpose(_signal2);
-                DrawSignal(superimposedSignalPanel, _signal3);
+                superimposedSignalPanel.Signal = _signal3;
             }
 
-            DrawSignal(generatedSignalPanel, _signal2);
+            generatedSignalPanel.Stride = 1;
+            generatedSignalPanel.Signal = _signal2;
 
-            var spectrum = _fft.PowerSpectrum(_signal2.First(512))
-                               .Samples
-                               .Select(s => LevelScale.ToDecibel(s))
-                               .ToArray();
+            var spectrum = _fft.PowerSpectrum(_signal2.First(512));
 
-            DrawSpectrum(spectrum);
+            spectrumPanel.Gain = 32;
+            spectrumPanel.Line = spectrum.Samples;
+            spectrumPanel.ToDecibel();
         }
 
         private void signalOperationButton_Click(object sender, EventArgs e)
@@ -274,8 +277,8 @@ namespace NWaves.DemoForms
 
             _signal3 = _signal1.Superimpose(_signal2);
 
-            DrawSignal(generatedSignalPanel, _signal2);
-            DrawSignal(superimposedSignalPanel, _signal3, 53);
+            generatedSignalPanel.Signal = _signal2;
+            superimposedSignalPanel.Signal = _signal3;
         }
 
         private void signalSliceButton_Click(object sender, EventArgs e)
@@ -290,8 +293,8 @@ namespace NWaves.DemoForms
 
             _signal2 = _signal1[from, to];
 
-            DrawSignal(generatedSignalPanel, _signal2);
-            DrawSignal(superimposedSignalPanel, _signal3, 53);
+            generatedSignalPanel.Signal = _signal2;
+            superimposedSignalPanel.Signal = _signal3;
         }
         
         #region playback demo
@@ -364,7 +367,7 @@ namespace NWaves.DemoForms
                     _signal1 = waveFile[Channels.Left];
                 }
 
-                DrawSignal(signalPanel, _signal1, 53);
+                signalPanel.Signal = _signal1;
             }
             else
             {
@@ -375,80 +378,6 @@ namespace NWaves.DemoForms
             }
 
             _isRecording = !_isRecording;
-        }
-
-        #endregion
-
-        #region drawing
-
-        private void DrawSignal(Control panel, DiscreteSignal signal, int stride = 1)
-        {
-            var g = panel.CreateGraphics();
-            g.Clear(Color.White);
-
-            var offset = panel.Height / 2;
-
-            Pen pen;
-
-            if (panel == signalPanel)
-            {
-                pen = new Pen(Color.Blue);
-            }
-            else if (panel == generatedSignalPanel)
-            {
-                pen = new Pen(Color.Red);
-            }
-            else
-            {
-                pen = new Pen(Color.DarkGreen);
-            }
-
-            var i = 0;
-            var x = 1;
-
-            while (i < signal.Length - stride)
-            {
-                var j = 0;
-                var min = 0.0;
-                var max = 0.0;
-                while (j < stride)
-                {
-                    if (signal[i + j] > max) max = signal[i + j];
-                    if (signal[i + j] < min) min = signal[i + j];
-                    j++;
-                }
-                g.DrawLine(pen, x, (float)-min * 150 + offset, x, (float)-max * 150 + offset);
-                x++;
-                i += stride;
-
-            }
-
-            pen.Dispose();
-        }
-
-        private void DrawSpectrum(double[] spectrum)
-        {
-            var g = spectrumPanel.CreateGraphics();
-            g.Clear(Color.White);
-
-            const int xOffset = 20;
-            const int yOffset = 50;
-
-            var pen = new Pen(Color.Black);
-
-            g.DrawLine(pen, xOffset, yOffset, xOffset * 2 + spectrum.Length, yOffset);
-            g.DrawLine(pen, xOffset, 20, xOffset, spectrumPanel.Height - 20);
-
-            var i = 1;
-            
-            while (i < spectrum.Length)
-            {
-                g.DrawLine(pen, i-1 + xOffset, (float)-spectrum[i-1] + yOffset, 
-                                i   + xOffset, (float)-spectrum[i]   + yOffset);
-                i++;
-            }
-
-            pen.Dispose();
         }
 
         #endregion

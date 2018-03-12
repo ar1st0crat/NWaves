@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.Audio.Mci;
@@ -11,17 +8,13 @@ using NWaves.Filters.Base;
 using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Transforms;
-using SciColorMaps;
 
 namespace NWaves.DemoForms
 {
     public partial class EffectsForm : Form
     {
         private DiscreteSignal _signal;
-        private List<double[]> _spectrogram;
-        
         private DiscreteSignal _filteredSignal;
-        private List<double[]> _filteredSpectrogram;
 
         private readonly Stft _stft = new Stft(256, fftSize: 256);
 
@@ -33,6 +26,9 @@ namespace NWaves.DemoForms
         public EffectsForm()
         {
             InitializeComponent();
+
+            signalBeforeFilteringPanel.Gain = 80;
+            signalAfterFilteringPanel.Gain = 80;
         }
         
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -51,10 +47,8 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Average];
             }
 
-            DrawSignal(signalBeforeFilteringPanel, _signal);
-
-            _spectrogram = _stft.Spectrogram(_signal);
-            DrawSpectrogram(spectrogramBeforeFilteringPanel, _spectrogram);
+            signalBeforeFilteringPanel.Signal = _signal;
+            spectrogramBeforeFilteringPanel.Spectrogram = _stft.Spectrogram(_signal);
         }
 
         private void applyEffectButton_Click(object sender, EventArgs e)
@@ -123,85 +117,9 @@ namespace NWaves.DemoForms
                               effect.ApplyTo(_signal, FilteringOptions.Auto) : 
                               Operation.TimeStretch(_signal, double.Parse(pitchShiftTextBox.Text));
 
-            DrawSignal(signalAfterFilteringPanel, _filteredSignal);
-
-            _filteredSpectrogram = _stft.Spectrogram(_filteredSignal.Samples);
-            DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
+            signalAfterFilteringPanel.Signal = _filteredSignal;
+            spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal.Samples);
         }
-
-        #region drawing
-
-        private void DrawSignal(Control panel, DiscreteSignal signal, int stride = 256)
-        {
-            var g = panel.CreateGraphics();
-            g.Clear(Color.White);
-
-            var offset = panel.Height / 2;
-
-            var pen = panel == signalBeforeFilteringPanel ? new Pen(Color.Blue) : new Pen(Color.Red);
-
-            var i = 0;
-            var x = 0;
-
-            while (i < signal.Length - stride)
-            {
-                var j = 0;
-                var min = 0.0;
-                var max = 0.0;
-                while (j < stride)
-                {
-                    if (signal[i + j] > max) max = signal[i + j];
-                    if (signal[i + j] < min) min = signal[i + j];
-                    j++;
-                }
-                g.DrawLine(pen, x, (float)-min * 70 + offset, x, (float)-max * 70 + offset);
-                x++;
-                i += stride;
-
-            }
-
-            pen.Dispose();
-        }
-
-        private void DrawSpectrogram(Control panel, List<double[]> spectrogram)
-        {
-            var g = panel.CreateGraphics();
-            g.Clear(Color.White);
-
-            var spectraCount = spectrogram.Count;
-
-            var minValue = spectrogram.SelectMany(s => s).Min();
-            var maxValue = spectrogram.SelectMany(s => s).Max();
-
-            // post-process spectrogram for better visualization
-            for (var i = 0; i < spectraCount; i++)
-            {
-                spectrogram[i] = spectrogram[i].Select(s =>
-                {
-                    var sqrt = Math.Sqrt(s);
-                    return sqrt*3 < maxValue ? sqrt*3 : sqrt/1.5;
-                })
-                .ToArray();
-            }
-            maxValue /= 12;
-
-            var cmap = new ColorMap("magma", minValue, maxValue);
-
-
-            var spectrogramBitmap = new Bitmap(spectrogram.Count, spectrogram[0].Length);
-
-            for (var i = 0; i < spectrogram.Count; i++)
-            {
-                for (var j = 0; j < spectrogram[i].Length; j++)
-                {
-                    spectrogramBitmap.SetPixel(i, spectrogram[i].Length - 1 - j, cmap.GetColor(spectrogram[i][j]));
-                }
-            }
-
-            g.DrawImage(spectrogramBitmap, 0, 0);
-        }
-
-        #endregion
 
         #region playback
 

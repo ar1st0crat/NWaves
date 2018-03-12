@@ -195,8 +195,8 @@ namespace NWaves.FeatureExtractors
             }
 
 
-            var fft = new Fft(fftSize);
-            var dct = new Dct(_filterbankSize, FeatureCount);
+            var fft = new Fft (fftSize);
+            var dct = new Dct2(_filterbankSize, FeatureCount);
             
 
             var gammatoneSpectrum = new double[_filterbankSize];
@@ -399,7 +399,7 @@ namespace NWaves.FeatureExtractors
                     // 6) dct-II (normalized)
 
                     var pnccs = new double[FeatureCount];
-                    dct.Dct2N(smoothedSpectrum, pnccs);
+                    dct.DirectN(smoothedSpectrum, pnccs);
                     
 
                     // add pncc vector to output sequence

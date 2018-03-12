@@ -142,8 +142,8 @@ namespace NWaves.FeatureExtractors
 
             var lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
 
-            var fft = new Fft(fftSize);
-            var dct = new Dct(_filterbankSize, FeatureCount);
+            var fft = new Fft (fftSize);
+            var dct = new Dct2(_filterbankSize, FeatureCount);
 
 
             // reserve memory for reusable blocks
@@ -198,7 +198,7 @@ namespace NWaves.FeatureExtractors
                 // 4) dct-II
 
                 var mfccs = new double[FeatureCount];
-                dct.Dct2(logMelSpectrum, mfccs);
+                dct.Direct(logMelSpectrum, mfccs);
 
 
                 // 5) (optional) liftering

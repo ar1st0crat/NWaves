@@ -73,5 +73,17 @@ namespace NWaves.DemoForms
                 featuresListView.Items.Add(item);
             }
         }
+
+        private void featuresListView_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            if (e.Column == 0)
+            {
+                return;
+            }
+
+            featurePlotPanel.Gain = featurePlotPanel.Height/2 / _vectors.Max(v => Math.Abs(v.Features[e.Column - 1]));
+            featurePlotPanel.Stride = 1;
+            featurePlotPanel.Line = _vectors.Select(v => v.Features[e.Column - 1]).ToArray();
+        }
     }
 }

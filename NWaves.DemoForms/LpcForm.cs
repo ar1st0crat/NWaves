@@ -28,6 +28,10 @@ namespace NWaves.DemoForms
         public LpcForm()
         {
             InitializeComponent();
+            lpcPanel.ForeColor = Color.SeaGreen;
+            lpcPanel.Stride = 20;
+            lpcPanel.Thickness = 2;
+            lpcPanel.Gain = 50;
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -53,20 +57,19 @@ namespace NWaves.DemoForms
             FillFeaturesList(_lpcVectors, lpcExtractor.FeatureDescriptions);
             lpcListView.Items[0].Selected = true;
 
-            var spectrum = ComputeSpectrum(0);
-            var lpcSpectrum = EstimateSpectrum(0);
-            PlotLpcSpectrum(spectrum, lpcSpectrum);
-            PlotLpc(_lpcVectors[0].Features);
+            spectrumPanel.Stride = 2;
+            spectrumPanel.Line = ComputeSpectrum(0);
+            spectrumPanel.Markline = EstimateSpectrum(0);
+            spectrumPanel.ToDecibel();
+
+            lpcPanel.Line = _lpcVectors[0].Features;
         }
 
         double[] ComputeSpectrum(int idx)
         {
             var pos = (int)(_signal.SamplingRate * HopSize * idx);
 
-            return _fft.PowerSpectrum(_signal[pos, pos + 512], normalize: false)
-                       .Samples
-                       .Select(s => LevelScale.ToDecibel(s))
-                       .ToArray();
+            return _fft.PowerSpectrum(_signal[pos, pos + 512], normalize: false).Samples;
         }
 
         double[] EstimateSpectrum(int idx)
@@ -106,63 +109,12 @@ namespace NWaves.DemoForms
         private void lpcListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             var pos = e.ItemIndex;
-            PlotLpcSpectrum(ComputeSpectrum(pos), EstimateSpectrum(pos));
-            PlotLpc(_lpcVectors[pos].Features);
-        }
 
-        private void PlotLpcSpectrum(double[] spectrum, double[] lpcSpectrum)
-        {
-            var g = spectrumPanel.CreateGraphics();
-            g.Clear(Color.White);
+            spectrumPanel.Line = ComputeSpectrum(pos);
+            spectrumPanel.Markline = EstimateSpectrum(pos);
+            spectrumPanel.ToDecibel();
 
-            var offset = spectrumPanel.Height / 2 - 20;
-
-            var pen = new Pen(Color.Blue);
-            var x = 2;
-            for (var j = 1; j < spectrum.Length; j++)
-            {
-                g.DrawLine(pen, x - 2, (float)-spectrum[j - 1] + offset, x, (float)-spectrum[j] + offset);
-                x += 2;
-            }
-            pen.Dispose();
-            
-            pen = new Pen(Color.Red, 2);
-            x = 2;
-            for (var j = 1; j < lpcSpectrum.Length / 2; j++)
-            {
-                g.DrawLine(pen, x - 2, (float)-lpcSpectrum[j - 1] + offset, x, (float)-lpcSpectrum[j] + offset);
-                x += 2;
-            }
-            pen.Dispose();
-        }
-
-        private void PlotLpc(double[] lpc, bool includeFirstCoeff = false)
-        {
-            var g = lpcPanel.CreateGraphics();
-            g.Clear(Color.White);
-
-            var xOffset = 30;
-            var yOffset = lpcPanel.Height / 2;
-
-            var stride = 20;
-
-            var blackPen = new Pen(Color.Black);
-            g.DrawLine(blackPen, xOffset, yOffset, xOffset + lpc.Length * stride, yOffset);
-            g.DrawLine(blackPen, xOffset, xOffset, xOffset, lpcPanel.Height - xOffset);
-            blackPen.Dispose();
-
-            var pen = new Pen(Color.Green, 3);
-
-            var i = includeFirstCoeff ? 1 : 2;
-            var x = xOffset + stride;
-
-            for (; i < lpc.Length; i++)
-            {
-                g.DrawLine(pen, x - stride, 50 * (float)-lpc[i - 1] * 1 + yOffset, x, 50 * (float)-lpc[i] * 1 + yOffset);
-                x += stride;
-            }
-
-            pen.Dispose();
+            lpcPanel.Line = _lpcVectors[pos].Features;
         }
     }
 }

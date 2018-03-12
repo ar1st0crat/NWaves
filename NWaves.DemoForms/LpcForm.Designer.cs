@@ -1,4 +1,6 @@
-﻿namespace NWaves.DemoForms
+﻿using NWaves.DemoForms.UserControls;
+
+namespace NWaves.DemoForms
 {
     partial class LpcForm
     {
@@ -32,8 +34,8 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lpcListView = new System.Windows.Forms.ListView();
-            this.lpcPanel = new System.Windows.Forms.Panel();
-            this.spectrumPanel = new System.Windows.Forms.Panel();
+            this.lpcPanel = new LinePlot();
+            this.spectrumPanel = new LinePlot();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -116,7 +118,7 @@
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
         private System.Windows.Forms.ListView lpcListView;
-        private System.Windows.Forms.Panel lpcPanel;
-        private System.Windows.Forms.Panel spectrumPanel;
+        private LinePlot lpcPanel;
+        private LinePlot spectrumPanel;
     }
 }

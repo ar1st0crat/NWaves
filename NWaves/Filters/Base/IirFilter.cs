@@ -52,7 +52,7 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Parameterless constructor
         /// </summary>
-        public IirFilter()
+        protected IirFilter()
         {
         }
 

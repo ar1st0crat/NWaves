@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 using NWaves.Signals;
 using NWaves.Audio;
@@ -14,7 +13,6 @@ using NWaves.Filters.BiQuad;
 using NWaves.Filters.Fda;
 using NWaves.Operations;
 using NWaves.Transforms;
-using SciColorMaps;
 
 namespace NWaves.DemoForms
 {
@@ -23,10 +21,7 @@ namespace NWaves.DemoForms
         private LtiFilter _filter;
 
         private DiscreteSignal _signal;
-        private List<double[]> _spectrogram;
-        
         private DiscreteSignal _filteredSignal;
-        private List<double[]> _filteredSpectrogram;
 
         private readonly Stft _stft = new Stft(256, fftSize: 256);
 
@@ -38,6 +33,18 @@ namespace NWaves.DemoForms
         public FiltersForm()
         {
             InitializeComponent();
+
+            magnitudeResponsePanel.Stride = 2;
+            magnitudeResponsePanel.Gain = 25;
+            magnitudeResponsePanel.Thickness = 2;
+            magnitudeResponsePanel.ForeColor = Color.SeaGreen;
+            phaseResponsePanel.Stride = 2;
+            phaseResponsePanel.Gain = 20;
+            phaseResponsePanel.Thickness = 2;
+            phaseResponsePanel.ForeColor = Color.SeaGreen;
+
+            signalBeforeFilteringPanel.Gain = 80;
+            signalAfterFilteringPanel.Gain = 80;
         }
 
         private void buttonAnalyzeFilter_Click(object sender, EventArgs e)
@@ -81,28 +88,37 @@ namespace NWaves.DemoForms
                     filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
                     filterParamsDataGrid.Rows[0].Cells[1].Value = "5";
                     filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
-                    filterParamsDataGrid.Rows[1].Cells[1].Value = "0,15";
+                    filterParamsDataGrid.Rows[1].Cells[1].Value = "0,1";
                     orderNumeratorTextBox.Text = "6";
                     orderDenominatorTextBox.Text = "6";
 
                     break;
                 case "Custom LP/HP":
-                    _filter = (_filter == null) ? DesignFilter.FirLp(31, 0.1) : DesignFilter.LpToHp(_filter as FirFilter);
+                    _filter = DesignFilter.FirLp(17, 0.1);
+                    
+                    //using (var csv = new FileStream("fir.csv", FileMode.Open))
+                    //{
+                    //    _filter = FirFilter.FromCsv(csv);
+                    //}
 
                     numeratorListBox.DataSource = (_filter as FirFilter)?.Kernel;
 
                     filterParamsDataGrid.RowCount = 2;
                     filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
-                    filterParamsDataGrid.Rows[0].Cells[1].Value = "31";
+                    filterParamsDataGrid.Rows[0].Cells[1].Value = "17";
                     filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
                     filterParamsDataGrid.Rows[1].Cells[1].Value = "0,1";
                     orderNumeratorTextBox.Text = "0";
-                    orderDenominatorTextBox.Text = "4";
+                    orderDenominatorTextBox.Text = "17";
                     break;
             }
 
-            DrawFrequencyResponse();
-            DrawPoleZeroPlot();
+            
+            magnitudeResponsePanel.Line = _filter.FrequencyResponse().Magnitude;
+            phaseResponsePanel.Line = _filter.FrequencyResponse().Phase;
+
+            poleZeroPanel.Zeros = _filter.Zeros;
+            poleZeroPanel.Poles = _filter.Poles;
 
             Cursor.Current = Cursors.Default;
         }
@@ -168,7 +184,7 @@ namespace NWaves.DemoForms
             if (filterParamsDataGrid.RowCount == 0)
             {
                 b.AddRange(new[] { 1, -0.4, 0.6 });
-                a.AddRange(new[] { 1, 0.4, 0.2 });
+                a.AddRange(new[] { 1,  0.4, 0.2 });
             }
             else
             {
@@ -382,10 +398,8 @@ namespace NWaves.DemoForms
             if (_signal == null) return;
 
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.OverlapAdd);
-            DrawSignal(signalAfterFilteringPanel, _filteredSignal);
-
-            _filteredSpectrogram = _stft.Spectrogram(_filteredSignal);
-            DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
+            signalAfterFilteringPanel.Signal = _filteredSignal;
+            spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
         }
 
         private void overlapSaveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -393,10 +407,8 @@ namespace NWaves.DemoForms
             if (_signal == null) return;
 
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.OverlapSave);
-            DrawSignal(signalAfterFilteringPanel, _filteredSignal);
-
-            _filteredSpectrogram = _stft.Spectrogram(_filteredSignal);
-            DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
+            signalAfterFilteringPanel.Signal = _filteredSignal;
+            spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
         }
 
         private void differenceEquationToolStripMenuItem_Click(object sender, EventArgs e)
@@ -404,10 +416,8 @@ namespace NWaves.DemoForms
             if (_signal == null) return;
 
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.DifferenceEquation);
-            DrawSignal(signalAfterFilteringPanel, _filteredSignal);
-
-            _filteredSpectrogram = _stft.Spectrogram(_filteredSignal);
-            DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
+            signalAfterFilteringPanel.Signal = _filteredSignal;
+            spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
         }
 
         #endregion
@@ -421,10 +431,8 @@ namespace NWaves.DemoForms
             var factor = int.Parse(resampleTextBox.Text);
 
             _filteredSignal = Operation.Interpolate(_signal, factor);
-            DrawSignal(signalAfterFilteringPanel, _filteredSignal);
-
-            _filteredSpectrogram = _stft.Spectrogram(_filteredSignal);
-            DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
+            signalAfterFilteringPanel.Signal = _filteredSignal;
+            spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
         }
 
         private void decimateToolStripMenuItem_Click(object sender, EventArgs e)
@@ -434,10 +442,8 @@ namespace NWaves.DemoForms
             var factor = int.Parse(resampleTextBox.Text);
 
             _filteredSignal = Operation.Decimate(_signal, factor);
-            DrawSignal(signalAfterFilteringPanel, _filteredSignal);
-
-            _filteredSpectrogram = _stft.Spectrogram(_filteredSignal);
-            DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
+            signalAfterFilteringPanel.Signal = _filteredSignal;
+            spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
         }
 
         private void customToolStripMenuItem_Click(object sender, EventArgs e)
@@ -449,10 +455,8 @@ namespace NWaves.DemoForms
             var rate = int.Parse(resampleTextBox.Text);
 
             _filteredSignal = Operation.Resample(_signal, rate);
-            DrawSignal(signalAfterFilteringPanel, _filteredSignal);
-
-            _filteredSpectrogram = _stft.Spectrogram(_filteredSignal);
-            DrawSpectrogram(spectrogramAfterFilteringPanel, _filteredSpectrogram);
+            signalAfterFilteringPanel.Signal = _filteredSignal;
+            spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
 
             Cursor.Current = Cursors.Default;
         }
@@ -477,10 +481,8 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            DrawSignal(signalBeforeFilteringPanel, _signal);
-
-            _spectrogram = _stft.Spectrogram(_signal.Samples);
-            DrawSpectrogram(spectrogramBeforeFilteringPanel, _spectrogram);
+            signalBeforeFilteringPanel.Signal = _signal;
+            spectrogramBeforeFilteringPanel.Spectrogram = _stft.Spectrogram(_signal);
         }
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -501,193 +503,6 @@ namespace NWaves.DemoForms
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Close();
-        }
-
-        #endregion
-
-        #region drawing
-
-        private void DrawSignal(Control panel, DiscreteSignal signal, int stride = 256)
-        {
-            var g = panel.CreateGraphics();
-            g.Clear(Color.White);
-
-            var offset = panel.Height / 2;
-
-            var pen = panel == signalBeforeFilteringPanel ? new Pen(Color.Blue) : new Pen(Color.Red);
-
-            var i = 0;
-            var x = 0;
-
-            while (i < signal.Length - stride)
-            {
-                var j = 0;
-                var min = 0.0;
-                var max = 0.0;
-                while (j < stride)
-                {
-                    if (signal[i + j] > max) max = signal[i + j];
-                    if (signal[i + j] < min) min = signal[i + j];
-                    j++;
-                }
-                g.DrawLine(pen, x, (float)-min * 70 + offset, x, (float)-max * 70 + offset);
-                x++;
-                i += stride;
-
-            }
-
-            pen.Dispose();
-        }
-
-        private void DrawPoleZeroPlot()
-        {
-            var g = poleZeroPanel.CreateGraphics();
-            g.Clear(Color.White);
-
-            const int unitRadius = 80;
-
-            var cx = poleZeroPanel.Width / 2;
-            var cy = poleZeroPanel.Height / 2;
-
-            var pen = new Pen(Color.Blue);
-
-            g.DrawLine(pen, 10, cy, poleZeroPanel.Width - 10, cy);
-            g.DrawLine(pen, cx, 10, cx, poleZeroPanel.Height - 10);
-
-            for (var i = 0; i < 360; i++)
-            {
-                var x = cx + unitRadius * Math.Cos(i * Math.PI / 180);
-                var y = cy + unitRadius * Math.Sin(i * Math.PI / 180);
-
-                g.DrawEllipse(pen, (int)x - 1, (int)y - 1, 1, 1);
-            }
-
-            pen.Dispose();
-
-            var redPen = new Pen(Color.Red, 3);
-
-            var zeros = _filter.Zeros;
-            if (zeros == null)
-            {
-                return;
-            }
-
-            for (var i = 0; i < zeros.Length; i++)
-            {
-                var x = cx + unitRadius * zeros.Real[i];
-                var y = cy + unitRadius * zeros.Imag[i];
-                if (x - 4 > 0 && x + 4 < poleZeroPanel.Width &&
-                    y - 4 > 0 && y + 4 < poleZeroPanel.Height)
-                {
-                    g.DrawEllipse(redPen, (int) x - 4, (int) y - 4, 8, 8);
-                }
-            }
-
-            var poles = _filter.Poles;
-            if (poles == null)
-            {
-                return;
-            }
-
-            for (var i = 0; i < poles.Length; i++)
-            {
-                var x = cx + unitRadius * poles.Real[i];
-                var y = cy + unitRadius * poles.Imag[i];
-                if (x - 6 > 0 && x + 6 < poleZeroPanel.Width &&
-                    y - 6 > 0 && y + 6 < poleZeroPanel.Height)
-                {
-                    g.DrawLine(redPen, (int) x - 6, (int) y - 6, (int) x + 6, (int) y + 6);
-                    g.DrawLine(redPen, (int) x + 6, (int) y - 6, (int) x - 6, (int) y + 6);
-                }
-            }
-
-            redPen.Dispose();
-        }
-        
-        private void DrawSpectrogram(Control panel, List<double[]> spectrogram)
-        {
-            var g = panel.CreateGraphics();
-            g.Clear(Color.White);
-
-            var spectraCount = spectrogram.Count;
-
-            var minValue = spectrogram.SelectMany(s => s).Min();
-            var maxValue = spectrogram.SelectMany(s => s).Max();
-
-            // post-process spectrogram for better visualization
-
-            for (var i = 0; i < spectraCount; i++)
-            {
-                spectrogram[i] = spectrogram[i].Select(s =>
-                {
-                    var sqrt = Math.Sqrt(s);
-                    return (sqrt*3 < maxValue) ? sqrt*3 : sqrt/1.5;
-                })
-                .ToArray();
-            }
-            maxValue /= 12;
-
-            var cmap = new ColorMap("magma", minValue, maxValue);
-
-
-            var spectrogramBitmap = new Bitmap(spectrogram.Count, spectrogram[0].Length);
-
-            for (var i = 0; i < spectrogram.Count; i++)
-            {
-                for (var j = 0; j < spectrogram[i].Length; j++)
-                {
-                    spectrogramBitmap.SetPixel(i, spectrogram[i].Length - 1 - j,  cmap.GetColor(spectrogram[i][j]));
-                }
-            }
-
-            g.DrawImage(spectrogramBitmap, 0, 0);
-        }
-
-        private void DrawFrequencyResponse(int step = 2)
-        {
-            var g = magnitudeResponsePanel.CreateGraphics();
-            g.Clear(Color.White);
-            var pen = new Pen(Color.Blue);
-
-            var offset = magnitudeResponsePanel.Height - 2;
-            
-            var magnitudeResponse = _filter.FrequencyResponse().Magnitude;
-
-            var i = 0;
-            var x = 0;
-            while (i < magnitudeResponse.Length / 2)
-            {
-                if (Math.Abs(magnitudeResponse[i] * 40) < magnitudeResponsePanel.Height)
-                {
-                    g.DrawLine(pen, x, offset, x, (float)-magnitudeResponse[i] * 40 + offset);
-                    g.DrawEllipse(pen, x - 1, (int)(-magnitudeResponse[i] * 40) + offset - 1, 3, 3);
-                }
-                x += step;
-                i++;
-
-            }
-
-            g = phaseResponsePanel.CreateGraphics();
-            g.Clear(Color.White);
-
-            var phaseResponse = _filter.FrequencyResponse().Phase;
-
-            offset = phaseResponsePanel.Height / 2;
-
-            i = 0;
-            x = 0;
-            while (i < phaseResponse.Length / 2)
-            {
-                if (Math.Abs(phaseResponse[i] * 70) < magnitudeResponsePanel.Height)
-                {
-                    g.DrawLine(pen, x, offset, x, (float)-phaseResponse[i] * 50 + offset);
-                    g.DrawEllipse(pen, x - 1, (int)(-phaseResponse[i] * 50) + offset - 1, 3, 3);
-                }
-                x += step;
-                i++;
-            }
-
-            pen.Dispose();
         }
 
         #endregion
@@ -715,47 +530,3 @@ namespace NWaves.DemoForms
         #endregion
     }
 }
-
-/*
-            var r = new Random();
-            var kernel = new double[231];
-            for (var i = 0; i < kernel.Length; i++)
-                kernel[i] = r.NextDouble() - 0.5;
-
-            var filter = new IirFilter(kernel,
-                                       new[] { 1, -0.6, 0.2, -0.3, 0.5, -0.1, 0.7, -0.6, 0.3, -0.4, 0.5, 0.2, 0.3, 0.6, -0.9, 0.4 });
-
-            var signal = new DiscreteSignal(22050, 22050 * 30);
-
-            var summary = "";
-
-            var sw1 = new Stopwatch();
-            var sw2 = new Stopwatch();
-            var sw3 = new Stopwatch();
-
-
-
-            sw2.Start();
-            for (var i = 0; i < 2; i++)
-                filter.ApplyFilterLinearBuffer(signal);
-            sw2.Stop();
-
-            summary += "Linear buffer: " + sw2.ElapsedTicks + "\n";
-
-            sw3.Start();
-            for (var i = 0; i < 2; i++)
-                filter.ApplyFilterDirectly(signal);
-            sw3.Stop();
-
-            summary += "Directly: " + sw3.ElapsedTicks + "\n";
-
-            sw1.Start();
-            for (var i = 0; i < 2; i++)
-                filter.ApplyFilterCircularBuffer(signal);
-            sw1.Stop();
-
-            summary += "Circular buffer: " + sw1.ElapsedTicks + "\n";
-
-            MessageBox.Show(summary);
-            */
-            

@@ -1,4 +1,7 @@
-﻿namespace NWaves.DemoForms
+﻿using System.Drawing;
+using NWaves.DemoForms.UserControls;
+
+namespace NWaves.DemoForms
 {
     partial class SignalsForm
     {
@@ -31,10 +34,10 @@
             this.openFileButton = new System.Windows.Forms.Button();
             this.filenameTextBox = new System.Windows.Forms.TextBox();
             this.builderParametersListBox = new System.Windows.Forms.ListBox();
-            this.signalPanel = new System.Windows.Forms.Panel();
-            this.generatedSignalPanel = new System.Windows.Forms.Panel();
-            this.superimposedSignalPanel = new System.Windows.Forms.Panel();
-            this.spectrumPanel = new System.Windows.Forms.Panel();
+            this.signalPanel = new SignalPlot();
+            this.generatedSignalPanel = new SignalPlot();
+            this.superimposedSignalPanel = new SignalPlot();
+            this.spectrumPanel = new LinePlot();
             this.builderComboBox = new System.Windows.Forms.ComboBox();
             this.operationComboBox = new System.Windows.Forms.ComboBox();
             this.generateSignalButton = new System.Windows.Forms.Button();
@@ -113,6 +116,7 @@
             this.generatedSignalPanel.Location = new System.Drawing.Point(196, 332);
             this.generatedSignalPanel.Name = "generatedSignalPanel";
             this.generatedSignalPanel.Size = new System.Drawing.Size(610, 184);
+            this.generatedSignalPanel.ForeColor = Color.Red;
             this.generatedSignalPanel.TabIndex = 4;
             // 
             // superimposedSignalPanel
@@ -121,6 +125,7 @@
             this.superimposedSignalPanel.Location = new System.Drawing.Point(197, 543);
             this.superimposedSignalPanel.Name = "superimposedSignalPanel";
             this.superimposedSignalPanel.Size = new System.Drawing.Size(1000, 181);
+            this.superimposedSignalPanel.ForeColor = Color.SeaGreen;
             this.superimposedSignalPanel.TabIndex = 5;
             // 
             // spectrumPanel
@@ -483,10 +488,10 @@
         private System.Windows.Forms.Button openFileButton;
         private System.Windows.Forms.TextBox filenameTextBox;
         private System.Windows.Forms.ListBox builderParametersListBox;
-        private System.Windows.Forms.Panel signalPanel;
-        private System.Windows.Forms.Panel generatedSignalPanel;
-        private System.Windows.Forms.Panel superimposedSignalPanel;
-        private System.Windows.Forms.Panel spectrumPanel;
+        private SignalPlot signalPanel;
+        private SignalPlot generatedSignalPanel;
+        private SignalPlot superimposedSignalPanel;
+        private LinePlot spectrumPanel;
         private System.Windows.Forms.ComboBox builderComboBox;
         private System.Windows.Forms.ComboBox operationComboBox;
         private System.Windows.Forms.Button generateSignalButton;

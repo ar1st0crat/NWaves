@@ -126,7 +126,10 @@
     <Compile Include="Signals\DiscreteSignal.cs" />
     <Compile Include="Signals\DiscreteSignalExtensions.cs" />
     <Compile Include="Transforms\CepstralTransform.cs" />
-    <Compile Include="Transforms\Dct.cs" />
+    <Compile Include="Transforms\Dct3.cs" />
+    <Compile Include="Transforms\Dct1.cs" />
+    <Compile Include="Transforms\Dct2.cs" />
+    <Compile Include="Transforms\Dct4.cs" />
     <Compile Include="Transforms\Fft.cs" />
     <Compile Include="Transforms\HilbertTransform.cs" />
     <Compile Include="Transforms\Spectrum.cs" />

@@ -1,4 +1,6 @@
-﻿namespace NWaves.DemoForms
+﻿using NWaves.DemoForms.UserControls;
+
+namespace NWaves.DemoForms
 {
     partial class FiltersForm
     {
@@ -28,11 +30,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.magnitudeResponsePanel = new System.Windows.Forms.Panel();
-            this.phaseResponsePanel = new System.Windows.Forms.Panel();
-            this.poleZeroPanel = new System.Windows.Forms.Panel();
-            this.signalBeforeFilteringPanel = new System.Windows.Forms.Panel();
-            this.spectrogramBeforeFilteringPanel = new System.Windows.Forms.Panel();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -53,8 +50,6 @@
             this.filterParamsDataGrid = new System.Windows.Forms.DataGridView();
             this.Param = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Value = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.signalAfterFilteringPanel = new System.Windows.Forms.Panel();
-            this.spectrogramAfterFilteringPanel = new System.Windows.Forms.Panel();
             this.numeratorListBox = new System.Windows.Forms.ListBox();
             this.denominatorListBox = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -70,49 +65,16 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.changeOrderButton = new System.Windows.Forms.Button();
+            this.spectrogramAfterFilteringPanel = new NWaves.DemoForms.UserControls.SpectrogramPlot();
+            this.signalAfterFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
+            this.spectrogramBeforeFilteringPanel = new NWaves.DemoForms.UserControls.SpectrogramPlot();
+            this.signalBeforeFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
+            this.poleZeroPanel = new NWaves.DemoForms.UserControls.PoleZeroPlot();
+            this.phaseResponsePanel = new NWaves.DemoForms.UserControls.LinePlot();
+            this.magnitudeResponsePanel = new NWaves.DemoForms.UserControls.LinePlot();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.filterParamsDataGrid)).BeginInit();
             this.SuspendLayout();
-            // 
-            // magnitudeResponsePanel
-            // 
-            this.magnitudeResponsePanel.BackColor = System.Drawing.SystemColors.Window;
-            this.magnitudeResponsePanel.Location = new System.Drawing.Point(219, 50);
-            this.magnitudeResponsePanel.Name = "magnitudeResponsePanel";
-            this.magnitudeResponsePanel.Size = new System.Drawing.Size(512, 157);
-            this.magnitudeResponsePanel.TabIndex = 0;
-            // 
-            // phaseResponsePanel
-            // 
-            this.phaseResponsePanel.BackColor = System.Drawing.SystemColors.Window;
-            this.phaseResponsePanel.Location = new System.Drawing.Point(219, 217);
-            this.phaseResponsePanel.Name = "phaseResponsePanel";
-            this.phaseResponsePanel.Size = new System.Drawing.Size(512, 157);
-            this.phaseResponsePanel.TabIndex = 1;
-            // 
-            // poleZeroPanel
-            // 
-            this.poleZeroPanel.BackColor = System.Drawing.SystemColors.Window;
-            this.poleZeroPanel.Location = new System.Drawing.Point(738, 50);
-            this.poleZeroPanel.Name = "poleZeroPanel";
-            this.poleZeroPanel.Size = new System.Drawing.Size(217, 202);
-            this.poleZeroPanel.TabIndex = 2;
-            // 
-            // signalBeforeFilteringPanel
-            // 
-            this.signalBeforeFilteringPanel.BackColor = System.Drawing.SystemColors.Window;
-            this.signalBeforeFilteringPanel.Location = new System.Drawing.Point(13, 427);
-            this.signalBeforeFilteringPanel.Name = "signalBeforeFilteringPanel";
-            this.signalBeforeFilteringPanel.Size = new System.Drawing.Size(461, 153);
-            this.signalBeforeFilteringPanel.TabIndex = 3;
-            // 
-            // spectrogramBeforeFilteringPanel
-            // 
-            this.spectrogramBeforeFilteringPanel.BackColor = System.Drawing.SystemColors.Window;
-            this.spectrogramBeforeFilteringPanel.Location = new System.Drawing.Point(13, 586);
-            this.spectrogramBeforeFilteringPanel.Name = "spectrogramBeforeFilteringPanel";
-            this.spectrogramBeforeFilteringPanel.Size = new System.Drawing.Size(461, 128);
-            this.spectrogramBeforeFilteringPanel.TabIndex = 4;
             // 
             // menuStrip1
             // 
@@ -124,7 +86,7 @@
             this.resampleTextBox});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(968, 31);
+            this.menuStrip1.Size = new System.Drawing.Size(1001, 31);
             this.menuStrip1.TabIndex = 5;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -297,27 +259,11 @@
             this.Value.Name = "Value";
             this.Value.Width = 65;
             // 
-            // signalAfterFilteringPanel
-            // 
-            this.signalAfterFilteringPanel.BackColor = System.Drawing.SystemColors.Window;
-            this.signalAfterFilteringPanel.Location = new System.Drawing.Point(480, 427);
-            this.signalAfterFilteringPanel.Name = "signalAfterFilteringPanel";
-            this.signalAfterFilteringPanel.Size = new System.Drawing.Size(475, 153);
-            this.signalAfterFilteringPanel.TabIndex = 4;
-            // 
-            // spectrogramAfterFilteringPanel
-            // 
-            this.spectrogramAfterFilteringPanel.BackColor = System.Drawing.SystemColors.Window;
-            this.spectrogramAfterFilteringPanel.Location = new System.Drawing.Point(480, 587);
-            this.spectrogramAfterFilteringPanel.Name = "spectrogramAfterFilteringPanel";
-            this.spectrogramAfterFilteringPanel.Size = new System.Drawing.Size(475, 128);
-            this.spectrogramAfterFilteringPanel.TabIndex = 9;
-            // 
             // numeratorListBox
             // 
             this.numeratorListBox.FormattingEnabled = true;
             this.numeratorListBox.ItemHeight = 16;
-            this.numeratorListBox.Location = new System.Drawing.Point(763, 258);
+            this.numeratorListBox.Location = new System.Drawing.Point(797, 258);
             this.numeratorListBox.Name = "numeratorListBox";
             this.numeratorListBox.Size = new System.Drawing.Size(75, 116);
             this.numeratorListBox.TabIndex = 10;
@@ -326,7 +272,7 @@
             // 
             this.denominatorListBox.FormattingEnabled = true;
             this.denominatorListBox.ItemHeight = 16;
-            this.denominatorListBox.Location = new System.Drawing.Point(879, 258);
+            this.denominatorListBox.Location = new System.Drawing.Point(913, 258);
             this.denominatorListBox.Name = "denominatorListBox";
             this.denominatorListBox.Size = new System.Drawing.Size(76, 116);
             this.denominatorListBox.TabIndex = 11;
@@ -343,7 +289,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(796, 31);
+            this.label2.Location = new System.Drawing.Point(830, 31);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(99, 17);
             this.label2.TabIndex = 13;
@@ -352,7 +298,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(741, 258);
+            this.label3.Location = new System.Drawing.Point(775, 258);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(16, 17);
             this.label3.TabIndex = 14;
@@ -361,7 +307,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(857, 258);
+            this.label4.Location = new System.Drawing.Point(891, 258);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(16, 17);
             this.label4.TabIndex = 15;
@@ -379,7 +325,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(477, 407);
+            this.label6.Location = new System.Drawing.Point(511, 407);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(88, 17);
             this.label6.TabIndex = 17;
@@ -397,7 +343,7 @@
             // 
             // playFilteredSignalButton
             // 
-            this.playFilteredSignalButton.Location = new System.Drawing.Point(571, 402);
+            this.playFilteredSignalButton.Location = new System.Drawing.Point(605, 402);
             this.playFilteredSignalButton.Name = "playFilteredSignalButton";
             this.playFilteredSignalButton.Size = new System.Drawing.Size(59, 26);
             this.playFilteredSignalButton.TabIndex = 19;
@@ -449,11 +395,104 @@
             this.changeOrderButton.UseVisualStyleBackColor = true;
             this.changeOrderButton.Click += new System.EventHandler(this.changeOrderButton_Click);
             // 
+            // spectrogramAfterFilteringPanel
+            // 
+            this.spectrogramAfterFilteringPanel.AutoScroll = true;
+            this.spectrogramAfterFilteringPanel.BackColor = System.Drawing.Color.White;
+            this.spectrogramAfterFilteringPanel.ColorMapName = "magma";
+            this.spectrogramAfterFilteringPanel.Location = new System.Drawing.Point(499, 566);
+            this.spectrogramAfterFilteringPanel.Markline = null;
+            this.spectrogramAfterFilteringPanel.Name = "spectrogramAfterFilteringPanel";
+            this.spectrogramAfterFilteringPanel.Size = new System.Drawing.Size(490, 149);
+            this.spectrogramAfterFilteringPanel.Spectrogram = null;
+            this.spectrogramAfterFilteringPanel.TabIndex = 9;
+            // 
+            // signalAfterFilteringPanel
+            // 
+            this.signalAfterFilteringPanel.AutoScroll = true;
+            this.signalAfterFilteringPanel.BackColor = System.Drawing.SystemColors.Window;
+            this.signalAfterFilteringPanel.ForeColor = System.Drawing.Color.Blue;
+            this.signalAfterFilteringPanel.Location = new System.Drawing.Point(499, 427);
+            this.signalAfterFilteringPanel.Name = "signalAfterFilteringPanel";
+            this.signalAfterFilteringPanel.Signal = null;
+            this.signalAfterFilteringPanel.Size = new System.Drawing.Size(490, 133);
+            this.signalAfterFilteringPanel.Stride = 256;
+            this.signalAfterFilteringPanel.TabIndex = 4;
+            // 
+            // spectrogramBeforeFilteringPanel
+            // 
+            this.spectrogramBeforeFilteringPanel.AutoScroll = true;
+            this.spectrogramBeforeFilteringPanel.BackColor = System.Drawing.Color.White;
+            this.spectrogramBeforeFilteringPanel.ColorMapName = "magma";
+            this.spectrogramBeforeFilteringPanel.Location = new System.Drawing.Point(13, 566);
+            this.spectrogramBeforeFilteringPanel.Markline = null;
+            this.spectrogramBeforeFilteringPanel.Name = "spectrogramBeforeFilteringPanel";
+            this.spectrogramBeforeFilteringPanel.Size = new System.Drawing.Size(480, 148);
+            this.spectrogramBeforeFilteringPanel.Spectrogram = null;
+            this.spectrogramBeforeFilteringPanel.TabIndex = 4;
+            // 
+            // signalBeforeFilteringPanel
+            // 
+            this.signalBeforeFilteringPanel.AutoScroll = true;
+            this.signalBeforeFilteringPanel.BackColor = System.Drawing.SystemColors.Window;
+            this.signalBeforeFilteringPanel.ForeColor = System.Drawing.Color.Blue;
+            this.signalBeforeFilteringPanel.Location = new System.Drawing.Point(13, 427);
+            this.signalBeforeFilteringPanel.Name = "signalBeforeFilteringPanel";
+            this.signalBeforeFilteringPanel.Signal = null;
+            this.signalBeforeFilteringPanel.Size = new System.Drawing.Size(480, 133);
+            this.signalBeforeFilteringPanel.Stride = 256;
+            this.signalBeforeFilteringPanel.TabIndex = 3;
+            // 
+            // poleZeroPanel
+            // 
+            this.poleZeroPanel.AutoScroll = true;
+            this.poleZeroPanel.BackColor = System.Drawing.SystemColors.Window;
+            this.poleZeroPanel.Location = new System.Drawing.Point(772, 50);
+            this.poleZeroPanel.Name = "poleZeroPanel";
+            this.poleZeroPanel.Poles = null;
+            this.poleZeroPanel.Size = new System.Drawing.Size(217, 202);
+            this.poleZeroPanel.TabIndex = 2;
+            this.poleZeroPanel.Zeros = null;
+            // 
+            // phaseResponsePanel
+            // 
+            this.phaseResponsePanel.AutoScroll = true;
+            this.phaseResponsePanel.BackColor = System.Drawing.SystemColors.Window;
+            this.phaseResponsePanel.ForeColor = System.Drawing.Color.Blue;
+            this.phaseResponsePanel.Gain = 1D;
+            this.phaseResponsePanel.Legend = null;
+            this.phaseResponsePanel.Line = null;
+            this.phaseResponsePanel.Location = new System.Drawing.Point(219, 217);
+            this.phaseResponsePanel.Mark = null;
+            this.phaseResponsePanel.Markline = null;
+            this.phaseResponsePanel.Name = "phaseResponsePanel";
+            this.phaseResponsePanel.Size = new System.Drawing.Size(538, 157);
+            this.phaseResponsePanel.Stride = 1;
+            this.phaseResponsePanel.TabIndex = 1;
+            this.phaseResponsePanel.Thickness = 1;
+            // 
+            // magnitudeResponsePanel
+            // 
+            this.magnitudeResponsePanel.AutoScroll = true;
+            this.magnitudeResponsePanel.BackColor = System.Drawing.SystemColors.Window;
+            this.magnitudeResponsePanel.ForeColor = System.Drawing.Color.Blue;
+            this.magnitudeResponsePanel.Gain = 1D;
+            this.magnitudeResponsePanel.Legend = null;
+            this.magnitudeResponsePanel.Line = null;
+            this.magnitudeResponsePanel.Location = new System.Drawing.Point(219, 50);
+            this.magnitudeResponsePanel.Mark = null;
+            this.magnitudeResponsePanel.Markline = null;
+            this.magnitudeResponsePanel.Name = "magnitudeResponsePanel";
+            this.magnitudeResponsePanel.Size = new System.Drawing.Size(538, 157);
+            this.magnitudeResponsePanel.Stride = 1;
+            this.magnitudeResponsePanel.TabIndex = 0;
+            this.magnitudeResponsePanel.Thickness = 1;
+            // 
             // FiltersForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(968, 729);
+            this.ClientSize = new System.Drawing.Size(1001, 729);
             this.Controls.Add(this.changeOrderButton);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.label7);
@@ -493,11 +532,11 @@
 
         #endregion
 
-        private System.Windows.Forms.Panel magnitudeResponsePanel;
-        private System.Windows.Forms.Panel phaseResponsePanel;
-        private System.Windows.Forms.Panel poleZeroPanel;
-        private System.Windows.Forms.Panel signalBeforeFilteringPanel;
-        private System.Windows.Forms.Panel spectrogramBeforeFilteringPanel;
+        private LinePlot magnitudeResponsePanel;
+        private LinePlot phaseResponsePanel;
+        private PoleZeroPlot poleZeroPanel;
+        private SignalPlot signalBeforeFilteringPanel;
+        private SpectrogramPlot spectrogramBeforeFilteringPanel;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
@@ -507,8 +546,8 @@
         private System.Windows.Forms.Button analyzeFilterButton;
         private System.Windows.Forms.ComboBox filterTypesComboBox;
         private System.Windows.Forms.DataGridView filterParamsDataGrid;
-        private System.Windows.Forms.Panel signalAfterFilteringPanel;
-        private System.Windows.Forms.Panel spectrogramAfterFilteringPanel;
+        private SignalPlot signalAfterFilteringPanel;
+        private SpectrogramPlot spectrogramAfterFilteringPanel;
         private System.Windows.Forms.DataGridViewTextBoxColumn Param;
         private System.Windows.Forms.DataGridViewTextBoxColumn Value;
         private System.Windows.Forms.ListBox numeratorListBox;
