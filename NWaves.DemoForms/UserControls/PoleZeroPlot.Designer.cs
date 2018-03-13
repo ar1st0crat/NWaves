@@ -30,12 +30,13 @@
         {
             this.SuspendLayout();
             // 
-            // LinePlot
+            // PoleZeroPlot
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.BackColor = System.Drawing.Color.White;
+            this.DoubleBuffered = true;
             this.Name = "PoleZeroPlot";
             this.Size = new System.Drawing.Size(352, 90);
             this.ResumeLayout(false);

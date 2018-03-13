@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace NWaves.DemoForms.UserControls
@@ -18,7 +18,8 @@ namespace NWaves.DemoForms.UserControls
             {
                 _groups = value;
                 if (_groups == null) return;
-                AutoScrollMinSize = new Size(_groups.Length * Stride + 20, 0);
+                AutoScrollMinSize = new Size(_groups.Max(g => g.Length) * Stride + 20, 0);
+                MakeBitmap();
                 Invalidate();
             }
         }
@@ -32,22 +33,35 @@ namespace NWaves.DemoForms.UserControls
             InitializeComponent();
         }
 
+        private void GroupPlot_Load(object sender, EventArgs e)
+        {
+            MakeBitmap();
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-            
-            var g = e.Graphics;
+
+            e.Graphics.DrawImage(_bmp, 0, 0,
+                new Rectangle(-AutoScrollPosition.X, 0, Width, Height),
+                GraphicsUnit.Pixel);
+        }
+
+        private Bitmap _bmp;
+
+        private void MakeBitmap()
+        {
+            var width = Math.Max(AutoScrollMinSize.Width, Width);
+
+            _bmp = new Bitmap(width, Height);
+
+            var g = Graphics.FromImage(_bmp);
             g.Clear(Color.White);
 
-            var mx = new Matrix(1, 0, 0, 1, AutoScrollPosition.X, AutoScrollPosition.Y);
-            g.Transform = mx;
-
-            var offset = Height - 20;
+            var offset = Height - 30;
 
             var gray = new Pen(Color.LightGray) { DashPattern = new[] { 2f, 2f } };
-
-            var width = Math.Max(_groups?.Length * Stride + 20 ?? Width, Width);
-
+            
             for (var k = 0; k < offset; k += 10)
             {
                 g.DrawLine(gray, 0, offset + k, width, offset + k);
@@ -70,7 +84,7 @@ namespace NWaves.DemoForms.UserControls
 
 
             var rand = new Random();
-            
+
             for (var j = 0; j < _groups.Length; j++)
             {
                 var pen = new Pen(Color.FromArgb(rand.Next() % 255, rand.Next() % 255, rand.Next() % 255));
@@ -81,14 +95,16 @@ namespace NWaves.DemoForms.UserControls
                 while (i < _groups[j].Length)
                 {
                     g.DrawLine(pen,
-                                20 + x - Stride, (float)-_groups[j][i - 1] * Gain + offset,
-                                20 + x,          (float)-_groups[j][i] * Gain + offset);
+                        20 + x - Stride, (float)-_groups[j][i - 1] * Gain + offset,
+                        20 + x,          (float)-_groups[j][i] * Gain + offset);
                     x += Stride;
                     i++;
                 }
 
                 pen.Dispose();
             }
+
+            g.Dispose();
         }
     }
 }

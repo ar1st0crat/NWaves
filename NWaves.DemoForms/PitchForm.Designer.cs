@@ -33,8 +33,6 @@ namespace NWaves.DemoForms
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.spectrumPanel = new NWaves.DemoForms.UserControls.LinePlot();
-            this.cepstrumPanel = new NWaves.DemoForms.UserControls.LinePlot();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.prevButton = new System.Windows.Forms.Button();
@@ -45,11 +43,13 @@ namespace NWaves.DemoForms
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.cepstrumSizeTextBox = new System.Windows.Forms.TextBox();
-            this.overlapSizeTextBox = new System.Windows.Forms.TextBox();
+            this.hopSizeTextBox = new System.Windows.Forms.TextBox();
             this.fftSizeTextBox = new System.Windows.Forms.TextBox();
-            this.spectrogramPanel = new NWaves.DemoForms.UserControls.SpectrogramPlot();
             this.label6 = new System.Windows.Forms.Label();
+            this.spectrogramPanel = new NWaves.DemoForms.UserControls.SpectrogramPlot();
             this.autoCorrPanel = new NWaves.DemoForms.UserControls.LinePlot();
+            this.cepstrumPanel = new NWaves.DemoForms.UserControls.LinePlot();
+            this.spectrumPanel = new NWaves.DemoForms.UserControls.LinePlot();
             this.menuStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -79,34 +79,6 @@ namespace NWaves.DemoForms
             this.openToolStripMenuItem.Size = new System.Drawing.Size(129, 26);
             this.openToolStripMenuItem.Text = "&Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
-            // 
-            // spectrumPanel
-            // 
-            this.spectrumPanel.AutoScroll = true;
-            this.spectrumPanel.BackColor = System.Drawing.Color.White;
-            this.spectrumPanel.ForeColor = System.Drawing.Color.Blue;
-            this.spectrumPanel.Legend = null;
-            this.spectrumPanel.Location = new System.Drawing.Point(14, 347);
-            this.spectrumPanel.Mark = null;
-            this.spectrumPanel.Markline = null;
-            this.spectrumPanel.Name = "spectrumPanel";
-            this.spectrumPanel.Size = new System.Drawing.Size(550, 256);
-            this.spectrumPanel.Stride = 1;
-            this.spectrumPanel.TabIndex = 1;
-            // 
-            // cepstrumPanel
-            // 
-            this.cepstrumPanel.AutoScroll = true;
-            this.cepstrumPanel.BackColor = System.Drawing.Color.White;
-            this.cepstrumPanel.Gain = 1D;
-            this.cepstrumPanel.Line = null;
-            this.cepstrumPanel.Location = new System.Drawing.Point(570, 347);
-            this.cepstrumPanel.Mark = null;
-            this.cepstrumPanel.Name = "cepstrumPanel";
-            this.cepstrumPanel.Size = new System.Drawing.Size(304, 256);
-            this.cepstrumPanel.Stride = 20;
-            this.cepstrumPanel.TabIndex = 2;
-            this.cepstrumPanel.Thickness = 1;
             // 
             // label1
             // 
@@ -154,7 +126,7 @@ namespace NWaves.DemoForms
             this.specNoComboBox.Name = "specNoComboBox";
             this.specNoComboBox.Size = new System.Drawing.Size(59, 24);
             this.specNoComboBox.TabIndex = 7;
-            this.specNoComboBox.SelectedIndexChanged += new System.EventHandler(this.specNoComboBox_SelectedIndexChanged);
+            this.specNoComboBox.TextChanged += new System.EventHandler(this.specNoComboBox_TextChanged);
             // 
             // groupBox1
             // 
@@ -162,7 +134,7 @@ namespace NWaves.DemoForms
             this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.cepstrumSizeTextBox);
-            this.groupBox1.Controls.Add(this.overlapSizeTextBox);
+            this.groupBox1.Controls.Add(this.hopSizeTextBox);
             this.groupBox1.Controls.Add(this.fftSizeTextBox);
             this.groupBox1.Location = new System.Drawing.Point(1001, 105);
             this.groupBox1.Name = "groupBox1";
@@ -204,13 +176,15 @@ namespace NWaves.DemoForms
             this.cepstrumSizeTextBox.Name = "cepstrumSizeTextBox";
             this.cepstrumSizeTextBox.Size = new System.Drawing.Size(55, 22);
             this.cepstrumSizeTextBox.TabIndex = 13;
+            this.cepstrumSizeTextBox.Text = "256";
             // 
-            // overlapSizeTextBox
+            // hopSizeTextBox
             // 
-            this.overlapSizeTextBox.Location = new System.Drawing.Point(121, 89);
-            this.overlapSizeTextBox.Name = "overlapSizeTextBox";
-            this.overlapSizeTextBox.Size = new System.Drawing.Size(55, 22);
-            this.overlapSizeTextBox.TabIndex = 12;
+            this.hopSizeTextBox.Location = new System.Drawing.Point(121, 89);
+            this.hopSizeTextBox.Name = "hopSizeTextBox";
+            this.hopSizeTextBox.Size = new System.Drawing.Size(55, 22);
+            this.hopSizeTextBox.TabIndex = 12;
+            this.hopSizeTextBox.Text = "100";
             // 
             // fftSizeTextBox
             // 
@@ -218,6 +192,16 @@ namespace NWaves.DemoForms
             this.fftSizeTextBox.Name = "fftSizeTextBox";
             this.fftSizeTextBox.Size = new System.Drawing.Size(55, 22);
             this.fftSizeTextBox.TabIndex = 11;
+            this.fftSizeTextBox.Text = "1024";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(992, 327);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(109, 17);
+            this.label6.TabIndex = 6;
+            this.label6.Text = "Auto-correlation";
             // 
             // spectrogramPanel
             // 
@@ -231,28 +215,56 @@ namespace NWaves.DemoForms
             this.spectrogramPanel.Spectrogram = null;
             this.spectrogramPanel.TabIndex = 2;
             // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(992, 327);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(109, 17);
-            this.label6.TabIndex = 6;
-            this.label6.Text = "Auto-correlation";
-            // 
             // autoCorrPanel
             // 
             this.autoCorrPanel.AutoScroll = true;
             this.autoCorrPanel.BackColor = System.Drawing.Color.White;
+            this.autoCorrPanel.ForeColor = System.Drawing.Color.Blue;
             this.autoCorrPanel.Gain = 1D;
+            this.autoCorrPanel.Legend = null;
             this.autoCorrPanel.Line = null;
             this.autoCorrPanel.Location = new System.Drawing.Point(880, 347);
             this.autoCorrPanel.Mark = null;
+            this.autoCorrPanel.Markline = null;
             this.autoCorrPanel.Name = "autoCorrPanel";
             this.autoCorrPanel.Size = new System.Drawing.Size(311, 256);
             this.autoCorrPanel.Stride = 20;
             this.autoCorrPanel.TabIndex = 5;
             this.autoCorrPanel.Thickness = 1;
+            // 
+            // cepstrumPanel
+            // 
+            this.cepstrumPanel.AutoScroll = true;
+            this.cepstrumPanel.BackColor = System.Drawing.Color.White;
+            this.cepstrumPanel.ForeColor = System.Drawing.Color.Blue;
+            this.cepstrumPanel.Gain = 1D;
+            this.cepstrumPanel.Legend = null;
+            this.cepstrumPanel.Line = null;
+            this.cepstrumPanel.Location = new System.Drawing.Point(570, 347);
+            this.cepstrumPanel.Mark = null;
+            this.cepstrumPanel.Markline = null;
+            this.cepstrumPanel.Name = "cepstrumPanel";
+            this.cepstrumPanel.Size = new System.Drawing.Size(304, 256);
+            this.cepstrumPanel.Stride = 20;
+            this.cepstrumPanel.TabIndex = 2;
+            this.cepstrumPanel.Thickness = 1;
+            // 
+            // spectrumPanel
+            // 
+            this.spectrumPanel.AutoScroll = true;
+            this.spectrumPanel.BackColor = System.Drawing.Color.White;
+            this.spectrumPanel.ForeColor = System.Drawing.Color.Blue;
+            this.spectrumPanel.Gain = 1D;
+            this.spectrumPanel.Legend = null;
+            this.spectrumPanel.Line = null;
+            this.spectrumPanel.Location = new System.Drawing.Point(14, 347);
+            this.spectrumPanel.Mark = null;
+            this.spectrumPanel.Markline = null;
+            this.spectrumPanel.Name = "spectrumPanel";
+            this.spectrumPanel.Size = new System.Drawing.Size(550, 256);
+            this.spectrumPanel.Stride = 1;
+            this.spectrumPanel.TabIndex = 1;
+            this.spectrumPanel.Thickness = 1;
             // 
             // PitchForm
             // 
@@ -300,7 +312,7 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox cepstrumSizeTextBox;
-        private System.Windows.Forms.TextBox overlapSizeTextBox;
+        private System.Windows.Forms.TextBox hopSizeTextBox;
         private System.Windows.Forms.TextBox fftSizeTextBox;
         private SpectrogramPlot spectrogramPanel;
         private System.Windows.Forms.Label label6;

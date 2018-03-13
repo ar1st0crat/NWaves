@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 using LevelScale = NWaves.Utils.Scale;
@@ -22,6 +21,7 @@ namespace NWaves.DemoForms.UserControls
                 _logLine = null;
                 if (_line == null) return;
                 AutoScrollMinSize = new Size(_line.Length * Stride + 20, 0);
+                MakeBitmap();
                 Invalidate();
             }
         }
@@ -69,86 +69,11 @@ namespace NWaves.DemoForms.UserControls
         {
             base.OnPaint(e);
 
-            var g = e.Graphics;
-            g.Clear(Color.White);
+            if (_bmp == null) MakeBitmap();
 
-            var mx = new Matrix(1, 0, 0, 1, AutoScrollPosition.X, AutoScrollPosition.Y);
-            g.Transform = mx;
-
-            var offset = Height / 2;
-
-            var gray = new Pen(Color.LightGray) { DashPattern = new[] { 2f, 2f } };
-
-            var width = Math.Max(_line?.Length * Stride + 20 ?? Width, Width);
-
-            for (var k = 0; k < offset; k += 10)
-            {
-                g.DrawLine(gray, 0, offset + k, width, offset + k);
-                g.DrawLine(gray, 0, offset - k, width, offset - k);
-            }
-
-            gray.Dispose();
-
-            var black = new Pen(Color.Black);
-
-            g.DrawLine(black, 20, offset, width, offset);
-            g.DrawLine(black, 20, 5, 20, Height - 5);
-
-            black.Dispose();
-
-            if (_line == null)
-            {
-                return;
-            }
-
-
-            var pen = new Pen(ForeColor, Thickness);
-
-            var i = 1;
-            var x = 20 + Stride;
-
-            var line = _logLine ?? _line;
-
-            for (; i < line.Length; i++)
-            {
-                g.DrawLine(pen, x - Stride, (float)(-line[i - 1] * Gain) + offset, x, (float)(-line[i] * Gain) + offset);
-                x += Stride;
-            }
-            
-            pen.Dispose();
-
-            if (_logLine != null)
-            {
-                g.DrawString("(log)", new Font("arial", 12), new SolidBrush(ForeColor), Width - 50, 5);
-            }
-
-
-            if (_markline != null)
-            {
-                pen = new Pen(Color.Red, 2);
-                x = Stride;
-                for (var j = 1; j < _markline.Length; j++)
-                {
-                    g.DrawLine(pen, 20 + x - Stride, (float)(-_markline[j - 1] * Gain) + offset, 20 + x, (float)(-_markline[j] * Gain) + offset);
-                    x += Stride;
-                }
-
-                pen.Dispose();
-            }
-
-            var red = new Pen(Color.Red, 2);
-
-            if (_mark != null)
-            {
-                g.DrawLine(red, 20 + _mark.Value * Stride, 20, 20 + _mark.Value * Stride, Height - 20);
-            }
-
-            if (Legend != null)
-            {
-                g.DrawString(Legend, new Font("arial", 16), new SolidBrush(Color.Red), 100, 30);
-            }
-
-            red.Dispose();
+            e.Graphics.DrawImage(_bmp, 0, 0,
+                new Rectangle(-AutoScrollPosition.X, 0, Width, Height),
+                GraphicsUnit.Pixel);
         }
 
         public void ToDecibel()
@@ -173,12 +98,99 @@ namespace NWaves.DemoForms.UserControls
                 _logLine = null;
             }
 
+            MakeBitmap();
             Invalidate();
         }
 
         private void LinePlot_MouseClick(object sender, MouseEventArgs e)
         {
             ToDecibel();
+        }
+
+        private Bitmap _bmp;
+
+        private void MakeBitmap()
+        {
+            var width = Math.Max(AutoScrollMinSize.Width, Width);
+
+            _bmp = new Bitmap(width, Height);
+
+            var g = Graphics.FromImage(_bmp);
+            g.Clear(Color.White);
+
+            var offset = Height / 2;
+
+            var gray = new Pen(Color.LightGray) { DashPattern = new[] { 2f, 2f } };
+            
+            for (var k = 0; k < offset; k += 10)
+            {
+                g.DrawLine(gray, 0, offset + k, width, offset + k);
+                g.DrawLine(gray, 0, offset - k, width, offset - k);
+            }
+
+            gray.Dispose();
+
+            var black = new Pen(Color.Black);
+
+            g.DrawLine(black, 20, offset, width, offset);
+            g.DrawLine(black, 20, 5, 20, Height - 5);
+
+            black.Dispose();
+
+            if (_line != null)
+            {
+                var pen = new Pen(ForeColor, Thickness);
+
+                var i = 1;
+                var x = 20 + Stride;
+
+                var line = _logLine ?? _line;
+
+                for (; i < line.Length; i++)
+                {
+                    g.DrawLine(pen, x - Stride, (float) (-line[i - 1]*Gain) + offset, 
+                                    x,          (float) (-line[i]*Gain) + offset);
+                    x += Stride;
+                }
+
+                pen.Dispose();
+            }
+
+            if (_logLine != null)
+            {
+                g.DrawString("(log)", new Font("arial", 12), new SolidBrush(ForeColor), Width - 50, 5);
+            }
+
+
+            if (_markline != null)
+            {
+                var pen = new Pen(Color.Red, 2);
+                var x = Stride;
+                for (var j = 1; j < _markline.Length; j++)
+                {
+                    g.DrawLine(pen, 20 + x - Stride, (float)(-_markline[j - 1] * Gain) + offset, 
+                                    20 + x,          (float)(-_markline[j] * Gain) + offset);
+                    x += Stride;
+                }
+
+                pen.Dispose();
+            }
+
+            var red = new Pen(Color.Red, 2);
+
+            if (_mark != null)
+            {
+                g.DrawLine(red, 20 + _mark.Value * Stride, 20, 20 + _mark.Value * Stride, Height - 20);
+            }
+
+            if (Legend != null)
+            {
+                g.DrawString(Legend, new Font("arial", 16), new SolidBrush(Color.Red), 100, 30);
+            }
+
+            red.Dispose();
+
+            g.Dispose();
         }
     }
 }

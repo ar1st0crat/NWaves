@@ -30,14 +30,16 @@
         {
             this.SuspendLayout();
             // 
-            // LinePlot
+            // GroupPlot
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.BackColor = System.Drawing.Color.White;
+            this.DoubleBuffered = true;
             this.Name = "GroupPlot";
             this.Size = new System.Drawing.Size(352, 90);
+            this.Load += new System.EventHandler(this.GroupPlot_Load);
             this.ResumeLayout(false);
 
         }

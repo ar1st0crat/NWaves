@@ -72,6 +72,7 @@
             this.BackColor = System.Drawing.Color.White;
             this.Controls.Add(this.buttonZoomOut);
             this.Controls.Add(this.buttonZoomIn);
+            this.DoubleBuffered = true;
             this.Name = "SignalPlot";
             this.Size = new System.Drawing.Size(352, 90);
             this.ResumeLayout(false);

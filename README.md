@@ -263,7 +263,8 @@ var result = ht.AnalyticSignal(signal).Imag;
 // a newly created object of DiscreteSignal class.
 
 // If the sequence of blocks must be processed then 
-// it's better to work with reusable arrays in memory:
+// it's better to work with reusable arrays in memory
+// (all intermediate results will also be stored in reusable arrays):
 
 var spectrum = new double[1024];
 var cepstrum = new double[20];

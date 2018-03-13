@@ -32,7 +32,7 @@ namespace NWaves.FeatureExtractors.Multi
         private readonly int _fftSize;
 
         /// <summary>
-        /// Length of overlap (in ms)
+        /// Hop length (in ms)
         /// </summary>
         private readonly double _hopSize;
 

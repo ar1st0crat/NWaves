@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 using SciColorMaps;
@@ -82,35 +81,34 @@ namespace NWaves.DemoForms.UserControls
             var g = e.Graphics;
             g.Clear(Color.White);
 
-            var mx = new Matrix(1, 0, 0, 1, AutoScrollPosition.X, AutoScrollPosition.Y);
-            g.Transform = mx;
+            var width = Math.Min(Width, _spectrogram.Count);
+            var spectrogramBitmap = new Bitmap(width, _spectrogram[0].Length);
 
-            var spectrogramBitmap = new Bitmap(_spectrogram.Count, _spectrogram[0].Length);
-
-            for (var i = 0; i < _spectrogram.Count; i++)
+            var realPos = 0;
+            var startPos = -AutoScrollPosition.X;
+            for (var i = startPos; i < startPos + spectrogramBitmap.Width; i++, realPos++)
             {
                 for (var j = 0; j < _spectrogram[i].Length; j++)
                 {
-                    spectrogramBitmap.SetPixel(i, _spectrogram[i].Length - 1 - j, _cmap.GetColor(_spectrogram[i][j]));
+                    spectrogramBitmap.SetPixel(realPos, _spectrogram[i].Length - 1 - j, _cmap.GetColor(_spectrogram[i][j]));
                 }
             }
 
             g.DrawImage(spectrogramBitmap, 0, 0);
 
-            if (_markline == null)
+            if (_markline != null)
             {
-                return;
+                var pen = new Pen(Color.DeepPink, 7);
+
+                realPos = 1;
+                for (var i = startPos + 1; i < startPos + spectrogramBitmap.Width; i++, realPos++)
+                {
+                    g.DrawLine(pen, realPos - 1, _spectrogram[i].Length - 1 - (int) (_markline[i - 1]),
+                        realPos, _spectrogram[i].Length - 1 - (int) (_markline[i]));
+                }
+
+                pen.Dispose();
             }
-
-            var pen = new Pen(Color.DeepPink, 7);
-
-            for (var i = 1; i < _markline.Length; i++)
-            {
-                g.DrawLine(pen, i - 1, _spectrogram[i].Length - 1 - (int)(_markline[i - 1]), 
-                                i,     _spectrogram[i].Length - 1 - (int)(_markline[i]));
-            }
-
-            pen.Dispose();
         }
     }
 }

@@ -36,6 +36,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.BackColor = System.Drawing.Color.White;
+            this.DoubleBuffered = true;
             this.Name = "LinePlot";
             this.Size = new System.Drawing.Size(352, 90);
             this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.LinePlot_MouseClick);

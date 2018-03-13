@@ -70,7 +70,7 @@ namespace NWaves.FeatureExtractors
         private readonly WindowTypes _window;
 
         /// <summary>
-        /// Length of overlap (in ms)
+        /// Hop length (in ms)
         /// </summary>
         private readonly double _hopSize;
 
@@ -80,7 +80,7 @@ namespace NWaves.FeatureExtractors
         private readonly int _modulationFftSize;
 
         /// <summary>
-        /// Size of overlap during the analysis of signal envelopes
+        /// Hop size for analysis of signal envelopes
         /// </summary>
         private readonly int _modulationHopSize;
 

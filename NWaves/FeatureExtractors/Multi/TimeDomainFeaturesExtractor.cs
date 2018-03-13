@@ -25,14 +25,14 @@ namespace NWaves.FeatureExtractors.Multi
         public override int FeatureCount => FeatureDescriptions.Length;
 
         /// <summary>
-        /// Length of overlap (in ms)
-        /// </summary>
-        private readonly double _hopSize;
-
-        /// <summary>
         /// Length of analysis window (in ms)
         /// </summary>
         private readonly double _windowSize;
+
+        /// <summary>
+        /// Hop length (in ms)
+        /// </summary>
+        private readonly double _hopSize;
 
         /// <summary>
         /// Extractor functions

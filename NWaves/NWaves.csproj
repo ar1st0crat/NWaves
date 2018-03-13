@@ -71,6 +71,7 @@
     <Compile Include="FeatureExtractors\SpnccExtractor.cs" />
     <Compile Include="FeatureExtractors\Multi\TimeDomainFeaturesExtractor.cs" />
     <Compile Include="Features\Harmonic.cs" />
+    <Compile Include="Features\Pitch.cs" />
     <Compile Include="Features\Spectral.cs" />
     <Compile Include="Features\Temporal.cs" />
     <Compile Include="Filters\Base\LtiFilter.cs" />

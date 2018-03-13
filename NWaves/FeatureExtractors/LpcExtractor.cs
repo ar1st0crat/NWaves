@@ -42,7 +42,7 @@ namespace NWaves.FeatureExtractors
         private readonly double _windowSize;
 
         /// <summary>
-        /// Length of overlap (in ms)
+        /// Hop length (in ms)
         /// </summary>
         private readonly double _hopSize;
 
