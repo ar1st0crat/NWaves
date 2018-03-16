@@ -19,17 +19,14 @@ namespace NWaves.Signals.Builders
         private double _high;
 
         /// <summary>
-        /// Root-Mean-Square (RMS) value
+        /// Constructor
         /// </summary>
-        private double? _rms;
-
         public RedNoiseBuilder()
         {
             ParameterSetters = new Dictionary<string, Action<double>>
             {
                 { "low, lo, min",  param => _low = param },
-                { "high, hi, max", param => _high = param },
-                { "rms", param => _rms = param }
+                { "high, hi, max", param => _high = param }
             };
 
             _low = -1.0;
@@ -47,9 +44,11 @@ namespace NWaves.Signals.Builders
                 throw new FormatException("Upper level must be greater than the lower one!");
             }
 
-            var rand = new Random();
+            var mean = (_low + _high) / 2;
+            _low -= mean;
+            _high -= mean;
 
-            double scaleCoeff = _rms.HasValue ? 10.75 : 3.5;
+            var rand = new Random();
 
             double prev = 0;
 
@@ -60,7 +59,8 @@ namespace NWaves.Signals.Builders
 
                 red[n] = (prev + (0.02 * white)) / 1.02;
                 prev = red[n];
-                red[n] *= scaleCoeff;
+                red[n] *= 3.5;
+                red[n] += mean;
             }
 
             return new DiscreteSignal(SamplingRate, red);

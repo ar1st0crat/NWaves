@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NWaves.Signals;
 using NWaves.Utils;
@@ -54,7 +55,7 @@ namespace NWaves.Transforms
         /// <param name="hopSize">Hop (overlap) size</param>
         /// <param name="window">Type of the window function to apply</param>
         /// <param name="fftSize">Size of FFT</param>
-        public Stft(int windowSize = 512, int hopSize = 256, WindowTypes window = WindowTypes.Hann, int fftSize = 0)
+        public Stft(int windowSize = 1024, int hopSize = 256, WindowTypes window = WindowTypes.Hann, int fftSize = 0)
         {
             _fftSize = fftSize >= windowSize ? fftSize : MathUtils.NextPowerOfTwo(windowSize);
             _fft = new Fft(_fftSize);
@@ -67,7 +68,10 @@ namespace NWaves.Transforms
 
             // TODO: pad center!
 
-            _norm = 1.0 / (_windowSamples.Sum(s => s*s) * _fftSize / _hopSize);// * 2.0 * Math.Sqrt((double)_fftSize / _hopSize));
+            _norm = 2.0 / (_windowSamples.Sum(s => s*s) * _fftSize / _hopSize);
+
+            //_norm = 2.0 * Math.Sqrt((double)_fftSize / _hopSize));
+            //_norm = 2.0 / (_fftSize / 2 * (_fftSize / _hopSize));
         }
 
         /// <summary>
@@ -108,13 +112,16 @@ namespace NWaves.Transforms
         {
             var spectraCount = stft.Count;
             var samples = new double[spectraCount * _hopSize + _windowSize];
-            
+
+            var re = new double[_windowSize];
+            var im = new double[_windowSize];
+
             var pos = 0;
             for (var i = 0; i < spectraCount; i++)
             {
-                var re = FastCopy.EntireArray(stft[i].Real);
-                var im = FastCopy.EntireArray(stft[i].Imag);
-                
+                FastCopy.ToExistingArray(stft[i].Real, re, _windowSize);
+                FastCopy.ToExistingArray(stft[i].Imag, im, _windowSize);
+
                 _fft.Inverse(re, im);
 
                 // windowing and reconstruction

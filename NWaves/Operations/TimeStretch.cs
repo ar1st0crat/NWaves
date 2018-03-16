@@ -24,7 +24,7 @@ namespace NWaves.Operations
             var hopAnalysis = hopSize > 0 ? hopSize : fftSize / 8;
             var hopSynthesis = (int)(hopAnalysis * stretch);
 
-            var vocoder = new PhaseVocoder(hopAnalysis, hopSynthesis, fftSize, fftSize);
+            var vocoder = new PhaseVocoder(hopAnalysis, hopSynthesis, fftSize);
             return vocoder.ApplyTo(signal);
         }
     }

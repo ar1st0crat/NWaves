@@ -37,10 +37,11 @@ namespace NWaves.Audio
         /// for extracting the stream from a wave file.
         /// 
         /// </summary>
-        /// <param name="waveStream"></param>
+        /// <param name="waveStream">Input stream</param>
+        /// <param name="normalized">Normalization flag</param>
         /// <returns></returns>
         /// <exception>Possible null exception</exception>
-        public WaveFile(Stream waveStream)
+        public WaveFile(Stream waveStream, bool normalized = true)
         {
             using (var reader = new BinaryReader(waveStream))
             {
@@ -94,7 +95,22 @@ namespace NWaves.Audio
                     reader.ReadBytes(fmtExtraSize);
                 }
 
-                if (reader.ReadInt32() != 0x61746164)      // "data"
+                // there may be some wavefile meta info here,
+                // so try to find "data" header in the file:
+
+                var dataPosition = reader.BaseStream.Position;
+                while (dataPosition != reader.BaseStream.Length - 1)
+                {
+                    reader.BaseStream.Position = dataPosition;
+                    var dataId = reader.ReadInt32();
+                    if (dataId == 0x61746164)
+                    {
+                        break;
+                    }
+                    dataPosition++;
+                }
+
+                if (dataPosition == reader.BaseStream.Length - 1)
                 {
                     throw new FormatException("NOT data!");
                 }
@@ -117,7 +133,8 @@ namespace NWaves.Audio
                     {
                         for (var j = 0; j < waveFmt.ChannelCount; j++)
                         {
-                            Signals[j][i] = (reader.ReadByte() - 128) / 128.0;
+                            Signals[j][i] = reader.ReadByte() - 128;
+                            if (normalized) Signals[j][i] /= 128.0;
                         }
                     }
                 }
@@ -127,7 +144,8 @@ namespace NWaves.Audio
                     {
                         for (var j = 0; j < waveFmt.ChannelCount; j++)
                         {
-                            Signals[j][i] = reader.ReadInt16() / (double)short.MaxValue;
+                            Signals[j][i] = reader.ReadInt16();
+                            if (normalized) Signals[j][i] /= short.MaxValue;
                         }
                     }
                 }
@@ -135,23 +153,77 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// This constructor loads signal into container.
+        /// This constructor loads signals into container.
         /// </summary>
-        /// <param name="signal">Signal to be loaded into container</param>
-        public WaveFile(DiscreteSignal signal)
+        /// <param name="signals">Signals to be loaded into container</param>
+        /// <param name="normalized">Normalization flag</param>
+        public WaveFile(IList<DiscreteSignal> signals, bool normalized = true)
         {
+            if (signals == null || !signals.Any())
+            {
+                throw new ArgumentException("At least one signal must be provided");
+            }
+
+            var samplingRate = signals[0].SamplingRate;
+            if (signals.Any(s => s.SamplingRate != samplingRate))
+            {
+                throw new ArgumentException("Signals must be sampled at the same sampling rate");
+            }
+
+            var length = signals[0].Length;
+            if (signals.Any(s => s.Length != length))
+            {
+                throw new ArgumentException("Signals must have the same length");
+            }
+            
             WaveFormat waveFmt;
-            waveFmt.AudioFormat = 1;        // PCM
-            waveFmt.ChannelCount = 1;       // mono
-            waveFmt.BitsPerSample = 16;     // 16 bits/sample
+            waveFmt.AudioFormat = 1;                        // PCM
+            waveFmt.ChannelCount = (short)signals.Count;    // mono
+            waveFmt.BitsPerSample = 16;                     // 16 bits/sample
 
             waveFmt.Align = (short)(waveFmt.ChannelCount * waveFmt.BitsPerSample / 8);
-            waveFmt.SamplingRate = signal.SamplingRate;
+            waveFmt.SamplingRate = samplingRate;
             waveFmt.ByteRate = waveFmt.SamplingRate * waveFmt.ChannelCount * waveFmt.BitsPerSample / 8;
 
             WaveFmt = waveFmt;
 
-            Signals = new List<DiscreteSignal> { signal };
+            Signals = signals.ToList();
+
+            if (!normalized)
+            {
+                return;
+            }
+            
+            if (WaveFmt.BitsPerSample == 8)
+            {
+                for (var i = 0; i < length; i++)
+                {
+                    for (var j = 0; j < WaveFmt.ChannelCount; j++)
+                    {
+                        Signals[j][i] = Signals[j][i] * 128 + 128;
+                    }
+                }
+            }
+            else
+            {
+                for (var i = 0; i < length; i++)
+                {
+                    for (var j = 0; j < WaveFmt.ChannelCount; j++)
+                    {
+                        Signals[j][i] = Signals[j][i] * short.MaxValue;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// This constructor loads one signal into container.
+        /// </summary>
+        /// <param name="signal">Signal to be loaded into container</param>
+        /// <param name="normalized">Normalization flag</param>
+        public WaveFile(DiscreteSignal signal, bool normalized = true) 
+            : this(new [] { signal }, normalized)
+        {
         }
 
         /// <summary>
@@ -185,16 +257,13 @@ namespace NWaves.Audio
                 writer.Write(0x61746164);      // "data"
                 writer.Write(dataSize);
 
-                var maxValue = Math.Abs(Signals.SelectMany(s => s.Samples.Select(x => x)).Max());
-                maxValue = Math.Max(1.0, maxValue);
-
                 if (WaveFmt.BitsPerSample == 8)
                 {
                     for (var i = 0; i < length; i++)
                     {
                         for (var j = 0; j < WaveFmt.ChannelCount; j++)
                         {
-                            writer.Write((sbyte)((Signals[j][i] * 128 + 128) / maxValue));
+                            writer.Write((sbyte)Signals[j][i]);
                         }
                     }
                 }
@@ -204,7 +273,7 @@ namespace NWaves.Audio
                     {
                         for (var j = 0; j < WaveFmt.ChannelCount; j++)
                         {
-                            writer.Write((short)((Signals[j][i] * short.MaxValue) / maxValue));
+                            writer.Write((short)Signals[j][i]);
                         }
                     }
                 }

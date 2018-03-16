@@ -8,7 +8,6 @@ using NWaves.Audio.Mci;
 using NWaves.Signals;
 using NWaves.Signals.Builders;
 using NWaves.Transforms;
-using LevelScale = NWaves.Utils.Scale;
 
 namespace NWaves.DemoForms
 {
@@ -197,6 +196,15 @@ namespace NWaves.DemoForms
                                     .SetParameter("period", 0.020/*sec*/)
                                     .OfLength(sampleCount)
                                     .DelayedBy(50)
+                                    .SampledAt(samplingRate)
+                                    .Build();
+                    break;
+
+                case "AWGN":
+                    signalBuilder = new AwgnBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("sigma", 0.25)
+                                    .OfLength(sampleCount)
                                     .SampledAt(samplingRate)
                                     .Build();
                     break;

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Linq;
 using NWaves.Filters.Base;
 using NWaves.Signals;
-using NWaves.Transforms;
-using NWaves.Utils;
 
 namespace NWaves.Operations.Tsm
 {
@@ -56,43 +53,7 @@ namespace NWaves.Operations.Tsm
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
                                       FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
-            var stftAnalysis = new Stft(_fftAnalysis, _hopAnalysis);
-            var frames = stftAnalysis.Direct(signal);
-
-            var omega = Enumerable.Range(0, _fftAnalysis)
-                                  .Select(f => 2 * Math.PI * f / _fftAnalysis)
-                                  .ToArray();
-
-            var prevPhase = new double[_fftAnalysis];
-            var phaseTotal = new double[_fftAnalysis];
-
-            for (var i = 0; i < frames.Count; i++)
-            {
-                var mag = frames[i].Magnitude;
-                var phase = frames[i].Phase;
-
-                for (var j = 0; j < frames[i].Length; j++)
-                {
-                    var delta = phase[j] - prevPhase[j];
-
-                    var deltaUnwrapped = delta - _hopAnalysis * omega[j];
-                    var deltaWrapped = MathUtils.Mod(deltaUnwrapped + Math.PI, 2 * Math.PI) - Math.PI;
-
-                    var freq = omega[j] + deltaWrapped / _hopAnalysis;
-
-                    phaseTotal[j] += _hopSynthesis * freq;
-                    prevPhase[j] = phase[j];
-                }
-
-                frames[i] = new ComplexDiscreteSignal(
-                                    frames[i].SamplingRate,
-                                    mag.Zip(phaseTotal, (m, p) => m * Math.Cos(p)),
-                                    mag.Zip(phaseTotal, (m, p) => m * Math.Sin(p))
-                                );
-            }
-
-            var stftSynthesis = new Stft(_fftSynthesis, _hopSynthesis);
-            return new DiscreteSignal(signal.SamplingRate, stftSynthesis.Inverse(frames));
+            throw new NotImplementedException();
         }
     }
 }

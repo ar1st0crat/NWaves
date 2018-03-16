@@ -28,31 +28,15 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.processedSignalPanel = new System.Windows.Forms.Panel();
-            this.signalPanel = new System.Windows.Forms.Panel();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.spectrogramPanel = new System.Windows.Forms.Panel();
             this.playToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.signalPanel = new NWaves.DemoForms.UserControls.SignalPlot();
+            this.processedSignalPanel = new NWaves.DemoForms.UserControls.SignalPlot();
+            this.spectrogramPanel = new NWaves.DemoForms.UserControls.SpectrogramPlot();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // processedSignalPanel
-            // 
-            this.processedSignalPanel.BackColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.processedSignalPanel.Location = new System.Drawing.Point(12, 213);
-            this.processedSignalPanel.Name = "processedSignalPanel";
-            this.processedSignalPanel.Size = new System.Drawing.Size(1081, 174);
-            this.processedSignalPanel.TabIndex = 7;
-            // 
-            // signalPanel
-            // 
-            this.signalPanel.BackColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.signalPanel.Location = new System.Drawing.Point(12, 42);
-            this.signalPanel.Name = "signalPanel";
-            this.signalPanel.Size = new System.Drawing.Size(1081, 165);
-            this.signalPanel.TabIndex = 6;
             // 
             // menuStrip1
             // 
@@ -77,17 +61,9 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(129, 26);
             this.openToolStripMenuItem.Text = "&Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
-            // 
-            // spectrogramPanel
-            // 
-            this.spectrogramPanel.BackColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.spectrogramPanel.Location = new System.Drawing.Point(12, 393);
-            this.spectrogramPanel.Name = "spectrogramPanel";
-            this.spectrogramPanel.Size = new System.Drawing.Size(1081, 231);
-            this.spectrogramPanel.TabIndex = 7;
             // 
             // playToolStripMenuItem
             // 
@@ -95,6 +71,44 @@
             this.playToolStripMenuItem.Size = new System.Drawing.Size(48, 24);
             this.playToolStripMenuItem.Text = "&Play";
             this.playToolStripMenuItem.Click += new System.EventHandler(this.playToolStripMenuItem_Click);
+            // 
+            // signalPanel
+            // 
+            this.signalPanel.AutoScroll = true;
+            this.signalPanel.BackColor = System.Drawing.Color.White;
+            this.signalPanel.ForeColor = System.Drawing.Color.Blue;
+            this.signalPanel.Gain = 1D;
+            this.signalPanel.Location = new System.Drawing.Point(12, 42);
+            this.signalPanel.Name = "signalPanel";
+            this.signalPanel.Signal = null;
+            this.signalPanel.Size = new System.Drawing.Size(1081, 165);
+            this.signalPanel.Stride = 64;
+            this.signalPanel.TabIndex = 9;
+            // 
+            // processedSignalPanel
+            // 
+            this.processedSignalPanel.AutoScroll = true;
+            this.processedSignalPanel.BackColor = System.Drawing.Color.White;
+            this.processedSignalPanel.ForeColor = System.Drawing.Color.Blue;
+            this.processedSignalPanel.Gain = 1D;
+            this.processedSignalPanel.Location = new System.Drawing.Point(13, 214);
+            this.processedSignalPanel.Name = "processedSignalPanel";
+            this.processedSignalPanel.Signal = null;
+            this.processedSignalPanel.Size = new System.Drawing.Size(1080, 173);
+            this.processedSignalPanel.Stride = 64;
+            this.processedSignalPanel.TabIndex = 10;
+            // 
+            // spectrogramPanel
+            // 
+            this.spectrogramPanel.AutoScroll = true;
+            this.spectrogramPanel.BackColor = System.Drawing.Color.Black;
+            this.spectrogramPanel.ColorMapName = "magma";
+            this.spectrogramPanel.Location = new System.Drawing.Point(13, 394);
+            this.spectrogramPanel.Markline = null;
+            this.spectrogramPanel.Name = "spectrogramPanel";
+            this.spectrogramPanel.Size = new System.Drawing.Size(1080, 230);
+            this.spectrogramPanel.Spectrogram = null;
+            this.spectrogramPanel.TabIndex = 11;
             // 
             // StftForm
             // 
@@ -116,13 +130,12 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.Panel processedSignalPanel;
-        private System.Windows.Forms.Panel signalPanel;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
-        private System.Windows.Forms.Panel spectrogramPanel;
         private System.Windows.Forms.ToolStripMenuItem playToolStripMenuItem;
+        private UserControls.SignalPlot signalPanel;
+        private UserControls.SignalPlot processedSignalPanel;
+        private UserControls.SpectrogramPlot spectrogramPanel;
     }
 }

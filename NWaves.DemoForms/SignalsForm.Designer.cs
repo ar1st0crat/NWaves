@@ -34,10 +34,10 @@ namespace NWaves.DemoForms
             this.openFileButton = new System.Windows.Forms.Button();
             this.filenameTextBox = new System.Windows.Forms.TextBox();
             this.builderParametersListBox = new System.Windows.Forms.ListBox();
-            this.signalPanel = new SignalPlot();
-            this.generatedSignalPanel = new SignalPlot();
-            this.superimposedSignalPanel = new SignalPlot();
-            this.spectrumPanel = new LinePlot();
+            this.signalPanel = new NWaves.DemoForms.UserControls.SignalPlot();
+            this.generatedSignalPanel = new NWaves.DemoForms.UserControls.SignalPlot();
+            this.superimposedSignalPanel = new NWaves.DemoForms.UserControls.SignalPlot();
+            this.spectrumPanel = new NWaves.DemoForms.UserControls.LinePlot();
             this.builderComboBox = new System.Windows.Forms.ComboBox();
             this.operationComboBox = new System.Windows.Forms.ComboBox();
             this.generateSignalButton = new System.Windows.Forms.Button();
@@ -104,37 +104,59 @@ namespace NWaves.DemoForms
             // 
             // signalPanel
             // 
+            this.signalPanel.AutoScroll = true;
             this.signalPanel.BackColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.signalPanel.ForeColor = System.Drawing.Color.Blue;
+            this.signalPanel.Gain = 1D;
             this.signalPanel.Location = new System.Drawing.Point(196, 99);
             this.signalPanel.Name = "signalPanel";
+            this.signalPanel.Signal = null;
             this.signalPanel.Size = new System.Drawing.Size(1001, 165);
+            this.signalPanel.Stride = 64;
             this.signalPanel.TabIndex = 3;
             // 
             // generatedSignalPanel
             // 
+            this.generatedSignalPanel.AutoScroll = true;
             this.generatedSignalPanel.BackColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.generatedSignalPanel.ForeColor = System.Drawing.Color.Red;
+            this.generatedSignalPanel.Gain = 1D;
             this.generatedSignalPanel.Location = new System.Drawing.Point(196, 332);
             this.generatedSignalPanel.Name = "generatedSignalPanel";
+            this.generatedSignalPanel.Signal = null;
             this.generatedSignalPanel.Size = new System.Drawing.Size(610, 184);
-            this.generatedSignalPanel.ForeColor = Color.Red;
+            this.generatedSignalPanel.Stride = 64;
             this.generatedSignalPanel.TabIndex = 4;
             // 
             // superimposedSignalPanel
             // 
+            this.superimposedSignalPanel.AutoScroll = true;
             this.superimposedSignalPanel.BackColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.superimposedSignalPanel.ForeColor = System.Drawing.Color.SeaGreen;
+            this.superimposedSignalPanel.Gain = 1D;
             this.superimposedSignalPanel.Location = new System.Drawing.Point(197, 543);
             this.superimposedSignalPanel.Name = "superimposedSignalPanel";
+            this.superimposedSignalPanel.Signal = null;
             this.superimposedSignalPanel.Size = new System.Drawing.Size(1000, 181);
-            this.superimposedSignalPanel.ForeColor = Color.SeaGreen;
+            this.superimposedSignalPanel.Stride = 64;
             this.superimposedSignalPanel.TabIndex = 5;
             // 
             // spectrumPanel
             // 
+            this.spectrumPanel.AutoScroll = true;
             this.spectrumPanel.BackColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.spectrumPanel.ForeColor = System.Drawing.Color.Blue;
+            this.spectrumPanel.Gain = 1D;
+            this.spectrumPanel.Legend = null;
+            this.spectrumPanel.Line = null;
             this.spectrumPanel.Location = new System.Drawing.Point(812, 332);
+            this.spectrumPanel.Mark = null;
+            this.spectrumPanel.Markline = null;
             this.spectrumPanel.Name = "spectrumPanel";
             this.spectrumPanel.Size = new System.Drawing.Size(385, 184);
+            this.spectrumPanel.Stride = 1;
             this.spectrumPanel.TabIndex = 5;
+            this.spectrumPanel.Thickness = 1;
             // 
             // builderComboBox
             // 
@@ -146,6 +168,7 @@ namespace NWaves.DemoForms
             "Square Wave",
             "Pulse Wave",
             "White Noise",
+            "AWGN",
             "Pink Noise",
             "Red Noise"});
             this.builderComboBox.Location = new System.Drawing.Point(197, 271);
