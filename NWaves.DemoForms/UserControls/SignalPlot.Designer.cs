@@ -39,10 +39,10 @@
             this.buttonZoomIn.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
             this.buttonZoomIn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonZoomIn.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonZoomIn.Location = new System.Drawing.Point(0, 5);
+            this.buttonZoomIn.Location = new System.Drawing.Point(0, 0);
             this.buttonZoomIn.Margin = new System.Windows.Forms.Padding(0);
             this.buttonZoomIn.Name = "buttonZoomIn";
-            this.buttonZoomIn.Size = new System.Drawing.Size(21, 24);
+            this.buttonZoomIn.Size = new System.Drawing.Size(25, 25);
             this.buttonZoomIn.TabIndex = 0;
             this.buttonZoomIn.Text = "+";
             this.buttonZoomIn.UseVisualStyleBackColor = false;
@@ -55,10 +55,10 @@
             this.buttonZoomOut.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
             this.buttonZoomOut.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonZoomOut.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonZoomOut.Location = new System.Drawing.Point(0, 28);
+            this.buttonZoomOut.Location = new System.Drawing.Point(24, 0);
             this.buttonZoomOut.Margin = new System.Windows.Forms.Padding(0);
             this.buttonZoomOut.Name = "buttonZoomOut";
-            this.buttonZoomOut.Size = new System.Drawing.Size(21, 24);
+            this.buttonZoomOut.Size = new System.Drawing.Size(25, 25);
             this.buttonZoomOut.TabIndex = 1;
             this.buttonZoomOut.Text = "-";
             this.buttonZoomOut.UseVisualStyleBackColor = false;

@@ -243,9 +243,9 @@ namespace NWaves.DemoForms
             builderParametersListBox.Items.Clear();
             builderParametersListBox.Items.AddRange(signalBuilder.GetParametersInfo());
             builderParametersListBox.Items.Add("");
-            builderParametersListBox.Items.Add("min:" + _signal2.Samples.Min());
-            builderParametersListBox.Items.Add("max:" + _signal2.Samples.Max());
-            builderParametersListBox.Items.Add("avg:" + _signal2.Samples.Average());
+            builderParametersListBox.Items.Add($"min: {_signal2.Samples.Min():F2}");
+            builderParametersListBox.Items.Add($"max: {_signal2.Samples.Max():F2}");
+            builderParametersListBox.Items.Add($"avg: {_signal2.Samples.Average():F4}");
 
             if (_signal1 != null)
             {
@@ -258,7 +258,6 @@ namespace NWaves.DemoForms
 
             var spectrum = _fft.PowerSpectrum(_signal2.First(512));
 
-            spectrumPanel.Gain = 32;
             spectrumPanel.Line = spectrum.Samples;
             spectrumPanel.ToDecibel();
         }

@@ -36,10 +36,14 @@ namespace NWaves.DemoForms.UserControls
             set
             {
                 _markline = value;
+                _logMarkline = null;
                 Invalidate();
             }
         }
 
+        /// <summary>
+        /// One vertical markline
+        /// </summary>
         private int? _mark;
         public int? Mark
         {
@@ -51,12 +55,16 @@ namespace NWaves.DemoForms.UserControls
             }
         }
         
-        public double Gain { get; set; } = 1;
+        public double? Gain { get; set; } = null;
         public int Thickness { get; set; } = 1;
         public int Stride { get; set; } = 1;
         public string Legend { get; set; }
 
+        public int PaddingX { get; set; } = 30;
+        public int PaddingY { get; set; } = 20;
+
         private double[] _logLine;
+        private double[] _logMarkline;
 
 
         public LinePlot()
@@ -89,13 +97,31 @@ namespace NWaves.DemoForms.UserControls
                 {
                     var val = LevelScale.ToDecibel(l);
                     if (double.IsNaN(val)) val = Height / 2 + 1;
-                    return val / Gain;
+                    return Gain.HasValue ? val / Gain.Value : val;
                 })
                 .ToArray();
             }
             else
             {
                 _logLine = null;
+            }
+
+            if (_markline != null)
+            {
+                if (_logMarkline == null)
+                {
+                    _logMarkline = _markline.Select(l =>
+                    {
+                        var val = LevelScale.ToDecibel(l);
+                        if (double.IsNaN(val)) val = Height/2 + 1;
+                        return Gain.HasValue ? val / Gain.Value : val;
+                    })
+                        .ToArray();
+                }
+                else
+                {
+                    _logMarkline = null;
+                }
             }
 
             MakeBitmap();
@@ -106,6 +132,7 @@ namespace NWaves.DemoForms.UserControls
         {
             ToDecibel();
         }
+
 
         private Bitmap _bmp;
 
@@ -130,26 +157,39 @@ namespace NWaves.DemoForms.UserControls
 
             gray.Dispose();
 
-            var black = new Pen(Color.Black);
-
-            g.DrawLine(black, 20, offset, width, offset);
-            g.DrawLine(black, 20, 5, 20, Height - 5);
-
-            black.Dispose();
+            var min = 0.0;
+            var max = 0.0;
 
             if (_line != null)
             {
                 var pen = new Pen(ForeColor, Thickness);
 
                 var i = 1;
-                var x = 20 + Stride;
+                var x = PaddingX + Stride;
 
                 var line = _logLine ?? _line;
+                
+                var gain = Gain;
+                if (!Gain.HasValue)
+                {
+                    min = line.Min();
+                    max = line.Max();
 
+                    gain = (Height - 2*PaddingY) / (max - min);
+                    offset = (int)(Height - PaddingY + min * gain);
+
+                    DrawAxes(g, min, max);
+                }
+                else
+                {
+                    DrawAxes(g, -(Height - 2*PaddingY) / (2 * gain.Value), 
+                                 (Height-2*PaddingY) / (2 * gain.Value));
+                }
+                
                 for (; i < line.Length; i++)
                 {
-                    g.DrawLine(pen, x - Stride, (float) (-line[i - 1]*Gain) + offset, 
-                                    x,          (float) (-line[i]*Gain) + offset);
+                    g.DrawLine(pen, x - Stride, (float)(-line[i - 1] * gain) + offset, 
+                                    x,          (float)(-line[i] * gain) + offset);
                     x += Stride;
                 }
 
@@ -164,12 +204,29 @@ namespace NWaves.DemoForms.UserControls
 
             if (_markline != null)
             {
+                var markline = _logMarkline ?? _markline;
+
+                var gain = Gain;
+                if (!Gain.HasValue)
+                {
+                    if (_line == null)
+                    {
+                        min = markline.Min();
+                        max = markline.Max();
+
+                        DrawAxes(g, min, max);
+                    }
+
+                    gain = (Height - 2*PaddingY) / (max - min);
+                    offset = (int)(Height - PaddingY + min * gain);
+                }
+
                 var pen = new Pen(Color.Red, 2);
-                var x = Stride;
+                var x = PaddingX + Stride;
                 for (var j = 1; j < _markline.Length; j++)
                 {
-                    g.DrawLine(pen, 20 + x - Stride, (float)(-_markline[j - 1] * Gain) + offset, 
-                                    20 + x,          (float)(-_markline[j] * Gain) + offset);
+                    g.DrawLine(pen, x - Stride, (float)(-markline[j - 1] * gain) + offset, 
+                                    x,          (float)(-markline[j] * gain) + offset);
                     x += Stride;
                 }
 
@@ -180,17 +237,46 @@ namespace NWaves.DemoForms.UserControls
 
             if (_mark != null)
             {
-                g.DrawLine(red, 20 + _mark.Value * Stride, 20, 20 + _mark.Value * Stride, Height - 20);
+                g.DrawLine(red, PaddingX + _mark.Value * Stride, PaddingY, 
+                                PaddingX + _mark.Value * Stride, Height - PaddingY);
             }
 
             if (Legend != null)
             {
-                g.DrawString(Legend, new Font("arial", 16), new SolidBrush(Color.Red), 100, 30);
+                var font = new Font("arial", 16);
+                var brush = new SolidBrush(Color.Red);
+                g.DrawString(Legend, font, brush, 100, 30);
+                font.Dispose();
+                brush.Dispose();
             }
 
             red.Dispose();
 
             g.Dispose();
+        }
+
+        private void DrawAxes(Graphics g, double min, double max)
+        {
+            var black = new Pen(Color.Black);
+
+            g.DrawLine(black, PaddingX, Height - PaddingY, _bmp.Width, Height - PaddingY);
+            g.DrawLine(black, PaddingX, 10, PaddingX, Height - PaddingY);
+
+            var font = new Font("arial", 5);
+            var brush = new SolidBrush(Color.Black);
+
+            const int stride = 20;
+            var pos = Height - 12;
+            var n = (Height - 2*PaddingY) / stride;
+            for (var i = 0; i <= n; i++)
+            {
+                g.DrawString(string.Format("{0:F2}", min + i*(max-min)/n), font, brush, 1, pos -= stride);
+            }
+
+            font.Dispose();
+            brush.Dispose();
+
+            black.Dispose();
         }
     }
 }

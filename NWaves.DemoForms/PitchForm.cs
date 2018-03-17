@@ -143,12 +143,12 @@ namespace NWaves.DemoForms
             var avg = spectrum.Average(s => LevelScale.ToDecibel(s));
 
             var spectrumEstimate = real.Take(_fftSize / 2 + 1)
-                                       .Select(s => s * 40 / _fftSize - avg)
+                                       .Select(s => LevelScale.FromDecibel(s * 40 / _fftSize - avg))
                                        .ToArray();
 
             spectrumPanel.Line = spectrum;
-            spectrumPanel.ToDecibel();
             spectrumPanel.Markline = spectrumEstimate;
+            spectrumPanel.ToDecibel();
 
             var pitch = Pitch.AutoCorrelation(block);
 

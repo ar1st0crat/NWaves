@@ -81,7 +81,6 @@ namespace NWaves.DemoForms
                 return;
             }
 
-            featurePlotPanel.Gain = featurePlotPanel.Height/2 / _vectors.Max(v => Math.Abs(v.Features[e.Column - 1]));
             featurePlotPanel.Stride = 1;
             featurePlotPanel.Line = _vectors.Select(v => v.Features[e.Column - 1]).ToArray();
         }

@@ -146,7 +146,6 @@ namespace NWaves.DemoForms
             this.spectrumPanel.AutoScroll = true;
             this.spectrumPanel.BackColor = System.Drawing.SystemColors.ButtonHighlight;
             this.spectrumPanel.ForeColor = System.Drawing.Color.Blue;
-            this.spectrumPanel.Gain = 1D;
             this.spectrumPanel.Legend = null;
             this.spectrumPanel.Line = null;
             this.spectrumPanel.Location = new System.Drawing.Point(812, 332);

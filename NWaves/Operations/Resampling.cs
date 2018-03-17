@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using NWaves.Filters.Fda;
 using NWaves.Signals;
 using NWaves.Utils;
@@ -9,7 +10,7 @@ namespace NWaves.Operations
     {
         /// <summary>
         /// The order of FIR LP resampling filter (minimally required).
-        /// This constant was chosen empirically and should be used for simple up/down ratios.
+        /// This constant should be used for simple up/down ratios.
         /// </summary>
         private const int MinResamplingFilterOrder = 101;
 
@@ -95,6 +96,11 @@ namespace NWaves.Operations
             var up = newSamplingRate / gcd;
             var down = signal.SamplingRate / gcd;
 
+            if (up > 20 && down > 20)
+            {
+                return ResampleUpDown(signal, up, down);
+            }
+
             var output = new double[signal.Length * up];
 
             var pos = 0;
@@ -123,6 +129,33 @@ namespace NWaves.Operations
             }
 
             return new DiscreteSignal(newSamplingRate, output);
+        }
+
+        /// <summary>
+        /// Resampling based on simple interpolation
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="up"></param>
+        /// <param name="down"></param>
+        /// <returns></returns>
+        private static DiscreteSignal ResampleUpDown(DiscreteSignal signal, int up, int down)
+        {
+            var ratio = (double)up / down;
+
+            var freq = ratio > 1 ? 0.5 / ratio : 0.5 * ratio;
+            var lpFilter = DesignFilter.FirLp(MinResamplingFilterOrder, freq);
+
+            var input = signal.Samples;
+            var output = MathUtils.InterpolateLinear(
+                                        Enumerable.Range(0, input.Length)   
+                                                  .Select(s => s * ratio)
+                                                  .ToArray(),
+                                        input,                              
+                                        Enumerable.Range(0, (int)(signal.Length * ratio) + 1)
+                                                  .Select(s => (double)s)
+                                                  .ToArray());
+
+            return lpFilter.ApplyTo(new DiscreteSignal(signal.SamplingRate * up / down, output));
         }
     }
 }

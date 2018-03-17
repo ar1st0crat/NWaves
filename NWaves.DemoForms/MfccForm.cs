@@ -37,7 +37,7 @@ namespace NWaves.DemoForms
 
             using (var stream = new FileStream(ofd.FileName, FileMode.Open))
             {
-                var waveFile = new WaveFile(stream);
+                var waveFile = new WaveFile(stream, true);
                 _signal = waveFile[Channels.Left];
             }
 

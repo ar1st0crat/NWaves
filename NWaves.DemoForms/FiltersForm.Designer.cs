@@ -459,7 +459,6 @@ namespace NWaves.DemoForms
             this.phaseResponsePanel.AutoScroll = true;
             this.phaseResponsePanel.BackColor = System.Drawing.SystemColors.Window;
             this.phaseResponsePanel.ForeColor = System.Drawing.Color.Blue;
-            this.phaseResponsePanel.Gain = 1D;
             this.phaseResponsePanel.Legend = null;
             this.phaseResponsePanel.Line = null;
             this.phaseResponsePanel.Location = new System.Drawing.Point(219, 217);
@@ -476,7 +475,6 @@ namespace NWaves.DemoForms
             this.magnitudeResponsePanel.AutoScroll = true;
             this.magnitudeResponsePanel.BackColor = System.Drawing.SystemColors.Window;
             this.magnitudeResponsePanel.ForeColor = System.Drawing.Color.Blue;
-            this.magnitudeResponsePanel.Gain = 1D;
             this.magnitudeResponsePanel.Legend = null;
             this.magnitudeResponsePanel.Line = null;
             this.magnitudeResponsePanel.Location = new System.Drawing.Point(219, 50);

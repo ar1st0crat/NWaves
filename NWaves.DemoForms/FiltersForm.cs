@@ -35,11 +35,9 @@ namespace NWaves.DemoForms
             InitializeComponent();
 
             magnitudeResponsePanel.Stride = 2;
-            magnitudeResponsePanel.Gain = 25;
             magnitudeResponsePanel.Thickness = 2;
             magnitudeResponsePanel.ForeColor = Color.SeaGreen;
             phaseResponsePanel.Stride = 2;
-            phaseResponsePanel.Gain = 20;
             phaseResponsePanel.Thickness = 2;
             phaseResponsePanel.ForeColor = Color.SeaGreen;
 

@@ -10,7 +10,6 @@ using NWaves.FeatureExtractors.Base;
 using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Transforms;
-using LevelScale = NWaves.Utils.Scale;
 
 namespace NWaves.DemoForms
 {
@@ -31,7 +30,7 @@ namespace NWaves.DemoForms
             lpcPanel.ForeColor = Color.SeaGreen;
             lpcPanel.Stride = 20;
             lpcPanel.Thickness = 2;
-            lpcPanel.Gain = 50;
+            spectrumPanel.Stride = 2;
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -57,19 +56,19 @@ namespace NWaves.DemoForms
             FillFeaturesList(_lpcVectors, lpcExtractor.FeatureDescriptions);
             lpcListView.Items[0].Selected = true;
 
-            spectrumPanel.Stride = 2;
             spectrumPanel.Line = ComputeSpectrum(0);
             spectrumPanel.Markline = EstimateSpectrum(0);
             spectrumPanel.ToDecibel();
 
-            lpcPanel.Line = _lpcVectors[0].Features;
+            lpcPanel.Line = _lpcVectors[0].Features.Skip(1).ToArray();
         }
 
         double[] ComputeSpectrum(int idx)
         {
             var pos = (int)(_signal.SamplingRate * HopSize * idx);
 
-            return _fft.PowerSpectrum(_signal[pos, pos + 512], normalize: false).Samples;
+            return _fft.PowerSpectrum(_signal[pos, pos + 512], normalize: false)
+                       .Samples;
         }
 
         double[] EstimateSpectrum(int idx)
@@ -80,10 +79,7 @@ namespace NWaves.DemoForms
 
             var lpcFilter = new IirFilter(new[] { gain }, vector);
 
-            return lpcFilter.FrequencyResponse()
-                            .Power
-                            .Select(r => LevelScale.ToDecibel(r))
-                            .ToArray();
+            return lpcFilter.FrequencyResponse().Power;
         }
 
         private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors, 
@@ -114,7 +110,7 @@ namespace NWaves.DemoForms
             spectrumPanel.Markline = EstimateSpectrum(pos);
             spectrumPanel.ToDecibel();
 
-            lpcPanel.Line = _lpcVectors[pos].Features;
+            lpcPanel.Line = _lpcVectors[pos].Features.Skip(1).ToArray();
         }
     }
 }

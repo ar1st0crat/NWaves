@@ -40,6 +40,9 @@ namespace NWaves.DemoForms.UserControls
 
         public double Gain { get; set; } = 1;
 
+        public int PaddingX { get; set; } = 24;
+        public int PaddingY { get; set; } = 5;
+
 
         public SignalPlot()
         {
@@ -75,6 +78,7 @@ namespace NWaves.DemoForms.UserControls
             Stride = (int)(_stride / 1.25);
         }
 
+
         private Bitmap _bmp;
 
         private void MakeBitmap()
@@ -98,19 +102,15 @@ namespace NWaves.DemoForms.UserControls
 
             gray.Dispose();
 
-            var black = new Pen(Color.Black);
-
-            g.DrawLine(black, 20, offset, width, offset);
-            g.DrawLine(black, 20, 5, 20, Height - 5);
-
-            black.Dispose();
-
             if (_signal != null)
             {
+                DrawAxes(g, -(Height - 2 * PaddingY) / (2 * Gain), 
+                             (Height - 2 * PaddingY) / (2 * Gain));
+
                 var pen = new Pen(ForeColor);
 
                 var i = 0;
-                var x = 20;
+                var x = PaddingX;
 
                 while (i < _signal.Length - _stride)
                 {
@@ -132,6 +132,30 @@ namespace NWaves.DemoForms.UserControls
             }
 
             g.Dispose();
+        }
+
+        private void DrawAxes(Graphics g, double min, double max)
+        {
+            var black = new Pen(Color.Black);
+
+            g.DrawLine(black, PaddingX, Height/2, _bmp.Width, Height/2);
+            g.DrawLine(black, PaddingX, 10, PaddingX, Height - PaddingY);
+
+            var font = new Font("arial", 5);
+            var brush = new SolidBrush(Color.Black);
+
+            const int stride = 20;
+            var pos = Height + 2;
+            var n = (Height - 2 * PaddingY) / stride;
+            for (var i = 0; i <= n; i++)
+            {
+                g.DrawString(string.Format("{0:F2}", min + i * (max - min) / n), font, brush, 1, pos -= stride);
+            }
+
+            font.Dispose();
+            brush.Dispose();
+
+            black.Dispose();
         }
     }
 }
