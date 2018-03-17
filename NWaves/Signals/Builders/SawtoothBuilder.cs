@@ -12,30 +12,30 @@ namespace NWaves.Signals.Builders
         /// <summary>
         /// Lower amplitude level
         /// </summary>
-        private double _low;
+        private float _low;
 
         /// <summary>
         /// Upper amplitude level
         /// </summary>
-        private double _high;
+        private float _high;
 
         /// <summary>
         /// Frequency of the sawtooth wave
         /// </summary>
-        private double _frequency;
+        private float _frequency;
 
         public SawtoothBuilder()
         {
-            ParameterSetters = new Dictionary<string, Action<double>>
+            ParameterSetters = new Dictionary<string, Action<float>>
             {
                 {"low, lo, lower",  param => _low = param},
                 {"high, hi, upper", param => _high = param},
                 {"frequency, freq", param => _frequency = param},
             };
 
-            _low = -1.0;
-            _high = 1.0;
-            _frequency = 0.0;
+            _low = -1.0f;
+            _high = 1.0f;
+            _frequency = 0.0f;
         }
 
         /// <summary>

@@ -11,23 +11,23 @@ namespace NWaves.Signals.Builders
         /// <summary>
         /// Mean
         /// </summary>
-        private double _mu;
+        private float _mu;
 
         /// <summary>
         /// Standard deviation
         /// </summary>
-        private double _sigma;
+        private float _sigma;
 
         public AwgnBuilder()
         {
-            ParameterSetters = new Dictionary<string, Action<double>>
+            ParameterSetters = new Dictionary<string, Action<float>>
             {
                 { "mu, mean",  param => _mu = param },
                 { "sigma, stddev", param => _sigma = param }
             };
 
-            _mu = 0.0;
-            _sigma = 1.0;
+            _mu = 0.0f;
+            _sigma = 1.0f;
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace NWaves.Signals.Builders
         protected override DiscreteSignal Generate()
         {
             var rand = new Random();
-            var noise = new double[Length];
+            var noise = new float[Length];
 
             var i = 0;
             while (i < noise.Length)
@@ -48,8 +48,8 @@ namespace NWaves.Signals.Builders
                 var r = Math.Sqrt(-2 * Math.Log(u1));
                 var theta = 2 * Math.PI * u2;
 
-                noise[i++] = r * Math.Cos(theta) * _sigma + _mu;
-                if (i < noise.Length) noise[i++] = r * Math.Sin(theta) * _sigma + _mu;
+                noise[i++] = (float)(r * Math.Cos(theta) * _sigma + _mu);
+                if (i < noise.Length) noise[i++] = (float)(r * Math.Sin(theta) * _sigma + _mu);
             }
 
             return new DiscreteSignal(SamplingRate, noise);

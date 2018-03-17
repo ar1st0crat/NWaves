@@ -29,8 +29,8 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Mel Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)]
         /// </summary>
-        private double[][] _melFilterBank;
-        public double[][] FilterBank => _melFilterBank;
+        private float[][] _melFilterBank;
+        public float[][] FilterBank => _melFilterBank;
 
         /// <summary>
         /// Number of mel filters
@@ -40,12 +40,12 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Lower frequency
         /// </summary>
-        private readonly double _lowFreq;
+        private readonly float _lowFreq;
 
         /// <summary>
         /// Upper frequency
         /// </summary>
-        private readonly double _highFreq;
+        private readonly float _highFreq;
 
         /// <summary>
         /// Size of FFT
@@ -55,12 +55,12 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Length of analysis window (in ms)
         /// </summary>
-        private readonly double _windowSize;
+        private readonly float _windowSize;
 
         /// <summary>
         /// Hop length (in ms)
         /// </summary>
-        private readonly double _hopSize;
+        private readonly float _hopSize;
 
         /// <summary>
         /// Size of liftering window
@@ -75,7 +75,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Pre-emphasis coefficient
         /// </summary>
-        private readonly double _preEmphasis;
+        private readonly float _preEmphasis;
 
         /// <summary>
         /// Main constructor
@@ -91,9 +91,9 @@ namespace NWaves.FeatureExtractors
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
         public MfccExtractor(int featureCount,
-                             int melFilterbankSize = 20, double lowFreq = 0, double highFreq = 0,
-                             double windowSize = 0.0256, double hopSize = 0.010, int fftSize = 0, int lifterSize = 22,
-                             double preEmphasis = 0.0, WindowTypes window = WindowTypes.Hamming)
+                             int melFilterbankSize = 20, float lowFreq = 0, float highFreq = 0,
+                             float windowSize = 0.0256f, float hopSize = 0.010f, int fftSize = 0, int lifterSize = 22,
+                             float preEmphasis = 0.0f, WindowTypes window = WindowTypes.Hamming)
         {
             FeatureCount = featureCount;
 
@@ -148,11 +148,11 @@ namespace NWaves.FeatureExtractors
 
             // reserve memory for reusable blocks
 
-            var spectrum = new double[fftSize / 2 + 1];
-            var logMelSpectrum = new double[_filterbankSize];
+            var spectrum = new float[fftSize / 2 + 1];
+            var logMelSpectrum = new float[_filterbankSize];
 
-            var block = new double[fftSize];       // buffer for currently processed signal block at each step
-            var zeroblock = new double[fftSize];   // just a buffer of zeros for quick memset
+            var block = new float[fftSize];       // buffer for currently processed signal block at each step
+            var zeroblock = new float[fftSize];   // just a buffer of zeros for quick memset
 
 
             // 0) pre-emphasis (if needed)
@@ -197,7 +197,7 @@ namespace NWaves.FeatureExtractors
 
                 // 4) dct-II
 
-                var mfccs = new double[FeatureCount];
+                var mfccs = new float[FeatureCount];
                 dct.Direct(logMelSpectrum, mfccs);
 
 
@@ -214,7 +214,7 @@ namespace NWaves.FeatureExtractors
                 featureVectors.Add(new FeatureVector
                 {
                     Features = mfccs,
-                    TimePosition = (double)i / signal.SamplingRate
+                    TimePosition = (float)i / signal.SamplingRate
                 });
 
                 i += hopSize;

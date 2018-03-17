@@ -12,23 +12,23 @@ namespace NWaves.Signals.Builders
         /// <summary>
         /// Lower amplitude level
         /// </summary>
-        private double _low;
+        private float _low;
 
         /// <summary>
         /// Upper amplitude level
         /// </summary>
-        private double _high;
+        private float _high;
         
         public WhiteNoiseBuilder()
         {
-            ParameterSetters = new Dictionary<string, Action<double>>
+            ParameterSetters = new Dictionary<string, Action<float>>
             {
                 { "low, lo, min",  param => _low = param },
                 { "high, hi, max", param => _high = param }
             };
 
-            _low = -1.0;
-            _high = 1.0;
+            _low = -1.0f;
+            _high = 1.0f;
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace NWaves.Signals.Builders
 
             var rand = new Random();
             var noise = Enumerable.Range(0, Length)
-                                  .Select(i => rand.NextDouble() * (_high - _low) + _low);
+                                  .Select(i => (float)(rand.NextDouble() * (_high - _low) + _low));
 
             return new DiscreteSignal(SamplingRate, noise);
         }

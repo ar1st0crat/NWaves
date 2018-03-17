@@ -17,12 +17,12 @@ namespace NWaves.Filters.Adaptive
         /// <summary>
         /// 
         /// </summary>
-        private readonly double _mu;
+        private readonly float _mu;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public LmsFilter(int order, double mu)
+        public LmsFilter(int order, float mu)
         {
             _order = order;
             _mu = mu;
@@ -37,16 +37,18 @@ namespace NWaves.Filters.Adaptive
         public DiscreteSignal Adapt(DiscreteSignal signal, DiscreteSignal desired)
         {
             var rand = new Random();
-            var kernel = Enumerable.Range(0, _order).Select(k => 1.0 + rand.NextDouble()).ToArray();
+            var kernel = Enumerable.Range(0, _order)
+                                   .Select(k => (float)(1.0 + rand.NextDouble()))
+                                   .ToArray();
             
             var input = signal.Samples;
-            var output = new double[input.Length];
+            var output = new float[input.Length];
 
             var pos = _order;
 
             for (var i = 0; i + _order < input.Length; i++)
             {
-                var y = 0.0;
+                var y = 0.0f;
                 for (var j = 0; j < _order; j++)
                 {
                     y += input[i + j] * kernel[_order - j];

@@ -15,11 +15,11 @@ namespace NWaves.Filters.BiQuad
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="q"></param>
-        public NotchFilter(double freq, double q = 1)
+        public NotchFilter(float freq, float q = 1)
         {
             var omega = 2 * Math.PI * freq;
-            var alpha = Math.Sin(omega) / (2 * q);
-            var cosw = Math.Cos(omega);
+            var alpha = (float)(Math.Sin(omega) / (2 * q));
+            var cosw = (float)Math.Cos(omega);
 
             var b0 = 1;
             var b1 = -2 * cosw;

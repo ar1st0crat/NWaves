@@ -39,12 +39,12 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Length of analysis window (in ms)
         /// </summary>
-        private readonly double _windowSize;
+        private readonly float _windowSize;
 
         /// <summary>
         /// Hop length (in ms)
         /// </summary>
-        private readonly double _hopSize;
+        private readonly float _hopSize;
 
         /// <summary>
         /// Type of the window function
@@ -54,7 +54,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Pre-emphasis coefficient
         /// </summary>
-        private readonly double _preEmphasis;
+        private readonly float _preEmphasis;
 
         /// <summary>
         /// Main constructor
@@ -65,8 +65,8 @@ namespace NWaves.FeatureExtractors
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
         public LpcExtractor(int order, 
-                            double windowSize = 0.0256, double hopSize = 0.010,
-                            double preEmphasis = 0.0, WindowTypes window = WindowTypes.Rectangular)
+                            float windowSize = 0.0256f, float hopSize = 0.010f,
+                            float preEmphasis = 0.0f, WindowTypes window = WindowTypes.Rectangular)
         {
             _order = order;
 
@@ -99,13 +99,13 @@ namespace NWaves.FeatureExtractors
             var fftSize = MathUtils.NextPowerOfTwo(2 * windowSize - 1);
 
 
-            var blockReal = new double[fftSize];       // buffer for real parts of the currently processed block
-            var blockImag = new double[fftSize];       // buffer for imaginary parts of the currently processed block
-            var reversedReal = new double[fftSize];    // buffer for real parts of currently processed reversed block
-            var reversedImag = new double[fftSize];    // buffer for imaginary parts of currently processed reversed block
-            var zeroblock = new double[fftSize];       // just a buffer of zeros for quick memset
+            var blockReal = new float[fftSize];       // buffer for real parts of the currently processed block
+            var blockImag = new float[fftSize];       // buffer for imaginary parts of the currently processed block
+            var reversedReal = new float[fftSize];    // buffer for real parts of currently processed reversed block
+            var reversedImag = new float[fftSize];    // buffer for imaginary parts of currently processed reversed block
+            var zeroblock = new float[fftSize];       // just a buffer of zeros for quick memset
 
-            var cc = new double[windowSize];           // buffer for (truncated) cross-correlation signal
+            var cc = new float[windowSize];           // buffer for (truncated) cross-correlation signal
 
 
             // 0) pre-emphasis (if needed)
@@ -146,7 +146,7 @@ namespace NWaves.FeatureExtractors
 
                 // 3) levinson-durbin
 
-                var a = new double[_order + 1];
+                var a = new float[_order + 1];
                 var err = LevinsonDurbin(cc, a, _order);
                 a[0] = err;
 
@@ -155,7 +155,7 @@ namespace NWaves.FeatureExtractors
                 featureVectors.Add(new FeatureVector
                 {
                     Features = a,
-                    TimePosition = (double)i / signal.SamplingRate
+                    TimePosition = (float)i / signal.SamplingRate
                 });
 
                 i += hopSize;
@@ -171,15 +171,15 @@ namespace NWaves.FeatureExtractors
         /// <param name="a">LP coefficients</param>
         /// <param name="order">Order of LPC</param>
         /// <returns>Prediction error</returns>
-        public static double LevinsonDurbin(double[] input, double[] a, int order)
+        public static float LevinsonDurbin(float[] input, float[] a, int order)
         {
             var err = input[0];
 
-            a[0] = 1.0;
+            a[0] = 1.0f;
 
             for (var i = 1; i <= order; i++)
             {
-                var lambda = 0.0;
+                var lambda = 0.0f;
                 for (var j = 0; j < i; j++)
                 {
                     lambda -= a[j] * input[i - j];
@@ -194,7 +194,7 @@ namespace NWaves.FeatureExtractors
                     a[i - n] = tmp;
                 }
 
-                err *= (1.0 - lambda * lambda);
+                err *= (1.0f - lambda * lambda);
             }
 
             return err;

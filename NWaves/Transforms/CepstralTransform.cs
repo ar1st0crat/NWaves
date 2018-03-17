@@ -22,12 +22,12 @@ namespace NWaves.Transforms
         /// <summary>
         /// Intermediate buffer storing real parts of spectrum
         /// </summary>
-        private readonly double[] _realSpectrum;
+        private readonly float[] _realSpectrum;
 
         /// <summary>
         /// Intermediate buffer storing imaginary parts of spectrum
         /// </summary>
-        private readonly double[] _imagSpectrum;
+        private readonly float[] _imagSpectrum;
         
         /// <summary>
         /// Constructor with necessary parameters
@@ -40,8 +40,8 @@ namespace NWaves.Transforms
 
             _cepstrumSize = cepstrumSize;
 
-            _realSpectrum = new double[fftSize];
-            _imagSpectrum = new double[fftSize];
+            _realSpectrum = new float[fftSize];
+            _imagSpectrum = new float[fftSize];
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace NWaves.Transforms
         /// <param name="cepstrum"></param>
         /// <param name="power"></param>
         /// <returns></returns>
-        public void Direct(double[] samples, double[] cepstrum, bool power = false)
+        public void Direct(float[] samples, float[] cepstrum, bool power = false)
         {
             // complex fft
 
@@ -62,8 +62,8 @@ namespace NWaves.Transforms
 
             for (var i = 0; i < _realSpectrum.Length; i++)
             {
-                _realSpectrum[i] = Math.Log10(_realSpectrum[i] + double.Epsilon);
-                _imagSpectrum[i] = 0.0;
+                _realSpectrum[i] = (float)Math.Log10(_realSpectrum[i] + float.Epsilon);
+                _imagSpectrum[i] = 0.0f;
             }
 
 
@@ -96,7 +96,7 @@ namespace NWaves.Transforms
         /// <returns>Cepstrum signal</returns>
         public DiscreteSignal Direct(DiscreteSignal signal, bool power = false)
         {
-            var cepstrum = new double[_cepstrumSize];
+            var cepstrum = new float[_cepstrumSize];
             Direct(signal.Samples, cepstrum, power);
             return new DiscreteSignal(signal.SamplingRate, cepstrum);
         }

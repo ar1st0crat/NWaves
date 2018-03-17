@@ -38,7 +38,7 @@ namespace NWaves.DemoForms.UserControls
             }
         }
 
-        public double Gain { get; set; } = 1;
+        public float Gain { get; set; } = 1;
 
         public int PaddingX { get; set; } = 24;
         public int PaddingY { get; set; } = 5;
@@ -134,7 +134,7 @@ namespace NWaves.DemoForms.UserControls
             g.Dispose();
         }
 
-        private void DrawAxes(Graphics g, double min, double max)
+        private void DrawAxes(Graphics g, float min, float max)
         {
             var black = new Pen(Color.Black);
 

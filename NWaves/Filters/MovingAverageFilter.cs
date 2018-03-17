@@ -29,7 +29,7 @@ namespace NWaves.Filters
             }
 
             Size = size;
-            Kernel = Enumerable.Repeat(1.0 / size, size).ToArray();
+            Kernel = Enumerable.Repeat(1.0f / size, size).ToArray();
         }
     }
 }

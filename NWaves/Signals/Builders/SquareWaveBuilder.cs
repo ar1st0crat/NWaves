@@ -12,21 +12,21 @@ namespace NWaves.Signals.Builders
         /// <summary>
         /// Lower amplitude level
         /// </summary>
-        private double _low;
+        private float _low;
 
         /// <summary>
         /// Upper amplitude level
         /// </summary>
-        private double _high;
+        private float _high;
 
         /// <summary>
         /// Frequency of the triangle wave
         /// </summary>
-        private double _frequency;
+        private float _frequency;
 
         public SquareWaveBuilder()
         {
-            ParameterSetters = new Dictionary<string, Action<double>>
+            ParameterSetters = new Dictionary<string, Action<float>>
             {
                 { "low, lo, lower",  param => _low = param },
                 { "high, hi, upper", param => _high = param },

@@ -34,12 +34,12 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Length of analysis window (in ms)
         /// </summary>
-        private readonly double _windowSize;
+        private readonly float _windowSize;
 
         /// <summary>
         /// Hop length (in ms)
         /// </summary>
-        private readonly double _hopSize;
+        private readonly float _hopSize;
 
         /// <summary>
         /// Size of liftering window
@@ -54,7 +54,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Pre-emphasis coefficient
         /// </summary>
-        private readonly double _preEmphasis;
+        private readonly float _preEmphasis;
 
         /// <summary>
         /// Main constructor
@@ -66,8 +66,8 @@ namespace NWaves.FeatureExtractors
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
         public LpccExtractor(int featureCount,
-                             double windowSize = 0.0256, double hopSize = 0.010, int lifterSize = 22,
-                             double preEmphasis = 0.0, WindowTypes window = WindowTypes.Rectangular)
+                             float windowSize = 0.0256f, float hopSize = 0.010f, int lifterSize = 22,
+                             float preEmphasis = 0.0f, WindowTypes window = WindowTypes.Rectangular)
         {
             FeatureCount = featureCount;
 
@@ -103,14 +103,14 @@ namespace NWaves.FeatureExtractors
             var lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
 
 
-            var blockReal = new double[fftSize];       // buffer for real parts of the currently processed block
-            var blockImag = new double[fftSize];       // buffer for imaginary parts of the currently processed block
-            var reversedReal = new double[fftSize];    // buffer for real parts of currently processed reversed block
-            var reversedImag = new double[fftSize];    // buffer for imaginary parts of currently processed reversed block
-            var zeroblock = new double[fftSize];       // just a buffer of zeros for quick memset
+            var blockReal = new float[fftSize];       // buffer for real parts of the currently processed block
+            var blockImag = new float[fftSize];       // buffer for imaginary parts of the currently processed block
+            var reversedReal = new float[fftSize];    // buffer for real parts of currently processed reversed block
+            var reversedImag = new float[fftSize];    // buffer for imaginary parts of currently processed reversed block
+            var zeroblock = new float[fftSize];       // just a buffer of zeros for quick memset
 
-            var cc = new double[windowSize];           // buffer for (truncated) cross-correlation signal
-            var lpc = new double[_order + 1];          // buffer for LPC coefficients
+            var cc = new float[windowSize];           // buffer for (truncated) cross-correlation signal
+            var lpc = new float[_order + 1];          // buffer for LPC coefficients
 
 
             // 0) pre-emphasis (if needed)
@@ -156,13 +156,13 @@ namespace NWaves.FeatureExtractors
 
                 // 4) simple and efficient algorithm for obtaining LPCC coefficients from LPC
 
-                var lpcc = new double[FeatureCount];
+                var lpcc = new float[FeatureCount];
 
-                lpcc[0] = Math.Log(err);
+                lpcc[0] = (float)Math.Log(err);
 
                 for (var n = 1; n < FeatureCount; n++)
                 {
-                    var acc = 0.0;
+                    var acc = 0.0f;
                     for (var k = 1; k < n; k++)
                     {
                         acc += k * lpcc[k] * lpc[n - k];
@@ -183,7 +183,7 @@ namespace NWaves.FeatureExtractors
                 featureVectors.Add(new FeatureVector
                 {
                     Features = lpcc,
-                    TimePosition = (double)i / signal.SamplingRate
+                    TimePosition = (float)i / signal.SamplingRate
                 });
 
                 i += hopSize;

@@ -16,7 +16,7 @@ namespace NWaves.DemoForms
         private DiscreteSignal _processedSignal;
 
         private Stft _stft;
-        private List<double[]> _spectrogram;
+        private List<float[]> _spectrogram;
 
         private string _waveFileName;
 

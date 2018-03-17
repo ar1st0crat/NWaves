@@ -11,8 +11,8 @@ namespace NWaves.DemoForms.UserControls
         /// <summary>
         /// Line to plot
         /// </summary>
-        private double[] _line;
-        public double[] Line
+        private float[] _line;
+        public float[] Line
         {
             get { return _line; }
             set
@@ -29,8 +29,8 @@ namespace NWaves.DemoForms.UserControls
         /// <summary>
         /// Some mark line to plot
         /// </summary>
-        private double[] _markline;
-        public double[] Markline
+        private float[] _markline;
+        public float[] Markline
         {
             get { return _markline; }
             set
@@ -55,7 +55,7 @@ namespace NWaves.DemoForms.UserControls
             }
         }
         
-        public double? Gain { get; set; } = null;
+        public float? Gain { get; set; } = null;
         public int Thickness { get; set; } = 1;
         public int Stride { get; set; } = 1;
         public string Legend { get; set; }
@@ -63,8 +63,8 @@ namespace NWaves.DemoForms.UserControls
         public int PaddingX { get; set; } = 30;
         public int PaddingY { get; set; } = 20;
 
-        private double[] _logLine;
-        private double[] _logMarkline;
+        private float[] _logLine;
+        private float[] _logMarkline;
 
 
         public LinePlot()
@@ -95,9 +95,9 @@ namespace NWaves.DemoForms.UserControls
             {
                 _logLine = _line.Select(l =>
                 {
-                    var val = LevelScale.ToDecibel(l);
-                    if (double.IsNaN(val)) val = Height / 2 + 1;
-                    return Gain.HasValue ? val / Gain.Value : val;
+                    var val = (float)LevelScale.ToDecibel(l);
+                    if (float.IsNaN(val)) val = Height / 2 + 1;
+                    return val / Gain ?? val;
                 })
                 .ToArray();
             }
@@ -112,9 +112,9 @@ namespace NWaves.DemoForms.UserControls
                 {
                     _logMarkline = _markline.Select(l =>
                     {
-                        var val = LevelScale.ToDecibel(l);
-                        if (double.IsNaN(val)) val = Height/2 + 1;
-                        return Gain.HasValue ? val / Gain.Value : val;
+                        var val = (float)LevelScale.ToDecibel(l);
+                        if (float.IsNaN(val)) val = Height/2 + 1;
+                        return val / Gain ?? val;
                     })
                         .ToArray();
                 }
@@ -157,8 +157,8 @@ namespace NWaves.DemoForms.UserControls
 
             gray.Dispose();
 
-            var min = 0.0;
-            var max = 0.0;
+            var min = 0.0f;
+            var max = 0.0f;
 
             if (_line != null)
             {
@@ -255,7 +255,7 @@ namespace NWaves.DemoForms.UserControls
             g.Dispose();
         }
 
-        private void DrawAxes(Graphics g, double min, double max)
+        private void DrawAxes(Graphics g, float min, float max)
         {
             var black = new Pen(Color.Black);
 

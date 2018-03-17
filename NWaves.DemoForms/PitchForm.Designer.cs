@@ -220,7 +220,6 @@ namespace NWaves.DemoForms
             this.autoCorrPanel.AutoScroll = true;
             this.autoCorrPanel.BackColor = System.Drawing.Color.White;
             this.autoCorrPanel.ForeColor = System.Drawing.Color.Blue;
-            this.autoCorrPanel.Gain = 1D;
             this.autoCorrPanel.Legend = null;
             this.autoCorrPanel.Line = null;
             this.autoCorrPanel.Location = new System.Drawing.Point(880, 347);
@@ -237,7 +236,6 @@ namespace NWaves.DemoForms
             this.cepstrumPanel.AutoScroll = true;
             this.cepstrumPanel.BackColor = System.Drawing.Color.White;
             this.cepstrumPanel.ForeColor = System.Drawing.Color.Blue;
-            this.cepstrumPanel.Gain = 1D;
             this.cepstrumPanel.Legend = null;
             this.cepstrumPanel.Line = null;
             this.cepstrumPanel.Location = new System.Drawing.Point(570, 347);
@@ -254,7 +252,6 @@ namespace NWaves.DemoForms
             this.spectrumPanel.AutoScroll = true;
             this.spectrumPanel.BackColor = System.Drawing.Color.White;
             this.spectrumPanel.ForeColor = System.Drawing.Color.Blue;
-            this.spectrumPanel.Gain = 1D;
             this.spectrumPanel.Legend = null;
             this.spectrumPanel.Line = null;
             this.spectrumPanel.Location = new System.Drawing.Point(14, 347);

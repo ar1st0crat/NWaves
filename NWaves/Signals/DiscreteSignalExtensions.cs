@@ -128,7 +128,7 @@ namespace NWaves.Signals
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="coeff"></param>
-        public static void Amplify(this DiscreteSignal signal, double coeff)
+        public static void Amplify(this DiscreteSignal signal, float coeff)
         {
             for (var i = 0; i < signal.Length; i++)
             {

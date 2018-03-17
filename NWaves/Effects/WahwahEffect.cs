@@ -14,22 +14,22 @@ namespace NWaves.Effects
         /// <summary>
         /// 
         /// </summary>
-        public double Q { get; }
+        public float Q { get; }
 
         /// <summary>
         /// 
         /// </summary>
-        public double LfoFrequency { get; }
+        public float LfoFrequency { get; }
 
         /// <summary>
         /// 
         /// </summary>
-        public double MinFrequency { get; }
+        public float MinFrequency { get; }
 
         /// <summary>
         /// 
         /// </summary>
-        public double MaxFrequency { get; }
+        public float MaxFrequency { get; }
 
         /// <summary>
         /// 
@@ -38,7 +38,7 @@ namespace NWaves.Effects
         /// <param name="minFrequency"></param>
         /// <param name="maxFrequency"></param>
         /// <param name="q"></param>
-        public WahwahEffect(double lfoFrequency = 1.0, double minFrequency = 300, double maxFrequency = 3000, double q = 0.5)
+        public WahwahEffect(float lfoFrequency = 1.0f, float minFrequency = 300, float maxFrequency = 3000, float q = 0.5f)
         {
             LfoFrequency = lfoFrequency;
             MinFrequency = minFrequency;
@@ -68,19 +68,19 @@ namespace NWaves.Effects
 
             var f = 2 * Math.Sin(lfo[0] * samplingRateInverted);
             
-            var yh = new double[x.Length];
-            var yb = new double[x.Length];
-            var yl = new double[x.Length];
+            var yh = new float[x.Length];
+            var yb = new float[x.Length];
+            var yl = new float[x.Length];
 
             yh[0] = x[0];
-            yb[0] = f * yh[0];
-            yl[0] = f * yb[0];
+            yb[0] = (float)(f * yh[0]);
+            yl[0] = (float)(f * yb[0]);
 
             for (var i = 1; i < signal.Length; i++)
             {
                 yh[i] = x[i] - yl[i - 1] - Q * yb[i - 1];
-                yb[i] = f * yh[i] + yb[i - 1];
-                yl[i] = f * yb[i] + yl[i - 1];
+                yb[i] = (float)(f * yh[i] + yb[i - 1]);
+                yl[i] = (float)(f * yb[i] + yl[i - 1]);
                 f = 2 * Math.Sin(lfo[i] * samplingRateInverted);
             }
 

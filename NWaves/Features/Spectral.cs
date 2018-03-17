@@ -14,10 +14,10 @@ namespace NWaves.Features
         /// <param name="spectrum">Magnitude spectrum</param>
         /// <param name="frequencies">Centre frequencies</param>
         /// <returns>Spectral centroid</returns>
-        public static double Centroid(double[] spectrum, double[] frequencies)
+        public static float Centroid(float[] spectrum, float[] frequencies)
         {
-            var sum = 0.0;
-            var weightedSum = 0.0;
+            var sum = 0.0f;
+            var weightedSum = 0.0f;
 
             for (var i = 1; i < spectrum.Length; i++)
             {
@@ -34,17 +34,17 @@ namespace NWaves.Features
         /// <param name="spectrum"></param>
         /// <param name="frequencies"></param>
         /// <returns></returns>
-        public static double Spread(double[] spectrum, double[] frequencies)
+        public static float Spread(float[] spectrum, float[] frequencies)
         {
-            var mean = 0.0;
+            var mean = 0.0f;
             for (var i = 1; i < spectrum.Length; i++)
             {
                 mean += spectrum[i];
             }
             mean /= spectrum.Length;
 
-            var sum = 0.0;
-            var weightedSum = 0.0;
+            var sum = 0.0f;
+            var weightedSum = 0.0f;
 
             for (var i = 1; i < spectrum.Length; i++)
             {
@@ -62,9 +62,9 @@ namespace NWaves.Features
         /// <param name="frequencies">Centre frequencies</param>
         /// <param name="minLevel"></param>
         /// <returns></returns>
-        public static double Flatness(double[] spectrum, double[] frequencies, double minLevel = 1e-10)
+        public static float Flatness(float[] spectrum, float[] frequencies, float minLevel = 1e-10f)
         {
-            var sum = 0.0;
+            var sum = 0.0f;
             var logSum = 0.0;
 
             for (var i = 1; i < spectrum.Length; i++)
@@ -78,7 +78,7 @@ namespace NWaves.Features
             sum /= spectrum.Length;
             logSum /= spectrum.Length;
 
-            return sum > 0 ? Math.Exp(logSum) / sum : 0.0;
+            return sum > 0 ? (float)Math.Exp(logSum) / sum : 0.0f;
         }
 
         /// <summary>
@@ -88,9 +88,9 @@ namespace NWaves.Features
         /// <param name="frequencies">Centre frequencies</param>
         /// <param name="rolloffPercent"></param>
         /// <returns></returns>
-        public static double Rolloff(double[] spectrum, double[] frequencies, double rolloffPercent = 0.85)
+        public static float Rolloff(float[] spectrum, float[] frequencies, float rolloffPercent = 0.85f)
         {
-            var threshold = 0.0;
+            var threshold = 0.0f;
             for (var i = 1; i < spectrum.Length; i++)
             {
                 threshold += spectrum[i];
@@ -98,7 +98,7 @@ namespace NWaves.Features
 
             threshold *= rolloffPercent;
             
-            var cumulativeSum = 0.0;
+            var cumulativeSum = 0.0f;
             var index = 0;
             for (var i = 1; i < spectrum.Length; i++)
             {
@@ -126,7 +126,7 @@ namespace NWaves.Features
         /// <param name="frequencies">Centre frequencies</param>
         /// <param name="p"></param>
         /// <returns></returns>
-        public static double Bandwidth(double[] spectrum, double[] frequencies, double p = 2)
+        public static float Bandwidth(float[] spectrum, float[] frequencies, float p = 2)
         {
             var centroid = Centroid(spectrum, frequencies);
 
@@ -138,7 +138,7 @@ namespace NWaves.Features
                 sum += spectrum[i] / norm * Math.Pow(Math.Abs(frequencies[i] - centroid), p);
             }
 
-            return Math.Pow(sum, 1/p);
+            return (float)Math.Pow(sum, 1/p);
         }
 
         /// <summary>
@@ -146,10 +146,10 @@ namespace NWaves.Features
         /// </summary>
         /// <param name="spectrum"></param>
         /// <returns></returns>
-        public static double Crest(double[] spectrum)
+        public static float Crest(float[] spectrum)
         {
-            var sum = 0.0;
-            var max = 0.0;
+            var sum = 0.0f;
+            var max = 0.0f;
             
             for (var i = 1; i < spectrum.Length; i++)
             {
@@ -163,7 +163,7 @@ namespace NWaves.Features
                 }
             }
 
-            return sum > 0 ? spectrum.Length * max / sum : 1.0;
+            return sum > 0 ? spectrum.Length * max / sum : 1.0f;
         }
 
         /// <summary>
@@ -174,11 +174,11 @@ namespace NWaves.Features
         /// <param name="minFrequency"></param>
         /// <param name="bandCount"></param>
         /// <returns></returns>
-        public static double[] Contrast(double[] spectrum, double[] frequencies, double minFrequency = 200.0, int bandCount = 6)
+        public static float[] Contrast(float[] spectrum, float[] frequencies, float minFrequency = 200, int bandCount = 6)
         {
             const double alpha = 0.02;
 
-            var contrasts = new double[bandCount];
+            var contrasts = new float[bandCount];
 
             var octaveLow = minFrequency;
             var octaveHigh = 2 * octaveLow;
@@ -203,7 +203,7 @@ namespace NWaves.Features
                 avgPeaks /= selectedCount;
                 avgValleys /= selectedCount;
 
-                contrasts[n] = Math.Log10(avgPeaks / avgValleys);
+                contrasts[n] = (float)Math.Log10(avgPeaks / avgValleys);
 
                 octaveLow *= 2;
                 octaveHigh *= 2;
@@ -221,7 +221,7 @@ namespace NWaves.Features
         /// <param name="bandNo"></param>
         /// <param name="minFrequency"></param>
         /// <returns></returns>
-        public static double Contrast(double[] spectrum, double[] frequencies, int bandNo, double minFrequency = 200.0)
+        public static float Contrast(float[] spectrum, float[] frequencies, int bandNo, float minFrequency = 200)
         {
             const double alpha = 0.02;
 
@@ -246,7 +246,7 @@ namespace NWaves.Features
             avgPeaks /= selectedCount;
             avgValleys /= selectedCount;
 
-            return Math.Log10(avgPeaks / avgValleys);
+            return (float)Math.Log10(avgPeaks / avgValleys);
         }
     }
 }

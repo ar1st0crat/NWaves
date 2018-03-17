@@ -11,7 +11,7 @@ namespace NWaves.Transforms
         /// <summary>
         /// DCT precalculated cosine matrix
         /// </summary>
-        private readonly double[][] _dctMtx;
+        private readonly float[][] _dctMtx;
 
         /// <summary>
         /// Size of DCT
@@ -26,7 +26,7 @@ namespace NWaves.Transforms
         public Dct1(int length, int dctSize)
         {
             _dctSize = dctSize;
-            _dctMtx = new double[dctSize][];
+            _dctMtx = new float[dctSize][];
 
             // Precalculate dct matrix
 
@@ -34,11 +34,11 @@ namespace NWaves.Transforms
 
             for (var k = 0; k < dctSize; k++)
             {
-                _dctMtx[k] = new double[length];
+                _dctMtx[k] = new float[length];
 
                 for (var n = 1; n < length - 1; n++)
                 {
-                    _dctMtx[k][n] = Math.Cos(m * n * k);
+                    _dctMtx[k][n] = (float)Math.Cos(m * n * k);
                 }
             }
         }
@@ -46,11 +46,18 @@ namespace NWaves.Transforms
         /// <summary>
         /// DCT-I (without normalization)
         /// </summary>
-        public void Direct(double[] input, double[] output)
+        public void Direct(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
             {
-                output[k] = (input[0] + Math.Pow(-1, k) * input[input.Length - 1]) / 2;
+                if ((k & 1) == 0)
+                {
+                    output[k] = (input[0] + input[input.Length - 1]) / 2;
+                }
+                else
+                {
+                    output[k] = (input[0] - input[input.Length - 1]) / 2;
+                }
 
                 for (var n = 1; n < input.Length - 1; n++)
                 {
@@ -62,18 +69,25 @@ namespace NWaves.Transforms
         /// <summary>
         /// IDCT-I (without normalization)
         /// </summary>
-        public void Inverse(double[] input, double[] output)
+        public void Inverse(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
             {
-                output[k] = (input[0] + Math.Pow(-1, k) * input[input.Length - 1]) / 2;
+                if ((k & 1) == 0)
+                {
+                    output[k] = (input[0] + input[input.Length - 1]) / 2;
+                }
+                else
+                {
+                    output[k] = (input[0] - input[input.Length - 1]) / 2;
+                }
 
                 for (var n = 1; n < input.Length - 1; n++)
                 {
                     output[k] += input[n] * _dctMtx[k][n];
                 }
 
-                output[k] *= 2.0 / (_dctSize - 1);
+                output[k] *= 2.0f / (_dctSize - 1);
             }
         }
     }

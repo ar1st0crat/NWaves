@@ -77,7 +77,7 @@ namespace NWaves.DemoForms
                     AnalyzePreemphasisFilter();
                     break;
                 case "Butterworth":
-                    _filter = new ButterworthFilter(0.1, 5);
+                    _filter = new ButterworthFilter(0.1f, 5);
 
                     numeratorListBox.DataSource = (_filter as IirFilter).B;
                     denominatorListBox.DataSource = (_filter as IirFilter).A;
@@ -92,7 +92,7 @@ namespace NWaves.DemoForms
 
                     break;
                 case "Custom LP/HP":
-                    _filter = DesignFilter.FirLp(17, 0.1);
+                    _filter = DesignFilter.FirLp(27, 0.1f);
                     
                     //using (var csv = new FileStream("fir.csv", FileMode.Open))
                     //{
@@ -107,7 +107,7 @@ namespace NWaves.DemoForms
                     filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
                     filterParamsDataGrid.Rows[1].Cells[1].Value = "0,1";
                     orderNumeratorTextBox.Text = "0";
-                    orderDenominatorTextBox.Text = "17";
+                    orderDenominatorTextBox.Text = "26";
                     break;
             }
 
@@ -176,13 +176,13 @@ namespace NWaves.DemoForms
 
         private void AnalyzeCustomIirFilter()
         {
-            var b = new List<double>();
-            var a = new List<double>();
+            var b = new List<float>();
+            var a = new List<float>();
 
             if (filterParamsDataGrid.RowCount == 0)
             {
-                b.AddRange(new[] { 1, -0.4, 0.6 });
-                a.AddRange(new[] { 1,  0.4, 0.2 });
+                b.AddRange(new[] { 1, -0.4f, 0.6f });
+                a.AddRange(new[] { 1,  0.4f, 0.2f });
             }
             else
             {
@@ -191,11 +191,11 @@ namespace NWaves.DemoForms
                     var param = filterParamsDataGrid.Rows[i].Cells[0].Value;
                     if (param.ToString().StartsWith("b"))
                     {
-                        b.Add(Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value));
+                        b.Add(Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value));
                     }
                     else
                     {
-                        a.Add(Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value));
+                        a.Add(Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value));
                     }
                 }
             }
@@ -220,12 +220,12 @@ namespace NWaves.DemoForms
 
         private void AnalyzeCustomFirFilter()
         {
-            var b = new List<double>();
+            var b = new List<float>();
 
             var size = filterParamsDataGrid.RowCount;
             if (size == 0)
             {
-                b.AddRange(new []{ 1, 0.4, -0.6 });
+                b.AddRange(new []{ 1, 0.4f, -0.6f });
             }
             else
             {
@@ -234,7 +234,7 @@ namespace NWaves.DemoForms
                     var param = filterParamsDataGrid.Rows[i].Cells[0].Value;
                     if (param.ToString().StartsWith("b"))
                     {
-                        b.Add(Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value));
+                        b.Add(Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value));
                     }
                 }
             }
@@ -256,28 +256,28 @@ namespace NWaves.DemoForms
 
         private void AnalyzeBiQuadFilter(string filterType)
         {
-            var freq = 0.1;
-            var q = 1.0;
-            var gain = 9.0;
+            var freq = 0.1f;
+            var q = 1.0f;
+            var gain = 9.0f;
 
             for (var i = 0; i < filterParamsDataGrid.RowCount; i++)
             {
                 if (filterParamsDataGrid.Rows[i].Cells[0].Value.ToString() == "freq")
                 {
-                    freq = Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value);
+                    freq = Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value);
                 }
                 if (filterParamsDataGrid.Rows[i].Cells[0].Value.ToString() == "q")
                 {
-                    q = Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value);
+                    q = Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value);
                 }
                 if (filterParamsDataGrid.Rows[i].Cells[0].Value.ToString() == "gain")
                 {
-                    gain = Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value);
+                    gain = Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value);
                 }
             }
             
             string[] parameters = { "freq", "q" };
-            double[] values = { freq, q };
+            float[] values = { freq, q };
 
             switch (filterType)
             {
@@ -369,10 +369,10 @@ namespace NWaves.DemoForms
 
         private void AnalyzePreemphasisFilter()
         {
-            var pre = 0.95;
+            var pre = 0.95f;
             if (filterParamsDataGrid.RowCount > 0)
             {
-                pre = Convert.ToDouble(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                pre = Convert.ToSingle(filterParamsDataGrid.Rows[0].Cells[1].Value);
             }
 
             _filter = new PreEmphasisFilter(pre);

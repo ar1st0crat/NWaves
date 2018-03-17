@@ -57,8 +57,8 @@ namespace NWaves.DemoForms
 
             if (tremoloRadioButton.Checked)
             {
-                var freq = double.Parse(tremoloFrequencyTextBox.Text);
-                var index = double.Parse(tremoloIndexTextBox.Text);
+                var freq = float.Parse(tremoloFrequencyTextBox.Text);
+                var index = float.Parse(tremoloIndexTextBox.Text);
                 effect = new TremoloEffect(freq, index);
             }
             else if (overdriveRadioButton.Checked)
@@ -67,55 +67,55 @@ namespace NWaves.DemoForms
             }
             else if (distortionRadioButton.Checked)
             {
-                var gain = double.Parse(distortionGainTextBox.Text);
-                var mix = double.Parse(distortionMixTextBox.Text);
+                var gain = float.Parse(distortionGainTextBox.Text);
+                var mix = float.Parse(distortionMixTextBox.Text);
                 effect = new DistortionEffect(gain, mix);
             }
             else if (tubeDistortionRadioButton.Checked)
             {
-                var gain = double.Parse(distortionGainTextBox.Text);
-                var mix = double.Parse(distortionMixTextBox.Text);
-                var dist = double.Parse(distTextBox.Text);
-                var q = double.Parse(qTextBox.Text);
+                var gain = float.Parse(distortionGainTextBox.Text);
+                var mix = float.Parse(distortionMixTextBox.Text);
+                var dist = float.Parse(distTextBox.Text);
+                var q = float.Parse(qTextBox.Text);
                 effect = new TubeDistortionEffect(gain, mix, q, dist);
             }
             else if (echoRadioButton.Checked)
             {
-                var delay = double.Parse(echoDelayTextBox.Text);
-                var decay = double.Parse(echoDecayTextBox.Text);
+                var delay = float.Parse(echoDelayTextBox.Text);
+                var decay = float.Parse(echoDecayTextBox.Text);
                 effect = new EchoEffect(delay, decay);
             }
             else if (delayRadioButton.Checked)
             {
-                var delay = double.Parse(echoDelayTextBox.Text);
-                var decay = double.Parse(echoDecayTextBox.Text);
+                var delay = float.Parse(echoDelayTextBox.Text);
+                var decay = float.Parse(echoDecayTextBox.Text);
                 effect = new DelayEffect(delay, decay);
             }
             else if (wahwahRadioButton.Checked)
             {
-                var lfoFrequency = double.Parse(lfoFreqTextBox.Text);
-                var minFrequency = double.Parse(minFreqTextBox.Text);
-                var maxFrequency = double.Parse(maxFreqTextBox.Text);
-                var q = double.Parse(lfoQTextBox.Text);
+                var lfoFrequency = float.Parse(lfoFreqTextBox.Text);
+                var minFrequency = float.Parse(minFreqTextBox.Text);
+                var maxFrequency = float.Parse(maxFreqTextBox.Text);
+                var q = float.Parse(lfoQTextBox.Text);
                 effect = new WahwahEffect(lfoFrequency, minFrequency, maxFrequency, q);
             }
             else if (pitchShiftRadioButton.Checked)
             {
-                var shift = double.Parse(pitchShiftTextBox.Text);
+                var shift = float.Parse(pitchShiftTextBox.Text);
                 effect = pitchShiftCheckBox.Checked ? new PitchShiftEffect(shift) : null;
             }
             else
             {
-                var lfoFrequency = double.Parse(lfoFreqTextBox.Text);
-                var minFrequency = double.Parse(minFreqTextBox.Text);
-                var maxFrequency = double.Parse(maxFreqTextBox.Text);
-                var q = double.Parse(lfoQTextBox.Text);
+                var lfoFrequency = float.Parse(lfoFreqTextBox.Text);
+                var minFrequency = float.Parse(minFreqTextBox.Text);
+                var maxFrequency = float.Parse(maxFreqTextBox.Text);
+                var q = float.Parse(lfoQTextBox.Text);
                 effect = new PhaserEffect(lfoFrequency, minFrequency, maxFrequency, q);
             }
 
             _filteredSignal = effect != null ? 
                               effect.ApplyTo(_signal, FilteringOptions.Auto) : 
-                              Operation.TimeStretch(_signal, double.Parse(pitchShiftTextBox.Text));
+                              Operation.TimeStretch(_signal, float.Parse(pitchShiftTextBox.Text));
 
             signalAfterFilteringPanel.Signal = _filteredSignal;
             spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal.Samples);

@@ -26,7 +26,7 @@ namespace NWaves.DemoForms
         private int _hopSize;
         private int _cepstrumSize;
 
-        private List<double> _pitchTrack;
+        private List<float> _pitchTrack;
 
         private int _specNo;
 
@@ -34,7 +34,7 @@ namespace NWaves.DemoForms
         {
             InitializeComponent();
 
-            cepstrumPanel.Gain = 0.2;
+            cepstrumPanel.Gain = 0.2f;
             cepstrumPanel.Stride = 1;
             cepstrumPanel.ForeColor = Color.Blue;
             autoCorrPanel.Gain = 5;
@@ -63,8 +63,8 @@ namespace NWaves.DemoForms
             _fft = new Fft(_fftSize);
             _cepstralTransform = new CepstralTransform(_cepstrumSize, _fftSize);
 
-            var pitchTracker = new Pitch((double)_fftSize / _signal.SamplingRate,
-                                         (double)_hopSize / _signal.SamplingRate);
+            var pitchTracker = new Pitch((float)_fftSize / _signal.SamplingRate,
+                                         (float)_hopSize / _signal.SamplingRate);
 
             _pitchTrack = pitchTracker.Track(_signal);
 
@@ -129,8 +129,8 @@ namespace NWaves.DemoForms
 
             var cepstrum = _cepstralTransform.Direct(block);
 
-            var real = new double[_fftSize];
-            var imag = new double[_fftSize];
+            var real = new float[_fftSize];
+            var imag = new float[_fftSize];
 
             for (var i = 0; i < 32; i++)
             {
@@ -143,7 +143,7 @@ namespace NWaves.DemoForms
             var avg = spectrum.Average(s => LevelScale.ToDecibel(s));
 
             var spectrumEstimate = real.Take(_fftSize / 2 + 1)
-                                       .Select(s => LevelScale.FromDecibel(s * 40 / _fftSize - avg))
+                                       .Select(s => (float)LevelScale.FromDecibel(s * 40 / _fftSize - avg))
                                        .ToArray();
 
             spectrumPanel.Line = spectrum;

@@ -60,7 +60,7 @@ namespace NWaves.FeatureExtractors.Base
         /// <param name="samples">Sequence of real-valued samples</param>
         /// <param name="samplingRate">The sampling rate of the sequence</param>
         /// <returns>Sequence of feature vectors</returns>
-        public List<FeatureVector> ComputeFrom(IEnumerable<double> samples, int samplingRate)
+        public List<FeatureVector> ComputeFrom(IEnumerable<float> samples, int samplingRate)
         {
             return ComputeFrom(new DiscreteSignal(samplingRate, samples));
         }

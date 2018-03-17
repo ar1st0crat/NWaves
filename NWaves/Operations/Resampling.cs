@@ -27,7 +27,7 @@ namespace NWaves.Operations
                 return signal.Copy();
             }
 
-            var output = new double[signal.Length * factor];
+            var output = new float[signal.Length * factor];
 
             var pos = 0;
             for (var i = 0; i < signal.Length; i++)
@@ -40,7 +40,7 @@ namespace NWaves.Operations
                              2 * factor + 1 : 
                              MinResamplingFilterOrder;
 
-            var lpFilter = DesignFilter.FirLp(filterSize, 0.5 / factor);
+            var lpFilter = DesignFilter.FirLp(filterSize, 0.5f / factor);
 
             return lpFilter.ApplyTo(new DiscreteSignal(signal.SamplingRate * factor, output));
         }
@@ -62,11 +62,11 @@ namespace NWaves.Operations
                              2 * factor + 1 :
                              MinResamplingFilterOrder;
 
-            var lpFilter = DesignFilter.FirLp(filterSize, 0.5 / factor);
+            var lpFilter = DesignFilter.FirLp(filterSize, 0.5f / factor);
 
             signal = lpFilter.ApplyTo(signal);
 
-            var output = new double[signal.Length / factor];
+            var output = new float[signal.Length / factor];
 
             var pos = 0;
             for (var i = 0; i < output.Length; i++)
@@ -101,7 +101,7 @@ namespace NWaves.Operations
                 return ResampleUpDown(signal, up, down);
             }
 
-            var output = new double[signal.Length * up];
+            var output = new float[signal.Length * up];
 
             var pos = 0;
             for (var i = 0; i < signal.Length; i++)
@@ -115,11 +115,11 @@ namespace NWaves.Operations
                              8 * factor + 1 :
                              MinResamplingFilterOrder;
 
-            var lpFilter = DesignFilter.FirLp(filterSize, 0.5 / factor);
+            var lpFilter = DesignFilter.FirLp(filterSize, 0.5f / factor);
 
             var upsampled = lpFilter.ApplyTo(new DiscreteSignal(signal.SamplingRate * up, output));
 
-            output = new double[upsampled.Length / down];
+            output = new float[upsampled.Length / down];
 
             pos = 0;
             for (var i = 0; i < output.Length; i++)
@@ -140,9 +140,9 @@ namespace NWaves.Operations
         /// <returns></returns>
         private static DiscreteSignal ResampleUpDown(DiscreteSignal signal, int up, int down)
         {
-            var ratio = (double)up / down;
+            var ratio = (float)up / down;
 
-            var freq = ratio > 1 ? 0.5 / ratio : 0.5 * ratio;
+            var freq = ratio > 1 ? 0.5f / ratio : 0.5f * ratio;
             var lpFilter = DesignFilter.FirLp(MinResamplingFilterOrder, freq);
 
             var input = signal.Samples;
@@ -152,7 +152,7 @@ namespace NWaves.Operations
                                                   .ToArray(),
                                         input,                              
                                         Enumerable.Range(0, (int)(signal.Length * ratio) + 1)
-                                                  .Select(s => (double)s)
+                                                  .Select(s => (float)s)
                                                   .ToArray());
 
             return lpFilter.ApplyTo(new DiscreteSignal(signal.SamplingRate * up / down, output));

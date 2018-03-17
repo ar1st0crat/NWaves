@@ -40,34 +40,34 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Lambdas used in asymmetric noise suppression formula (4)
         /// </summary>
-        public double LambdaA { get; set; } = 0.999;
-        public double LambdaB { get; set; } = 0.5;
+        public float LambdaA { get; set; } = 0.999f;
+        public float LambdaB { get; set; } = 0.5f;
         
         /// <summary>
         /// Forgetting factor in temporal masking formula
         /// </summary>
-        public double LambdaT { get; set; } = 0.85;
+        public float LambdaT { get; set; } = 0.85f;
 
         /// <summary>
         /// Forgetting factor in formula (15) in [Kim & Stern, 2016]
         /// </summary>
-        public double LambdaMu { get; set; } = 0.999;
+        public float LambdaMu { get; set; } = 0.999f;
 
         /// <summary>
         /// Threshold for detecting excitation/non-excitation segments
         /// </summary>
-        public double C { get; set; } = 2;
+        public float C { get; set; } = 2;
 
         /// <summary>
         /// Multiplier in formula (12) in [Kim & Stern, 2016]
         /// </summary>
-        public double MuT { get; set; } = 0.2;
+        public float MuT { get; set; } = 0.2f;
 
         /// <summary>
         /// Gammatone Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)]
         /// </summary>
-        private double[][] _gammatoneFilterBank;
-        public double[][] FilterBank => _gammatoneFilterBank;
+        private float[][] _gammatoneFilterBank;
+        public float[][] FilterBank => _gammatoneFilterBank;
 
         /// <summary>
         /// Number of gammatone filters
@@ -77,12 +77,12 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Lower frequency
         /// </summary>
-        private readonly double _lowFreq;
+        private readonly float _lowFreq;
 
         /// <summary>
         /// Upper frequency
         /// </summary>
-        private readonly double _highFreq;
+        private readonly float _highFreq;
         
         /// <summary>
         /// Nonlinearity coefficient (if 0 then Log10 is applied)
@@ -97,12 +97,12 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Length of analysis window (in ms)
         /// </summary>
-        private readonly double _windowSize;
+        private readonly float _windowSize;
 
         /// <summary>
         /// Hop length (in ms)
         /// </summary>
-        private readonly double _hopSize;
+        private readonly float _hopSize;
 
         /// <summary>
         /// Type of the window function
@@ -112,7 +112,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Pre-emphasis coefficient
         /// </summary>
-        private readonly double _preEmphasis;
+        private readonly float _preEmphasis;
 
         /// <summary>
         /// Ring buffer for efficient processing of consecutive spectra
@@ -134,9 +134,9 @@ namespace NWaves.FeatureExtractors
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
         public PnccExtractor(int featureCount, int power = 15,
-                             int filterbankSize = 40, double lowFreq = 100, double highFreq = 6800,
-                             double windowSize = 0.0256, double hopSize = 0.010, int fftSize = 1024,
-                             double preEmphasis = 0.0, WindowTypes window = WindowTypes.Hamming)
+                             int filterbankSize = 40, float lowFreq = 100, float highFreq = 6800,
+                             float windowSize = 0.0256f, float hopSize = 0.010f, int fftSize = 1024,
+                             float preEmphasis = 0.0f, WindowTypes window = WindowTypes.Hamming)
         {
             FeatureCount = featureCount;
             _power = power;
@@ -199,27 +199,27 @@ namespace NWaves.FeatureExtractors
             var dct = new Dct2(_filterbankSize, FeatureCount);
             
 
-            var gammatoneSpectrum = new double[_filterbankSize];
+            var gammatoneSpectrum = new float[_filterbankSize];
 
-            var spectrumQOut = new double[_filterbankSize];
-            var filteredSpectrumQ = new double[_filterbankSize];
-            var spectrumS = new double[_filterbankSize];
-            var smoothedSpectrumS = new double[_filterbankSize];
-            var avgSpectrumQ1 = new double[_filterbankSize];
-            var avgSpectrumQ2 = new double[_filterbankSize];
-            var smoothedSpectrum = new double[_filterbankSize];
+            var spectrumQOut = new float[_filterbankSize];
+            var filteredSpectrumQ = new float[_filterbankSize];
+            var spectrumS = new float[_filterbankSize];
+            var smoothedSpectrumS = new float[_filterbankSize];
+            var avgSpectrumQ1 = new float[_filterbankSize];
+            var avgSpectrumQ2 = new float[_filterbankSize];
+            var smoothedSpectrum = new float[_filterbankSize];
             
-            const double meanPower = 1e10;
-            var mean = 4e07;
+            const float meanPower = 1e10f;
+            var mean = 4e07f;
 
             var d = _power != 0 ? 1.0 / _power : 0.0;
             
-            var block = new double[fftSize];           // buffer for currently processed signal block at each step
-            var zeroblock = new double[fftSize];       // buffer of zeros for quick memset
+            var block = new float[fftSize];           // buffer for currently processed signal block at each step
+            var zeroblock = new float[fftSize];       // buffer of zeros for quick memset
 
             _ringBuffer = new SpectraRingBuffer(2 * M + 1, _filterbankSize);
 
-            var spectrum = new double[fftSize / 2 + 1];
+            var spectrum = new float[fftSize / 2 + 1];
 
 
             // 0) pre-emphasis (if needed)
@@ -278,7 +278,7 @@ namespace NWaves.FeatureExtractors
                 {
                     for (var j = 0; j < spectrumQOut.Length; j++)
                     {
-                        spectrumQOut[j] = spectrumQ[j] * 0.9;
+                        spectrumQOut[j] = spectrumQ[j] * 0.9f;
                     }
                 }
                 
@@ -298,11 +298,11 @@ namespace NWaves.FeatureExtractors
                     
                     for (var j = 0; j < filteredSpectrumQ.Length; j++)
                     {
-                        filteredSpectrumQ[j] = Math.Max(spectrumQ[j] - spectrumQOut[j], 0.0);
+                        filteredSpectrumQ[j] = Math.Max(spectrumQ[j] - spectrumQOut[j], 0.0f);
 
                         if (i == 2 * M)
                         {
-                            avgSpectrumQ1[j] = 0.9 * filteredSpectrumQ[j];
+                            avgSpectrumQ1[j] = 0.9f * filteredSpectrumQ[j];
                             avgSpectrumQ2[j] = filteredSpectrumQ[j];
                         }
 
@@ -341,12 +341,12 @@ namespace NWaves.FeatureExtractors
 
                     for (var j = 0; j < spectrumS.Length; j++)
                     {
-                        spectrumS[j] = filteredSpectrumQ[j] / Math.Max(spectrumQ[j], double.Epsilon);
+                        spectrumS[j] = filteredSpectrumQ[j] / Math.Max(spectrumQ[j], float.Epsilon);
                     }
 
                     for (var j = 0; j < smoothedSpectrumS.Length; j++)
                     {
-                        smoothedSpectrumS[j] = 0.0;
+                        smoothedSpectrumS[j] = 0.0f;
 
                         var total = 0;
                         for (var k = Math.Max(j - N, 0);
@@ -362,7 +362,7 @@ namespace NWaves.FeatureExtractors
 
                     var centralSpectrum = _ringBuffer.CentralSpectrum;
 
-                    var sumPower = 0.0;
+                    var sumPower = 0.0f;
                     for (var j = 0; j < smoothedSpectrum.Length; j++)
                     {
                         smoothedSpectrum[j] = smoothedSpectrumS[j] * centralSpectrum[j];
@@ -385,20 +385,20 @@ namespace NWaves.FeatureExtractors
                     {
                         for (var j = 0; j < smoothedSpectrum.Length; j++)
                         {
-                            smoothedSpectrum[j] = Math.Pow(smoothedSpectrum[j], d);
+                            smoothedSpectrum[j] = (float)Math.Pow(smoothedSpectrum[j], d);
                         }
                     }
                     else
                     {
                         for (var j = 0; j < smoothedSpectrum.Length; j++)
                         {
-                            smoothedSpectrum[j] = Math.Log10(smoothedSpectrum[j] + double.Epsilon);
+                            smoothedSpectrum[j] = (float)Math.Log10(smoothedSpectrum[j] + float.Epsilon);
                         }
                     }
 
                     // 6) dct-II (normalized)
 
-                    var pnccs = new double[FeatureCount];
+                    var pnccs = new float[FeatureCount];
                     dct.DirectN(smoothedSpectrum, pnccs);
                     
 
@@ -407,7 +407,7 @@ namespace NWaves.FeatureExtractors
                     featureVectors.Add(new FeatureVector
                     {
                         Features = pnccs,
-                        TimePosition = (double)timePos / signal.SamplingRate
+                        TimePosition = (float)timePos / signal.SamplingRate
                     });
                 }
 
@@ -425,24 +425,24 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         class SpectraRingBuffer
         {
-            private readonly double[][] _spectra;
+            private readonly float[][] _spectra;
             private int _count;
             private int _capacity;
             private int _current;
 
-            public double[] CentralSpectrum;
-            public double[] AverageSpectrum;
+            public float[] CentralSpectrum;
+            public float[] AverageSpectrum;
 
             public SpectraRingBuffer(int capacity, int spectrumSize)
             {
-                _spectra = new double[capacity][];
+                _spectra = new float[capacity][];
                 _capacity = capacity;
                 _count = 0;
                 _current = 0;
-                AverageSpectrum = new double[spectrumSize];
+                AverageSpectrum = new float[spectrumSize];
             }
 
-            public void Add(double[] spectrum)
+            public void Add(float[] spectrum)
             {
                 if (_count < _capacity) _count++;
 
@@ -450,7 +450,7 @@ namespace NWaves.FeatureExtractors
 
                 for (var j = 0; j < spectrum.Length; j++)
                 {
-                    AverageSpectrum[j] = 0.0;
+                    AverageSpectrum[j] = 0.0f;
                     for (var i = 0; i < _count; i++)
                     {
                         AverageSpectrum[j] += _spectra[i][j];

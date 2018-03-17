@@ -36,28 +36,28 @@ namespace NWaves.Filters.Fda
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
         /// <returns>Array of triangular filters</returns>
-        public static double[][] Triangular(int fftSize, int samplingRate, Tuple<double, double, double>[] frequencies)
+        public static float[][] Triangular(int fftSize, int samplingRate, Tuple<float, float, float>[] frequencies)
         {
-            var herzResolution = (double)samplingRate / fftSize;
+            var herzResolution = (float)samplingRate / fftSize;
 
             var left = frequencies.Select(f => (int)Math.Round(f.Item1 / herzResolution)).ToArray();
             var center = frequencies.Select(f => (int)Math.Round(f.Item2 / herzResolution)).ToArray();
             var right = frequencies.Select(f => (int)Math.Round(f.Item3 / herzResolution)).ToArray();
 
             var filterCount = frequencies.Length;
-            var filterBank = new double[filterCount][];
+            var filterBank = new float[filterCount][];
 
             for (var i = 0; i < filterCount; i++)
             {
-                filterBank[i] = new double[fftSize / 2 + 1];
+                filterBank[i] = new float[fftSize / 2 + 1];
 
                 for (var j = left[i]; j < center[i]; j++)
                 {
-                    filterBank[i][j] = (double)(j - left[i]) / (center[i] - left[i]);
+                    filterBank[i][j] = (float)(j - left[i]) / (center[i] - left[i]);
                 }
                 for (var j = center[i]; j < right[i]; j++)
                 {
-                    filterBank[i][j] = (double)(right[i] - j) / (right[i] - center[i]);
+                    filterBank[i][j] = (float)(right[i] - j) / (right[i] - center[i]);
                 }
             }
 
@@ -71,19 +71,19 @@ namespace NWaves.Filters.Fda
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
         /// <returns>Array of rectangular filters</returns>
-        public static double[][] Rectangular(int fftSize, int samplingRate, Tuple<double, double, double>[] frequencies)
+        public static float[][] Rectangular(int fftSize, int samplingRate, Tuple<float, float, float>[] frequencies)
         {
-            var herzResolution = (double)samplingRate / fftSize;
+            var herzResolution = (float)samplingRate / fftSize;
 
             var left = frequencies.Select(f => (int)Math.Round(f.Item1 / herzResolution)).ToArray();
             var right = frequencies.Select(f => (int)Math.Round(f.Item3 / herzResolution)).ToArray();
 
             var filterCount = frequencies.Length;
-            var filterBank = new double[filterCount][];
+            var filterBank = new float[filterCount][];
 
             for (var i = 0; i < filterCount; i++)
             {
-                filterBank[i] = new double[fftSize / 2 + 1];
+                filterBank[i] = new float[fftSize / 2 + 1];
 
                 for (var j = left[i]; j < right[i]; j++)
                 {
@@ -101,7 +101,7 @@ namespace NWaves.Filters.Fda
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
         /// <returns>Array of trapezoidal FIR filters</returns>
-        public static double[][] Trapezoidal(int fftSize, int samplingRate, Tuple<double, double, double>[] frequencies)
+        public static float[][] Trapezoidal(int fftSize, int samplingRate, Tuple<float, float, float>[] frequencies)
         {
             var filterBank = Rectangular(fftSize, samplingRate, frequencies);
 
@@ -113,7 +113,7 @@ namespace NWaves.Filters.Fda
 
                 // normalize gain to 1.0
 
-                var maxAmp = 0.0;
+                var maxAmp = 0.0f;
                 for (var j = 0; j < filterBank[i].Length; j++)
                 {
                     if (filterBank[i][j] > maxAmp) maxAmp = filterBank[i][j];
@@ -134,17 +134,17 @@ namespace NWaves.Filters.Fda
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
         /// <returns>Array of BiQuad bandpass filters</returns>
-        public static double[][] BiQuad(int fftSize, int samplingRate, Tuple<double, double, double>[] frequencies)
+        public static float[][] BiQuad(int fftSize, int samplingRate, Tuple<float, float, float>[] frequencies)
         {
             var center = frequencies.Select(f => f.Item2).ToArray();
 
             var filterCount = frequencies.Length;
-            var filterBank = new double[filterCount][];
+            var filterBank = new float[filterCount][];
 
             for (var i = 0; i < filterCount; i++)
             {
                 var freq = center[i] / samplingRate;
-                var filter = new BandPassFilter(freq, 2.0);
+                var filter = new BandPassFilter(freq, 2.0f);
                 var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
 
                 filterBank[i] = filterResponse.Take(fftSize / 2 + 1).ToArray();
@@ -159,15 +159,18 @@ namespace NWaves.Filters.Fda
         /// <param name="scaleMapper">The function that converts Hz to other frequency scale</param>
         /// <param name="inverseMapper">The function that converts frequency from alternative scale back to Hz</param>
         /// <param name="filterCount">Number of filters</param>
-        /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
         /// <returns>Array of frequency tuples for each filter</returns>
-        private static Tuple<double, double, double>[] UniformBands(
-            Func<double, double> scaleMapper, Func<double, double> inverseMapper,
-            int filterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
+        private static Tuple<float, float, float>[] UniformBands(
+                                                        Func<double, double> scaleMapper,
+                                                        Func<double, double> inverseMapper,
+                                                        int filterCount, 
+                                                        int samplingRate, 
+                                                        float lowFreq = 0, float highFreq = 0, 
+                                                        bool overlap = true)
         {
             if (lowFreq < 0)
             {
@@ -175,24 +178,24 @@ namespace NWaves.Filters.Fda
             }
             if (highFreq <= lowFreq)
             {
-                highFreq = samplingRate / 2.0;
+                highFreq = samplingRate / 2.0f;
             }
 
             var startingFrequency = scaleMapper(lowFreq);
 
-            var frequencyTuples = new Tuple<double, double, double>[filterCount];
+            var frequencyTuples = new Tuple<float, float, float>[filterCount];
 
             if (overlap)
             {
                 var melResolution = (scaleMapper(highFreq) - scaleMapper(lowFreq)) / (filterCount + 1);
 
                 var frequencies = Enumerable.Range(0, filterCount + 2)
-                                            .Select(i => inverseMapper(startingFrequency + i * melResolution))
+                                            .Select(i => (float)inverseMapper(startingFrequency + i * melResolution))
                                             .ToArray();
                 
                 for (var i = 0; i < filterCount; i++)
                 {
-                    frequencyTuples[i] = new Tuple<double, double, double>
+                    frequencyTuples[i] = new Tuple<float, float, float>
                         (frequencies[i], frequencies[i + 1], frequencies[i + 2]);
                 }
             }
@@ -201,12 +204,12 @@ namespace NWaves.Filters.Fda
                 var melResolution = (scaleMapper(highFreq) - scaleMapper(lowFreq)) / filterCount;
 
                 var frequencies = Enumerable.Range(0, filterCount + 1)
-                                            .Select(i => inverseMapper(startingFrequency + i * melResolution))
+                                            .Select(i => (float)inverseMapper(startingFrequency + i * melResolution))
                                             .ToArray();
                 
                 for (var i = 0; i < filterCount; i++)
                 {
-                    frequencyTuples[i] = new Tuple<double, double, double>
+                    frequencyTuples[i] = new Tuple<float, float, float>
                         (frequencies[i], (frequencies[i] + frequencies[i + 1]) / 2, frequencies[i + 1]);
                 }
             }
@@ -224,11 +227,11 @@ namespace NWaves.Filters.Fda
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
         /// <returns>Array of frequency tuples for each Herz filter</returns>
-        public static Tuple<double, double, double>[] HerzBands(
-            int combFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = false)
+        public static Tuple<float, float, float>[] HerzBands(
+            int combFilterCount, int fftSize, int samplingRate, float lowFreq = 0, float highFreq = 0, bool overlap = false)
         {
             // "x => x" means map frequency 1-to-1 (in Hz as it is)
-            return UniformBands(x => x, x => x, combFilterCount, fftSize, samplingRate, lowFreq, highFreq, overlap);
+            return UniformBands(x => x, x => x, combFilterCount, samplingRate, lowFreq, highFreq, overlap);
         }
 
         /// <summary>
@@ -241,10 +244,10 @@ namespace NWaves.Filters.Fda
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
         /// <returns>Array of frequency tuples for each Mel filter</returns>
-        public static Tuple<double, double, double>[] MelBands(
-            int melFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
+        public static Tuple<float, float, float>[] MelBands(
+            int melFilterCount, int fftSize, int samplingRate, float lowFreq = 0, float highFreq = 0, bool overlap = true)
         {
-            return UniformBands(Scale.HerzToMel, Scale.MelToHerz, melFilterCount, fftSize, samplingRate, lowFreq, highFreq, overlap);
+            return UniformBands(Scale.HerzToMel, Scale.MelToHerz, melFilterCount, samplingRate, lowFreq, highFreq, overlap);
         }
 
         /// <summary>
@@ -257,10 +260,10 @@ namespace NWaves.Filters.Fda
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
         /// <returns>Array of frequency tuples for each Bark filter</returns>
-        public static Tuple<double, double, double>[] BarkBands(
-            int barkFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
+        public static Tuple<float, float, float>[] BarkBands(
+            int barkFilterCount, int fftSize, int samplingRate, float lowFreq = 0, float highFreq = 0, bool overlap = true)
         {
-            return UniformBands(Scale.HerzToBark, Scale.BarkToHerz, barkFilterCount, fftSize, samplingRate, lowFreq, highFreq, overlap);
+            return UniformBands(Scale.HerzToBark, Scale.BarkToHerz, barkFilterCount, samplingRate, lowFreq, highFreq, overlap);
         }
 
         /// <summary>
@@ -273,8 +276,8 @@ namespace NWaves.Filters.Fda
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Overlap parameter (is always false; added for consistency with other methods)</param>
         /// <returns>Array of frequency tuples for each Critical Band filter</returns>
-        public static Tuple<double, double, double>[] CriticalBands(
-            int filterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = false)
+        public static Tuple<float, float, float>[] CriticalBands(
+            int filterCount, int fftSize, int samplingRate, float lowFreq = 0, float highFreq = 0, bool overlap = false)
         {
             if (lowFreq < 0)
             {
@@ -282,13 +285,13 @@ namespace NWaves.Filters.Fda
             }
             if (highFreq <= lowFreq)
             {
-                highFreq = samplingRate / 2.0;
+                highFreq = samplingRate / 2.0f;
             }
 
-            double[] edgeFrequencies = { 20,   100,  200,  300,  400,  510,  630,  770,  920,  1080, 1270,  1480,  1720,
+            float[] edgeFrequencies = { 20,   100,  200,  300,  400,  510,  630,  770,  920,  1080, 1270,  1480,  1720,
                                          2000, 2320, 2700, 3150, 3700, 4400, 5300, 6400, 7700, 9500, 12000, 15500, 20500 };
 
-            double[] centerFrequencies = { 50,   150,  250,  350,  450,  570,  700,  840,  1000, 1170, 1370,  1600,
+            float[] centerFrequencies = { 50,   150,  250,  350,  450,  570,  700,  840,  1000, 1170, 1370,  1600,
                                            1850, 2150, 2500, 2900, 3400, 4000, 4800, 5800, 7000, 8500, 10500, 13500, 17500 };
 
             var startIndex = 0;
@@ -317,11 +320,11 @@ namespace NWaves.Filters.Fda
                                            .Take(filterCount)
                                            .ToArray();
 
-            var frequencyTuples = new Tuple<double, double, double>[filterCount];
+            var frequencyTuples = new Tuple<float, float, float>[filterCount];
 
             for (var i = 0; i < filterCount; i++)
             {
-                frequencyTuples[i] = new Tuple<double, double, double>
+                frequencyTuples[i] = new Tuple<float, float, float>
                     (edges[i], centers[i], edges[i + 1]);
             }
 
@@ -338,8 +341,8 @@ namespace NWaves.Filters.Fda
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="normalizeGain">True if gain should be normalized; false if all filters should have same height 1.0</param>
         /// <returns>Array of ERB filters</returns>
-        public static double[][] Erb(
-            int erbFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool normalizeGain = true)
+        public static float[][] Erb(
+            int erbFilterCount, int fftSize, int samplingRate, float lowFreq = 0, float highFreq = 0, bool normalizeGain = true)
         {
             if (lowFreq < 0)
             {
@@ -347,12 +350,12 @@ namespace NWaves.Filters.Fda
             }
             if (highFreq <= lowFreq)
             {
-                highFreq = samplingRate / 2.0;
+                highFreq = samplingRate / 2.0f;
             }
 
-            const double earQ = 9.26449;
-            const double minBw = 24.7;
-            const double bw = earQ * minBw;
+            const float earQ = 9.26449f;
+            const float minBw = 24.7f;
+            const float bw = earQ * minBw;
             const int order = 1;
 
             var t = 1.0 / samplingRate;
@@ -374,7 +377,7 @@ namespace NWaves.Filters.Fda
             var rootNeg = Math.Sqrt(3 - Math.Pow(2, 1.5));
 
             
-            var erbFilterBank = new double[erbFilterCount][];
+            var erbFilterBank = new float[erbFilterCount][];
             
             for (var i = 0; i < erbFilterCount; i++)
             {
@@ -385,11 +388,11 @@ namespace NWaves.Filters.Fda
                 var theta = 2 * cf * Math.PI * t;
                 var itheta = Complex.Exp(2 * Complex.ImaginaryOne * theta);
 
-                var a0 = t;
-                var a2 = 0.0;
-                var b0 = 1.0;
-                var b1 = -2 * Math.Cos(theta) / Math.Exp(b * t);
-                var b2 = Math.Exp(-2 * b * t);
+                var a0 = (float)t;
+                var a2 = 0.0f;
+                var b0 = 1.0f;
+                var b1 = (float)(-2 * Math.Cos(theta) / Math.Exp(b * t));
+                var b2 = (float)Math.Exp(-2 * b * t);
 
                 var common = -t * Math.Exp(-b * t);
 
@@ -398,21 +401,21 @@ namespace NWaves.Filters.Fda
                 var k3 = Math.Cos(theta) + rootNeg * Math.Sin(theta);
                 var k4 = Math.Cos(theta) - rootNeg * Math.Sin(theta);
 
-                var a11 = common * k1;
-                var a12 = common * k2;
-                var a13 = common * k3;
-                var a14 = common * k4;
+                var a11 = (float)(common * k1);
+                var a12 = (float)(common * k2);
+                var a13 = (float)(common * k3);
+                var a14 = (float)(common * k4);
 
                 var gainArg = Complex.Exp(Complex.ImaginaryOne * theta - b * t);
 
-                var gain = Complex.Abs(
-                                (itheta - gainArg * k1) *
-                                (itheta - gainArg * k2) *
-                                (itheta - gainArg * k3) *
-                                (itheta - gainArg * k4) *
-                                Complex.Pow(t * Math.Exp(b * t) / (-1.0/Math.Exp(b*t) + 1 + itheta*(1 - Math.Exp(b*t))), 4.0));
+                var gain = (float)Complex.Abs(
+                                    (itheta - gainArg * k1) *
+                                    (itheta - gainArg * k2) *
+                                    (itheta - gainArg * k3) *
+                                    (itheta - gainArg * k4) *
+                                    Complex.Pow(t * Math.Exp(b * t) / (-1.0/Math.Exp(b*t) + 1 + itheta*(1 - Math.Exp(b*t))), 4.0));
 
-                var ir = new DiscreteSignal(1, fftSize) { [0] = 1.0 };
+                var ir = new DiscreteSignal(1, fftSize) { [0] = 1.0f };
 
                 var filter1 = new IirFilter(new[] { a0, a11, a2 }, new[] { b0, b1, b2 });
                 var filter2 = new IirFilter(new[] { a0, a12, a2 }, new[] { b0, b1, b2 });
@@ -447,7 +450,7 @@ namespace NWaves.Filters.Fda
                     sum += Math.Abs(filter[j] * filter[j]);
                 }
 
-                var weight = Math.Sqrt(sum*samplingRate/fftSize);
+                var weight = (float)Math.Sqrt(sum * samplingRate / fftSize);
 
                 for (var j = 0; j < filter.Length; j++)
                 {
@@ -464,11 +467,11 @@ namespace NWaves.Filters.Fda
         /// <param name="filterbank"></param>
         /// <param name="spectrum"></param>
         /// <param name="filtered"></param>
-        public static void Apply(double[][] filterbank, double[] spectrum, double[] filtered)
+        public static void Apply(float[][] filterbank, float[] spectrum, float[] filtered)
         {
             for (var i = 0; i < filterbank.Length; i++)
             {
-                filtered[i] = 0.0;
+                filtered[i] = 0.0f;
 
                 for (var j = 0; j < spectrum.Length; j++)
                 {
@@ -483,18 +486,18 @@ namespace NWaves.Filters.Fda
         /// <param name="filterbank"></param>
         /// <param name="spectrum"></param>
         /// <param name="filtered"></param>
-        public static void ApplyAndLog(double[][] filterbank, double[] spectrum, double[] filtered)
+        public static void ApplyAndLog(float[][] filterbank, float[] spectrum, float[] filtered)
         {
             for (var i = 0; i < filterbank.Length; i++)
             {
-                filtered[i] = 0.0;
+                filtered[i] = 0.0f;
 
                 for (var j = 0; j < spectrum.Length; j++)
                 {
                     filtered[i] += filterbank[i][j] * spectrum[j];
                 }
 
-                filtered[i] = Math.Log10(filtered[i] + double.Epsilon);
+                filtered[i] = (float)Math.Log10(filtered[i] + float.Epsilon);
             }
         }
     }

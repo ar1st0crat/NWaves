@@ -14,7 +14,7 @@ namespace NWaves.Operations
         /// <param name="fftSize"></param>
         /// <param name="hopSize"></param>
         /// <returns></returns>
-        public static DiscreteSignal TimeStretch(DiscreteSignal signal, double stretch, int fftSize = 4096, int hopSize = -1)
+        public static DiscreteSignal TimeStretch(DiscreteSignal signal, float stretch, int fftSize = 4096, int hopSize = -1)
         {
             if (Math.Abs(stretch - 1.0) < 1e-10)
             {

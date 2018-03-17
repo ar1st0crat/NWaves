@@ -76,6 +76,7 @@
     <Compile Include="Filters\Adaptive\KalmanFilter.cs" />
     <Compile Include="Filters\Adaptive\LmsFilter.cs" />
     <Compile Include="Filters\Adaptive\RlsFilter.cs" />
+    <Compile Include="Utils\MiscExtensions.cs" />
     <Compile Include="Filters\WienerFilter.cs" />
     <Compile Include="Filters\Base\LtiFilter.cs" />
     <Compile Include="Filters\Base\FilteringOptions.cs" />

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NWaves.Signals;
 using NWaves.Utils;
@@ -40,12 +39,12 @@ namespace NWaves.Transforms
         /// <summary>
         /// Pre-computed samples of the window function
         /// </summary>
-        private readonly double[] _windowSamples;
+        private readonly float[] _windowSamples;
 
         /// <summary>
         /// Normalization factor
         /// </summary>
-        private readonly double _norm;
+        private readonly float _norm;
 
 
         /// <summary>
@@ -68,9 +67,9 @@ namespace NWaves.Transforms
 
             // TODO: pad center!
 
-            _norm = 2.0 / (_windowSamples.Sum(s => s*s) * _fftSize / _hopSize);
+            _norm = 2.0f / (_windowSamples.Sum(s => s*s) * _fftSize / _hopSize);
 
-            //_norm = 2.0 * Math.Sqrt((double)_fftSize / _hopSize));
+            //_norm = 2.0 * Math.Sqrt((float)_fftSize / _hopSize));
             //_norm = 2.0 / (_fftSize / 2 * (_fftSize / _hopSize));
         }
 
@@ -80,14 +79,14 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="samples">The samples of signal</param>
         /// <returns>STFT of the signal</returns>
-        public List<ComplexDiscreteSignal> Direct(double[] samples)
+        public List<ComplexDiscreteSignal> Direct(float[] samples)
         {
             var stft = new List<ComplexDiscreteSignal>();
 
             for (var pos = 0; pos + _windowSize < samples.Length; pos += _hopSize)
             {
-                var re = new double[_fftSize];
-                var im = new double[_fftSize];
+                var re = new float[_fftSize];
+                var im = new float[_fftSize];
                 FastCopy.ToExistingArray(samples, re, _windowSize, pos);
 
                 if (_window != WindowTypes.Rectangular)
@@ -108,13 +107,13 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="stft"></param>
         /// <returns></returns>
-        public double[] Inverse(List<ComplexDiscreteSignal> stft)
+        public float[] Inverse(List<ComplexDiscreteSignal> stft)
         {
             var spectraCount = stft.Count;
-            var samples = new double[spectraCount * _hopSize + _windowSize];
+            var samples = new float[spectraCount * _hopSize + _windowSize];
 
-            var re = new double[_windowSize];
-            var im = new double[_windowSize];
+            var re = new float[_windowSize];
+            var im = new float[_windowSize];
 
             var pos = 0;
             for (var i = 0; i < spectraCount; i++)
@@ -153,12 +152,12 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="samples">The samples of signal</param>
         /// <returns>Spectrogram of the signal</returns>
-        public List<double[]> Spectrogram(double[] samples)
+        public List<float[]> Spectrogram(float[] samples)
         {
-            var block = new double[_fftSize];
-            var zeroblock = new double[_fftSize];
+            var block = new float[_fftSize];
+            var zeroblock = new float[_fftSize];
 
-            var spectrogram = new List<double[]>();
+            var spectrogram = new List<float[]>();
 
             for (var pos = 0; pos + _windowSize < samples.Length; pos += _hopSize)
             {
@@ -170,7 +169,7 @@ namespace NWaves.Transforms
                     block.ApplyWindow(_windowSamples);
                 }
 
-                var spectrum = new double[_fftSize / 2 + 1];
+                var spectrum = new float[_fftSize / 2 + 1];
                 _fft.PowerSpectrum(block, spectrum);
 
                 spectrogram.Add(spectrum);
@@ -184,7 +183,7 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <returns>Spectrogram of the signal</returns>
-        public List<double[]> Spectrogram(DiscreteSignal signal)
+        public List<float[]> Spectrogram(DiscreteSignal signal)
         {
             return Spectrogram(signal.Samples);
         }

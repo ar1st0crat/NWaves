@@ -16,12 +16,12 @@ namespace NWaves.Filters.BiQuad
         /// <param name="freq"></param>
         /// <param name="q"></param>
         /// <param name="gain"></param>
-        public PeakFilter(double freq, double q = 1, double gain = 1.0)
+        public PeakFilter(float freq, float q = 1, float gain = 1.0f)
         {
-            var a = Math.Pow(10, gain / 40);
+            var a = (float)Math.Pow(10, gain / 40);
             var omega = 2 * Math.PI * freq;
-            var alpha = Math.Sin(omega) / (2 * q);
-            var cosw = Math.Cos(omega);
+            var alpha = (float)(Math.Sin(omega) / (2 * q));
+            var cosw = (float)Math.Cos(omega);
 
             var b0 = 1 + alpha * a;
             var b1 = -2 * cosw;

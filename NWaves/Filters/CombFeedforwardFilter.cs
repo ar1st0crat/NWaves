@@ -23,7 +23,7 @@ namespace NWaves.Filters
         /// <param name="m">Delay</param>
         /// <param name="b0">Coefficient b0</param>
         /// <param name="bm">Coefficient bm</param>
-        public CombFeedforwardFilter(int m, double b0 = 1.0, double bm = 1.0) : base(MakeKernel(m, b0, bm))
+        public CombFeedforwardFilter(int m, float b0 = 1.0f, float bm = 1.0f) : base(MakeKernel(m, b0, bm))
         {
             _delay = m;
         }
@@ -35,9 +35,9 @@ namespace NWaves.Filters
         /// <param name="b0"></param>
         /// <param name="bm"></param>
         /// <returns></returns>
-        private static double[] MakeKernel(int m, double b0, double bm)
+        private static float[] MakeKernel(int m, float b0, float bm)
         {
-            var kernel = new double[m + 1];
+            var kernel = new float[m + 1];
             kernel[0] = b0;
             kernel[m] = bm;
 
@@ -59,7 +59,7 @@ namespace NWaves.Filters
             }
 
             var input = signal.Samples;
-            var output = new double [input.Length];
+            var output = new float [input.Length];
 
             FastCopy.ToExistingArray(input, output, _delay);
 

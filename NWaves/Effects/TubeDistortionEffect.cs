@@ -15,37 +15,37 @@ namespace NWaves.Effects
         /// <summary>
         /// Amount of distortion
         /// </summary>
-        public double Gain { get; }
+        public float Gain { get; }
 
         /// <summary>
         /// Mix of original and distorted sound (1 - only distorted)
         /// </summary>
-        public double Mix { get; }
+        public float Mix { get; }
 
         /// <summary>
         /// Work point.
         /// Controls the linearity of the transfer function for low input levels.
         /// More negative - more linear.
         /// </summary>
-        public double Q { get; }
+        public float Q { get; }
 
         /// <summary>
         /// Distortion's character.
         /// Higher number - harder distortion.
         /// </summary>
-        public double Dist { get; }
+        public float Dist { get; }
 
         /// <summary>
         /// Filter coefficient (close to 1.0) defining placement of poles 
         /// in the HP filter that removes DC component.
         /// </summary>
-        public double Rh { get; }
+        public float Rh { get; }
 
         /// <summary>
         /// Filter coefficient (in range (0, 1)) defining placement of pole 
         /// in the LP filter used to simulate capacitances in tube amplifier.
         /// </summary>
-        public double Rl { get; }
+        public float Rl { get; }
 
         /// <summary>
         /// Internal filter for output signal 
@@ -62,12 +62,12 @@ namespace NWaves.Effects
         /// <param name="dist"></param>
         /// <param name="rh"></param>
         /// <param name="rl"></param>
-        public TubeDistortionEffect(double gain = 20.0,
-                                    double mix = 0.9,
-                                    double q = -0.2,
-                                    double dist = 5,
-                                    double rh = 0.995,
-                                    double rl = 0.5)
+        public TubeDistortionEffect(float gain = 20.0f,
+                                    float mix = 0.9f,
+                                    float q = -0.2f,
+                                    float dist = 5,
+                                    float rh = 0.995f,
+                                    float rl = 0.5f)
         {
             Gain = gain;
             Mix = mix;
@@ -76,7 +76,7 @@ namespace NWaves.Effects
             Rh = rh;
             Rl = rl;
 
-            var filter1 = new IirFilter(new[] { 1, -2, 1.0 }, new[] { 1, -2 * Rh, Rh * Rh });
+            var filter1 = new IirFilter(new[] { 1f, -2, 1 }, new[] { 1, -2 * Rh, Rh * Rh });
             var filter2 = new IirFilter(new[] { 1 - Rl },     new[] { 1, -Rl });
 
             _outputFilter = filter1 * filter2;
@@ -98,7 +98,7 @@ namespace NWaves.Effects
                 return signal.Copy();
             }
 
-            IEnumerable<double> tempZ;
+            IEnumerable<float> tempZ;
 
             if (Math.Abs(Q) < 1e-10)
             {
@@ -106,8 +106,8 @@ namespace NWaves.Effects
                 {
                     var q = Gain * s / maxAmp;
                     return Math.Abs(q - Q) < 1e-10 ?
-                           1.0 / Dist :
-                           q / (1 - Math.Exp(-Dist * q));
+                           1.0f / Dist :
+                           (float)(q / (1 - Math.Exp(-Dist * q)));
                 });
             }
             else
@@ -116,8 +116,8 @@ namespace NWaves.Effects
                 {
                     var q = Gain * s / maxAmp;
                     return Math.Abs(q - Q) < 1e-10 ?
-                           1.0 / Dist + Q / (1 - Math.Exp(Dist * Q)) :
-                           (q - Q) / (1 - Math.Exp(-Dist * (q - Q))) + Q / (1 - Math.Exp(Dist * Q));
+                           (float)(1.0 / Dist + Q / (1 - Math.Exp(Dist * Q))) :
+                           (float)((q - Q) / (1 - Math.Exp(-Dist * (q - Q))) + Q / (1 - Math.Exp(Dist * Q)));
                 });
             }
 

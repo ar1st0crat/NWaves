@@ -13,22 +13,22 @@ namespace NWaves.Effects
         /// <summary>
         /// 
         /// </summary>
-        public double Q { get; }
+        public float Q { get; }
 
         /// <summary>
         /// 
         /// </summary>
-        public double LfoFrequency { get; }
+        public float LfoFrequency { get; }
 
         /// <summary>
         /// 
         /// </summary>
-        public double MinFrequency { get; }
+        public float MinFrequency { get; }
 
         /// <summary>
         /// 
         /// </summary>
-        public double MaxFrequency { get; }
+        public float MaxFrequency { get; }
 
         /// <summary>
         /// 
@@ -37,7 +37,7 @@ namespace NWaves.Effects
         /// <param name="minFrequency"></param>
         /// <param name="maxFrequency"></param>
         /// <param name="q"></param>
-        public PhaserEffect(double lfoFrequency = 1.0, double minFrequency = 300, double maxFrequency = 3000, double q = 0.5)
+        public PhaserEffect(float lfoFrequency = 1.0f, float minFrequency = 300, float maxFrequency = 3000, float q = 0.5f)
         {
             LfoFrequency = lfoFrequency;
             MinFrequency = minFrequency;
@@ -65,11 +65,11 @@ namespace NWaves.Effects
                                     .SampledAt(signal.SamplingRate)
                                     .Build();
 
-            var y = new double[x.Length];
+            var y = new float[x.Length];
 
             for (var i = 2; i < signal.Length; i++)
             {
-                var filter = new NotchFilter(lfo[i] * samplingRateInverted, Q);
+                var filter = new NotchFilter((float)(lfo[i] * samplingRateInverted), Q);
                 var b = filter.B;
                 var a = filter.A;
 

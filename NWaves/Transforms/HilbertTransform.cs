@@ -33,7 +33,7 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="samples">Array of samples</param>
         /// <returns>Complex analytic signal</returns>
-        public ComplexDiscreteSignal AnalyticSignal(double[] samples)
+        public ComplexDiscreteSignal AnalyticSignal(float[] samples)
         {
             var analyticSignal = new ComplexDiscreteSignal(1, samples, allocateNew: true);
 
@@ -44,14 +44,14 @@ namespace NWaves.Transforms
 
             for (var i = 1; i < re.Length / 2; i++)
             {
-                re[i] *= 2.0;
-                im[i] *= 2.0;
+                re[i] *= 2;
+                im[i] *= 2;
             }
 
             for (var i = re.Length / 2 + 1; i < re.Length; i++)
             {
-                re[i] = 0.0;
-                im[i] = 0.0;
+                re[i] = 0.0f;
+                im[i] = 0.0f;
             }
 
             _fft.Inverse(re, im);
@@ -75,7 +75,7 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="samples">Array of samples</param>
         /// <param name="output">Hilbert Transform array</param>
-        public void Direct(double[] samples, double[] output)
+        public void Direct(float[] samples, float[] output)
         {
             var analyticSignal = AnalyticSignal(samples).Imag;
             FastCopy.ToExistingArray(analyticSignal, output, analyticSignal.Length);

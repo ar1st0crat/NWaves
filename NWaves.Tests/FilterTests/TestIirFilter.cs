@@ -9,10 +9,10 @@ namespace NWaves.Tests.FilterTests
     public class TestIirFilter
     {
         private readonly IirFilter _filter = 
-            new IirFilter(new[] { 1, 0.4 }, new[] { 1, -0.6, 0.2 });
+            new IirFilter(new[] { 1, 0.4f }, new[] { 1, -0.6f, 0.2f });
 
         private readonly DiscreteSignal _signal = 
-            new DiscreteSignal(8000, new[] { 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+            new DiscreteSignal(8000, new[] { 1.0f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
 
         [Test]
         public void TestImpulseResponse()
@@ -46,19 +46,19 @@ namespace NWaves.Tests.FilterTests
 
             var filter = pre * de;
 
-            var samples = new[] { 1.0, 0.1, -0.4, 0.2 };
+            var samples = new[] { 1.0f, 0.1f, -0.4f, 0.2f };
             var signal = new DiscreteSignal(1, samples);
             var filtered = filter.ApplyTo(signal);
 
-            Assert.That(signal.Samples, Is.EqualTo(filtered.Samples).Within(1e-10));
+            Assert.That(signal.Samples, Is.EqualTo(filtered.Samples).Within(1e-7));
         }
 
         private static void AssertFilterOutput(DiscreteSignal output)
         {
-            Assert.That(output[0], Is.EqualTo(1.0).Within(1e-10));
-            Assert.That(output[1], Is.EqualTo(1.0).Within(1e-10));
-            Assert.That(output[2], Is.EqualTo(0.4).Within(1e-10));
-            Assert.That(output[3], Is.EqualTo(0.04).Within(1e-10));
+            Assert.That(output[0], Is.EqualTo(1.0).Within(1e-7));
+            Assert.That(output[1], Is.EqualTo(1.0).Within(1e-7));
+            Assert.That(output[2], Is.EqualTo(0.4).Within(1e-7));
+            Assert.That(output[3], Is.EqualTo(0.04).Within(1e-7));
         }
     }
 }

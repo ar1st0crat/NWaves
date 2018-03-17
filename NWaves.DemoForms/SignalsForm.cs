@@ -148,7 +148,7 @@ namespace NWaves.DemoForms
                 case "Sinusoid":
                     signalBuilder = new SinusoidBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("amp", 0.2)
+                                    .SetParameter("amp", 0.2f)
                                     .SetParameter("freq", 233/*Hz*/)
                                     .OfLength(sampleCount)
                                     .SampledAt(samplingRate)
@@ -158,8 +158,8 @@ namespace NWaves.DemoForms
                 case "Sawtooth":
                     signalBuilder = new SawtoothBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("low", -0.3)
-                                    .SetParameter("high", 0.3)
+                                    .SetParameter("low", -0.3f)
+                                    .SetParameter("high", 0.3f)
                                     .SetParameter("freq", 233/*Hz*/)
                                     .OfLength(sampleCount)
                                     .SampledAt(samplingRate)
@@ -169,8 +169,8 @@ namespace NWaves.DemoForms
                 case "Triangle Wave":
                     signalBuilder = new TriangleWaveBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("low", -0.3)
-                                    .SetParameter("high", 0.3)
+                                    .SetParameter("low", -0.3f)
+                                    .SetParameter("high", 0.3f)
                                     .SetParameter("freq", 233/*Hz*/)
                                     .OfLength(sampleCount)
                                     .SampledAt(samplingRate)
@@ -180,8 +180,8 @@ namespace NWaves.DemoForms
                 case "Square Wave":
                     signalBuilder = new SquareWaveBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("low", -0.25)
-                                    .SetParameter("high", 0.25)
+                                    .SetParameter("low", -0.25f)
+                                    .SetParameter("high", 0.25f)
                                     .SetParameter("freq", 233/*Hz*/)
                                     .OfLength(sampleCount)
                                     .SampledAt(samplingRate)
@@ -191,9 +191,9 @@ namespace NWaves.DemoForms
                 case "Pulse Wave":
                     signalBuilder = new PulseWaveBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("amp", 0.5)
-                                    .SetParameter("pulse", 0.007/*sec*/)
-                                    .SetParameter("period", 0.020/*sec*/)
+                                    .SetParameter("amp", 0.5f)
+                                    .SetParameter("pulse", 0.007f/*sec*/)
+                                    .SetParameter("period", 0.020f/*sec*/)
                                     .OfLength(sampleCount)
                                     .DelayedBy(50)
                                     .SampledAt(samplingRate)
@@ -203,7 +203,7 @@ namespace NWaves.DemoForms
                 case "AWGN":
                     signalBuilder = new AwgnBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("sigma", 0.25)
+                                    .SetParameter("sigma", 0.25f)
                                     .OfLength(sampleCount)
                                     .SampledAt(samplingRate)
                                     .Build();
@@ -212,8 +212,8 @@ namespace NWaves.DemoForms
                 case "Pink Noise":
                     signalBuilder = new PinkNoiseBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("min", -0.5)
-                                    .SetParameter("max", 0.5)
+                                    .SetParameter("min", -0.5f)
+                                    .SetParameter("max", 0.5f)
                                     .OfLength(sampleCount)
                                     .SampledAt(samplingRate)
                                     .Build();
@@ -222,8 +222,8 @@ namespace NWaves.DemoForms
                 case "Red Noise":
                     signalBuilder = new RedNoiseBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("min", -0.5)
-                                    .SetParameter("max", 0.5)
+                                    .SetParameter("min", -0.5f)
+                                    .SetParameter("max", 0.5f)
                                     .OfLength(sampleCount)
                                     .SampledAt(samplingRate)
                                     .Build();
@@ -232,8 +232,8 @@ namespace NWaves.DemoForms
                 default:
                     signalBuilder = new WhiteNoiseBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("min", -0.5)
-                                    .SetParameter("max", 0.5)
+                                    .SetParameter("min", -0.5f)
+                                    .SetParameter("max", 0.5f)
                                     .OfLength(sampleCount)
                                     .SampledAt(samplingRate)
                                     .Build();

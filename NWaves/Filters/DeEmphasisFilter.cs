@@ -11,9 +11,9 @@ namespace NWaves.Filters
         /// Constructor
         /// </summary>
         /// <param name="a">De-emphasis coefficient</param>
-        public DeEmphasisFilter(double a = 0.97)
+        public DeEmphasisFilter(float a = 0.97f)
         {
-            B = new[] { 1.0 };
+            B = new[] { 1.0f };
             A = new[] { 1, -a };
         }
     }

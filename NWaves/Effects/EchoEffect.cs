@@ -13,19 +13,19 @@ namespace NWaves.Effects
         /// <summary>
         /// Echo length (in seconds)
         /// </summary>
-        public double Length { get; }
+        public float Length { get; }
 
         /// <summary>
         /// Decay
         /// </summary>
-        public double Decay { get; }
+        public float Decay { get; }
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="length"></param>
         /// <param name="decay"></param>
-        public EchoEffect(double length, double decay)
+        public EchoEffect(float length, float decay)
         {
             Length = length;
             Decay = decay;

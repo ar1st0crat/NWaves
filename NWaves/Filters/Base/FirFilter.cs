@@ -19,7 +19,7 @@ namespace NWaves.Filters.Base
         /// Numerator part coefficients in filter's transfer function 
         /// (non-recursive part in difference equations)
         /// </summary>
-        public double[] Kernel { get; set; }
+        public float[] Kernel { get; set; }
 
         /// <summary>
         /// If Kernel.Length exceeds this value, 
@@ -38,7 +38,7 @@ namespace NWaves.Filters.Base
         /// Constructor accepting the kernel of a filter
         /// </summary>
         /// <param name="kernel"></param>
-        public FirFilter(IEnumerable<double> kernel)
+        public FirFilter(IEnumerable<float> kernel)
         {
             Kernel = kernel.ToArray();
         }
@@ -91,7 +91,7 @@ namespace NWaves.Filters.Base
             var input = signal.Samples;
             var kernel = Kernel;
 
-            var samples = new double[input.Length];
+            var samples = new float[input.Length];
 
             for (var n = 0; n < input.Length; n++)
             {
@@ -115,10 +115,10 @@ namespace NWaves.Filters.Base
             var input = signal.Samples;
             var kernel = Kernel;
 
-            var samples = new double[input.Length];
+            var samples = new float[input.Length];
 
             // buffer for delay lines:
-            var wb = new double[kernel.Length];
+            var wb = new float[kernel.Length];
             
             var wbpos = wb.Length - 1;
             
@@ -149,7 +149,7 @@ namespace NWaves.Filters.Base
         public override ComplexDiscreteSignal FrequencyResponse(int length = 512)
         {
             var real = FastCopy.PadZeros(Kernel, length);
-            var imag = new double[length];
+            var imag = new float[length];
 
             var fft = new Fft(length);
             fft.Direct(real, imag);
@@ -189,7 +189,7 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public IirFilter AsIir()
         {
-            return new IirFilter(Kernel, new []{ 1.0 });
+            return new IirFilter(Kernel, new []{ 1.0f });
         }
 
         /// <summary>
@@ -201,7 +201,7 @@ namespace NWaves.Filters.Base
             using (var reader = new StreamReader(stream))
             {
                 var content = reader.ReadToEnd();
-                var kernel = content.Split(';').Select(double.Parse).ToArray();
+                var kernel = content.Split(';').Select(float.Parse).ToArray();
                 return new FirFilter(kernel);
             }
         }

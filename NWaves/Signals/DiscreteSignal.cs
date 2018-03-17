@@ -27,7 +27,7 @@ namespace NWaves.Signals
         /// <summary>
         /// Real-valued array of samples
         /// </summary>
-        public double[] Samples { get; }
+        public float[] Samples { get; }
 
         /// <summary>
         /// Length of the signal
@@ -40,7 +40,7 @@ namespace NWaves.Signals
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="samples">Array of samples</param>
         /// <param name="allocateNew">Set to true if new memory should be allocated for data</param>
-        public DiscreteSignal(int samplingRate, double[] samples, bool allocateNew = false)
+        public DiscreteSignal(int samplingRate, float[] samples, bool allocateNew = false)
         {
             if (samplingRate <= 0)
             {
@@ -56,7 +56,7 @@ namespace NWaves.Signals
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="samples">Collection of samples</param>
-        public DiscreteSignal(int samplingRate, IEnumerable<double> samples)
+        public DiscreteSignal(int samplingRate, IEnumerable<float> samples)
             : this(samplingRate, samples?.ToArray())
         {
         }
@@ -67,7 +67,7 @@ namespace NWaves.Signals
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="length">Number of samples</param>
         /// <param name="value">Value of each sample</param>
-        public DiscreteSignal(int samplingRate, int length, double value = 0.0)
+        public DiscreteSignal(int samplingRate, int length, float value = 0.0f)
         {
             if (samplingRate <= 0)
             {
@@ -76,7 +76,7 @@ namespace NWaves.Signals
 
             SamplingRate = samplingRate;
 
-            var samples = new double[length];
+            var samples = new float[length];
             for (var i = 0; i < samples.Length; i++)
             {
                 samples[i] = value;
@@ -91,7 +91,7 @@ namespace NWaves.Signals
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="samples">Collection of integer samples</param>
         /// <param name="normalizeFactor">Some normalization coefficient</param>
-        public DiscreteSignal(int samplingRate, IEnumerable<int> samples, double normalizeFactor = 1.0)
+        public DiscreteSignal(int samplingRate, IEnumerable<int> samples, float normalizeFactor = 1.0f)
         {
             if (samplingRate <= 0)
             {
@@ -101,13 +101,13 @@ namespace NWaves.Signals
             SamplingRate = samplingRate;
             
             var intSamples = samples.ToArray();
-            var doubleSamples = new double[intSamples.Length];
+            var floatSamples = new float[intSamples.Length];
             for (var i = 0; i < intSamples.Length; i++)
             {
-                doubleSamples[i] = intSamples[i] / normalizeFactor;
+                floatSamples[i] = intSamples[i] / normalizeFactor;
             }
 
-            Samples = doubleSamples;
+            Samples = floatSamples;
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace NWaves.Signals
         /// </summary>
         /// <param name="index">Index</param>
         /// <returns>Sample by index</returns>
-        public double this[int index]
+        public float this[int index]
         {
             get { return Samples[index]; }
             set { Samples[index] = value; }
@@ -166,9 +166,9 @@ namespace NWaves.Signals
         /// <param name="startPos">Starting sample</param>
         /// <param name="endPos">Ending sample (exclusive)</param>
         /// <returns>Energy</returns>
-        public double Energy(int startPos, int endPos)
+        public float Energy(int startPos, int endPos)
         {
-            var total = 0.0;
+            var total = 0.0f;
             for (var i = startPos; i < endPos; i++)
             {
                 total += Samples[i] * Samples[i];
@@ -181,7 +181,7 @@ namespace NWaves.Signals
         /// Energy of entire signal
         /// </summary>
         /// <returns>Energy</returns>
-        public double Energy()
+        public float Energy()
         {
             return Energy(0, Length);
         }
@@ -192,18 +192,18 @@ namespace NWaves.Signals
         /// <param name="startPos">Starting sample</param>
         /// <param name="endPos">Ending sample (exclusive)</param>
         /// <returns>RMS</returns>
-        public double Rms(int startPos, int endPos)
+        public float Rms(int startPos, int endPos)
         {
-            return Math.Sqrt(Energy(startPos, endPos));
+            return (float)(Math.Sqrt(Energy(startPos, endPos)));
         }
 
         /// <summary>
         /// RMS of entire signal
         /// </summary>
         /// <returns>RMS</returns>
-        public double Rms()
+        public float Rms()
         {
-            return Math.Sqrt(Energy(0, Length));
+            return (float)(Math.Sqrt(Energy(0, Length)));
         }
 
         /// <summary>
@@ -212,9 +212,9 @@ namespace NWaves.Signals
         /// <param name="startPos">Starting sample</param>
         /// <param name="endPos">Ending sample (exclusive)</param>
         /// <returns>Zero-crossing rate</returns>
-        public double ZeroCrossingRate(int startPos, int endPos)
+        public float ZeroCrossingRate(int startPos, int endPos)
         {
-            const double disbalance = 1e-4;
+            const float disbalance = 1e-4f;
 
             var prevSample = Samples[startPos] + disbalance;
 
@@ -231,14 +231,14 @@ namespace NWaves.Signals
                 prevSample = sample;
             }
 
-            return (double)rate / (endPos - startPos - 1);
+            return (float)rate / (endPos - startPos - 1);
         }
 
         /// <summary>
         /// Zero-crossing rate of entire signal
         /// </summary>
         /// <returns>Zero-crossing rate</returns>
-        public double ZeroCrossingRate()
+        public float ZeroCrossingRate()
         {
             return ZeroCrossingRate(0, Length);
         }
@@ -249,9 +249,9 @@ namespace NWaves.Signals
         /// <param name="startPos">Starting sample</param>
         /// <param name="endPos">Ending sample (exclusive)</param>
         /// <returns>Entropy</returns>
-        public double Entropy(int startPos, int endPos)
+        public float Entropy(int startPos, int endPos)
         {
-            var sum = 0.0;
+            var sum = 0.0f;
             for (var i = startPos; i < endPos; i++)
             {
                 sum += Math.Abs(Samples[i]);
@@ -261,17 +261,17 @@ namespace NWaves.Signals
             for (var i = startPos; i < endPos; i++)
             {
                 var p = Math.Abs(Samples[i]) / sum;
-                entropy -= p * Math.Log(p + double.Epsilon, 2);
+                entropy -= p * Math.Log(p + float.Epsilon, 2);
             }
 
-            return entropy;
+            return (float)entropy;
         }
 
         /// <summary>
         /// Entropy of entire signal
         /// </summary>
         /// <returns>Entropy</returns>
-        public double Entropy()
+        public float Entropy()
         {
             return Entropy(0, Length);
         }

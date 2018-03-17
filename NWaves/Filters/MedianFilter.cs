@@ -33,7 +33,7 @@ namespace NWaves.Filters
                                       FilteringOptions filteringOptions = FilteringOptions.Custom)
         {
             var input = signal.Samples;
-            var output = new double[input.Length];
+            var output = new float[input.Length];
 
             var mid = (Size - 1) / 2;
 
@@ -62,7 +62,7 @@ namespace NWaves.Filters
         /// <param name="start"></param>
         /// <param name="end"></param>
         /// <returns></returns>
-        private static int Partition(double[] a, int start, int end)
+        private static int Partition(float[] a, int start, int end)
         {
             var pivot = a[end];
             var last = start - 1;
@@ -88,7 +88,7 @@ namespace NWaves.Filters
         /// <param name="start"></param>
         /// <param name="end"></param>
         /// <returns></returns>
-        private static double FindNth(double[] a, int n, int start, int end)
+        private static float FindNth(float[] a, int n, int start, int end)
         {
             while (true)
             {

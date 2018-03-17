@@ -34,8 +34,8 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            var windowSize = (double) 4096 / _signal.SamplingRate;
-            var hopSize = (double) 2048 / _signal.SamplingRate;
+            var windowSize = (float) 4096 / _signal.SamplingRate;
+            var hopSize = (float) 2048 / _signal.SamplingRate;
 
             var tdExtractor = new TimeDomainFeaturesExtractor("all", windowSize, hopSize);
             var spectralExtractor = new SpectralFeaturesExtractor("all", windowSize, hopSize);

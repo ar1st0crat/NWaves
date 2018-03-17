@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NWaves.Transforms
+﻿namespace NWaves.Transforms
 {
     /// <summary>
     /// Class providing methods for direct and inverse Fast Fourier Transforms
@@ -13,23 +11,24 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
-        public void Direct(double[] re, double[] im)
+        public void Direct(float[] re, float[] im)
         {
-            double t1, t2;
+            float t1, t2;
             int i, j;
             int L, M, S;
 
             L = _fftSize;
             M = _fftSize >> 1;
             S = _fftSize - 1;
+            var ti = 0;
             while (L >= 2)
             {
                 var l = L >> 1;
-                t1 = Math.PI / l;
-                var u1 = 1.0;
-                var u2 = 0.0;
-                var c = Math.Cos(t1);
-                var s = -Math.Sin(t1);
+                var u1 = 1.0f;
+                var u2 = 0.0f;
+                var c = _cosTbl[ti];
+                var s = -_sinTbl[ti];
+                ti++;
                 for (j = 0; j < l; j++)
                 {
                     for (i = j; i < _fftSize; i += L)
@@ -77,23 +76,24 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
-        public void Inverse(double[] re, double[] im)
+        public void Inverse(float[] re, float[] im)
         {
-            double t1, t2;
+            float t1, t2;
             int i, j;
             int L, M, S;
 
             L = _fftSize;
             M = _fftSize >> 1;
             S = _fftSize - 1;
+            var ti = 0;
             while (L >= 2)
             {
                 var l = L >> 1;
-                t1 = Math.PI / l;
-                var u1 = 1.0;
-                var u2 = 0.0;
-                var c = Math.Cos(t1);
-                var s = Math.Sin(t1);
+                var u1 = 1.0f;
+                var u2 = 0.0f;
+                var c = _cosTbl[ti];
+                var s = _sinTbl[ti];
+                ti++;
                 for (j = 0; j < l; j++)
                 {
                     for (i = j; i < _fftSize; i += L)
@@ -135,5 +135,8 @@ namespace NWaves.Transforms
                 j += k;
             }
         }
+
+        private readonly float[] _cosTbl;
+        private readonly float[] _sinTbl;
     }
 }

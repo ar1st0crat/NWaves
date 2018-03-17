@@ -10,7 +10,7 @@ namespace NWaves.Tests.OperationTests
         [Test]
         public void TestSameSamplingRate()
         {
-            var signal = new DiscreteSignal(16000, new [] {1.0, -2, 3, 1, 4, -2, 1, -5, 3});
+            var signal = new DiscreteSignal(16000, new [] {1.0f, -2, 3, 1, 4, -2, 1, -5, 3});
 
             var resampled = Operation.Resample(signal, 16000);
 

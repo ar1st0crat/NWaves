@@ -15,13 +15,13 @@ namespace NWaves.Filters
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="order"></param>
-        public ButterworthFilter(double freq, int order)
+        public ButterworthFilter(float freq, int order)
         {
             // Calculation of filter coefficients is based on Neil Robertson'post:
             // https://www.dsprelated.com/showarticle/1119.php
 
-            var re = new double[order];
-            var im = new double[order];
+            var re = new float[order];
+            var im = new float[order];
             
             var scaleFreq = Math.Tan(Math.PI * freq);
 
@@ -30,8 +30,8 @@ namespace NWaves.Filters
             for (var k = 0; k < order; k++)
             {
                 var theta = Math.PI * (2 * k + 1) / (2 * order);
-                re[k] = scaleFreq * -Math.Sin(theta);
-                im[k] = scaleFreq *  Math.Cos(theta);
+                re[k] = (float)(scaleFreq * -Math.Sin(theta));
+                im[k] = (float)(scaleFreq *  Math.Cos(theta));
             }
 
             // 2) switch to z-domain (bilinear transform)

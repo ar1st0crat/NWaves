@@ -35,11 +35,11 @@ namespace NWaves.Filters
 
             Size = size;
             
-            B = Enumerable.Repeat(0.0, size + 1).ToArray();
-            B[0] = 1.0 / size;
-            B[size] = -1.0 / size;
+            B = Enumerable.Repeat(0.0f, size + 1).ToArray();
+            B[0] = 1.0f / size;
+            B[size] = -1.0f / size;
 
-            A = new[] { 1, -1.0 };
+            A = new[] { 1, -1.0f };
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace NWaves.Filters
             var input = signal.Samples;
             var size = Size;
             
-            var samples = new double[input.Length];
+            var samples = new float[input.Length];
             samples[0] = input[0] / size;
 
             for (var n = 1; n < input.Length; n++)

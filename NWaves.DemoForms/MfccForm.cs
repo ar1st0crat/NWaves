@@ -48,7 +48,7 @@ namespace NWaves.DemoForms
                                                       //lowFreq: 100,
                                                       //highFreq: 4200,
                                                       //lifterSize: 22,
-                                                      preEmphasis: 0.95,
+                                                      preEmphasis: 0.95f,
                                                       window: WindowTypes.Hamming);
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);
             //FeaturePostProcessing.NormalizeMean(_mfccVectors);

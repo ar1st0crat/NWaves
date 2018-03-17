@@ -18,17 +18,17 @@ namespace NWaves.Transforms
         /// <summary>
         /// Intermediate buffer storing real parts of spectrum
         /// </summary>
-        private readonly double[] _realSpectrum;
+        private readonly float[] _realSpectrum;
 
         /// <summary>
         /// Intermediate buffer storing imaginary parts of spectrum
         /// </summary>
-        private readonly double[] _imagSpectrum;
+        private readonly float[] _imagSpectrum;
 
         /// <summary>
         /// Just a buffer with zeros for quick memset
         /// </summary>
-        private readonly double[] _zeroblock;
+        private readonly float[] _zeroblock;
 
         /// <summary>
         /// Constructor accepting the size of FFT
@@ -43,9 +43,21 @@ namespace NWaves.Transforms
             }
 
             _fftSize = fftSize;
-            _realSpectrum = new double[fftSize];
-            _imagSpectrum = new double[fftSize];
-            _zeroblock = new double[fftSize];
+            _realSpectrum = new float[fftSize];
+            _imagSpectrum = new float[fftSize];
+            _zeroblock = new float[fftSize];
+
+            var tblSize = (int)Math.Log(fftSize, 2);
+            _cosTbl = new float[tblSize];
+            _sinTbl = new float[tblSize];
+
+            var pos = 0;
+            for (var i = 1; i < _fftSize; i *= 2)
+            {
+                _cosTbl[pos] = (float)Math.Cos(2 * Math.PI * i / _fftSize);
+                _sinTbl[pos] = (float)Math.Sin(2 * Math.PI * i / _fftSize);
+                pos++;
+            }
         }
 
         /// <summary>
@@ -57,7 +69,7 @@ namespace NWaves.Transforms
         /// <param name="samples">Array of samples (samples parts)</param>
         /// <param name="spectrum">Magnitude spectrum</param>
         /// <param name="normalize">Normalization flag</param>
-        public void MagnitudeSpectrum(double[] samples, double[] spectrum, bool normalize = false)
+        public void MagnitudeSpectrum(float[] samples, float[] spectrum, bool normalize = false)
         {
             FastCopy.ToExistingArray(_zeroblock, _realSpectrum, _fftSize);
             FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
@@ -69,14 +81,14 @@ namespace NWaves.Transforms
             {
                 for (var i = 0; i < spectrum.Length; i++)
                 {
-                    spectrum[i] = Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]) / _fftSize;
+                    spectrum[i] = (float)(Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]) / _fftSize);
                 }
             }
             else
             {
                 for (var i = 0; i < spectrum.Length; i++)
                 {
-                    spectrum[i] = Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]);
+                    spectrum[i] = (float)(Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]));
                 }
             }
         }
@@ -90,7 +102,7 @@ namespace NWaves.Transforms
         /// <param name="samples">Array of samples (samples parts)</param>
         /// <param name="spectrum">Power spectrum</param>
         /// <param name="normalize">Normalization flag</param>
-        public void PowerSpectrum(double[] samples, double[] spectrum, bool normalize = true)
+        public void PowerSpectrum(float[] samples, float[] spectrum, bool normalize = true)
         {
             FastCopy.ToExistingArray(_zeroblock, _realSpectrum, _fftSize);
             FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
@@ -122,7 +134,7 @@ namespace NWaves.Transforms
         /// <returns></returns>
         public DiscreteSignal MagnitudeSpectrum(DiscreteSignal signal, bool normalize = false)
         {
-            var spectrum = new double[_fftSize / 2 + 1];
+            var spectrum = new float[_fftSize / 2 + 1];
             MagnitudeSpectrum(signal.Samples, spectrum, normalize);
             return new DiscreteSignal(signal.SamplingRate, spectrum);
         }
@@ -135,7 +147,7 @@ namespace NWaves.Transforms
         /// <returns></returns>
         public DiscreteSignal PowerSpectrum(DiscreteSignal signal, bool normalize = true)
         {
-            var spectrum = new double[_fftSize / 2 + 1];
+            var spectrum = new float[_fftSize / 2 + 1];
             PowerSpectrum(signal.Samples, spectrum, normalize);
             return new DiscreteSignal(signal.SamplingRate, spectrum);
         }

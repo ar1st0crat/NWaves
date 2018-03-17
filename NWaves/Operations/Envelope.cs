@@ -1,4 +1,5 @@
-﻿using NWaves.Filters.BiQuad;
+﻿using System.Linq;
+using NWaves.Filters.BiQuad;
 using NWaves.Signals;
 
 namespace NWaves.Operations
@@ -11,7 +12,7 @@ namespace NWaves.Operations
         /// <param name="signal">Signal</param>
         /// <param name="lowpassCutoff">LP filter cutoff frequency</param>
         /// <returns></returns>
-        public static DiscreteSignal Envelope(DiscreteSignal signal, double lowpassCutoff = 0.05)
+        public static DiscreteSignal Envelope(DiscreteSignal signal, float lowpassCutoff = 0.05f)
         {
             var envelope = FullRectify(signal);
 
@@ -28,15 +29,8 @@ namespace NWaves.Operations
         /// <returns>Fully rectified signal</returns>
         public static DiscreteSignal FullRectify(DiscreteSignal signal)
         {
-            var s = signal.Copy();
-            for (var i = 0; i < s.Length; i++)
-            {
-                if (s[i] < 0)
-                {
-                    s[i] = -s[i];
-                }
-            }
-            return s;
+            return new DiscreteSignal(signal.SamplingRate, 
+                                      signal.Samples.Select(s => s < 0 ? -s : s));
         }
 
         /// <summary>
@@ -46,15 +40,8 @@ namespace NWaves.Operations
         /// <returns>Half rectified signal</returns>
         public static DiscreteSignal HalfRectify(DiscreteSignal signal)
         {
-            var s = signal.Copy();
-            for (var i = 0; i < s.Length; i++)
-            {
-                if (s[i] < 0)
-                {
-                    s[i] = 0;
-                }
-            }
-            return s;
+            return new DiscreteSignal(signal.SamplingRate,
+                                      signal.Samples.Select(s => s < 0 ? 0 : s));
         }
     }
 }

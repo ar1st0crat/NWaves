@@ -10,8 +10,8 @@ namespace NWaves.DemoForms.UserControls
         /// <summary>
         /// Groups to plot
         /// </summary>
-        private double[][] _groups;
-        public double[][] Groups
+        private float[][] _groups;
+        public float[][] Groups
         {
             get { return _groups; }
             set
@@ -95,8 +95,8 @@ namespace NWaves.DemoForms.UserControls
                 while (i < _groups[j].Length)
                 {
                     g.DrawLine(pen,
-                        20 + x - Stride, (float)-_groups[j][i - 1] * Gain + offset,
-                        20 + x,          (float)-_groups[j][i] * Gain + offset);
+                        20 + x - Stride, -_groups[j][i - 1] * Gain + offset,
+                        20 + x,          -_groups[j][i]     * Gain + offset);
                     x += Stride;
                     i++;
                 }

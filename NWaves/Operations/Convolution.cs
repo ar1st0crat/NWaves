@@ -22,10 +22,10 @@ namespace NWaves.Operations
             var fftSize = MathUtils.NextPowerOfTwo(length);
             var fft = new Fft(fftSize);
 
-            var real1 = new double[fftSize];
-            var imag1 = new double[fftSize];
-            var real2 = new double[fftSize];
-            var imag2 = new double[fftSize];
+            var real1 = new float[fftSize];
+            var imag1 = new float[fftSize];
+            var real2 = new float[fftSize];
+            var imag2 = new float[fftSize];
 
             FastCopy.ToExistingArray(signal1.Samples, real1, signal1.Length);
             FastCopy.ToExistingArray(signal2.Samples, real2, signal2.Length);
@@ -110,7 +110,7 @@ namespace NWaves.Operations
         /// Position of central sample for the case of 2*M-1 convolution 
         /// (if it is set then resulting array has length of M)
         /// </param>
-        public static void Convolve(double[] real1, double[] imag1, double[] real2, double[] imag2, double[] res, int center = 0)
+        public static void Convolve(float[] real1, float[] imag1, float[] real2, float[] imag2, float[] res, int center = 0)
         {
             var fftSize = real1.Length;
             var fft = new Fft(fftSize);
@@ -185,7 +185,7 @@ namespace NWaves.Operations
         /// <param name="res">Real parts of resulting cross-correlation (zero-padded if center == 0)</param>
         /// <param name="center">Position of central sample for the case of 2*CENTER-1 cross-correlation 
         /// (if it is set then resulting array has length of CENTER)</param>
-        public static void CrossCorrelate(double[] real1, double[] imag1, double[] real2, double[] imag2, double[] res, int center = 0)
+        public static void CrossCorrelate(float[] real1, float[] imag1, float[] real2, float[] imag2, float[] res, int center = 0)
         {
             // reverse second signal
             for (var i = 0; i < center; i++)
@@ -226,10 +226,10 @@ namespace NWaves.Operations
 
             for (var i = 0; i < fftSize; i++)
             {
-                signal.Real[i] += 1e-10;
-                signal.Imag[i] += 1e-10;
-                kernel.Real[i] += 1e-10;
-                kernel.Imag[i] += 1e-10;
+                signal.Real[i] += 1e-10f;
+                signal.Imag[i] += 1e-10f;
+                kernel.Real[i] += 1e-10f;
+                kernel.Imag[i] += 1e-10f;
             }
 
             // 2) do complex division of spectra
@@ -266,7 +266,7 @@ namespace NWaves.Operations
             var b = signal2.Samples;
             var length = a.Length + b.Length - 1;
 
-            var conv = new double[length];
+            var conv = new float[length];
 
             for (var n = 0; n < length; n++)
             {
@@ -294,7 +294,7 @@ namespace NWaves.Operations
             var b = signal2.Samples;
             var length = a.Length + b.Length - 1;
 
-            var corr = new double[length];
+            var corr = new float[length];
 
             for (var n = 0; n < length; n++)
             {

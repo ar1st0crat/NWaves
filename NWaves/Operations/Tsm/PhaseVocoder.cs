@@ -50,24 +50,24 @@ namespace NWaves.Operations.Tsm
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
                                       FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
-            var stretch = (double)_hopSynthesis / _hopAnalysis;
+            var stretch = (float)_hopSynthesis / _hopAnalysis;
 
             var input = signal.Samples;
-            var output = new double[(int)(input.Length * stretch) + _fftSize];
+            var output = new float[(int)(input.Length * stretch) + _fftSize];
 
             var fft = new Fft(_fftSize);
             var hannWindow = Window.OfType(WindowTypes.Hann, _fftSize);
 
-            var ratio = _fftSize / (2.0 * _hopAnalysis);
-            var norm = 4.0 / (_fftSize * ratio);
+            var ratio = _fftSize / (2.0f * _hopAnalysis);
+            var norm = 4.0f / (_fftSize * ratio);
 
             var omega = Enumerable.Range(0, _fftSize / 2 + 1)
                                   .Select(f => 2 * Math.PI * f / _fftSize)
                                   .ToArray();
 
-            var re = new double[_fftSize];
-            var im = new double[_fftSize];
-            var zeroblock = new double[_fftSize];
+            var re = new float[_fftSize];
+            var im = new float[_fftSize];
+            var zeroblock = new float[_fftSize];
 
             var prevPhase = new double[_fftSize / 2 + 1];
             var phaseTotal = new double[_fftSize / 2 + 1];
@@ -97,13 +97,13 @@ namespace NWaves.Operations.Tsm
                     phaseTotal[j] += _hopSynthesis * freq;
                     prevPhase[j] = phase;
                 
-                    re[j] = mag * Math.Cos(phaseTotal[j]);
-                    im[j] = mag * Math.Sin(phaseTotal[j]);
+                    re[j] = (float)(mag * Math.Cos(phaseTotal[j]));
+                    im[j] = (float)(mag * Math.Sin(phaseTotal[j]));
                 }
 
                 for (var j = _fftSize / 2 + 1; j < _fftSize; j++)
                 {
-                    re[j] = im[j] = 0.0;
+                    re[j] = im[j] = 0.0f;
                 }
 
                 fft.Inverse(re, im);
@@ -136,8 +136,8 @@ namespace NWaves.Operations.Tsm
                                   .Select(f => 2 * Math.PI * f / _fftSize)
                                   .ToArray();
 
-            var prevPhase = new double[_fftSize / 2 + 1];
-            var phaseTotal = new double[_fftSize / 2 + 1];
+            var prevPhase = new float[_fftSize / 2 + 1];
+            var phaseTotal = new float[_fftSize / 2 + 1];
 
             for (var i = 0; i < frames.Count; i++)
             {
@@ -157,8 +157,8 @@ namespace NWaves.Operations.Tsm
                     prevPhase[j] = phase[j];
                 }
 
-                var re = new double[_fftSize];
-                var im = new double[_fftSize];
+                var re = new float[_fftSize];
+                var im = new float[_fftSize];
 
                 for (var j = 0; j < _fftSize / 2 + 1; j++)
                 {

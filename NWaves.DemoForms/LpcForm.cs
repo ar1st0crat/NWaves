@@ -15,8 +15,8 @@ namespace NWaves.DemoForms
 {
     public partial class LpcForm : Form
     {
-        private const double WindowSize = 0.032;
-        private const double HopSize = 0.010;
+        private const float WindowSize = 0.032f;
+        private const float HopSize = 0.010f;
 
         private DiscreteSignal _signal;
         private List<FeatureVector> _lpcVectors;
@@ -63,7 +63,7 @@ namespace NWaves.DemoForms
             lpcPanel.Line = _lpcVectors[0].Features.Skip(1).ToArray();
         }
 
-        double[] ComputeSpectrum(int idx)
+        float[] ComputeSpectrum(int idx)
         {
             var pos = (int)(_signal.SamplingRate * HopSize * idx);
 
@@ -71,11 +71,11 @@ namespace NWaves.DemoForms
                        .Samples;
         }
 
-        double[] EstimateSpectrum(int idx)
+        float[] EstimateSpectrum(int idx)
         {
             var vector = _lpcVectors[idx].Features.ToArray();  // make new copy of array of features
-            var gain = Math.Sqrt(vector[0]);
-            vector[0] = 1.0;
+            var gain = (float)Math.Sqrt(vector[0]);
+            vector[0] = 1.0f;
 
             var lpcFilter = new IirFilter(new[] { gain }, vector);
 

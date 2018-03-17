@@ -22,7 +22,7 @@ namespace NWaves.DemoForms
         private List<FeatureVector> _features;
         private int _featIndex;
 
-        private double[][] _filterbank;
+        private float[][] _filterbank;
 
         public ModulationSpectrumForm()
         {
@@ -59,11 +59,11 @@ namespace NWaves.DemoForms
             var filterCount = int.Parse(filterCountTextBox.Text);
             var samplingRate = int.Parse(samplingRateTextBox.Text);
             var fftSize = int.Parse(fftSizeTextBox.Text);
-            var lowFreq = double.Parse(lowFreqTextBox.Text);
-            var highFreq = double.Parse(highFreqTextBox.Text);
+            var lowFreq = float.Parse(lowFreqTextBox.Text);
+            var highFreq = float.Parse(highFreqTextBox.Text);
 
             int scaleCoeff = 1;
-            Tuple<double, double, double>[] bands;
+            Tuple<float, float, float>[] bands;
 
             switch (filterbankComboBox.Text)
             {
@@ -134,8 +134,8 @@ namespace NWaves.DemoForms
 
         private void computeButton_Click(object sender, EventArgs e)
         {
-            var windowSize = double.Parse(analysisFftTextBox.Text);
-            var overlapSize = double.Parse(hopSizeTextBox.Text);
+            var windowSize = float.Parse(analysisFftTextBox.Text);
+            var overlapSize = float.Parse(hopSizeTextBox.Text);
             var modulationFftSize = int.Parse(longTermFftSizeTextBox.Text);
             var modulationHopSize = int.Parse(longTermHopSizeTextBox.Text);
 
@@ -174,7 +174,7 @@ namespace NWaves.DemoForms
         {
             if (temporalCheckBox.Checked)
             {
-                DrawModulationSpectraHerz(_extractor.VectorsAtHerz(_features, _signal.SamplingRate, double.Parse(herzTextBox.Text)));
+                DrawModulationSpectraHerz(_extractor.VectorsAtHerz(_features, _signal.SamplingRate, float.Parse(herzTextBox.Text)));
             }
             else
             {
@@ -200,7 +200,7 @@ namespace NWaves.DemoForms
 
         #region drawing
 
-        private void DrawFilterbank(double[][] filterbank, int scaleCoeff = 1)
+        private void DrawFilterbank(float[][] filterbank, int scaleCoeff = 1)
         {
             var g = filterbankPanel.CreateGraphics();
             g.Clear(Color.White);
@@ -230,7 +230,7 @@ namespace NWaves.DemoForms
             }
         }
 
-        private void DrawEnvelopes(double[][] envelopes)
+        private void DrawEnvelopes(float[][] envelopes)
         {
             var g = envelopesPanel.CreateGraphics();
             g.Clear(Color.White);
@@ -270,7 +270,7 @@ namespace NWaves.DemoForms
             pen.Dispose();
         }
 
-        private void DrawModulationSpectrum(double[][] spectrum)
+        private void DrawModulationSpectrum(float[][] spectrum)
         {
             var minValue = spectrum.SelectMany(s => s).Min();
             var maxValue = spectrum.SelectMany(s => s).Max();
@@ -293,7 +293,7 @@ namespace NWaves.DemoForms
             g.DrawImage(spectrumBitmap, 25, 25, modulationSpectrumPanel.Width - 25, modulationSpectrumPanel.Height - 25);
         }
 
-        private void DrawModulationSpectraHerz(List<double[]> spectra)
+        private void DrawModulationSpectraHerz(List<float[]> spectra)
         {
             var minValue = spectra.SelectMany(s => s).Min();
             var maxValue = spectra.SelectMany(s => s).Max();

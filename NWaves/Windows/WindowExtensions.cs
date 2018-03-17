@@ -12,7 +12,7 @@ namespace NWaves.Windows
         /// </summary>
         /// <param name="samples"></param>
         /// <param name="windowSamples"></param>
-        public static void ApplyWindow(this double[] samples, double[] windowSamples)
+        public static void ApplyWindow(this float[] samples, float[] windowSamples)
         {
             for (var k = 0; k < windowSamples.Length; k++)
             {
@@ -25,7 +25,7 @@ namespace NWaves.Windows
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="windowSamples"></param>
-        public static void ApplyWindow(this DiscreteSignal signal, double[] windowSamples)
+        public static void ApplyWindow(this DiscreteSignal signal, float[] windowSamples)
         {
             signal.Samples.ApplyWindow(windowSamples);
         }
@@ -35,7 +35,7 @@ namespace NWaves.Windows
         /// </summary>
         /// <param name="samples"></param>
         /// <param name="window"></param>
-        public static void ApplyWindow(this double[] samples, WindowTypes window)
+        public static void ApplyWindow(this float[] samples, WindowTypes window)
         {
             var windowSamples = Window.OfType(window, samples.Length);
             samples.ApplyWindow(windowSamples);

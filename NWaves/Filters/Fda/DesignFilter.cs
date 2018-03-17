@@ -20,7 +20,7 @@ namespace NWaves.Filters.Fda
         /// <param name="phaseResponse"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static FirFilter Fir(int order, double[] magnitudeResponse, double[] phaseResponse = null, WindowTypes window = WindowTypes.Blackman)
+        public static FirFilter Fir(int order, float[] magnitudeResponse, float[] phaseResponse = null, WindowTypes window = WindowTypes.Blackman)
         {
             if (order % 2 == 0)
             {
@@ -30,7 +30,7 @@ namespace NWaves.Filters.Fda
             var fftSize = MathUtils.NextPowerOfTwo(magnitudeResponse.Length);
             var fft = new Fft(fftSize);
 
-            double[] real, imag;
+            float[] real, imag;
 
             real = fftSize != magnitudeResponse.Length ? 
                    FastCopy.PadZeros(magnitudeResponse, fftSize) : 
@@ -44,14 +44,14 @@ namespace NWaves.Filters.Fda
             }
             else
             {
-                imag = new double[fftSize];
+                imag = new float[fftSize];
             }
 
             fft.Inverse(real, imag);
 
-            var kernel = new double[order];
+            var kernel = new float[order];
 
-            var compensation = 2.0 / fftSize;
+            var compensation = 2.0f / fftSize;
             var middle = order / 2;
             for (var i = 0; i <= middle; i++)
             {
@@ -73,7 +73,7 @@ namespace NWaves.Filters.Fda
         /// <param name="sinc"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static FirFilter FirLp(int order, double freq, bool sinc = true, WindowTypes window = WindowTypes.Blackman)
+        public static FirFilter FirLp(int order, float freq, bool sinc = true, WindowTypes window = WindowTypes.Blackman)
         {
             if (sinc)
             {
@@ -82,13 +82,13 @@ namespace NWaves.Filters.Fda
 
             var fftSize = Math.Max(512, MathUtils.NextPowerOfTwo(order * 4));
 
-            var magnitudeResponse = new double[fftSize];
-            var phaseResponse = new double[fftSize];
+            var magnitudeResponse = new float[fftSize];
+            var phaseResponse = new float[fftSize];
 
             var cutoffPos = (int)(freq * fftSize);
             for (var i = 0; i < cutoffPos; i++)
             {
-                magnitudeResponse[i] = 1.0;
+                magnitudeResponse[i] = 1.0f;
             }
 
             return Fir(order, magnitudeResponse, phaseResponse, window);
@@ -101,14 +101,14 @@ namespace NWaves.Filters.Fda
         /// <param name="freq"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        private static FirFilter FirLpSinc(int order, double freq, WindowTypes window = WindowTypes.Blackman)
+        private static FirFilter FirLpSinc(int order, float freq, WindowTypes window = WindowTypes.Blackman)
         {
             if (order % 2 == 0)
             {
                 throw new ArgumentException("The order of a filter must be an odd number!");
             }
 
-            var kernel = new double[order];
+            var kernel = new float[order];
 
             var middle = order / 2;
             var freq2Pi = 2 * Math.PI * freq;
@@ -116,7 +116,7 @@ namespace NWaves.Filters.Fda
             kernel[middle] = 2 * freq;
             for (var i = 1; i <= middle; i++)
             {
-                kernel[middle - i] = kernel[middle + i] = Math.Sin(freq2Pi * i) / (Math.PI * i);
+                kernel[middle - i] = kernel[middle + i] = (float)(Math.Sin(freq2Pi * i) / (Math.PI * i));
             }
 
             kernel.ApplyWindow(window);
@@ -132,7 +132,7 @@ namespace NWaves.Filters.Fda
         public static FirFilter LpToHp(FirFilter filter)
         {
             var kernel = filter.Kernel.Select(k => -k).ToArray();
-            kernel[kernel.Length / 2] += 1.0;
+            kernel[kernel.Length / 2] += 1.0f;
             return new FirFilter(kernel);
         }
 

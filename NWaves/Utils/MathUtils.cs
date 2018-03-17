@@ -57,9 +57,9 @@ namespace NWaves.Utils
         /// <param name="y"></param>
         /// <param name="arg"></param>
         /// <returns></returns>
-        public static double[] InterpolateLinear(double[] x, double[] y, double[] arg)
+        public static float[] InterpolateLinear(float[] x, float[] y, float[] arg)
         {
-            var interp = new double[arg.Length];
+            var interp = new float[arg.Length];
 
             var left = 0;
             var right = 1;
@@ -236,65 +236,7 @@ namespace NWaves.Utils
                 }
             }
 
-            // Combine repeated roots
-
-            for (var i = 0; i < zr.Length; ++i)
-            {
-                var count = 1;
-                var a = zr[i];
-                var b = zi[i];
-                for (var j = 0; j < zr.Length; ++j)
-                {
-                    if (i == j)
-                    {
-                        continue;
-                    }
-                    if (AreCloseComplex(zr[i], zi[i], zr[j], zi[j], tolerance))
-                    {
-                        ++count;
-                        a += zr[j];
-                        b += zi[j];
-                    }
-                }
-                if (count > 1)
-                {
-                    a /= count;
-                    b /= count;
-                    for (var j = 0; j < zr.Length; ++j)
-                    {
-                        if (i == j)
-                        {
-                            continue;
-                        }
-                        if (AreCloseComplex(zr[i], zi[i], zr[j], zi[j], tolerance))
-                        {
-                            zr[j] = a;
-                            zi[j] = b;
-                        }
-                    }
-                    zr[i] = a;
-                    zi[i] = b;
-                }
-            }
-
             return new Tuple<double[], double[]>(zr, zi);
-        }
-
-        /// <summary>
-        /// Method checks if two complex numbers are basically identical
-        /// </summary>
-        /// <param name="re1">Real part of the first number</param>
-        /// <param name="im1">Imaginary part of the first number</param>
-        /// <param name="re2">Real part of the second number</param>
-        /// <param name="im2">Imaginary part of the second number</param>
-        /// <param name="tolerance">The difference threshold indicating the numbers are basically identical</param>
-        /// <returns></returns>
-        public static bool AreCloseComplex(double re1, double im1, double re2, double im2, double tolerance)
-        {
-            var dre = re1 - re2;
-            var dim = im1 - im2;
-            var r = dre * dre + dim * dim;
-            return r * r < tolerance;
         }
     }
 }

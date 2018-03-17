@@ -12,19 +12,19 @@ namespace NWaves.Effects
         /// <summary>
         /// Modulation frequency
         /// </summary>
-        public double Frequency { get; }
+        public float Frequency { get; }
 
         /// <summary>
         /// Tremolo index (modulation index)
         /// </summary>
-        public double TremoloIndex { get; }
+        public float TremoloIndex { get; }
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="frequency"></param>
         /// <param name="tremoloIndex"></param>
-        public TremoloEffect(double frequency = 10/*Hz*/, double tremoloIndex = 0.5)
+        public TremoloEffect(float frequency = 10/*Hz*/, float tremoloIndex = 0.5f)
         {
             Frequency = frequency;
             TremoloIndex = tremoloIndex;

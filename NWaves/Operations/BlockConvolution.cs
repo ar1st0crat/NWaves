@@ -28,20 +28,20 @@ namespace NWaves.Operations
             // pre-compute kernel's FFT:
 
             var kernelReal = FastCopy.PadZeros(kernel.Samples, fftSize);
-            var kernelImag = new double[fftSize];
+            var kernelImag = new float[fftSize];
 
             fft.Direct(kernelReal, kernelImag);
 
             // reserve space for current signal block:
 
-            var blockReal = new double[fftSize];
-            var blockImag = new double[fftSize];
-            var zeroblock = new double[fftSize];
+            var blockReal = new float[fftSize];
+            var blockImag = new float[fftSize];
+            var zeroblock = new float[fftSize];
 
             // reserve space for resulting spectrum at each step:
 
-            var spectrumReal = new double[fftSize];
-            var spectrumImag = new double[fftSize];
+            var spectrumReal = new float[fftSize];
+            var spectrumImag = new float[fftSize];
 
             var filtered = new DiscreteSignal(signal.SamplingRate, signal.Length);
 
@@ -118,19 +118,19 @@ namespace NWaves.Operations
             // pre-compute kernel's FFT:
 
             var kernelReal = FastCopy.PadZeros(kernel.Samples, fftSize);
-            var kernelImag = new double[fftSize];
+            var kernelImag = new float[fftSize];
             fft.Direct(kernelReal, kernelImag);
 
             // reserve space for current signal block:
 
-            var blockReal = new double[fftSize];
-            var blockImag = new double[fftSize];
-            var zeroblock = new double[fftSize];
+            var blockReal = new float[fftSize];
+            var blockImag = new float[fftSize];
+            var zeroblock = new float[fftSize];
 
             // reserve space for resulting spectrum at each step:
 
-            var spectrumReal = new double[fftSize];
-            var spectrumImag = new double[fftSize];
+            var spectrumReal = new float[fftSize];
+            var spectrumImag = new float[fftSize];
 
             var filtered = new DiscreteSignal(signal.SamplingRate, signal.Length);
 

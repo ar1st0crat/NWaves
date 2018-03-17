@@ -14,7 +14,7 @@ namespace NWaves.Effects
         /// <summary>
         /// Shift ratio
         /// </summary>
-        private readonly double _shift;
+        private readonly float _shift;
 
         /// <summary>
         /// Size of FFT
@@ -26,7 +26,7 @@ namespace NWaves.Effects
         /// </summary>
         /// <param name="shift"></param>
         /// <param name="fftSize"></param>
-        public PitchShiftEffect(double shift, int fftSize = 4096)
+        public PitchShiftEffect(float shift, int fftSize = 4096)
         {
             _shift = shift;
             _fftSize = fftSize;
@@ -47,7 +47,7 @@ namespace NWaves.Effects
             // 2) and interpolate
             var resampled = MathUtils.InterpolateLinear(
                                             Enumerable.Range(0, stretched.Length)   // [0.0, 1.0, 2.0, 3.0, ...]
-                                                      .Select(s => (double)s)
+                                                      .Select(s => (float)s)
                                                       .ToArray(),
                                             stretched.Samples,                      // stretched at 0.0, 1.0, 2.0, ...
                                             Enumerable.Range(0, signal.Length)      

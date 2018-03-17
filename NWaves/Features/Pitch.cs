@@ -13,22 +13,22 @@ namespace NWaves.Features
         /// <summary>
         /// Length of analysis window (in ms)
         /// </summary>
-        private readonly double _windowSize;
+        private readonly float _windowSize;
 
         /// <summary>
         /// Hop length (in ms)
         /// </summary>
-        private readonly double _hopSize;
+        private readonly float _hopSize;
 
         /// <summary>
         /// Upper pitch frequency
         /// </summary>
-        private readonly double _high;
+        private readonly float _high;
 
         /// <summary>
         /// Lower pitch frequency
         /// </summary>
-        private readonly double _low;
+        private readonly float _low;
 
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace NWaves.Features
         /// <param name="hopSize"></param>
         /// <param name="low"></param>
         /// <param name="high"></param>
-        public Pitch(double windowSize = 0.0256, double hopSize = 0.01, double low = 80, double high = 400)
+        public Pitch(float windowSize = 0.0256f, float hopSize = 0.01f, float low = 80, float high = 400)
         {
             _windowSize = windowSize;
             _hopSize = hopSize;
@@ -51,25 +51,25 @@ namespace NWaves.Features
         /// </summary>
         /// <param name="signal"></param>
         /// <returns></returns>
-        public List<double> Track(DiscreteSignal signal)
+        public List<float> Track(DiscreteSignal signal)
         {
             var samplingRate = signal.SamplingRate;
             var hopSize = (int)(samplingRate * _hopSize);
             var windowSize = (int)(samplingRate * _windowSize);
             var fftSize = MathUtils.NextPowerOfTwo(2 * windowSize - 1);
             
-            var pitches = new List<double>();
+            var pitches = new List<float>();
 
             var pitch1 = (int)(1.0 * samplingRate / _high);    // 2,5 ms = 400Hz
             var pitch2 = (int)(1.0 * samplingRate / _low);     // 12,5 ms = 80Hz
 
-            var blockReal = new double[fftSize];       // buffer for real parts of the currently processed block
-            var blockImag = new double[fftSize];       // buffer for imaginary parts of the currently processed block
-            var reversedReal = new double[fftSize];    // buffer for real parts of currently processed reversed block
-            var reversedImag = new double[fftSize];    // buffer for imaginary parts of currently processed reversed block
-            var zeroblock = new double[fftSize];       // just a buffer of zeros for quick memset
+            var blockReal = new float[fftSize];       // buffer for real parts of the currently processed block
+            var blockImag = new float[fftSize];       // buffer for imaginary parts of the currently processed block
+            var reversedReal = new float[fftSize];    // buffer for real parts of currently processed reversed block
+            var reversedImag = new float[fftSize];    // buffer for imaginary parts of currently processed reversed block
+            var zeroblock = new float[fftSize];       // just a buffer of zeros for quick memset
 
-            var cc = new double[windowSize];           // buffer for (truncated) cross-correlation signal
+            var cc = new float[windowSize];           // buffer for (truncated) cross-correlation signal
 
             var pos = 0;
             while (pos + windowSize < signal.Length)
@@ -94,7 +94,7 @@ namespace NWaves.Features
                     }
                 }
 
-                pitches.Add((double)samplingRate / peakIndex);
+                pitches.Add((float)samplingRate / peakIndex);
 
                 pos += hopSize;
             }
@@ -109,9 +109,9 @@ namespace NWaves.Features
         /// <param name="low"></param>
         /// <param name="high"></param>
         /// <returns></returns>
-        public static double AutoCorrelation(DiscreteSignal signal,
-                                             double low = 80,
-                                             double high = 400)
+        public static float AutoCorrelation(DiscreteSignal signal,
+                                             float low = 80,
+                                             float high = 400)
         {
             var fftSize = signal.Length;
             var samplingRate = signal.SamplingRate;
@@ -135,7 +135,7 @@ namespace NWaves.Features
                 }
             }
 
-            return (double)samplingRate / peakIndex;
+            return (float)samplingRate / peakIndex;
         }
 
         /// <summary>
@@ -146,9 +146,9 @@ namespace NWaves.Features
         /// <param name="low"></param>
         /// <param name="high"></param>
         /// <returns></returns>
-        public static double AutoCorrelation(double[] samples, int samplingRate,
-                                             double low = 80,
-                                             double high = 400)
+        public static float AutoCorrelation(float[] samples, int samplingRate,
+                                             float low = 80,
+                                             float high = 400)
         {
             return AutoCorrelation(new DiscreteSignal(samplingRate, samples), low, high);
         }

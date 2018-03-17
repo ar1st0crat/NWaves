@@ -30,13 +30,13 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Forgetting factor in formula (15) in [Kim & Stern, 2016]
         /// </summary>
-        public double LambdaMu { get; set; } = 0.999;
+        public float LambdaMu { get; set; } = 0.999f;
 
         /// <summary>
         /// Gammatone Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)]
         /// </summary>
-        private double[][] _gammatoneFilterBank;
-        public double[][] FilterBank => _gammatoneFilterBank;
+        private float[][] _gammatoneFilterBank;
+        public float[][] FilterBank => _gammatoneFilterBank;
 
         /// <summary>
         /// Number of gammatone filters
@@ -46,12 +46,12 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Lower frequency
         /// </summary>
-        private readonly double _lowFreq;
+        private readonly float _lowFreq;
 
         /// <summary>
         /// Upper frequency
         /// </summary>
-        private readonly double _highFreq;
+        private readonly float _highFreq;
 
         /// <summary>
         /// Nonlinearity coefficient (if 0 then Log10 is applied)
@@ -66,12 +66,12 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Length of analysis window (in ms)
         /// </summary>
-        private readonly double _windowSize;
+        private readonly float _windowSize;
 
         /// <summary>
         /// Hop length (in ms)
         /// </summary>
-        private readonly double _hopSize;
+        private readonly float _hopSize;
 
         /// <summary>
         /// Type of the window function
@@ -81,7 +81,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Pre-emphasis coefficient
         /// </summary>
-        private readonly double _preEmphasis;
+        private readonly float _preEmphasis;
 
 
         /// <summary>
@@ -98,9 +98,9 @@ namespace NWaves.FeatureExtractors
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
         public SpnccExtractor(int featureCount, int power = 15,
-                             int filterbankSize = 40, double lowFreq = 100, double highFreq = 6800,
-                             double windowSize = 0.0256, double hopSize = 0.010, int fftSize = 1024,
-                             double preEmphasis = 0.0, WindowTypes window = WindowTypes.Hamming)
+                             int filterbankSize = 40, float lowFreq = 100, float highFreq = 6800,
+                             float windowSize = 0.0256f, float hopSize = 0.010f, int fftSize = 1024,
+                             float preEmphasis = 0.0f, WindowTypes window = WindowTypes.Hamming)
         {
             FeatureCount = featureCount;
             _power = power;
@@ -163,17 +163,17 @@ namespace NWaves.FeatureExtractors
             var dct = new Dct2(_filterbankSize, FeatureCount);
 
 
-            var gammatoneSpectrum = new double[_filterbankSize];
+            var gammatoneSpectrum = new float[_filterbankSize];
             
-            const double meanPower = 1e10;
-            var mean = 4e07;
+            const float meanPower = 1e10f;
+            var mean = 4e07f;
 
             var d = _power != 0 ? 1.0 / _power : 0.0;
 
-            var block = new double[fftSize];           // buffer for a signal block at each step
-            var zeroblock = new double[fftSize];       // buffer of zeros for quick memset
+            var block = new float[fftSize];           // buffer for a signal block at each step
+            var zeroblock = new float[fftSize];       // buffer of zeros for quick memset
 
-            var spectrum = new double[fftSize / 2 + 1];
+            var spectrum = new float[fftSize / 2 + 1];
 
 
             // 0) pre-emphasis (if needed)
@@ -218,7 +218,7 @@ namespace NWaves.FeatureExtractors
 
                 // 4) mean power normalization:
 
-                var sumPower = 0.0;
+                var sumPower = 0.0f;
                 for (var j = 0; j < gammatoneSpectrum.Length; j++)
                 {
                     sumPower += gammatoneSpectrum[j];
@@ -238,21 +238,21 @@ namespace NWaves.FeatureExtractors
                 {
                     for (var j = 0; j < gammatoneSpectrum.Length; j++)
                     {
-                        gammatoneSpectrum[j] = Math.Pow(gammatoneSpectrum[j], d);
+                        gammatoneSpectrum[j] = (float)Math.Pow(gammatoneSpectrum[j], d);
                     }
                 }
                 else
                 {
                     for (var j = 0; j < gammatoneSpectrum.Length; j++)
                     {
-                        gammatoneSpectrum[j] = Math.Log10(gammatoneSpectrum[j] + double.Epsilon);
+                        gammatoneSpectrum[j] = (float)Math.Log10(gammatoneSpectrum[j] + float.Epsilon);
                     }
                 }
 
 
                 // 6) dct-II (normalized)
 
-                var spnccs = new double[FeatureCount];
+                var spnccs = new float[FeatureCount];
                 dct.DirectN(gammatoneSpectrum, spnccs);
 
 
@@ -261,7 +261,7 @@ namespace NWaves.FeatureExtractors
                 featureVectors.Add(new FeatureVector
                 {
                     Features = spnccs,
-                    TimePosition = (double)i / signal.SamplingRate
+                    TimePosition = (float)i / signal.SamplingRate
                 });
 
                 i += hopSize;

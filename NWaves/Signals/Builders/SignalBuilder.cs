@@ -42,7 +42,7 @@ namespace NWaves.Signals.Builders
         /// <summary>
         /// Dictionary of setters for each parameter
         /// </summary>
-        protected Dictionary<string, Action<double>> ParameterSetters { get; set; }
+        protected Dictionary<string, Action<float>> ParameterSetters { get; set; }
 
         /// <summary>
         /// Brief descriptions of parameters (list of their names)
@@ -59,7 +59,7 @@ namespace NWaves.Signals.Builders
         /// <param name="parameterName"></param>
         /// <param name="parameterValue"></param>
         /// <returns></returns>
-        public virtual SignalBuilder SetParameter(string parameterName, double parameterValue)
+        public virtual SignalBuilder SetParameter(string parameterName, float parameterValue)
         {
             foreach (var parameterKey in ParameterSetters.Keys)
             {

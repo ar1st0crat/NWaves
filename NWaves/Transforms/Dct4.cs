@@ -11,7 +11,7 @@ namespace NWaves.Transforms
         /// <summary>
         /// DCT precalculated cosine matrix
         /// </summary>
-        private readonly double[][] _dctMtx;
+        private readonly float[][] _dctMtx;
 
         /// <summary>
         /// Size of DCT
@@ -26,7 +26,7 @@ namespace NWaves.Transforms
         public Dct4(int length, int dctSize)
         {
             _dctSize = dctSize;
-            _dctMtx = new double[dctSize][];
+            _dctMtx = new float[dctSize][];
 
             // Precalculate dct matrix
 
@@ -34,11 +34,11 @@ namespace NWaves.Transforms
 
             for (var k = 0; k < dctSize; k++)
             {
-                _dctMtx[k] = new double[length];
+                _dctMtx[k] = new float[length];
 
                 for (var n = 0; n < length; n++)
                 {
-                    _dctMtx[k][n] = Math.Cos(((k << 1) + 1) * ((n << 1) + 1) * m);
+                    _dctMtx[k][n] = (float)Math.Cos(((k << 1) + 1) * ((n << 1) + 1) * m);
                 }
             }
         }
@@ -46,11 +46,11 @@ namespace NWaves.Transforms
         /// <summary>
         /// DCT-IV (without normalization)
         /// </summary>
-        public void Direct(double[] input, double[] output)
+        public void Direct(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
             {
-                output[k] = 0.0;
+                output[k] = 0.0f;
                 for (var n = 0; n < input.Length; n++)
                 {
                     output[k] += input[n] * _dctMtx[k][n];
@@ -61,18 +61,18 @@ namespace NWaves.Transforms
         /// <summary>
         /// IDCT-IV (without normalization)
         /// </summary>
-        public void Inverse(double[] input, double[] output)
+        public void Inverse(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
             {
-                output[k] = 0.0;
+                output[k] = 0.0f;
 
                 for (var n = 0; n < input.Length; n++)
                 {
                     output[k] += input[n] * _dctMtx[k][n];
                 }
 
-                output[k] *= 2.0 / _dctSize;
+                output[k] *= 2.0f / _dctSize;
             }
         }
     }

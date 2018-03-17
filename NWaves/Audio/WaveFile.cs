@@ -134,7 +134,7 @@ namespace NWaves.Audio
                         for (var j = 0; j < waveFmt.ChannelCount; j++)
                         {
                             Signals[j][i] = reader.ReadByte() - 128;
-                            if (normalized) Signals[j][i] /= 128.0;
+                            if (normalized) Signals[j][i] /= 128;
                         }
                     }
                 }
@@ -313,7 +313,7 @@ namespace NWaves.Audio
 
                 if (channel == Channels.Average)
                 {
-                    var avgSamples = new double [length];
+                    var avgSamples = new float [length];
 
                     for (var i = 0; i < avgSamples.Length; i++)
                     {
@@ -329,7 +329,7 @@ namespace NWaves.Audio
 
                 // 2) if it ain't mono, we start ACTUALLY interleaving:
                 
-                var samples = new double[WaveFmt.ChannelCount * length];
+                var samples = new float[WaveFmt.ChannelCount * length];
 
                 var idx = 0;
                 for (var i = 0; i < length; i++)

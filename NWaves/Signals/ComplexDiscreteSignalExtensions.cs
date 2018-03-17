@@ -198,8 +198,8 @@ namespace NWaves.Signals
         {
             var length = signal1.Length;
 
-            var real = new double[length];
-            var imag = new double[length];
+            var real = new float[length];
+            var imag = new float[length];
 
             var real1 = signal1.Real;
             var imag1 = signal1.Imag;
@@ -227,8 +227,8 @@ namespace NWaves.Signals
         {
             var length = signal1.Length;
 
-            var real = new double[length];
-            var imag = new double[length];
+            var real = new float[length];
+            var imag = new float[length];
 
             var real1 = signal1.Real;
             var imag1 = signal1.Imag;

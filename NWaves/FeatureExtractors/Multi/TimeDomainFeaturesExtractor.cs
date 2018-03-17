@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Signals;
-using NWaves.Utils;
 
 namespace NWaves.FeatureExtractors.Multi
 {
@@ -27,17 +26,17 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Length of analysis window (in ms)
         /// </summary>
-        private readonly double _windowSize;
+        private readonly float _windowSize;
 
         /// <summary>
         /// Hop length (in ms)
         /// </summary>
-        private readonly double _hopSize;
+        private readonly float _hopSize;
 
         /// <summary>
         /// Extractor functions
         /// </summary>
-        private readonly Func<DiscreteSignal, int, int, double>[] _extractors;
+        private readonly Func<DiscreteSignal, int, int, float>[] _extractors;
 
         /// <summary>
         /// Constructor
@@ -47,7 +46,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <param name="windowSize"></param>
         /// <param name="hopSize"></param>
         public TimeDomainFeaturesExtractor(string featureList,
-                                           double windowSize = 0.0256, double hopSize = 0.010,
+                                           float windowSize = 0.0256f, float hopSize = 0.010f,
                                            IReadOnlyDictionary<string, object> parameters = null)
         {
             if (featureList == "all" || featureList == "full")
@@ -57,7 +56,7 @@ namespace NWaves.FeatureExtractors.Multi
 
             var features = featureList.Split(',', '+', '-', ';', ':');
 
-            _extractors = features.Select<string, Func<DiscreteSignal, int, int, double>>(f =>
+            _extractors = features.Select<string, Func<DiscreteSignal, int, int, float>>(f =>
             {
                 var parameter = f.Trim().ToLower();
                 switch (parameter)
@@ -106,7 +105,7 @@ namespace NWaves.FeatureExtractors.Multi
             var i = startSample;
             while (i + windowSize < endSample)
             {
-                var featureVector = new double[featureCount];
+                var featureVector = new float[featureCount];
 
                 for (var j = 0; j < featureCount; j++)
                 {
@@ -116,7 +115,7 @@ namespace NWaves.FeatureExtractors.Multi
                 featureVectors.Add(new FeatureVector
                 {
                     Features = featureVector,
-                    TimePosition = (double)i / signal.SamplingRate
+                    TimePosition = (float)i / signal.SamplingRate
                 });
 
                 i += hopSize;

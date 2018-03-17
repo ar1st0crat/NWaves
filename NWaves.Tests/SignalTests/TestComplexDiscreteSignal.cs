@@ -9,22 +9,22 @@ namespace NWaves.Tests.SignalTests
     {
         // Arrange
         private readonly ComplexDiscreteSignal _signal = new ComplexDiscreteSignal
-            (8000, new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 
-                   new double[] { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 });
+            (8000, new float[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 
+                   new float[] { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 });
 
         private readonly ComplexDiscreteSignal _constant = new ComplexDiscreteSignal
-            (8000, new double[] { 5, 5, 5, 5, 5 },
-                   new double[] { 1, 1, 1, 1, 1 });
+            (8000, new float[] { 5, 5, 5, 5, 5 },
+                   new float[] { 1, 1, 1, 1, 1 });
 
         private readonly ComplexDiscreteSignal _small = new ComplexDiscreteSignal
-            (16000, new double[] { 5, 2, 4 },
-                    new double[] { 3, 0, 8 });
+            (16000, new float[] { 5, 2, 4 },
+                    new float[] { 3, 0, 8 });
 
         [Test]
         public void TestInitializeWithBadSamplingRate()
         {
-            Assert.Throws<ArgumentException>(() => { var s = new ComplexDiscreteSignal(0, new double[] {1}); });
-            Assert.Throws<ArgumentException>(() => { var s = new ComplexDiscreteSignal(-8000, new double[] { 1 }); });
+            Assert.Throws<ArgumentException>(() => { var s = new ComplexDiscreteSignal(0, new float[] {1}); });
+            Assert.Throws<ArgumentException>(() => { var s = new ComplexDiscreteSignal(-8000, new float[] { 1 }); });
         }
 
         [Test]
@@ -32,7 +32,7 @@ namespace NWaves.Tests.SignalTests
         {
             Assert.Throws<ArgumentException>(() =>
             {
-                var s = new ComplexDiscreteSignal(8000, new double[] { 1, 2 }, new double[] {3});
+                var s = new ComplexDiscreteSignal(8000, new float[] { 1, 2 }, new float[] {3});
             });
         }
 
@@ -43,8 +43,8 @@ namespace NWaves.Tests.SignalTests
             var delayed = _signal.Delay(3);
 
             //Assert
-            Assert.That(delayed.Real, Is.EqualTo(new double[] { 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }));
-            Assert.That(delayed.Imag, Is.EqualTo(new double[] { 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 }));
+            Assert.That(delayed.Real, Is.EqualTo(new float[] { 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }));
+            Assert.That(delayed.Imag, Is.EqualTo(new float[] { 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 }));
         }
 
         [Test]
@@ -54,8 +54,8 @@ namespace NWaves.Tests.SignalTests
             var delayed = _signal.Delay(-3);
 
             //Assert
-            Assert.That(delayed.Real, Is.EqualTo(new double[] { 3, 4, 5, 6, 7, 8, 9 }));
-            Assert.That(delayed.Imag, Is.EqualTo(new double[] { 0, 0, 1, 0, 0, 1, 0 }));
+            Assert.That(delayed.Real, Is.EqualTo(new float[] { 3, 4, 5, 6, 7, 8, 9 }));
+            Assert.That(delayed.Imag, Is.EqualTo(new float[] { 0, 0, 1, 0, 0, 1, 0 }));
         }
 
         [Test]
@@ -71,8 +71,8 @@ namespace NWaves.Tests.SignalTests
             var combination = _signal.Superimpose(_constant);
 
             //Assert
-            Assert.That(combination.Real, Is.EqualTo(new double[] { 5, 6, 7, 8, 9, 5, 6, 7, 8, 9 }));
-            Assert.That(combination.Imag, Is.EqualTo(new double[] { 1, 1, 2, 1, 1, 1, 0, 0, 1, 0 }));
+            Assert.That(combination.Real, Is.EqualTo(new float[] { 5, 6, 7, 8, 9, 5, 6, 7, 8, 9 }));
+            Assert.That(combination.Imag, Is.EqualTo(new float[] { 1, 1, 2, 1, 1, 1, 0, 0, 1, 0 }));
         }
 
         [Test]
@@ -82,8 +82,8 @@ namespace NWaves.Tests.SignalTests
             var combination = _constant.Superimpose(_signal);
 
             //Assert
-            Assert.That(combination.Real, Is.EqualTo(new double[] { 5, 6, 7, 8, 9, 5, 6, 7, 8, 9 }));
-            Assert.That(combination.Imag, Is.EqualTo(new double[] { 1, 1, 2, 1, 1, 1, 0, 0, 1, 0 }));
+            Assert.That(combination.Real, Is.EqualTo(new float[] { 5, 6, 7, 8, 9, 5, 6, 7, 8, 9 }));
+            Assert.That(combination.Imag, Is.EqualTo(new float[] { 1, 1, 2, 1, 1, 1, 0, 0, 1, 0 }));
         }
 
         [Test]
@@ -100,10 +100,10 @@ namespace NWaves.Tests.SignalTests
             var concatenation2 = _constant + _signal;
 
             //Assert
-            Assert.That(concatenation1.Real, Is.EqualTo(new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 5, 5, 5, 5, 5 }));
-            Assert.That(concatenation1.Imag, Is.EqualTo(new double[] { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1 }));
-            Assert.That(concatenation2.Real, Is.EqualTo(new double[] { 5, 5, 5, 5, 5, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }));
-            Assert.That(concatenation2.Imag, Is.EqualTo(new double[] { 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 }));
+            Assert.That(concatenation1.Real, Is.EqualTo(new float[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 5, 5, 5, 5, 5 }));
+            Assert.That(concatenation1.Imag, Is.EqualTo(new float[] { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1 }));
+            Assert.That(concatenation2.Real, Is.EqualTo(new float[] { 5, 5, 5, 5, 5, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }));
+            Assert.That(concatenation2.Imag, Is.EqualTo(new float[] { 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 }));
         }
 
         [Test]
@@ -120,10 +120,10 @@ namespace NWaves.Tests.SignalTests
             var repeated2 = _small * 3;
 
             //Assert
-            Assert.That(repeated1.Real, Is.EqualTo(new double[] { 5, 2, 4, 5, 2, 4, 5, 2, 4 }));
-            Assert.That(repeated1.Imag, Is.EqualTo(new double[] { 3, 0, 8, 3, 0, 8, 3, 0, 8}));
-            Assert.That(repeated2.Real, Is.EqualTo(new double[] { 5, 2, 4, 5, 2, 4, 5, 2, 4 }));
-            Assert.That(repeated2.Imag, Is.EqualTo(new double[] { 3, 0, 8, 3, 0, 8, 3, 0, 8 }));
+            Assert.That(repeated1.Real, Is.EqualTo(new float[] { 5, 2, 4, 5, 2, 4, 5, 2, 4 }));
+            Assert.That(repeated1.Imag, Is.EqualTo(new float[] { 3, 0, 8, 3, 0, 8, 3, 0, 8}));
+            Assert.That(repeated2.Real, Is.EqualTo(new float[] { 5, 2, 4, 5, 2, 4, 5, 2, 4 }));
+            Assert.That(repeated2.Imag, Is.EqualTo(new float[] { 3, 0, 8, 3, 0, 8, 3, 0, 8 }));
         }
 
         [Test]
@@ -145,8 +145,8 @@ namespace NWaves.Tests.SignalTests
             var slice = _signal[3, 7];
 
             // Assert
-            Assert.That(slice.Real, Is.EqualTo(new double[] { 3, 4, 5, 6 }));
-            Assert.That(slice.Imag, Is.EqualTo(new double[] { 0, 0, 1, 0 }));
+            Assert.That(slice.Real, Is.EqualTo(new float[] { 3, 4, 5, 6 }));
+            Assert.That(slice.Imag, Is.EqualTo(new float[] { 0, 0, 1, 0 }));
         }
 
         [Test]
@@ -169,8 +169,8 @@ namespace NWaves.Tests.SignalTests
             var first = _signal.First(3);
             
             // Assert
-            Assert.That(first.Real, Is.EqualTo(new double[] { 0, 1, 2 }));
-            Assert.That(first.Imag, Is.EqualTo(new double[] { 0, 0, 1 }));
+            Assert.That(first.Real, Is.EqualTo(new float[] { 0, 1, 2 }));
+            Assert.That(first.Imag, Is.EqualTo(new float[] { 0, 0, 1 }));
         }
 
         [Test]
@@ -180,8 +180,8 @@ namespace NWaves.Tests.SignalTests
             var last = _signal.Last(3);
 
             // Assert
-            Assert.That(last.Real, Is.EqualTo(new double[] { 7, 8, 9 }));
-            Assert.That(last.Imag, Is.EqualTo(new double[] { 0, 1, 0 }));
+            Assert.That(last.Real, Is.EqualTo(new float[] { 7, 8, 9 }));
+            Assert.That(last.Imag, Is.EqualTo(new float[] { 0, 1, 0 }));
         }
 
         [Test]

@@ -9,8 +9,8 @@ namespace NWaves.DemoForms.UserControls
 {
     public partial class SpectrogramPlot : UserControl
     {
-        private List<double[]> _spectrogram;
-        public List<double[]> Spectrogram
+        private List<float[]> _spectrogram;
+        public List<float[]> Spectrogram
         {
             get { return _spectrogram; }
             set
@@ -33,8 +33,8 @@ namespace NWaves.DemoForms.UserControls
                 {
                     _spectrogram[i] = _spectrogram[i].Select(s =>
                     {
-                        var sqrt = Math.Sqrt(s);
-                        return sqrt*3 < maxValue ? sqrt*3 : sqrt/1.5;
+                        var sqrt = (float)Math.Sqrt(s);
+                        return sqrt*3 < maxValue ? sqrt*3 : sqrt/1.5f;
                     })
                     .ToArray();
                 }
@@ -48,8 +48,8 @@ namespace NWaves.DemoForms.UserControls
             }
         }
 
-        private double[] _markline;
-        public double[] Markline
+        private float[] _markline;
+        public float[] Markline
         {
             get { return _markline; }
             set

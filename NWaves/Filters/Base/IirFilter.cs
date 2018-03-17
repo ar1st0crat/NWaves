@@ -16,7 +16,7 @@ namespace NWaves.Filters.Base
         /// Denominator part coefficients in filter's transfer function 
         /// (recursive part in difference equations)
         /// </summary>
-        public double[] A
+        public float[] A
         {
             get { return _a; }
             set
@@ -25,18 +25,18 @@ namespace NWaves.Filters.Base
                 Normalize();
             }
         }
-        private double[] _a;
+        private float[] _a;
 
         /// <summary>
         /// Numerator part coefficients in filter's transfer function 
         /// (non-recursive part in difference equations)
         /// </summary>
-        public double[] B
+        public float[] B
         {
             get { return _b; }
             set { _b = value; }
         }
-        private double[] _b;
+        private float[] _b;
 
         /// <summary>
         /// If _a.Length + _b.Length exceeds this value, 
@@ -61,7 +61,7 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="b">TF numerator coefficients</param>
         /// <param name="a">TF denominator coefficients</param>
-        public IirFilter(IEnumerable<double> b, IEnumerable<double> a)
+        public IirFilter(IEnumerable<float> b, IEnumerable<float> a)
         {
             B = b.ToArray();
             A = a.ToArray();
@@ -112,7 +112,7 @@ namespace NWaves.Filters.Base
         {
             var input = signal.Samples;
 
-            var samples = new double[input.Length];
+            var samples = new float[input.Length];
 
             for (var n = 0; n < input.Length; n++)
             {
@@ -139,11 +139,11 @@ namespace NWaves.Filters.Base
         {
             var input = signal.Samples;
 
-            var samples = new double[input.Length];
+            var samples = new float[input.Length];
 
             // buffers for delay lines:
-            var wb = new double[_b.Length];
-            var wa = new double[_a.Length];
+            var wb = new float[_b.Length];
+            var wa = new float[_a.Length];
 
             for (var i = 0; i < input.Length; i++)
             {
@@ -186,11 +186,11 @@ namespace NWaves.Filters.Base
         {
             var input = signal.Samples;
 
-            var samples = new double[input.Length];
+            var samples = new float[input.Length];
 
             // buffers for delay lines:
-            var wb = new double[_b.Length];
-            var wa = new double[_a.Length];
+            var wb = new float[_b.Length];
+            var wa = new float[_a.Length];
 
             var wbpos = wb.Length - 1;
             var wapos = wa.Length - 1;
@@ -238,7 +238,7 @@ namespace NWaves.Filters.Base
         {
             var first = _a[0];
 
-            if (Math.Abs(first - 0.0) < 1e-12)
+            if (Math.Abs(first) < 1e-12)
             {
                 throw new ArgumentException("The first A coefficient can not be zero!");
             }

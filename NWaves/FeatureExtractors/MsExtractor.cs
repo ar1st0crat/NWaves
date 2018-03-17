@@ -40,19 +40,19 @@ namespace NWaves.FeatureExtractors
         /// if this sequence is given, then MsExtractor computes 
         /// modulation spectral coefficients from sequences in each 'feature channel'.
         /// </summary>
-        private readonly double[][] _featuregram;
+        private readonly float[][] _featuregram;
 
         /// <summary>
         /// Filterbank matrix of dimension [filterCount * (fftSize/2 + 1)]
         /// </summary>
-        private double[][] _filterbank;
-        public double[][] Filterbank => _filterbank;
+        private float[][] _filterbank;
+        public float[][] Filterbank => _filterbank;
         
         /// <summary>
         /// Signal envelopes in different frequency bands
         /// </summary>
-        private double[][] _envelopes;
-        public double[][] Envelopes => _envelopes;
+        private float[][] _envelopes;
+        public float[][] Envelopes => _envelopes;
 
         /// <summary>
         /// Size of FFT
@@ -62,7 +62,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Length of analysis window (in ms)
         /// </summary>
-        private readonly double _windowSize;
+        private readonly float _windowSize;
 
         /// <summary>
         /// Type of the window function
@@ -72,7 +72,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Hop length (in ms)
         /// </summary>
-        private readonly double _hopSize;
+        private readonly float _hopSize;
 
         /// <summary>
         /// Size of FFT applied to signal envelopes
@@ -87,7 +87,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Pre-emphasis coefficient
         /// </summary>
-        private readonly double _preEmphasis;
+        private readonly float _preEmphasis;
 
 
         /// <summary>
@@ -102,10 +102,10 @@ namespace NWaves.FeatureExtractors
         /// <param name="filterbank"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
-        public MsExtractor(double windowSize = 0.0256, double hopSize = 0.010, 
+        public MsExtractor(float windowSize = 0.0256f, float hopSize = 0.010f, 
                            int modulationFftSize = 64, int modulationOverlapSize = 4, int fftSize = 0,
-                           IEnumerable<double[]> featuregram = null, double[][] filterbank = null,
-                           double preEmphasis = 0.0, WindowTypes window = WindowTypes.Rectangular)
+                           IEnumerable<float[]> featuregram = null, float[][] filterbank = null,
+                           float preEmphasis = 0.0f, WindowTypes window = WindowTypes.Rectangular)
         {
             _window = window;
             _windowSize = windowSize;
@@ -160,7 +160,7 @@ namespace NWaves.FeatureExtractors
 
             var length = _filterbank?.Length ?? _featuregram[0].Length;
 
-            var modulationSamplingRate = (double)signal.SamplingRate / hopSize;
+            var modulationSamplingRate = (float)signal.SamplingRate / hopSize;
             var resolution = modulationSamplingRate / _modulationFftSize;
 
 
@@ -194,19 +194,19 @@ namespace NWaves.FeatureExtractors
 
             if (_featuregram == null)
             {
-                _envelopes = new double[_filterbank.Length][];
+                _envelopes = new float[_filterbank.Length][];
                 for (var n = 0; n < _envelopes.Length; n++)
                 {
-                    _envelopes[n] = new double[signal.Length / hopSize];
+                    _envelopes[n] = new float[signal.Length / hopSize];
                 }
 
                 // ===================== compute local FFTs (do STFT) =======================
 
-                var spectrum = new double[fftSize / 2 + 1];
-                var filteredSpectrum = new double[_filterbank.Length];
+                var spectrum = new float[fftSize / 2 + 1];
+                var filteredSpectrum = new float[_filterbank.Length];
 
-                var block = new double[fftSize];           // buffer for currently processed signal block at each step
-                var zeroblock = new double[fftSize];       // buffer of zeros for quick memset
+                var block = new float[fftSize];           // buffer for currently processed signal block at each step
+                var zeroblock = new float[fftSize];       // buffer of zeros for quick memset
 
                 while (i + windowSize < endSample)
                 {
@@ -243,11 +243,11 @@ namespace NWaves.FeatureExtractors
             else
             {
                 en = _featuregram.Length;
-                _envelopes = new double[_featuregram[0].Length][];
+                _envelopes = new float[_featuregram[0].Length][];
 
                 for (var n = 0; n < _envelopes.Length; n++)
                 {
-                    _envelopes[n] = new double[en];
+                    _envelopes[n] = new float[en];
                     for (i = 0; i < en; i++)
                     {
                         _envelopes[n][i] = _featuregram[i][n];
@@ -263,7 +263,7 @@ namespace NWaves.FeatureExtractors
 
             foreach (var envelope in _envelopes)
             {
-                var avg = 0.0;
+                var avg = 0.0f;
                 for (var k = 0; k < envelopeLength; k++)
                 {
                     avg += (k >= 0) ? envelope[k] : -envelope[k];
@@ -279,14 +279,14 @@ namespace NWaves.FeatureExtractors
                 }
             }
 
-            var modBlock = new double[_modulationFftSize];
-            var zeroModblock = new double[_modulationFftSize];
-            var modSpectrum = new double[_modulationFftSize / 2 + 1];
+            var modBlock = new float[_modulationFftSize];
+            var zeroModblock = new float[_modulationFftSize];
+            var modSpectrum = new float[_modulationFftSize / 2 + 1];
 
             i = 0;
             while (i < envelopeLength)
             {
-                var vector = new double[_envelopes.Length * (_modulationFftSize / 2 + 1)];
+                var vector = new float[_envelopes.Length * (_modulationFftSize / 2 + 1)];
                 var offset = 0;
 
                 foreach (var envelope in _envelopes)
@@ -303,7 +303,7 @@ namespace NWaves.FeatureExtractors
                 featureVectors.Add(new FeatureVector
                 {
                     Features = vector,
-                    TimePosition = (double)i * hopSize / signal.SamplingRate
+                    TimePosition = (float)i * hopSize / signal.SamplingRate
                 });
 
                 i += _modulationHopSize;
@@ -318,11 +318,11 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <param name="featureVector"></param>
         /// <returns></returns>
-        public double[][] MakeSpectrum2D(FeatureVector featureVector)
+        public float[][] MakeSpectrum2D(FeatureVector featureVector)
         {
             var length = _filterbank?.Length ?? _featuregram[0].Length;
 
-            var spectrum = new double[length][];
+            var spectrum = new float[length][];
             var spectrumSize = _modulationFftSize / 2 + 1;
 
             var offset = 0;
@@ -343,21 +343,21 @@ namespace NWaves.FeatureExtractors
         /// <param name="samplingRate"></param>
         /// <param name="herz"></param>
         /// <returns></returns>
-        public List<double[]> VectorsAtHerz(IList<FeatureVector> featureVectors, int samplingRate, double herz = 4)
+        public List<float[]> VectorsAtHerz(IList<FeatureVector> featureVectors, int samplingRate, float herz = 4)
         {
             var length = _filterbank?.Length ?? _featuregram[0].Length;
             var hopSize = (int)(samplingRate * _hopSize);
 
-            var modulationSamplingRate = (double) samplingRate / hopSize;
+            var modulationSamplingRate = (float) samplingRate / hopSize;
             var resolution = modulationSamplingRate / _modulationFftSize;
             var freq = (int)Math.Round(herz / resolution);
 
             var spectrumSize = _modulationFftSize / 2 + 1;
             
-            var freqVectors = new List<double[]>();
+            var freqVectors = new List<float[]>();
             foreach (var vector in featureVectors)
             {
-                var spectrum = new double[length];
+                var spectrum = new float[length];
                 for (var i = 0; i < spectrum.Length; i++)
                 {
                     spectrum[i] = vector.Features[freq + i * spectrumSize];

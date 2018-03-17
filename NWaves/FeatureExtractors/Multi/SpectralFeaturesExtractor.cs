@@ -34,17 +34,17 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Hop length (in ms)
         /// </summary>
-        private readonly double _hopSize;
+        private readonly float _hopSize;
 
         /// <summary>
         /// Length of analysis window (in ms)
         /// </summary>
-        private readonly double _windowSize;
+        private readonly float _windowSize;
 
         /// <summary>
         /// Extractor functions
         /// </summary>
-        private readonly Func<double[], double[], double>[] _extractors;
+        private readonly Func<float[], float[], float>[] _extractors;
 
         /// <summary>
         /// Constructor
@@ -55,7 +55,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <param name="hopSize"></param>
         /// <param name="fftSize"></param>
         public SpectralFeaturesExtractor(string featureList,
-                                         double windowSize = 0.0256, double hopSize = 0.010, int fftSize = 0,
+                                         float windowSize = 0.0256f, float hopSize = 0.010f, int fftSize = 0,
                                          IReadOnlyDictionary<string, object> parameters = null)
         {
             if (featureList == "all" || featureList == "full")
@@ -65,7 +65,7 @@ namespace NWaves.FeatureExtractors.Multi
 
             var features = featureList.Split(',', '+', '-', ';', ':');
 
-            _extractors = features.Select<string, Func<double[], double[], double>>(f =>
+            _extractors = features.Select<string, Func<float[], float[], float>>(f =>
             {
                 var parameter = f.Trim().ToLower();
                 switch (parameter)
@@ -82,7 +82,7 @@ namespace NWaves.FeatureExtractors.Multi
                     case "flatness":
                         if (parameters?.ContainsKey("minLevel") ?? false)
                         {
-                            var minLevel = (double) parameters["minLevel"];
+                            var minLevel = (float) parameters["minLevel"];
                             return (spectrum, freqs) => Spectral.Flatness(spectrum, freqs, minLevel);
                         }
                         else
@@ -93,7 +93,7 @@ namespace NWaves.FeatureExtractors.Multi
                     case "rolloff":
                         if (parameters?.ContainsKey("rolloffPercent") ?? false)
                         {
-                            var rolloffPercent = (double) parameters["rolloffPercent"];
+                            var rolloffPercent = (float) parameters["rolloffPercent"];
                             return (spectrum, freqs) => Spectral.Rolloff(spectrum, freqs, rolloffPercent);
                         }
                         else
@@ -141,7 +141,7 @@ namespace NWaves.FeatureExtractors.Multi
             var hopSize = (int)(signal.SamplingRate * _hopSize);
             var fftSize = _fftSize >= windowSize ? _fftSize : MathUtils.NextPowerOfTwo(windowSize);
 
-            var resolution = (double)signal.SamplingRate / fftSize;
+            var resolution = (float)signal.SamplingRate / fftSize;
 
             var frequencies = Enumerable.Range(0, fftSize + 1)
                                         .Select(f => f * resolution)
@@ -154,9 +154,9 @@ namespace NWaves.FeatureExtractors.Multi
 
             // reserve memory for reusable blocks
 
-            var spectrum = new double[fftSize / 2 + 1];  // buffer for magnitude spectrum
-            var block = new double[fftSize];             // buffer for currently processed block
-            var zeroblock = new double[fftSize];         // just a buffer of zeros for quick memset
+            var spectrum = new float[fftSize / 2 + 1];  // buffer for magnitude spectrum
+            var block = new float[fftSize];             // buffer for currently processed block
+            var zeroblock = new float[fftSize];         // just a buffer of zeros for quick memset
 
             var i = startSample;
             while (i + windowSize < endSample)
@@ -168,7 +168,7 @@ namespace NWaves.FeatureExtractors.Multi
 
                 fft.MagnitudeSpectrum(block, spectrum);
 
-                var featureVector = new double[featureCount];
+                var featureVector = new float[featureCount];
 
                 for (var j = 0; j < featureCount; j++)
                 {
@@ -178,7 +178,7 @@ namespace NWaves.FeatureExtractors.Multi
                 featureVectors.Add(new FeatureVector
                 {
                     Features = featureVector,
-                    TimePosition = (double)i / signal.SamplingRate
+                    TimePosition = (float)i / signal.SamplingRate
                 });
 
                 i += hopSize;

@@ -77,7 +77,7 @@
             this.signalPanel.AutoScroll = true;
             this.signalPanel.BackColor = System.Drawing.Color.White;
             this.signalPanel.ForeColor = System.Drawing.Color.Blue;
-            this.signalPanel.Gain = 1D;
+            this.signalPanel.Gain = 1;
             this.signalPanel.Location = new System.Drawing.Point(12, 42);
             this.signalPanel.Name = "signalPanel";
             this.signalPanel.Signal = null;
@@ -90,7 +90,7 @@
             this.processedSignalPanel.AutoScroll = true;
             this.processedSignalPanel.BackColor = System.Drawing.Color.White;
             this.processedSignalPanel.ForeColor = System.Drawing.Color.Blue;
-            this.processedSignalPanel.Gain = 1D;
+            this.processedSignalPanel.Gain = 1;
             this.processedSignalPanel.Location = new System.Drawing.Point(13, 214);
             this.processedSignalPanel.Name = "processedSignalPanel";
             this.processedSignalPanel.Signal = null;

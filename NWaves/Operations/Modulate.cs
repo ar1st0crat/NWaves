@@ -41,15 +41,17 @@ namespace NWaves.Operations
         /// <param name="modulationIndex">Modulation index (depth)</param>
         /// <returns>AM signal</returns>
         public static DiscreteSignal Amplitude(DiscreteSignal carrier, 
-                                               double modulatorFrequency = 20/*Hz*/,
-                                               double modulationIndex = 0.5)
+                                               float modulatorFrequency = 20/*Hz*/,
+                                               float modulationIndex = 0.5f)
         {
-            var samplingRate = carrier.SamplingRate;
+            var fs = carrier.SamplingRate;
+            var mf = modulatorFrequency;          // just short aliases //
+            var mi = modulationIndex;
 
             var output = Enumerable.Range(0, carrier.Length)
-                                   .Select(i => carrier[i] * (1 + modulationIndex * Math.Cos(2 * Math.PI * modulatorFrequency / samplingRate * i)));
+                                   .Select(i => (float)(carrier[i] * (1 + mi * Math.Cos(2 * Math.PI * mf / fs * i))));
 
-            return new DiscreteSignal(samplingRate, output);
+            return new DiscreteSignal(fs, output);
         }
 
         /// <summary>
@@ -61,18 +63,20 @@ namespace NWaves.Operations
         /// <param name="deviation">Frequency deviation</param>
         /// <returns>RM signal</returns>
         public static DiscreteSignal Frequency(DiscreteSignal baseband,
-                                               double carrierAmplitude,
-                                               double carrierFrequency,
-                                               double deviation = 0.1/*Hz*/)
+                                               float carrierAmplitude,
+                                               float carrierFrequency,
+                                               float deviation = 0.1f/*Hz*/)
         {
-            var samplingRate = baseband.SamplingRate;
+            var fs = baseband.SamplingRate;
+            var ca = carrierAmplitude;          // just short aliases //
+            var cf = carrierFrequency;
 
             var integral = 0.0;
             var output = Enumerable.Range(0, baseband.Length)
-                                   .Select(i => carrierAmplitude * Math.Cos(2 * Math.PI * carrierFrequency / samplingRate * i +
-                                                2 * Math.PI * deviation * (integral += baseband[i])));
+                                   .Select(i => (float)(ca * Math.Cos(2 * Math.PI * cf / fs * i +
+                                                         2 * Math.PI * deviation * (integral += baseband[i]))));
 
-            return new DiscreteSignal(samplingRate, output);
+            return new DiscreteSignal(fs, output);
         }
 
         /// <summary>
@@ -86,16 +90,22 @@ namespace NWaves.Operations
         /// <param name="samplingRate">Sampling rate</param>
         /// <returns>Sinusoidal FM signal</returns>
         public static DiscreteSignal FrequencySinusoidal(
-                                        double carrierFrequency,
-                                        double carrierAmplitude,
-                                        double modulatorFrequency,
-                                        double modulationIndex,
+                                        float carrierFrequency,
+                                        float carrierAmplitude,
+                                        float modulatorFrequency,
+                                        float modulationIndex,
                                         int length,
                                         int samplingRate = 1)
         {
+            var fs = samplingRate;
+            var ca = carrierAmplitude;
+            var cf = carrierFrequency;          // just short aliases //
+            var mf = modulatorFrequency;
+            var mi = modulationIndex;
+
             var output = Enumerable.Range(0, length)
-                                   .Select(i => carrierAmplitude * Math.Cos(2 * Math.PI * carrierFrequency / samplingRate * i + 
-                                                modulationIndex * Math.Sin(2 * Math.PI * modulatorFrequency / samplingRate * i)));
+                                   .Select(i => (float)(ca * Math.Cos(2 * Math.PI * cf / fs * i + 
+                                                        mi * Math.Sin(2 * Math.PI * mf / fs * i))));
 
             return new DiscreteSignal(samplingRate, output);
         }
@@ -110,17 +120,21 @@ namespace NWaves.Operations
         /// <param name="samplingRate">Sampling rate</param>
         /// <returns>Sinusoidal FM signal</returns>
         public static DiscreteSignal FrequencyLinear(
-                                        double carrierFrequency,
-                                        double carrierAmplitude,
-                                        double modulationIndex,
+                                        float carrierFrequency,
+                                        float carrierAmplitude,
+                                        float modulationIndex,
                                         int length,
                                         int samplingRate = 1)
         {
-            var output = Enumerable.Range(0, length)
-                                   .Select(i => carrierAmplitude * Math.Cos(2 * Math.PI * carrierFrequency / samplingRate * i +
-                                                (modulationIndex * i * i) / (2 * samplingRate * samplingRate )));
+            var fs = samplingRate;
+            var ca = carrierAmplitude;          // just short aliases //
+            var cf = carrierFrequency;
+            var mi = modulationIndex;
 
-            return new DiscreteSignal(samplingRate, output);
+            var output = Enumerable.Range(0, length)
+                                   .Select(i => (float)(ca * Math.Cos(2 * Math.PI * cf / fs * i + (mi * i * i) / (2 * fs * fs ))));
+
+            return new DiscreteSignal(fs, output);
         }
 
         /// <summary>
@@ -132,17 +146,18 @@ namespace NWaves.Operations
         /// <param name="deviation">Frequency deviation</param>
         /// <returns>RM signal</returns>
         public static DiscreteSignal Phase(DiscreteSignal baseband,
-                                           double carrierAmplitude,
-                                           double carrierFrequency,
-                                           double deviation = 0.5)
+                                           float carrierAmplitude,
+                                           float carrierFrequency,
+                                           float deviation = 0.5f)
         {
-            var samplingRate = baseband.SamplingRate;
+            var fs = baseband.SamplingRate;
+            var ca = carrierAmplitude;          // just short aliases //
+            var cf = carrierFrequency;
 
             var output = Enumerable.Range(0, baseband.Length)
-                                   .Select(i => carrierAmplitude * Math.Cos(2 * Math.PI * carrierFrequency / samplingRate * i + 
-                                                deviation * baseband[i]));
+                                   .Select(i => (float)(ca * Math.Cos(2 * Math.PI * cf / fs * i + deviation * baseband[i])));
 
-            return new DiscreteSignal(samplingRate, output);
+            return new DiscreteSignal(fs, output);
         }
     }
 }

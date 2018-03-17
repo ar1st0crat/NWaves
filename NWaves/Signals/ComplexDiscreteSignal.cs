@@ -34,12 +34,12 @@ namespace NWaves.Signals
         /// <summary>
         /// Array or real parts of samples
         /// </summary>
-        public double[] Real { get; }
+        public float[] Real { get; }
 
         /// <summary>
         /// Array or imaginary parts of samples
         /// </summary>
-        public double[] Imag { get; }
+        public float[] Imag { get; }
 
         /// <summary>
         /// Length of the signal
@@ -53,7 +53,7 @@ namespace NWaves.Signals
         /// <param name="real">Array of real parts of the complex-valued signal</param>
         /// <param name="imag">Array of imaginary parts of the complex-valued signal</param>
         /// <param name="allocateNew">Set to true if new memory should be allocated for data</param>
-        public ComplexDiscreteSignal(int samplingRate, double[] real, double[] imag = null, bool allocateNew = false)
+        public ComplexDiscreteSignal(int samplingRate, float[] real, float[] imag = null, bool allocateNew = false)
         {
             if (samplingRate <= 0)
             {
@@ -76,17 +76,17 @@ namespace NWaves.Signals
             }
             else
             {
-                Imag = new double[real.Length];
+                Imag = new float[real.Length];
             }
         }
 
         /// <summary>
-        /// Constructor for initializing complex signals with any double enumerables
+        /// Constructor for initializing complex signals with any float enumerables
         /// </summary>
         /// <param name="samplingRate"></param>
         /// <param name="real"></param>
         /// <param name="imag"></param>
-        public ComplexDiscreteSignal(int samplingRate, IEnumerable<double> real, IEnumerable<double> imag = null)
+        public ComplexDiscreteSignal(int samplingRate, IEnumerable<float> real, IEnumerable<float> imag = null)
             : this(samplingRate, real.ToArray(), imag?.ToArray())
         {
         }
@@ -98,7 +98,7 @@ namespace NWaves.Signals
         /// <param name="length"></param>
         /// <param name="real"></param>
         /// <param name="imag"></param>
-        public ComplexDiscreteSignal(int samplingRate, int length, double real = 0.0, double imag = 0.0)
+        public ComplexDiscreteSignal(int samplingRate, int length, float real = 0.0f, float imag = 0.0f)
         {
             if (samplingRate <= 0)
             {
@@ -107,8 +107,8 @@ namespace NWaves.Signals
 
             SamplingRate = samplingRate;
 
-            var reals = new double[length];
-            var imags = new double[length];
+            var reals = new float[length];
+            var imags = new float[length];
             for (var i = 0; i < length; i++)
             {
                 reals[i] = real;
@@ -124,7 +124,7 @@ namespace NWaves.Signals
         /// <param name="samplingRate"></param>
         /// <param name="samples"></param>
         /// <param name="normalizeFactor"></param>
-        public ComplexDiscreteSignal(int samplingRate, IEnumerable<int> samples, double normalizeFactor = 1.0)
+        public ComplexDiscreteSignal(int samplingRate, IEnumerable<int> samples, float normalizeFactor = 1.0f)
         {
             if (samplingRate <= 0)
             {
@@ -134,7 +134,7 @@ namespace NWaves.Signals
             SamplingRate = samplingRate;
 
             var intSamples = samples.ToArray();
-            var realSamples = new double[intSamples.Length];
+            var realSamples = new float[intSamples.Length];
             
             for (var i = 0; i < intSamples.Length; i++)
             {
@@ -142,7 +142,7 @@ namespace NWaves.Signals
             }
 
             Real = realSamples;
-            Imag = new double[intSamples.Length];
+            Imag = new float[intSamples.Length];
         }
         
         /// <summary>
@@ -157,7 +157,7 @@ namespace NWaves.Signals
         /// <summary>
         /// Indexer works only with array of real parts of samples. Use it with caution.
         /// </summary>
-        public double this[int index]
+        public float this[int index]
         { 
             get { return Real[index]; }
             set { Real[index] = value; }
@@ -231,17 +231,17 @@ namespace NWaves.Signals
         /// <summary>
         /// Get real-valued signal containing magnitudes of complex-valued samples
         /// </summary>
-        public double[] Magnitude
+        public float[] Magnitude
         {
             get
             {
                 var real = Real;
                 var imag = Imag;
 
-                var magnitude = new double[real.Length];
+                var magnitude = new float[real.Length];
                 for (var i = 0; i < magnitude.Length; i++)
                 {
-                    magnitude[i] = Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]);
+                    magnitude[i] = (float)(Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]));
                 }
 
                 return magnitude;
@@ -251,14 +251,14 @@ namespace NWaves.Signals
         /// <summary>
         /// Get real-valued signal containing squared magnitudes of complex-valued samples
         /// </summary>
-        public double[] Power
+        public float[] Power
         {
             get
             {
                 var real = Real;
                 var imag = Imag;
 
-                var magnitude = new double[real.Length];
+                var magnitude = new float[real.Length];
                 for (var i = 0; i < magnitude.Length; i++)
                 {
                     magnitude[i] = real[i] * real[i] + imag[i] * imag[i];
@@ -271,17 +271,17 @@ namespace NWaves.Signals
         /// <summary>
         /// Get real-valued signal containing phases of complex-valued samples
         /// </summary>
-        public double[] Phase
+        public float[] Phase
         {
             get
             {
                 var real = Real;
                 var imag = Imag;
 
-                var phase = new double[real.Length];
+                var phase = new float[real.Length];
                 for (var i = 0; i < phase.Length; i++)
                 {
-                    phase[i] = Math.Atan2(imag[i], real[i]);
+                    phase[i] = (float)(Math.Atan2(imag[i], real[i]));
                 }
 
                 return phase;

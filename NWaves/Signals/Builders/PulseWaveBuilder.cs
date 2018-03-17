@@ -8,22 +8,22 @@ namespace NWaves.Signals.Builders
     /// </summary>
     public class PulseWaveBuilder : SignalBuilder
     {
-        private double _amplitude;
-        private double _pulse;
-        private double _period;
+        private float _amplitude;
+        private float _pulse;
+        private float _period;
         
         public PulseWaveBuilder()
         {
-            ParameterSetters = new Dictionary<string, Action<double>>
+            ParameterSetters = new Dictionary<string, Action<float>>
             {
                 { "amplitude, amp, a", param => _amplitude = param },
                 { "pulse, width", param => _pulse = param },
                 { "period, t", param => _period = param }
             };
 
-            _amplitude = 1.0;
-            _pulse = 0.0;
-            _period = 0.0;
+            _amplitude = 1.0f;
+            _pulse = 0.0f;
+            _period = 0.0f;
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace NWaves.Signals.Builders
             }
 
             var ones = new DiscreteSignal(SamplingRate, (int)(_pulse * SamplingRate), _amplitude);
-            var zeros = new DiscreteSignal(SamplingRate, (int)((_period - _pulse) * SamplingRate), 0.0);
+            var zeros = new DiscreteSignal(SamplingRate, (int)((_period - _pulse) * SamplingRate), 0.0f);
 
             var repeatTimes = Length / (int)(_period * SamplingRate) + 1;
             var repeated = (ones + zeros) * repeatTimes;

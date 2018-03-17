@@ -57,7 +57,7 @@ namespace NWaves.FeatureExtractors.Base
 
             for (var i = N; i < sequence.Length - N; i++)
             {
-                var f = new double[3 * featureCount];
+                var f = new float[3 * featureCount];
 
                 for (var j = 0; j < featureCount; j++)
                 {
@@ -65,7 +65,7 @@ namespace NWaves.FeatureExtractors.Base
                 }
                 for (var j = 0; j < featureCount; j++)
                 {
-                    var num = 0.0;
+                    var num = 0.0f;
                     for (var n = 1; n <= N; n++)
                     {
                         num += n * (sequence[i + n].Features[j] - sequence[i - n].Features[j]);
@@ -81,7 +81,7 @@ namespace NWaves.FeatureExtractors.Base
             {
                 for (var j = 0; j < featureCount; j++)
                 {
-                    var num = 0.0;
+                    var num = 0.0f;
                     for (var n = 1; n <= N; n++)
                     {
                         num += n * (sequence[i + n].Features[j + featureCount] -
@@ -117,13 +117,13 @@ namespace NWaves.FeatureExtractors.Base
             
             for (var i = 0; i < joined.Length; i++)
             {
-                var features = new double[length];
+                var features = new float[length];
 
                 var offset = 0;
                 for (var j = 0; j < vectorCount; j++)
                 {
-                    Buffer.BlockCopy(vectors[j][i].Features, 0, features, offset, vectors[j][i].Features.Length * 8);
-                    offset += vectors[j][i].Features.Length * 8;
+                    Buffer.BlockCopy(vectors[j][i].Features, 0, features, offset, vectors[j][i].Features.Length * 4);
+                    offset += vectors[j][i].Features.Length * 4;
                 }
 
                 joined[i] = new FeatureVector

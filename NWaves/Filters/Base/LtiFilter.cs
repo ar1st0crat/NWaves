@@ -42,7 +42,7 @@ namespace NWaves.Filters.Base
         public virtual ComplexDiscreteSignal FrequencyResponse(int length = 512)
         {
             var real = ImpulseResponse(length).Samples;
-            var imag = new double[length];
+            var imag = new float[length];
 
             var fft = new Fft(length);
             fft.Direct(real, imag);
@@ -62,7 +62,7 @@ namespace NWaves.Filters.Base
         /// </param>
         public virtual DiscreteSignal ImpulseResponse(int length = 512)
         {
-            var impulse = new DiscreteSignal(1, length) { [0] = 1.0 };
+            var impulse = new DiscreteSignal(1, length) { [0] = 1.0f };
             return ApplyTo(impulse);
         }
 
@@ -71,16 +71,16 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="zp"></param>
         /// <returns></returns>
-        public static double[] ZpToTf(ComplexDiscreteSignal zp)
+        public static float[] ZpToTf(ComplexDiscreteSignal zp)
         {
             var re = zp.Real;
             var im = zp.Imag;
 
-            var tf = new ComplexDiscreteSignal(1, new[] { 1.0, -re[0] }, new[] { 0.0, -im[0] });
+            var tf = new ComplexDiscreteSignal(1, new[] { 1.0f, -re[0] }, new[] { 0.0f, -im[0] });
 
             for (var k = 1; k < re.Length; k++)
             {
-                tf = Operation.Convolve(tf, new ComplexDiscreteSignal(1, new[] { 1.0, -re[k] }, new[] { 0.0, -im[k] }));
+                tf = Operation.Convolve(tf, new ComplexDiscreteSignal(1, new[] { 1.0f, -re[k] }, new[] { 0.0f, -im[k] }));
             }
 
             return tf.Real;
@@ -91,16 +91,16 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="tf"></param>
         /// <returns></returns>
-        public static ComplexDiscreteSignal TfToZp(double[] tf)
+        public static ComplexDiscreteSignal TfToZp(float[] tf)
         {
             if (tf.Length <= 1)
             {
                 return null;
             }
 
-            var roots = MathUtils.PolynomialRoots(tf.Reverse().ToArray(), new double[tf.Length]);
+            var roots = MathUtils.PolynomialRoots(tf.Reverse().ToDouble(), new double[tf.Length]);
 
-            return new ComplexDiscreteSignal(1, roots.Item1, roots.Item2);
+            return new ComplexDiscreteSignal(1, roots.Item1.ToFloat(), roots.Item2.ToFloat());
         }
     }
 }
