@@ -17,7 +17,7 @@ namespace NWaves.DemoForms
     public partial class ModulationSpectrumForm : Form
     {
         private DiscreteSignal _signal;
-        private MsExtractor _extractor;
+        private AmsExtractor _extractor;
 
         private List<FeatureVector> _features;
         private int _featIndex;
@@ -62,7 +62,6 @@ namespace NWaves.DemoForms
             var lowFreq = float.Parse(lowFreqTextBox.Text);
             var highFreq = float.Parse(highFreqTextBox.Text);
 
-            int scaleCoeff = 1;
             Tuple<float, float, float>[] bands;
 
             switch (filterbankComboBox.Text)
@@ -79,9 +78,6 @@ namespace NWaves.DemoForms
                 case "ERB":
                     bands = null;
                     _filterbank = FilterBanks.Erb(filterCount, fftSize, samplingRate, lowFreq, highFreq);
-                    
-                    // normalization coefficient (for plotting)
-                    scaleCoeff = (int)(1.0 / _filterbank.Max(f => f.Max()));
 
                     // ====================================================
                     // ===================  ! SQUARE ! ====================
@@ -94,6 +90,11 @@ namespace NWaves.DemoForms
                     //        filter[j] = squared;
                     //    }
                     //}
+
+                    // normalization coefficient (for plotting)
+                    var scaleCoeff = (int)(1.0 / _filterbank.Max(f => f.Max()));
+                    filterbankPanel.Gain = 100 * scaleCoeff;
+
 
                     break;
                 default:
@@ -129,7 +130,7 @@ namespace NWaves.DemoForms
             band3ComboBox.Text = "3";
             band4ComboBox.Text = "4";
 
-            DrawFilterbank(_filterbank, scaleCoeff);
+            filterbankPanel.Groups = _filterbank;
         }
 
         private void computeButton_Click(object sender, EventArgs e)
@@ -147,12 +148,12 @@ namespace NWaves.DemoForms
             //var vectors = mfccExtractor.ComputeFrom(_signal);
             //FeaturePostProcessing.NormalizeMean(vectors);
 
-            //_extractor = new MsExtractor(_signal.SamplingRate,
+            //_extractor = new AmsExtractor(_signal.SamplingRate,
             //                             windowSize, overlapSize,
             //                             modulationFftSize, modulationHopSize,
             //                             featuregram: vectors.Select(v => v.Features));
 
-            _extractor = new MsExtractor(windowSize, overlapSize,
+            _extractor = new AmsExtractor(windowSize, overlapSize,
                                          modulationFftSize, modulationHopSize,
                                          filterbank: _filterbank, window: WindowTypes.Hamming);
             _features = _extractor.ComputeFrom(_signal);
@@ -174,11 +175,14 @@ namespace NWaves.DemoForms
         {
             if (temporalCheckBox.Checked)
             {
-                DrawModulationSpectraHerz(_extractor.VectorsAtHerz(_features, _signal.SamplingRate, float.Parse(herzTextBox.Text)));
+                DrawModulationSpectraHerz(
+                    _extractor.VectorsAtHerz(
+                        _features, _signal.SamplingRate, float.Parse(herzTextBox.Text)));
             }
             else
             {
-                DrawModulationSpectrum(_extractor.MakeSpectrum2D(_features[_featIndex]));
+                DrawModulationSpectrum(
+                    _extractor.MakeSpectrum2D(_features[_featIndex]));
             }
         }
 
@@ -199,36 +203,6 @@ namespace NWaves.DemoForms
         }
 
         #region drawing
-
-        private void DrawFilterbank(float[][] filterbank, int scaleCoeff = 1)
-        {
-            var g = filterbankPanel.CreateGraphics();
-            g.Clear(Color.White);
-
-            var rand = new Random();
-
-            var offset = filterbankPanel.Height - 20;
-            scaleCoeff *= 100/*px*/;
-          
-            for (var j = 0; j < filterbank.Length; j++)
-            {
-                var pen = new Pen(Color.FromArgb(rand.Next() % 255, rand.Next() % 255, rand.Next() % 255));
-
-                var i = 1;
-                var x = 2;
-
-                while (i < filterbank[j].Length)
-                {
-                    g.DrawLine(pen,
-                        x - 2, (float)-filterbank[j][i - 1] * scaleCoeff + offset,
-                        x, (float)-filterbank[j][i] * scaleCoeff + offset);
-                    x += 2;
-                    i++;
-                }
-
-                pen.Dispose();
-            }
-        }
 
         private void DrawEnvelopes(float[][] envelopes)
         {

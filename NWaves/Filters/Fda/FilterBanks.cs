@@ -108,8 +108,7 @@ namespace NWaves.Filters.Fda
             for (var i = 0; i < filterBank.Length; i++)
             {
                 var filter = DesignFilter.Fir(fftSize / 4 + 1, filterBank[i]);
-                var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
-                filterBank[i] = filterResponse.Take(fftSize / 2 + 1).ToArray();
+                filterBank[i] = filter.FrequencyResponse(fftSize).Magnitude;
 
                 // normalize gain to 1.0
 
@@ -145,9 +144,8 @@ namespace NWaves.Filters.Fda
             {
                 var freq = center[i] / samplingRate;
                 var filter = new BandPassFilter(freq, 2.0f);
-                var filterResponse = filter.FrequencyResponse(fftSize).Magnitude;
 
-                filterBank[i] = filterResponse.Take(fftSize / 2 + 1).ToArray();
+                filterBank[i] = filter.FrequencyResponse(fftSize).Magnitude;
             }
 
             return filterBank;
@@ -187,10 +185,10 @@ namespace NWaves.Filters.Fda
 
             if (overlap)
             {
-                var melResolution = (scaleMapper(highFreq) - scaleMapper(lowFreq)) / (filterCount + 1);
+                var newResolution = (scaleMapper(highFreq) - scaleMapper(lowFreq)) / (filterCount + 1);
 
                 var frequencies = Enumerable.Range(0, filterCount + 2)
-                                            .Select(i => (float)inverseMapper(startingFrequency + i * melResolution))
+                                            .Select(i => (float)inverseMapper(startingFrequency + i * newResolution))
                                             .ToArray();
                 
                 for (var i = 0; i < filterCount; i++)
@@ -201,10 +199,10 @@ namespace NWaves.Filters.Fda
             }
             else
             {
-                var melResolution = (scaleMapper(highFreq) - scaleMapper(lowFreq)) / filterCount;
+                var newResolution = (scaleMapper(highFreq) - scaleMapper(lowFreq)) / filterCount;
 
                 var frequencies = Enumerable.Range(0, filterCount + 1)
-                                            .Select(i => (float)inverseMapper(startingFrequency + i * melResolution))
+                                            .Select(i => (float)inverseMapper(startingFrequency + i * newResolution))
                                             .ToArray();
                 
                 for (var i = 0; i < filterCount; i++)
@@ -353,9 +351,9 @@ namespace NWaves.Filters.Fda
                 highFreq = samplingRate / 2.0f;
             }
 
-            const float earQ = 9.26449f;
-            const float minBw = 24.7f;
-            const float bw = earQ * minBw;
+            const double earQ = 9.26449;
+            const double minBw = 24.7;
+            const double bw = earQ * minBw;
             const int order = 1;
 
             var t = 1.0 / samplingRate;
@@ -422,9 +420,18 @@ namespace NWaves.Filters.Fda
                 var filter3 = new IirFilter(new[] { a0, a13, a2 }, new[] { b0, b1, b2 });
                 var filter4 = new IirFilter(new[] { a0, a14, a2 }, new[] { b0, b1, b2 });
 
-                var filter = filter1 * filter2 * filter3 * filter4;
+                // for doubles the following code will work ok
+                // (however there's a crucial precision lost in case of floats):
 
-                ir = filter.ApplyTo(ir);
+                // var filter = filter1 * filter2 * filter3 * filter4;
+                // ir = filter.ApplyTo(ir);
+
+                // so for floats this code is used:
+
+                ir = filter1.ApplyTo(ir);
+                ir = filter2.ApplyTo(ir);
+                ir = filter3.ApplyTo(ir);
+                ir = filter4.ApplyTo(ir);
 
                 for (var j = 0; j < ir.Length; j++)
                 {

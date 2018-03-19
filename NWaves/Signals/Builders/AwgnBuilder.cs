@@ -11,23 +11,23 @@ namespace NWaves.Signals.Builders
         /// <summary>
         /// Mean
         /// </summary>
-        private float _mu;
+        private double _mu;
 
         /// <summary>
         /// Standard deviation
         /// </summary>
-        private float _sigma;
+        private double _sigma;
 
         public AwgnBuilder()
         {
-            ParameterSetters = new Dictionary<string, Action<float>>
+            ParameterSetters = new Dictionary<string, Action<double>>
             {
                 { "mu, mean",  param => _mu = param },
                 { "sigma, stddev", param => _sigma = param }
             };
 
-            _mu = 0.0f;
-            _sigma = 1.0f;
+            _mu = 0.0;
+            _sigma = 1.0;
         }
 
         /// <summary>

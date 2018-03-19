@@ -15,5 +15,15 @@ namespace NWaves.Filters.Base
         /// <param name="filteringOptions">General filtering strategy</param>
         /// <returns>Filtered signal</returns>
         DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringOptions filteringOptions);
+
+        ///// <summary>
+        ///// TODO:
+        ///// </summary>
+        ///// <param name="samples"></param>
+        ///// <returns></returns>
+        //float[] Process(float[] samples)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }

@@ -16,7 +16,7 @@ namespace NWaves.FeatureExtractors.Base
         /// <summary>
         /// Position of the feature vector in time (in sec)
         /// </summary>
-        public float TimePosition { get; set; }
+        public double TimePosition { get; set; }
 
         /// <summary>
         /// TODO: this dictionary is probably going to be put in a standalone class for statistics

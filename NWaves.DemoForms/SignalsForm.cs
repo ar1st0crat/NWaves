@@ -33,7 +33,7 @@ namespace NWaves.DemoForms
             InitializeComponent();
 
             signalPanel.Gain = 100;
-            generatedSignalPanel.Gain = 150;
+            generatedSignalPanel.Gain = 100;
             superimposedSignalPanel.Gain = 100;
         }
 

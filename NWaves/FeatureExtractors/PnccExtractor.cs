@@ -95,14 +95,14 @@ namespace NWaves.FeatureExtractors
         private readonly int _fftSize;
 
         /// <summary>
-        /// Length of analysis window (in ms)
+        /// Length of analysis window (in seconds)
         /// </summary>
-        private readonly float _windowSize;
+        private readonly double _windowSize;
 
         /// <summary>
-        /// Hop length (in ms)
+        /// Hop length (in seconds)
         /// </summary>
-        private readonly float _hopSize;
+        private readonly double _hopSize;
 
         /// <summary>
         /// Type of the window function
@@ -135,7 +135,7 @@ namespace NWaves.FeatureExtractors
         /// <param name="window"></param>
         public PnccExtractor(int featureCount, int power = 15,
                              int filterbankSize = 40, float lowFreq = 100, float highFreq = 6800,
-                             float windowSize = 0.0256f, float hopSize = 0.010f, int fftSize = 1024,
+                             double windowSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/, int fftSize = 1024,
                              float preEmphasis = 0.0f, WindowTypes window = WindowTypes.Hamming)
         {
             FeatureCount = featureCount;
@@ -407,7 +407,7 @@ namespace NWaves.FeatureExtractors
                     featureVectors.Add(new FeatureVector
                     {
                         Features = pnccs,
-                        TimePosition = (float)timePos / signal.SamplingRate
+                        TimePosition = (double)timePos / signal.SamplingRate
                     });
                 }
 
@@ -417,6 +417,16 @@ namespace NWaves.FeatureExtractors
             }
 
             return featureVectors;
+        }
+
+        /// <summary>
+        /// Parallel computation of PNCC is not currently implemented
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public override List<FeatureVector>[] ParallelChunksComputeFrom(DiscreteSignal signal)
+        {
+            throw new NotImplementedException();
         }
 
 

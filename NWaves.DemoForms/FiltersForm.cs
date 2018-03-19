@@ -77,7 +77,7 @@ namespace NWaves.DemoForms
                     AnalyzePreemphasisFilter();
                     break;
                 case "Butterworth":
-                    _filter = new ButterworthFilter(0.1f, 5);
+                    _filter = new ButterworthFilter(0.1, 5);
 
                     numeratorListBox.DataSource = (_filter as IirFilter).B;
                     denominatorListBox.DataSource = (_filter as IirFilter).A;
@@ -92,7 +92,7 @@ namespace NWaves.DemoForms
 
                     break;
                 case "Custom LP/HP":
-                    _filter = DesignFilter.FirLp(27, 0.1f);
+                    _filter = DesignFilter.FirLp(27, 0.1);
                     
                     //using (var csv = new FileStream("fir.csv", FileMode.Open))
                     //{
@@ -256,9 +256,9 @@ namespace NWaves.DemoForms
 
         private void AnalyzeBiQuadFilter(string filterType)
         {
-            var freq = 0.1f;
-            var q = 1.0f;
-            var gain = 9.0f;
+            var freq = 0.1;
+            var q = 1.0;
+            var gain = 9.0;
 
             for (var i = 0; i < filterParamsDataGrid.RowCount; i++)
             {
@@ -277,7 +277,7 @@ namespace NWaves.DemoForms
             }
             
             string[] parameters = { "freq", "q" };
-            float[] values = { freq, q };
+            double[] values = { freq, q };
 
             switch (filterType)
             {

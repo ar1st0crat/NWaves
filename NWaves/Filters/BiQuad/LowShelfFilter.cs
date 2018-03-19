@@ -16,7 +16,7 @@ namespace NWaves.Filters.BiQuad
         /// <param name="freq"></param>
         /// <param name="q"></param>
         /// <param name="gain"></param>
-        public LowShelfFilter(float freq, float q = 1, float gain = 1.0f)
+        public LowShelfFilter(double freq, double q = 1, double gain = 1.0f)
         {
             var a = (float)Math.Pow(10, gain / 40);
             var asqrt = (float)Math.Sqrt(a);

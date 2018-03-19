@@ -40,8 +40,8 @@ namespace NWaves.DemoForms
             var tdExtractor = new TimeDomainFeaturesExtractor("all", windowSize, hopSize);
             var spectralExtractor = new SpectralFeaturesExtractor("all", windowSize, hopSize);
 
-            var tdVectors = tdExtractor.ComputeFrom(_signal);
-            var spectralVectors = spectralExtractor.ComputeFrom(_signal);
+            var tdVectors = tdExtractor.ParallelComputeFrom(_signal);
+            var spectralVectors = spectralExtractor.ParallelComputeFrom(_signal);
 
             _vectors = FeaturePostProcessing.Join(tdVectors, spectralVectors);
 

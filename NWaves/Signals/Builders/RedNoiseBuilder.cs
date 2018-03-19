@@ -11,26 +11,26 @@ namespace NWaves.Signals.Builders
         /// <summary>
         /// Lower amplitude level
         /// </summary>
-        private float _low;
+        private double _low;
 
         /// <summary>
         /// Upper amplitude level
         /// </summary>
-        private float _high;
+        private double _high;
 
         /// <summary>
         /// Constructor
         /// </summary>
         public RedNoiseBuilder()
         {
-            ParameterSetters = new Dictionary<string, Action<float>>
+            ParameterSetters = new Dictionary<string, Action<double>>
             {
                 { "low, lo, min",  param => _low = param },
                 { "high, hi, max", param => _high = param }
             };
 
-            _low = -1.0f;
-            _high = 1.0f;
+            _low = -1.0;
+            _high = 1.0;
         }
 
         /// <summary>
@@ -49,18 +49,16 @@ namespace NWaves.Signals.Builders
             _high -= mean;
 
             var rand = new Random();
-
-            float prev = 0;
-
+            var prev = 0.0f;
             var red = new float[Length];
+
             for (var n = 0; n < Length; n++)
             {
-                var white = (float)(rand.NextDouble() * (_high - _low) + _low);
+                var white = rand.NextDouble() * (_high - _low) + _low;
 
-                red[n] = (prev + (0.02f * white)) / 1.02f;
+                red[n] = (float)((prev + (0.02 * white)) / 1.02);
                 prev = red[n];
-                red[n] *= 3.5f;
-                red[n] += mean;
+                red[n] = (float)(red[n] * 3.5 + mean);
             }
 
             return new DiscreteSignal(SamplingRate, red);

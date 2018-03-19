@@ -32,14 +32,14 @@ namespace NWaves.FeatureExtractors.Multi
         private readonly int _fftSize;
 
         /// <summary>
-        /// Hop length (in ms)
+        /// Length of analysis window (in seconds)
         /// </summary>
-        private readonly float _hopSize;
+        private readonly double _windowSize;
 
         /// <summary>
-        /// Length of analysis window (in ms)
+        /// Hop length (in seconds)
         /// </summary>
-        private readonly float _windowSize;
+        private readonly double _hopSize;
 
         /// <summary>
         /// Extractor functions
@@ -55,7 +55,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <param name="hopSize"></param>
         /// <param name="fftSize"></param>
         public SpectralFeaturesExtractor(string featureList,
-                                         float windowSize = 0.0256f, float hopSize = 0.010f, int fftSize = 0,
+                                         double windowSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/, int fftSize = 0,
                                          IReadOnlyDictionary<string, object> parameters = null)
         {
             if (featureList == "all" || featureList == "full")
@@ -178,7 +178,7 @@ namespace NWaves.FeatureExtractors.Multi
                 featureVectors.Add(new FeatureVector
                 {
                     Features = featureVector,
-                    TimePosition = (float)i / signal.SamplingRate
+                    TimePosition = (double)i / signal.SamplingRate
                 });
 
                 i += hopSize;

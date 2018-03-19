@@ -8,22 +8,22 @@ namespace NWaves.Signals.Builders
     /// </summary>
     public class PulseWaveBuilder : SignalBuilder
     {
-        private float _amplitude;
-        private float _pulse;
-        private float _period;
+        private double _amplitude;
+        private double _pulse;
+        private double _period;
         
         public PulseWaveBuilder()
         {
-            ParameterSetters = new Dictionary<string, Action<float>>
+            ParameterSetters = new Dictionary<string, Action<double>>
             {
                 { "amplitude, amp, a", param => _amplitude = param },
                 { "pulse, width", param => _pulse = param },
                 { "period, t", param => _period = param }
             };
 
-            _amplitude = 1.0f;
-            _pulse = 0.0f;
-            _period = 0.0f;
+            _amplitude = 1.0;
+            _pulse = 0.0;
+            _period = 0.0;
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace NWaves.Signals.Builders
                 throw new FormatException("The period and pulse duration must be positive!");
             }
 
-            var ones = new DiscreteSignal(SamplingRate, (int)(_pulse * SamplingRate), _amplitude);
+            var ones = new DiscreteSignal(SamplingRate, (int)(_pulse * SamplingRate), (float)_amplitude);
             var zeros = new DiscreteSignal(SamplingRate, (int)((_period - _pulse) * SamplingRate), 0.0f);
 
             var repeatTimes = Length / (int)(_period * SamplingRate) + 1;

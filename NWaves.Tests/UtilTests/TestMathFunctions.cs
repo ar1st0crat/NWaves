@@ -43,27 +43,25 @@ namespace NWaves.Tests.UtilTests
         [Test]
         public void TestRealPolynomialRoots()
         {
-            double[] re = { -6, -5, 2, 1 };
-            double[] im = { 0, 0, 0, 0 };
-
-            var roots = MathUtils.PolynomialRoots(re, im);
+            double[] re = { 1, 2, -5, -6 };
+            
+            var roots = MathUtils.PolynomialRoots(re);
 
             double[] expected = {2, -3, -1};
-            Assert.That(roots.Item1, Is.EquivalentTo(expected));
+            Assert.That(roots.Real, Is.EquivalentTo(expected));
         }
 
         [Test]
         public void TestComplexPolynomialRoots()
         {
-            double[] re = { 2.5, 1, 1 };
-            double[] im = { 0, 0, 0 };
-
-            var roots = MathUtils.PolynomialRoots(re, im);
+            double[] re = { 1, 1, 2.5 };
+            
+            var roots = MathUtils.PolynomialRoots(re);
 
             double[] expectedReal = { -0.5, -0.5 };
             double[] expectedImag = { -1.5, 1.5 };
-            Assert.That(roots.Item1.OrderBy(r => r), Is.EqualTo(expectedReal).Within(1e-10));
-            Assert.That(roots.Item2.OrderBy(r => r), Is.EqualTo(expectedImag).Within(1e-10));
+            Assert.That(roots.Real.OrderBy(r => r), Is.EqualTo(expectedReal).Within(1e-7));
+            Assert.That(roots.Imag.OrderBy(r => r), Is.EqualTo(expectedImag).Within(1e-7));
         }
     }
 }

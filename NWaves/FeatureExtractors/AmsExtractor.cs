@@ -12,9 +12,9 @@ using NWaves.Windows;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Modulation spectra extractor
+    /// Amplitude modulation spectra extractor
     /// </summary>
-    public class MsExtractor : FeatureExtractor
+    public class AmsExtractor : FeatureExtractor
     {
         /// <summary>
         /// Number of coefficients in modulation spectrum
@@ -37,7 +37,7 @@ namespace NWaves.FeatureExtractors
 
         /// <summary>
         /// The "featuregram": the sequence of (feature) vectors;
-        /// if this sequence is given, then MsExtractor computes 
+        /// if this sequence is given, then AmsExtractor computes 
         /// modulation spectral coefficients from sequences in each 'feature channel'.
         /// </summary>
         private readonly float[][] _featuregram;
@@ -60,19 +60,19 @@ namespace NWaves.FeatureExtractors
         private readonly int _fftSize;
 
         /// <summary>
-        /// Length of analysis window (in ms)
+        /// Length of analysis window (in seconds)
         /// </summary>
-        private readonly float _windowSize;
+        private readonly double _windowSize;
+        
+        /// <summary>
+        /// Hop length (in seconds)
+        /// </summary>
+        private readonly double _hopSize;
 
         /// <summary>
         /// Type of the window function
         /// </summary>
         private readonly WindowTypes _window;
-
-        /// <summary>
-        /// Hop length (in ms)
-        /// </summary>
-        private readonly float _hopSize;
 
         /// <summary>
         /// Size of FFT applied to signal envelopes
@@ -102,7 +102,7 @@ namespace NWaves.FeatureExtractors
         /// <param name="filterbank"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
-        public MsExtractor(float windowSize = 0.0256f, float hopSize = 0.010f, 
+        public AmsExtractor(double windowSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/, 
                            int modulationFftSize = 64, int modulationOverlapSize = 4, int fftSize = 0,
                            IEnumerable<float[]> featuregram = null, float[][] filterbank = null,
                            float preEmphasis = 0.0f, WindowTypes window = WindowTypes.Rectangular)
@@ -303,7 +303,7 @@ namespace NWaves.FeatureExtractors
                 featureVectors.Add(new FeatureVector
                 {
                     Features = vector,
-                    TimePosition = (float)i * hopSize / signal.SamplingRate
+                    TimePosition = (double)i * hopSize / signal.SamplingRate
                 });
 
                 i += _modulationHopSize;

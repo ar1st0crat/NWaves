@@ -8,7 +8,7 @@ namespace NWaves.Utils
     /// </summary>
     static class FastCopy
     {
-        private const byte Bytes = 4;
+        private const byte Bytes = sizeof(float);
 
         /// <summary>
         /// Method simply copies source array to desination

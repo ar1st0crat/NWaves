@@ -15,7 +15,7 @@ namespace NWaves.Filters.BiQuad
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="q"></param>
-        public LowPassFilter(float freq, float q = 1)
+        public LowPassFilter(double freq, double q = 1)
         {
             var omega = 2 * Math.PI * freq;
             var alpha = (float)(Math.Sin(omega) / (2 * q));

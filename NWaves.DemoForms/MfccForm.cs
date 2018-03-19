@@ -50,7 +50,9 @@ namespace NWaves.DemoForms
                                                       //lifterSize: 22,
                                                       preEmphasis: 0.95f,
                                                       window: WindowTypes.Hamming);
+
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);
+
             //FeaturePostProcessing.NormalizeMean(_mfccVectors);
             //FeaturePostProcessing.AddDeltas(_mfccVectors);
 

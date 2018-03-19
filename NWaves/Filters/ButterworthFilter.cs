@@ -15,7 +15,7 @@ namespace NWaves.Filters
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="order"></param>
-        public ButterworthFilter(float freq, int order)
+        public ButterworthFilter(double freq, int order)
         {
             // Calculation of filter coefficients is based on Neil Robertson'post:
             // https://www.dsprelated.com/showarticle/1119.php

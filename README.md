@@ -24,7 +24,7 @@ Already available:
 - [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, modulation spectra) and CSV serialization
 - [x] feature post-processing (CMN, deltas)
 - [x] spectral features (centroid, spread, flatness, bandwidth, rolloff, contrast, crest)
-- [x] sound synthesis and signal builders (sinusoid, white/pink/red/grey noise, triangle, sawtooth, square, periodic pulse)
+- [x] sound synthesis and signal builders (sinusoid, white/pink/red noise, awgn, triangle, sawtooth, square, periodic pulse)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking
 - [x] sound effects (delay, echo, tremolo, wahwah, phaser, distortion, pitch shift)
@@ -32,7 +32,7 @@ Already available:
 
 Planned:
 
-- [ ] more transforms (CQT, DWT, Mellin, Haar, Hadamard)
+- [ ] more transforms (CQT, DWT, Mellin, Hartley, Haar, Hadamard)
 - [ ] more operations (spectral subtraction, adaptive filtering)
 - [ ] more feature extraction (MIR descriptors and lots of others)
 - [ ] more sound synthesis (ADSR, etc.)
@@ -51,28 +51,28 @@ In the beginning... there were interfaces and factories here and there, and NWav
 
 ```C#
 
-// Create signal {0.75, 0.75, 0.75, 0.75, 0.75} sampled at 8 kHz:
-var constants = new DiscreteSignal(8000, 5, 0.75);
+// Create signal { 0.75f, 0.75f, 0.75f, 0.75f, 0.75f } sampled at 8 kHz:
+var constants = new DiscreteSignal(8000, 5, 0.75f);
 
 
-// Create signal {0.0, 1.0, 2.0, ..., 99.0} sampled at 22050 Hz
+// Create signal { 0.0f, 1.0f, 2.0f, ..., 99.0f } sampled at 22050 Hz
 var linear = new DiscreteSignal(22050, Enumerable.Range(0, 100));
 
 
-// Create signal {1.0, 0.0} sampled at 44,1 kHz
-var bits = new DiscreteSignal(44100, new double [] { 1, 0 });
+// Create signal { 1.0f, 0.0f } sampled at 44,1 kHz
+var bits = new DiscreteSignal(44100, new float [] { 1, 0 });
 
 
 // Create one more signal from samples repeated 3 times
-var samples = new double[] { 0.5, 0.2, -0.3, 1.2, 1.6, -1.8, 0.3, -0.2 };
+var samples = new [] { 0.5f, 0.2f, -0.3f, 1.2f, 1.6f, -1.8f, 0.3f, -0.2f };
 
 var signal = new DiscreteSignal(16000, samples).Repeat(3);
 
 
 // DiscreteSignal samples are mutable by design:
 
-signal[2] = 1.27;
-signal[3] += 0.5;
+signal[2] = 1.27f;
+signal[3] += 0.5f;
 
 
 // slices (as in Python: "signal[6:18]")
@@ -168,12 +168,13 @@ using (var stream = new FileStream("sample.wav", FileMode.Open))
 {
 	var waveFile = new WaveFile(stream);
 
-	// address signals with Channels enum (Left, Right, Interleave):
+	// address signals with Channels enum (Left, Right, Average, Interleave):
 
 	var signalLeft = waveFile[Channels.Left];
 	var signalRight = waveFile[Channels.Right];
+	var signalAverage = waveFile[Channels.Average];
 	var signalInterleaved = waveFile[Channels.Interleave];
-
+	
 	// or simply like this:
 
 	signalLeft = waveFile.Signals[0];
@@ -211,8 +212,8 @@ var fft = new Fft(1024);
 
 // 1) Handling complex arrays directly:
 
-double[] real = signal.First(1024).Samples;
-double[] imag = new double [1024];
+float[] real = signal.First(1024).Samples;
+float[] imag = new float [1024];
 
 // in-place FFT
 fft.Direct(real, imag);
@@ -266,8 +267,8 @@ var result = ht.AnalyticSignal(signal).Imag;
 // it's better to work with reusable arrays in memory
 // (all intermediate results will also be stored in reusable arrays):
 
-var spectrum = new double[1024];
-var cepstrum = new double[20];
+var spectrum = new float[1024];
+var cepstrum = new float[20];
 
 fft.PowerSpectrum(signal[1000, 2024].Samples, spectrum);
 // do something with spectrum
@@ -333,7 +334,7 @@ var notchedSignal = notchFilter.ApplyTo(signal);
 
 // filter analysis:
 
-var filter = new IirFilter(new [] {1.0, 0.5, 0.2}, new [] {1.0, -0.8, 0.3});
+var filter = new IirFilter(new [] {1, 0.5f, 0.2f}, new [] {1, -0.8f, 0.3f});
 
 var impulseResponse = filter.ImpulseResponse();
 var magnitudeResponse = filter.FrequencyResponse().Magnitude;
@@ -375,10 +376,10 @@ var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
 
 ```C#
 
-var lpcExtractor = new LpcExtractor(16, windowSize: 0.032, hopSize: 0.015);
+var lpcExtractor = new LpcExtractor(16, windowSize: 0.032/*sec*/, hopSize: 0.015/*sec*/);
 var lpcVectors = lpcExtractor.ComputeFrom(signal);
 
-var mfccExtractor = new MfccExtractor(13, melFilterbanks: 24, preEmphasis: 0.95);
+var mfccExtractor = new MfccExtractor(13, melFilterbanks: 24, preEmphasis: 0.95f);
 var mfccVectors = mfccExtractor.ComputeFrom(signal).Take(15);
 
 var pnccExtractor = new PnccExtractor(13);

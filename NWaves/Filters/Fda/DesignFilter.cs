@@ -73,7 +73,7 @@ namespace NWaves.Filters.Fda
         /// <param name="sinc"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static FirFilter FirLp(int order, float freq, bool sinc = true, WindowTypes window = WindowTypes.Blackman)
+        public static FirFilter FirLp(int order, double freq, bool sinc = true, WindowTypes window = WindowTypes.Blackman)
         {
             if (sinc)
             {
@@ -101,7 +101,7 @@ namespace NWaves.Filters.Fda
         /// <param name="freq"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        private static FirFilter FirLpSinc(int order, float freq, WindowTypes window = WindowTypes.Blackman)
+        private static FirFilter FirLpSinc(int order, double freq, WindowTypes window = WindowTypes.Blackman)
         {
             if (order % 2 == 0)
             {
@@ -113,10 +113,11 @@ namespace NWaves.Filters.Fda
             var middle = order / 2;
             var freq2Pi = 2 * Math.PI * freq;
 
-            kernel[middle] = 2 * freq;
+            kernel[middle] = (float)(2 * freq);
             for (var i = 1; i <= middle; i++)
             {
-                kernel[middle - i] = kernel[middle + i] = (float)(Math.Sin(freq2Pi * i) / (Math.PI * i));
+                kernel[middle - i] = 
+                kernel[middle + i] = (float)(Math.Sin(freq2Pi * i) / (Math.PI * i));
             }
 
             kernel.ApplyWindow(window);

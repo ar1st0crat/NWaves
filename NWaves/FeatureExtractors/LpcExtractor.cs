@@ -37,14 +37,14 @@ namespace NWaves.FeatureExtractors
         private readonly int _order;
 
         /// <summary>
-        /// Length of analysis window (in ms)
+        /// Length of analysis window (in seconds)
         /// </summary>
-        private readonly float _windowSize;
+        private readonly double _windowSize;
 
         /// <summary>
-        /// Hop length (in ms)
+        /// Hop length (in seconds)
         /// </summary>
-        private readonly float _hopSize;
+        private readonly double _hopSize;
 
         /// <summary>
         /// Type of the window function
@@ -65,7 +65,7 @@ namespace NWaves.FeatureExtractors
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
         public LpcExtractor(int order, 
-                            float windowSize = 0.0256f, float hopSize = 0.010f,
+                            double windowSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/,
                             float preEmphasis = 0.0f, WindowTypes window = WindowTypes.Rectangular)
         {
             _order = order;
@@ -155,7 +155,7 @@ namespace NWaves.FeatureExtractors
                 featureVectors.Add(new FeatureVector
                 {
                     Features = a,
-                    TimePosition = (float)i / signal.SamplingRate
+                    TimePosition = (double)i / signal.SamplingRate
                 });
 
                 i += hopSize;

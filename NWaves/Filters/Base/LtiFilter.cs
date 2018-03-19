@@ -47,7 +47,8 @@ namespace NWaves.Filters.Base
             var fft = new Fft(length);
             fft.Direct(real, imag);
 
-            return new ComplexDiscreteSignal(1, real.Take(length / 2), imag.Take(length / 2));
+            return new ComplexDiscreteSignal(1, real.Take(length / 2 + 1),
+                                                imag.Take(length / 2 + 1));
         }
 
         /// <summary>
@@ -93,14 +94,7 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public static ComplexDiscreteSignal TfToZp(float[] tf)
         {
-            if (tf.Length <= 1)
-            {
-                return null;
-            }
-
-            var roots = MathUtils.PolynomialRoots(tf.Reverse().ToDouble(), new double[tf.Length]);
-
-            return new ComplexDiscreteSignal(1, roots.Item1.ToFloat(), roots.Item2.ToFloat());
+            return tf.Length <= 1 ? null : MathUtils.PolynomialRoots(tf.ToDoubles());
         }
     }
 }

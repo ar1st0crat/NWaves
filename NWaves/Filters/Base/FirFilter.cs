@@ -154,7 +154,8 @@ namespace NWaves.Filters.Base
             var fft = new Fft(length);
             fft.Direct(real, imag);
 
-            return new ComplexDiscreteSignal(1, real.Take(length / 2), imag.Take(length / 2));
+            return new ComplexDiscreteSignal(1, real.Take(length / 2),
+                                                imag.Take(length / 2));
         }
 
         /// <summary>

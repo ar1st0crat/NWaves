@@ -42,7 +42,6 @@
             this.band1ComboBox = new System.Windows.Forms.ComboBox();
             this.filterbankComboBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.filterbankPanel = new System.Windows.Forms.Panel();
             this.label2 = new System.Windows.Forms.Label();
             this.filterCountTextBox = new System.Windows.Forms.TextBox();
             this.filterbankButton = new System.Windows.Forms.Button();
@@ -74,6 +73,7 @@
             this.label11 = new System.Windows.Forms.Label();
             this.shapeComboBox = new System.Windows.Forms.ComboBox();
             this.overlapCheckBox = new System.Windows.Forms.CheckBox();
+            this.filterbankPanel = new NWaves.DemoForms.UserControls.GroupPlot();
             this.menuStrip1.SuspendLayout();
             this.envelopesPanel.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -216,14 +216,6 @@
             this.label1.Size = new System.Drawing.Size(74, 17);
             this.label1.TabIndex = 3;
             this.label1.Text = "Filter bank";
-            // 
-            // filterbankPanel
-            // 
-            this.filterbankPanel.BackColor = System.Drawing.Color.White;
-            this.filterbankPanel.Location = new System.Drawing.Point(12, 143);
-            this.filterbankPanel.Name = "filterbankPanel";
-            this.filterbankPanel.Size = new System.Drawing.Size(600, 170);
-            this.filterbankPanel.TabIndex = 4;
             // 
             // label2
             // 
@@ -521,11 +513,24 @@
             this.overlapCheckBox.Text = "overlap";
             this.overlapCheckBox.UseVisualStyleBackColor = true;
             // 
+            // filterbankPanel
+            // 
+            this.filterbankPanel.AutoScroll = true;
+            this.filterbankPanel.BackColor = System.Drawing.Color.White;
+            this.filterbankPanel.Gain = 100;
+            this.filterbankPanel.Groups = null;
+            this.filterbankPanel.Location = new System.Drawing.Point(12, 138);
+            this.filterbankPanel.Name = "filterbankPanel";
+            this.filterbankPanel.Size = new System.Drawing.Size(600, 175);
+            this.filterbankPanel.Stride = 2;
+            this.filterbankPanel.TabIndex = 38;
+            // 
             // ModulationSpectrumForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1187, 701);
+            this.Controls.Add(this.filterbankPanel);
             this.Controls.Add(this.overlapCheckBox);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.shapeComboBox);
@@ -548,7 +553,6 @@
             this.Controls.Add(this.filterbankButton);
             this.Controls.Add(this.filterCountTextBox);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.filterbankPanel);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.filterbankComboBox);
             this.Controls.Add(this.envelopesPanel);
@@ -575,7 +579,6 @@
         private System.Windows.Forms.Panel envelopesPanel;
         private System.Windows.Forms.ComboBox filterbankComboBox;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Panel filterbankPanel;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox filterCountTextBox;
         private System.Windows.Forms.Button filterbankButton;
@@ -615,5 +618,6 @@
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.ComboBox shapeComboBox;
         private System.Windows.Forms.CheckBox overlapCheckBox;
+        private UserControls.GroupPlot filterbankPanel;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
 {
@@ -12,21 +13,21 @@ namespace NWaves.Signals.Builders
         /// <summary>
         /// Lower amplitude level
         /// </summary>
-        private float _low;
+        private double _low;
 
         /// <summary>
         /// Upper amplitude level
         /// </summary>
-        private float _high;
+        private double _high;
 
         /// <summary>
         /// Frequency of the triangle wave
         /// </summary>
-        private float _frequency;
+        private double _frequency;
 
         public SquareWaveBuilder()
         {
-            ParameterSetters = new Dictionary<string, Action<float>>
+            ParameterSetters = new Dictionary<string, Action<double>>
             {
                 { "low, lo, lower",  param => _low = param },
                 { "high, hi, upper", param => _high = param },
@@ -59,7 +60,7 @@ namespace NWaves.Signals.Builders
                                         return x < n / 2 ? _high : _low;
                                     });
 
-            return new DiscreteSignal(SamplingRate, samples);
+            return new DiscreteSignal(SamplingRate, samples.ToFloats());
         }
     }
 }

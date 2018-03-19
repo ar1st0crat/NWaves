@@ -53,14 +53,14 @@ namespace NWaves.FeatureExtractors
         private readonly int _fftSize;
 
         /// <summary>
-        /// Length of analysis window (in ms)
+        /// Length of analysis window (in seconds)
         /// </summary>
-        private readonly float _windowSize;
+        private readonly double _windowSize;
 
         /// <summary>
-        /// Hop length (in ms)
+        /// Hop length (in seconds)
         /// </summary>
-        private readonly float _hopSize;
+        private readonly double _hopSize;
 
         /// <summary>
         /// Size of liftering window
@@ -92,7 +92,8 @@ namespace NWaves.FeatureExtractors
         /// <param name="window"></param>
         public MfccExtractor(int featureCount,
                              int melFilterbankSize = 20, float lowFreq = 0, float highFreq = 0,
-                             float windowSize = 0.0256f, float hopSize = 0.010f, int fftSize = 0, int lifterSize = 22,
+                             double windowSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/,
+                             int fftSize = 0, int lifterSize = 22,
                              float preEmphasis = 0.0f, WindowTypes window = WindowTypes.Hamming)
         {
             FeatureCount = featureCount;
@@ -214,7 +215,7 @@ namespace NWaves.FeatureExtractors
                 featureVectors.Add(new FeatureVector
                 {
                     Features = mfccs,
-                    TimePosition = (float)i / signal.SamplingRate
+                    TimePosition = (double)i / signal.SamplingRate
                 });
 
                 i += hopSize;

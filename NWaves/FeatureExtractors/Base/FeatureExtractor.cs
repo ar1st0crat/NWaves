@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NWaves.Signals;
 
 namespace NWaves.FeatureExtractors.Base
@@ -63,6 +65,46 @@ namespace NWaves.FeatureExtractors.Base
         public List<FeatureVector> ComputeFrom(IEnumerable<float> samples, int samplingRate)
         {
             return ComputeFrom(new DiscreteSignal(samplingRate, samples));
+        }
+
+        /// <summary>
+        /// Parallel computation (returns chunks of fecture vector lists)
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public virtual List<FeatureVector>[] ParallelChunksComputeFrom(DiscreteSignal signal)
+        {
+            var threadCount = Environment.ProcessorCount;
+            var chunkSize = signal.Length / threadCount;
+
+            var featureVectors = new List<FeatureVector>[threadCount];
+
+            Parallel.For(0, threadCount, i =>
+            {
+                var startSample = i * chunkSize;
+                var endSample = (i < threadCount - 1) ? (i + 1) * chunkSize : signal.Length;
+                featureVectors[i] = ComputeFrom(signal, startSample, endSample);
+            });
+
+            return featureVectors;
+        }
+
+        /// <summary>
+        /// Parallel computation (joins chunks of feature vector lists into one list)
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public virtual List<FeatureVector> ParallelComputeFrom(DiscreteSignal signal)
+        {
+            var chunks = ParallelChunksComputeFrom(signal);
+            var featureVectors = new List<FeatureVector>();
+
+            foreach (var vectors in chunks)
+            {
+                featureVectors.AddRange(vectors);
+            }
+
+            return featureVectors;
         }
     }
 }

@@ -49,9 +49,9 @@ namespace NWaves.Filters
         /// <param name="filteringOptions"></param>
         /// <returns></returns>
         public override DiscreteSignal ApplyTo(DiscreteSignal signal,
-            FilteringOptions filteringOptions = FilteringOptions.Custom)
+                                               FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
-            if (filteringOptions != FilteringOptions.Custom)
+            if (filteringOptions != FilteringOptions.Auto)
             {
                 return base.ApplyTo(signal, filteringOptions);
             }

@@ -15,8 +15,8 @@ namespace NWaves.DemoForms
 {
     public partial class LpcForm : Form
     {
-        private const float WindowSize = 0.032f;
-        private const float HopSize = 0.010f;
+        private const double WindowSize = 0.032;
+        private const double HopSize = 0.010;
 
         private DiscreteSignal _signal;
         private List<FeatureVector> _lpcVectors;
@@ -51,7 +51,7 @@ namespace NWaves.DemoForms
             
             var lpcExtractor = new LpcExtractor(16, WindowSize, HopSize);
 
-            _lpcVectors = lpcExtractor.ComputeFrom(_signal);
+            _lpcVectors = lpcExtractor.ParallelComputeFrom(_signal);
 
             FillFeaturesList(_lpcVectors, lpcExtractor.FeatureDescriptions);
             lpcListView.Items[0].Selected = true;

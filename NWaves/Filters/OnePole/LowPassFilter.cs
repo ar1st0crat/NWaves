@@ -12,7 +12,7 @@ namespace NWaves.Filters.OnePole
         /// Constructor computes the filter coefficients.
         /// </summary>
         /// <param name="freq"></param>
-        public LowPassFilter(float freq)
+        public LowPassFilter(double freq)
         {
             var a1 = (float)(-Math.Exp(-2 * Math.PI * freq));
             var b0 = 1 + a1;

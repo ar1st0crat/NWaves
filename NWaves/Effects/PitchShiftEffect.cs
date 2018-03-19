@@ -14,7 +14,7 @@ namespace NWaves.Effects
         /// <summary>
         /// Shift ratio
         /// </summary>
-        private readonly float _shift;
+        private readonly double _shift;
 
         /// <summary>
         /// Size of FFT
@@ -26,7 +26,7 @@ namespace NWaves.Effects
         /// </summary>
         /// <param name="shift"></param>
         /// <param name="fftSize"></param>
-        public PitchShiftEffect(float shift, int fftSize = 4096)
+        public PitchShiftEffect(double shift, int fftSize = 4096)
         {
             _shift = shift;
             _fftSize = fftSize;
@@ -51,7 +51,7 @@ namespace NWaves.Effects
                                                       .ToArray(),
                                             stretched.Samples,                      // stretched at 0.0, 1.0, 2.0, ...
                                             Enumerable.Range(0, signal.Length)      
-                                                      .Select(s => _shift * s)
+                                                      .Select(s => (float)(_shift * s))
                                                       .ToArray());                  // [0.0, _shift, 2*_shift, ...]
 
             return new DiscreteSignal(signal.SamplingRate, resampled);

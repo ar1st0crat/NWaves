@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
 {
@@ -12,30 +13,30 @@ namespace NWaves.Signals.Builders
         /// <summary>
         /// Amplitude of the sinusoid
         /// </summary>
-        private float _amplitude;
+        private double _amplitude;
 
         /// <summary>
         /// Frequency of the sinusoid (as a fraction of sampling frequency)
         /// </summary>
-        private float _frequency;
+        private double _frequency;
 
         /// <summary>
         /// Initial phase of the sinusoid (in radians)
         /// </summary>
-        private float _phase;
+        private double _phase;
 
         public SinusoidBuilder()
         {
-            ParameterSetters = new Dictionary<string, Action<float>>
+            ParameterSetters = new Dictionary<string, Action<double>>
             {
                 { "amplitude, amp, gain", param => _amplitude = param },
                 { "frequency, freq",      param => _frequency = param },
                 { "phase, phi",           param => _phase = param }
             };
 
-            _amplitude = 1.0f;
-            _frequency = 0.0f;
-            _phase = 0.0f;
+            _amplitude = 1.0;
+            _frequency = 0.0;
+            _phase = 0.0;
         }
 
         /// <summary>
@@ -53,9 +54,9 @@ namespace NWaves.Signals.Builders
             }
 
             var samples = Enumerable.Range(0, Length)
-                                    .Select(i => (float)(_amplitude * Math.Sin(2 * Math.PI * _frequency / SamplingRate * i + _phase)));
+                                    .Select(i => _amplitude * Math.Sin(2 * Math.PI * _frequency / SamplingRate * i + _phase));
 
-            return new DiscreteSignal(SamplingRate, samples);
+            return new DiscreteSignal(SamplingRate, samples.ToFloats());
         }
     }
 }

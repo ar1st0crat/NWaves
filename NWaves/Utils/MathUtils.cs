@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Linq;
+using System.Numerics;
+using NWaves.Signals;
 
 namespace NWaves.Utils
 {
@@ -80,6 +83,148 @@ namespace NWaves.Utils
 
         /// <summary>
         /// Method implementing Durand-Kerner algorithm for finding complex roots of polynomials.
+        /// </summary>
+        /// <param name="a">Polynomial coefficients</param>
+        /// <returns></returns>
+        public static ComplexDiscreteSignal PolynomialRoots(double[] a)
+        {
+            var n = a.Length;
+            if (n <= 1)
+            {
+                return null;
+            }
+
+            const int maxIterations = 10000;
+
+            var a0 = new Complex[a.Length - 1];
+            var a1 = new Complex[a.Length - 1];
+
+            var result = new Complex(0.4, 0.9);
+            a0[0] = Complex.One;
+
+            for (var i = 1; i < a0.Length; i++)
+            {
+                a0[i] = a0[i - 1] * result;
+            }
+
+            var count = 0;
+            while (true)
+            {
+                for (int i = 0; i < a0.Length; i++)
+                {
+                    result = Complex.One;
+
+                    for (int j = 0; j < a0.Length; j++)
+                    {
+                        if (i != j)
+                        {
+                            result = (a0[i] - a0[j]) * result;
+                        }
+                    }
+
+                    a1[i] = a0[i] - (EvaluatePolynomial(a, a0[i]) / result);
+                }
+
+                count++;
+
+                if (count > maxIterations || ArraysAreEqual(a0, a1))
+                {
+                    break;
+                }
+
+                Array.Copy(a1, a0, a1.Length);
+            }
+
+            return new ComplexDiscreteSignal(1, a1.Select(r => (float) r.Real),
+                                                a1.Select(r => (float) r.Imaginary));
+        }
+
+        /// <summary>
+        /// Method checks if two arrays of complex numbers are essentially identical
+        /// </summary>
+        /// <param name="a">First array</param>
+        /// <param name="b">Second array</param>
+        /// <returns>true if arrays are equal</returns>
+        private static bool ArraysAreEqual(Complex[] a, Complex[] b)
+        {
+            var close = true;
+            for (var i = 0; i < a.Length; i++)
+            {
+                var delta = a[i] - b[i];
+                close &= Math.Abs(delta.Real) < 1e-6 && Math.Abs(delta.Imaginary) < 1e-6;
+            }
+
+            return close;
+        }
+
+        /// <summary>
+        /// Evaluate polynomial according to Horner scheme
+        /// </summary>
+        /// <param name="a">Polynomial coefficients</param>
+        /// <param name="x">x</param>
+        /// <returns>The value of polynomial</returns>
+        public static Complex EvaluatePolynomial(double[] a, Complex x)
+        {
+            var res = new Complex(a[0], 0);
+
+            for (var i = 1; i < a.Length; i++)
+            {
+                res *= x;
+                res += a[i];
+            }
+
+            return res;
+        }
+
+        /*
+         * 
+         * Another implementations of Durand-Kerner algorithm
+         * 
+         * 
+        /// <summary>
+        /// Simpler but less stable
+        /// <summary>
+        public static Complex[] Foo(double[] a)
+        {
+            var n = a.Length;
+            if (n <= 1)
+            {
+                return null;
+            }
+
+            const int maxIterations = 1200;
+            var z = new Complex(0.4, 0.9);
+
+            var roots = new Complex[n];
+
+            var a0 = a[0];
+            for (var i = 0; i < n; i++)
+            {
+                roots[i] = Complex.Pow(z, i);
+                a[i] /= a0;
+            }
+
+            for (var i = 0; i < maxIterations; i++)
+            {
+                for (var j = 0; j < n; j++)
+                {
+                    var b = EvaluatePolynomial(a, roots[j]);
+
+                    for (var k = 0; k < n; k++)
+                    {
+                        if (k != j) b /= roots[j] - roots[k];
+                    }
+
+                    roots[j] -= b;
+                }
+            }
+
+            return roots;
+        }
+
+        /// <summary>
+        /// Method implementing Durand-Kerner algorithm for finding complex roots of polynomials.
+        /// Rewritten for C# from scijs/durand-kerner.
         /// </summary>
         /// <param name="re"></param>
         /// <param name="im"></param>
@@ -236,7 +381,66 @@ namespace NWaves.Utils
                 }
             }
 
+            // Combine repeated roots
+
+            for (var i = 0; i < zr.Length; ++i)
+            {
+                var count = 1;
+                var a = zr[i];
+                var b = zi[i];
+                for (var j = 0; j < zr.Length; ++j)
+                {
+                    if (i == j)
+                    {
+                        continue;
+                    }
+                    if (AreCloseComplex(zr[i], zi[i], zr[j], zi[j], tolerance))
+                    {
+                        ++count;
+                        a += zr[j];
+                        b += zi[j];
+                    }
+                }
+                if (count > 1)
+                {
+                    a /= count;
+                    b /= count;
+                    for (var j = 0; j < zr.Length; ++j)
+                    {
+                        if (i == j)
+                        {
+                            continue;
+                        }
+                        if (AreCloseComplex(zr[i], zi[i], zr[j], zi[j], tolerance))
+                        {
+                            zr[j] = a;
+                            zi[j] = b;
+                        }
+                    }
+                    zr[i] = a;
+                    zi[i] = b;
+                }
+            }
+
             return new Tuple<double[], double[]>(zr, zi);
         }
+
+        /// <summary>
+        /// Method checks if two complex numbers are basically identical
+        /// </summary>
+        /// <param name="re1">Real part of the first number</param>
+        /// <param name="im1">Imaginary part of the first number</param>
+        /// <param name="re2">Real part of the second number</param>
+        /// <param name="im2">Imaginary part of the second number</param>
+        /// <param name="tolerance">The difference threshold indicating the numbers are basically identical</param>
+        /// <returns></returns>
+        public static bool AreCloseComplex(double re1, double im1, double re2, double im2, double tolerance)
+        {
+            var dre = re1 - re2;
+            var dim = im1 - im2;
+            var r = dre * dre + dim * dim;
+            return r * r < tolerance;
+        }
+        */
     }
 }
