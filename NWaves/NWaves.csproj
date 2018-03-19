@@ -37,6 +37,8 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Filters\Base\TransferFunction.cs" />
+    <Compile Include="Transforms\Fft64.cs" />
     <Compile Include="Audio\Channels.cs" />
     <Compile Include="Audio\Interfaces\IAudioContainer.cs" />
     <Compile Include="Audio\Interfaces\IAudioPlayer.cs" />
@@ -76,7 +78,7 @@
     <Compile Include="Filters\Adaptive\KalmanFilter.cs" />
     <Compile Include="Filters\Adaptive\LmsFilter.cs" />
     <Compile Include="Filters\Adaptive\RlsFilter.cs" />
-    <Compile Include="Utils\MiscExtensions.cs" />
+    <Compile Include="Utils\MemoryOperationExtensions.cs" />
     <Compile Include="Filters\WienerFilter.cs" />
     <Compile Include="Filters\Base\LtiFilter.cs" />
     <Compile Include="Filters\Base\FilteringOptions.cs" />
@@ -144,7 +146,6 @@
     <Compile Include="Windows\Window.cs" />
     <Compile Include="Windows\WindowExtensions.cs" />
     <Compile Include="Windows\WindowTypes.cs" />
-    <Compile Include="Utils\FastCopy.cs" />
     <Compile Include="Utils\MathUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

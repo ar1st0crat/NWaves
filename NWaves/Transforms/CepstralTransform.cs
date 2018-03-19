@@ -84,7 +84,7 @@ namespace NWaves.Transforms
             }
             else
             {
-                FastCopy.ToExistingArray(_realSpectrum, cepstrum, _cepstrumSize);
+                _realSpectrum.FastCopyTo(cepstrum, _cepstrumSize);
             }
         }
 

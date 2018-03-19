@@ -32,15 +32,15 @@ namespace NWaves.Filters.Fda
 
             float[] real, imag;
 
-            real = fftSize != magnitudeResponse.Length ? 
-                   FastCopy.PadZeros(magnitudeResponse, fftSize) : 
-                   FastCopy.EntireArray(magnitudeResponse);
+            real = fftSize != magnitudeResponse.Length ?
+                   magnitudeResponse.PadZeros(fftSize) :
+                   magnitudeResponse.FastCopy();
 
             if (phaseResponse != null)
             {
                 imag = fftSize != phaseResponse.Length ?
-                       FastCopy.PadZeros(phaseResponse, fftSize) :
-                       FastCopy.EntireArray(phaseResponse);
+                       phaseResponse.PadZeros(fftSize) :
+                       phaseResponse.FastCopy();
             }
             else
             {
@@ -61,7 +61,7 @@ namespace NWaves.Filters.Fda
             
             kernel.ApplyWindow(window);
 
-            return new FirFilter(kernel);
+            return new FirFilter(kernel.ToDoubles());
         }
 
         /// <summary>
@@ -108,16 +108,16 @@ namespace NWaves.Filters.Fda
                 throw new ArgumentException("The order of a filter must be an odd number!");
             }
 
-            var kernel = new float[order];
+            var kernel = new double[order];
 
             var middle = order / 2;
             var freq2Pi = 2 * Math.PI * freq;
 
-            kernel[middle] = (float)(2 * freq);
+            kernel[middle] = 2 * freq;
             for (var i = 1; i <= middle; i++)
             {
                 kernel[middle - i] = 
-                kernel[middle + i] = (float)(Math.Sin(freq2Pi * i) / (Math.PI * i));
+                kernel[middle + i] = Math.Sin(freq2Pi * i) / (Math.PI * i);
             }
 
             kernel.ApplyWindow(window);
@@ -133,7 +133,7 @@ namespace NWaves.Filters.Fda
         public static FirFilter LpToHp(FirFilter filter)
         {
             var kernel = filter.Kernel.Select(k => -k).ToArray();
-            kernel[kernel.Length / 2] += 1.0f;
+            kernel[kernel.Length / 2] += 1.0;
             return new FirFilter(kernel);
         }
 

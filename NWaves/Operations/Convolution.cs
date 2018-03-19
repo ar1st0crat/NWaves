@@ -27,8 +27,8 @@ namespace NWaves.Operations
             var real2 = new float[fftSize];
             var imag2 = new float[fftSize];
 
-            FastCopy.ToExistingArray(signal1.Samples, real1, signal1.Length);
-            FastCopy.ToExistingArray(signal2.Samples, real2, signal2.Length);
+            signal1.Samples.FastCopyTo(real1, signal1.Length);
+            signal2.Samples.FastCopyTo(real2, signal2.Length);
 
             // 1) do FFT of both signals
 
@@ -65,7 +65,7 @@ namespace NWaves.Operations
             var length = signal1.Length + signal2.Length - 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(length);
-            var fft = new Fft(fftSize);
+            var fft = new Fft64(fftSize);
 
             signal1 = signal1.ZeroPadded(fftSize);
             signal2 = signal2.ZeroPadded(fftSize);
@@ -138,14 +138,51 @@ namespace NWaves.Operations
 
             if (center > 0)
             {
-                FastCopy.ToExistingArray(real1, res, center, center - 1);
+                real1.FastCopyTo(res, center, center - 1);
             }
             else
             {
-                FastCopy.ToExistingArray(real1, res, fftSize);
+                real1.FastCopyTo(res, fftSize);
             }
         }
-        
+
+        public static void Convolve(double[] real1, double[] imag1, double[] real2, double[] imag2, double[] res, int center = 0)
+        {
+            var fftSize = real1.Length;
+            var fft = new Fft64(fftSize);
+
+            // 1) do FFT of both signals
+
+            fft.Direct(real1, imag1);
+            fft.Direct(real2, imag2);
+
+            // 2) do complex multiplication of spectra and normalize
+
+            for (var i = 0; i < fftSize; i++)
+            {
+                var re = real1[i] * real2[i] - imag1[i] * imag2[i];
+                var im = real1[i] * imag2[i] + imag1[i] * real2[i];
+                real1[i] = re / fftSize;
+                imag1[i] = im / fftSize;
+            }
+
+            // 3) do inverse FFT of resulting spectrum
+
+            fft.Inverse(real1, imag1);
+
+            // 4) return output array
+
+            if (center > 0)
+            {
+                real1.FastCopyTo(res, center, center - 1);
+            }
+            else
+            {
+                real1.FastCopyTo(res, fftSize);
+            }
+        }
+
+
         /// <summary>
         /// Fast cross-correlation via FFT
         /// </summary>
@@ -214,7 +251,7 @@ namespace NWaves.Operations
             var length = signal.Length - kernel.Length + 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(signal.Length);
-            var fft = new Fft(fftSize);
+            var fft = new Fft64(fftSize);
 
             signal = signal.ZeroPadded(fftSize);
             kernel = kernel.ZeroPadded(fftSize);
@@ -243,8 +280,8 @@ namespace NWaves.Operations
             // 4) return resulting meaningful part of the signal (truncate to N - M + 1)
 
             return new ComplexDiscreteSignal(signal.SamplingRate,
-                                FastCopy.ArrayFragment(spectrum.Real, length),
-                                FastCopy.ArrayFragment(spectrum.Imag, length));
+                                spectrum.Real.FastCopyFragment(length),
+                                spectrum.Imag.FastCopyFragment(length));
         }
 
 

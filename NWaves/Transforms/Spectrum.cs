@@ -71,9 +71,9 @@ namespace NWaves.Transforms
         /// <param name="normalize">Normalization flag</param>
         public void MagnitudeSpectrum(float[] samples, float[] spectrum, bool normalize = false)
         {
-            FastCopy.ToExistingArray(_zeroblock, _realSpectrum, _fftSize);
-            FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
-            FastCopy.ToExistingArray(samples, _realSpectrum, Math.Min(samples.Length, _fftSize));
+            _zeroblock.FastCopyTo(_realSpectrum, _fftSize);
+            _zeroblock.FastCopyTo(_imagSpectrum, _fftSize);
+            samples.FastCopyTo(_realSpectrum, Math.Min(samples.Length, _fftSize));
 
             Direct(_realSpectrum, _imagSpectrum);
 
@@ -104,9 +104,9 @@ namespace NWaves.Transforms
         /// <param name="normalize">Normalization flag</param>
         public void PowerSpectrum(float[] samples, float[] spectrum, bool normalize = true)
         {
-            FastCopy.ToExistingArray(_zeroblock, _realSpectrum, _fftSize);
-            FastCopy.ToExistingArray(_zeroblock, _imagSpectrum, _fftSize);
-            FastCopy.ToExistingArray(samples, _realSpectrum, Math.Min(samples.Length, _fftSize));
+            _zeroblock.FastCopyTo(_realSpectrum, _fftSize);
+            _zeroblock.FastCopyTo(_imagSpectrum, _fftSize);
+            samples.FastCopyTo(_realSpectrum, Math.Min(samples.Length, _fftSize));
 
             Direct(_realSpectrum, _imagSpectrum);
 

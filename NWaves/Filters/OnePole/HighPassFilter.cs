@@ -14,7 +14,7 @@ namespace NWaves.Filters.OnePole
         /// <param name="freq"></param>
         public HighPassFilter(double freq)
         {
-            var a1 = (float)(Math.Exp(-2 * Math.PI * (0.5 - freq)));
+            var a1 = Math.Exp(-2 * Math.PI * (0.5 - freq));
             var b0 = 1 - a1;
 
             B = new[] { b0 };

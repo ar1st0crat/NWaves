@@ -86,7 +86,7 @@ namespace NWaves.Utils
         /// </summary>
         /// <param name="a">Polynomial coefficients</param>
         /// <returns></returns>
-        public static ComplexDiscreteSignal PolynomialRoots(double[] a)
+        public static Complex[] PolynomialRoots(double[] a)
         {
             var n = a.Length;
             if (n <= 1)
@@ -135,8 +135,9 @@ namespace NWaves.Utils
                 Array.Copy(a1, a0, a1.Length);
             }
 
-            return new ComplexDiscreteSignal(1, a1.Select(r => (float) r.Real),
-                                                a1.Select(r => (float) r.Imaginary));
+            return a1;
+            //return new ComplexDiscreteSignal(1, a1.Select(r => (float) r.Real),
+            //                                    a1.Select(r => (float) r.Imaginary));
         }
 
         /// <summary>

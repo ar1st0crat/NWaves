@@ -73,7 +73,7 @@ namespace NWaves.Effects
                 var b = filter.B;
                 var a = filter.A;
 
-                y[i] = b[0] * x[i] + b[1] * x[i - 1] + b[2] * x[i - 2] - (a[1] * y[i - 1] + a[2] * y[i - 2]);
+                y[i] = (float)(b[0] * x[i] + b[1] * x[i - 1] + b[2] * x[i - 2] - (a[1] * y[i - 1] + a[2] * y[i - 2]));
             }
 
             return new DiscreteSignal(signal.SamplingRate, y);

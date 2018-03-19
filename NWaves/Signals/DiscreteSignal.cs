@@ -48,7 +48,7 @@ namespace NWaves.Signals
             }
 
             SamplingRate = samplingRate;
-            Samples = allocateNew ? FastCopy.EntireArray(samples) : samples;
+            Samples = allocateNew ? samples.FastCopy() : samples;
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace NWaves.Signals
                     throw new ArgumentException("Wrong index range!");
                 }
 
-                return new DiscreteSignal(SamplingRate, FastCopy.ArrayFragment(Samples, rangeLength, startPos));
+                return new DiscreteSignal(SamplingRate, Samples.FastCopyFragment(rangeLength, startPos));
             }
         }
 

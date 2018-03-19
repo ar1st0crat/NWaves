@@ -163,8 +163,8 @@ namespace NWaves.FeatureExtractors.Multi
             {
                 // prepare all blocks in memory for the current step:
 
-                FastCopy.ToExistingArray(zeroblock, block, fftSize);
-                FastCopy.ToExistingArray(signal.Samples, block, windowSize, i);
+                zeroblock.FastCopyTo(block, fftSize);
+                signal.Samples.FastCopyTo(block, windowSize, i);
 
                 fft.MagnitudeSpectrum(block, spectrum);
 

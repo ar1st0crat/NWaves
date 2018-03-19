@@ -37,7 +37,7 @@ namespace NWaves.Filters
 
             var mid = (Size - 1) / 2;
 
-            var buf = FastCopy.ArrayFragment(input, Size);
+            var buf = input.FastCopyFragment(Size);
             var value = FindNth(buf, mid, 0, Size - 1);
             
             for (var i = 0; i < Size; i++)
@@ -48,7 +48,7 @@ namespace NWaves.Filters
             var n = Size;
             for (var i = 1; i < input.Length - Size + 1; i++)
             {
-                FastCopy.ToExistingArray(input, buf, Size, i);
+                input.FastCopyTo(buf, Size, i);
                 output[n++] = FindNth(buf, mid, 0, Size - 1);
             }
 

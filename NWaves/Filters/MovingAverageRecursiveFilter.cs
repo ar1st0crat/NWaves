@@ -35,11 +35,11 @@ namespace NWaves.Filters
 
             Size = size;
             
-            B = Enumerable.Repeat(0.0f, size + 1).ToArray();
-            B[0] = 1.0f / size;
-            B[size] = -1.0f / size;
+            B = Enumerable.Repeat(0.0, size + 1).ToArray();
+            B[0] = 1.0 / size;
+            B[size] = -1.0 / size;
 
-            A = new[] { 1, -1.0f };
+            A = new[] { 1, -1.0 };
         }
 
         /// <summary>

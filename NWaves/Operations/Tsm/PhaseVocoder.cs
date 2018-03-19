@@ -75,8 +75,8 @@ namespace NWaves.Operations.Tsm
             var posSynthesis = 0;
             for (var posAnalysis = 0; posAnalysis + _fftSize < input.Length; posAnalysis += _hopAnalysis)
             {
-                FastCopy.ToExistingArray(input, re, _fftSize, posAnalysis);
-                FastCopy.ToExistingArray(zeroblock, im, _fftSize);
+                input.FastCopyTo(re, _fftSize, posAnalysis);
+                zeroblock.FastCopyTo(im, _fftSize);
 
                 re.ApplyWindow(hannWindow);
                 

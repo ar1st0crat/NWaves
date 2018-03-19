@@ -18,8 +18,8 @@ namespace NWaves.Filters.BiQuad
         public BandPassFilter(double freq, double q = 1)
         {
             var omega = 2 * Math.PI * freq;
-            var alpha = (float)(Math.Sin(omega) / (2 * q));
-            var cosw = (float)Math.Cos(omega);
+            var alpha = Math.Sin(omega) / (2 * q);
+            var cosw = Math.Cos(omega);
 
             var b0 = alpha;
             var b1 = 0;

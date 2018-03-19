@@ -11,24 +11,24 @@ namespace NWaves.Features
     public class Pitch
     {
         /// <summary>
-        /// Length of analysis window (in ms)
+        /// Length of analysis window (in seconds)
         /// </summary>
-        private readonly float _windowSize;
+        private readonly double _windowSize;
 
         /// <summary>
-        /// Hop length (in ms)
+        /// Hop length (in seconds)
         /// </summary>
-        private readonly float _hopSize;
+        private readonly double _hopSize;
 
         /// <summary>
         /// Upper pitch frequency
         /// </summary>
-        private readonly float _high;
+        private readonly double _high;
 
         /// <summary>
         /// Lower pitch frequency
         /// </summary>
-        private readonly float _low;
+        private readonly double _low;
 
 
         /// <summary>
@@ -38,7 +38,8 @@ namespace NWaves.Features
         /// <param name="hopSize"></param>
         /// <param name="low"></param>
         /// <param name="high"></param>
-        public Pitch(float windowSize = 0.0256f, float hopSize = 0.01f, float low = 80, float high = 400)
+        public Pitch(double windowSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/,
+                     double low = 80, double high = 400)
         {
             _windowSize = windowSize;
             _hopSize = hopSize;
@@ -74,12 +75,12 @@ namespace NWaves.Features
             var pos = 0;
             while (pos + windowSize < signal.Length)
             {
-                FastCopy.ToExistingArray(zeroblock, blockReal, fftSize);
-                FastCopy.ToExistingArray(zeroblock, blockImag, fftSize);
-                FastCopy.ToExistingArray(zeroblock, reversedReal, fftSize);
-                FastCopy.ToExistingArray(zeroblock, reversedImag, fftSize);
+                zeroblock.FastCopyTo(blockReal, fftSize);
+                zeroblock.FastCopyTo(blockImag, fftSize);
+                zeroblock.FastCopyTo(reversedReal, fftSize);
+                zeroblock.FastCopyTo(reversedImag, fftSize);
 
-                FastCopy.ToExistingArray(signal.Samples, blockReal, windowSize, pos);
+                signal.Samples.FastCopyTo(blockReal, windowSize, pos);
 
                 Operation.CrossCorrelate(blockReal, blockImag, reversedReal, reversedImag, cc, windowSize);
 

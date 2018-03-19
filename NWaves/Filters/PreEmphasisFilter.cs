@@ -11,7 +11,7 @@ namespace NWaves.Filters
         /// Constructor computes simple 1st order kernel
         /// </summary>
         /// <param name="a">Pre-emphasis coefficient</param>
-        public PreEmphasisFilter(float a = 0.97f)
+        public PreEmphasisFilter(double a = 0.97)
         {
             Kernel = new [] {1, -a};
         }

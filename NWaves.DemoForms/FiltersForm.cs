@@ -13,6 +13,7 @@ using NWaves.Filters.BiQuad;
 using NWaves.Filters.Fda;
 using NWaves.Operations;
 using NWaves.Transforms;
+using NWaves.Utils;
 
 namespace NWaves.DemoForms
 {
@@ -92,7 +93,7 @@ namespace NWaves.DemoForms
 
                     break;
                 case "Custom LP/HP":
-                    _filter = DesignFilter.FirLp(27, 0.1);
+                    _filter = DesignFilter.FirLp(33, 0.1);
                     
                     //using (var csv = new FileStream("fir.csv", FileMode.Open))
                     //{
@@ -176,13 +177,13 @@ namespace NWaves.DemoForms
 
         private void AnalyzeCustomIirFilter()
         {
-            var b = new List<float>();
-            var a = new List<float>();
+            var b = new List<double>();
+            var a = new List<double>();
 
             if (filterParamsDataGrid.RowCount == 0)
             {
-                b.AddRange(new[] { 1, -0.4f, 0.6f });
-                a.AddRange(new[] { 1,  0.4f, 0.2f });
+                b.AddRange(new[] { 1, -0.4, 0.6 });
+                a.AddRange(new[] { 1,  0.4, 0.2 });
             }
             else
             {
@@ -191,11 +192,11 @@ namespace NWaves.DemoForms
                     var param = filterParamsDataGrid.Rows[i].Cells[0].Value;
                     if (param.ToString().StartsWith("b"))
                     {
-                        b.Add(Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value));
+                        b.Add(Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value));
                     }
                     else
                     {
-                        a.Add(Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value));
+                        a.Add(Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value));
                     }
                 }
             }
@@ -220,12 +221,12 @@ namespace NWaves.DemoForms
 
         private void AnalyzeCustomFirFilter()
         {
-            var b = new List<float>();
+            var b = new List<double>();
 
             var size = filterParamsDataGrid.RowCount;
             if (size == 0)
             {
-                b.AddRange(new []{ 1, 0.4f, -0.6f });
+                b.AddRange(new []{ 1, 0.4, -0.6 });
             }
             else
             {
@@ -234,7 +235,7 @@ namespace NWaves.DemoForms
                     var param = filterParamsDataGrid.Rows[i].Cells[0].Value;
                     if (param.ToString().StartsWith("b"))
                     {
-                        b.Add(Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value));
+                        b.Add(Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value));
                     }
                 }
             }
@@ -264,15 +265,15 @@ namespace NWaves.DemoForms
             {
                 if (filterParamsDataGrid.Rows[i].Cells[0].Value.ToString() == "freq")
                 {
-                    freq = Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value);
+                    freq = Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value);
                 }
                 if (filterParamsDataGrid.Rows[i].Cells[0].Value.ToString() == "q")
                 {
-                    q = Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value);
+                    q = Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value);
                 }
                 if (filterParamsDataGrid.Rows[i].Cells[0].Value.ToString() == "gain")
                 {
-                    gain = Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value);
+                    gain = Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value);
                 }
             }
             
@@ -369,10 +370,10 @@ namespace NWaves.DemoForms
 
         private void AnalyzePreemphasisFilter()
         {
-            var pre = 0.95f;
+            var pre = 0.95;
             if (filterParamsDataGrid.RowCount > 0)
             {
-                pre = Convert.ToSingle(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                pre = Convert.ToDouble(filterParamsDataGrid.Rows[0].Cells[1].Value);
             }
 
             _filter = new PreEmphasisFilter(pre);

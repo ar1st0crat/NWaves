@@ -126,12 +126,12 @@ namespace NWaves.FeatureExtractors
             {
                 // prepare all blocks in memory for the current step:
 
-                FastCopy.ToExistingArray(zeroblock, blockReal, fftSize);
-                FastCopy.ToExistingArray(zeroblock, blockImag, fftSize);
-                FastCopy.ToExistingArray(zeroblock, reversedReal, fftSize);
-                FastCopy.ToExistingArray(zeroblock, reversedImag, fftSize);
+                zeroblock.FastCopyTo(blockReal, fftSize);
+                zeroblock.FastCopyTo(blockImag, fftSize);
+                zeroblock.FastCopyTo(reversedReal, fftSize);
+                zeroblock.FastCopyTo(reversedImag, fftSize);
 
-                FastCopy.ToExistingArray(signal.Samples, blockReal, windowSize, i);
+                signal.Samples.FastCopyTo(blockReal, windowSize, i);
 
                 // 1) apply window
 

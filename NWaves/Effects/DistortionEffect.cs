@@ -43,7 +43,7 @@ namespace NWaves.Effects
         {
             var maxAmp = signal.Samples.Max(s => Math.Abs(s));
 
-            if (Math.Abs(maxAmp) < 1e-10)
+            if (Math.Abs(maxAmp) < 1e-8)
             {
                 return signal.Copy();
             }

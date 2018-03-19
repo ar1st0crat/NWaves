@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using System.Numerics;
 using System.Windows.Forms;
-using NWaves.Signals;
 
 namespace NWaves.DemoForms.UserControls
 {
@@ -10,8 +10,8 @@ namespace NWaves.DemoForms.UserControls
         /// <summary>
         /// Poles
         /// </summary>
-        private ComplexDiscreteSignal _poles;
-        public ComplexDiscreteSignal Poles
+        private Complex[] _poles;
+        public Complex[] Poles
         {
             get { return _poles; }
             set
@@ -24,8 +24,8 @@ namespace NWaves.DemoForms.UserControls
         /// <summary>
         /// Zeros
         /// </summary>
-        private ComplexDiscreteSignal _zeros;
-        public ComplexDiscreteSignal Zeros
+        private Complex[] _zeros;
+        public Complex[] Zeros
         {
             get { return _zeros; }
             set
@@ -90,8 +90,8 @@ namespace NWaves.DemoForms.UserControls
 
             for (var i = 0; i < _zeros.Length; i++)
             {
-                var x = cx + unitRadius * _zeros.Real[i];
-                var y = cy + unitRadius * _zeros.Imag[i];
+                var x = cx + unitRadius * _zeros[i].Real;
+                var y = cy + unitRadius * _zeros[i].Imaginary;
                 if (x - 4 > 0 && x + 4 < Width &&
                     y - 4 > 0 && y + 4 < Height)
                 {
@@ -106,8 +106,8 @@ namespace NWaves.DemoForms.UserControls
 
             for (var i = 0; i < _poles.Length; i++)
             {
-                var x = cx + unitRadius * _poles.Real[i];
-                var y = cy + unitRadius * _poles.Imag[i];
+                var x = cx + unitRadius * _poles[i].Real;
+                var y = cy + unitRadius * _poles[i].Imaginary;
                 if (x - 6 > 0 && x + 6 < Width &&
                     y - 6 > 0 && y + 6 < Height)
                 {

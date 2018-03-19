@@ -27,7 +27,7 @@ namespace NWaves.Operations
 
             // pre-compute kernel's FFT:
 
-            var kernelReal = FastCopy.PadZeros(kernel.Samples, fftSize);
+            var kernelReal = kernel.Samples.PadZeros(fftSize);
             var kernelImag = new float[fftSize];
 
             fft.Direct(kernelReal, kernelImag);
@@ -59,9 +59,9 @@ namespace NWaves.Operations
                 // ...but that would require unnecessary memory allocations 
                 //    and recalculating of kernel FFT at each step.
 
-                FastCopy.ToExistingArray(zeroblock, blockReal, fftSize);
-                FastCopy.ToExistingArray(zeroblock, blockImag, fftSize);
-                FastCopy.ToExistingArray(signal.Samples, blockReal, Math.Min(hopSize, signal.Length - i), i);
+                zeroblock.FastCopyTo(blockReal, fftSize);
+                zeroblock.FastCopyTo(blockImag, fftSize);
+                signal.Samples.FastCopyTo(blockReal, Math.Min(hopSize, signal.Length - i), i);
 
                 // 1) do FFT of a signal block:
                 
@@ -117,7 +117,7 @@ namespace NWaves.Operations
 
             // pre-compute kernel's FFT:
 
-            var kernelReal = FastCopy.PadZeros(kernel.Samples, fftSize);
+            var kernelReal = kernel.Samples.PadZeros(fftSize);
             var kernelImag = new float[fftSize];
             fft.Direct(kernelReal, kernelImag);
 
@@ -150,8 +150,8 @@ namespace NWaves.Operations
                 // ...but that would require unnecessary memory allocations 
                 //    and recalculating of kernel FFT at each step.
 
-                FastCopy.ToExistingArray(signal.Samples, blockReal, Math.Min(fftSize, signal.Length - i), i);
-                FastCopy.ToExistingArray(zeroblock, blockImag, fftSize);
+                signal.Samples.FastCopyTo(blockReal, Math.Min(fftSize, signal.Length - i), i);
+                zeroblock.FastCopyTo(blockImag, fftSize);
 
                 // 1) do FFT of a signal block:
 

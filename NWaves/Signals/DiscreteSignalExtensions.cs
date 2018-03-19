@@ -40,12 +40,12 @@ namespace NWaves.Signals
 
                 return new DiscreteSignal(
                                 signal.SamplingRate,
-                                FastCopy.ArrayFragment(signal.Samples, length - delay, delay));
+                                signal.Samples.FastCopyFragment(length - delay, delay));
             }
             
             return new DiscreteSignal(
-                            signal.SamplingRate, 
-                            FastCopy.ArrayFragment(signal.Samples, length, destinationOffset: delay));
+                            signal.SamplingRate,
+                            signal.Samples.FastCopyFragment(length, destinationOffset: delay));
         }
 
         /// <summary>
@@ -101,8 +101,8 @@ namespace NWaves.Signals
             }
 
             return new DiscreteSignal(
-                            signal1.SamplingRate, 
-                            FastCopy.MergeArrays(signal1.Samples, signal2.Samples));
+                            signal1.SamplingRate,
+                            signal1.Samples.MergeWithArray(signal2.Samples));
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace NWaves.Signals
 
             return new DiscreteSignal(
                             signal.SamplingRate,
-                            FastCopy.RepeatArray(signal.Samples, times));
+                            signal.Samples.RepeatArray(times));
         }
 
         /// <summary>
@@ -151,7 +151,7 @@ namespace NWaves.Signals
             
             return new DiscreteSignal(
                             signal.SamplingRate,
-                            FastCopy.ArrayFragment(signal.Samples, sampleCount));
+                            signal.Samples.FastCopyFragment(sampleCount));
         }
 
         /// <summary>
@@ -169,18 +169,18 @@ namespace NWaves.Signals
             }
 
             return new DiscreteSignal(
-                            signal.SamplingRate, 
-                            FastCopy.ArrayFragment(signal.Samples, sampleCount, signal.Length - sampleCount));
+                            signal.SamplingRate,
+                            signal.Samples.FastCopyFragment(sampleCount, signal.Length - sampleCount));
         }
 
-        /// <summary>
-        /// Method wraps discrete signal samples into complex signal
-        /// </summary>
-        /// <param name="signal">Real-valued signal</param>
-        /// <returns>Corresponding complex-valued signal</returns>
+        ///// <summary>
+        ///// Method wraps discrete signal samples into complex signal
+        ///// </summary>
+        ///// <param name="signal">Real-valued signal</param>
+        ///// <returns>Corresponding complex-valued signal</returns>
         public static ComplexDiscreteSignal ToComplex(this DiscreteSignal signal)
         {
-            return new ComplexDiscreteSignal(signal.SamplingRate, signal.Samples);
+            return new ComplexDiscreteSignal(signal.SamplingRate, signal.Samples.ToDoubles());
         }
     }
 }

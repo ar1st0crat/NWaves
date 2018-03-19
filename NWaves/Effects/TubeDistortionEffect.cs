@@ -76,8 +76,8 @@ namespace NWaves.Effects
             Rh = rh;
             Rl = rl;
 
-            var filter1 = new IirFilter(new[] { 1f, -2, 1 }, new[] { 1, -2 * Rh, Rh * Rh });
-            var filter2 = new IirFilter(new[] { 1 - Rl },     new[] { 1, -Rl });
+            var filter1 = new IirFilter(new[] { 1.0, -2, 1 }, new[] { 1.0, -2 * Rh, Rh * Rh });
+            var filter2 = new IirFilter(new[] { 1.0 - Rl },     new[] { 1.0, -Rl });
 
             _outputFilter = filter1 * filter2;
         }

@@ -10,6 +10,7 @@ using NWaves.FeatureExtractors.Base;
 using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Transforms;
+using NWaves.Utils;
 
 namespace NWaves.DemoForms
 {
@@ -73,9 +74,9 @@ namespace NWaves.DemoForms
 
         float[] EstimateSpectrum(int idx)
         {
-            var vector = _lpcVectors[idx].Features.ToArray();  // make new copy of array of features
-            var gain = (float)Math.Sqrt(vector[0]);
-            vector[0] = 1.0f;
+            var vector = _lpcVectors[idx].Features.ToDoubles();  // make new copy of array of features
+            var gain = Math.Sqrt(vector[0]);
+            vector[0] = 1.0;
 
             var lpcFilter = new IirFilter(new[] { gain }, vector);
 

@@ -16,13 +16,13 @@ namespace NWaves.Filters.BiQuad
         /// <param name="freq"></param>
         /// <param name="q"></param>
         /// <param name="gain"></param>
-        public LowShelfFilter(double freq, double q = 1, double gain = 1.0f)
+        public LowShelfFilter(double freq, double q = 1, double gain = 1.0)
         {
-            var a = (float)Math.Pow(10, gain / 40);
-            var asqrt = (float)Math.Sqrt(a);
+            var a = Math.Pow(10, gain / 40);
+            var asqrt = Math.Sqrt(a);
             var omega = 2 * Math.PI * freq;
-            var alpha = (float)(Math.Sin(omega) / 2 * Math.Sqrt((a + 1 / a) * (1 / q - 1) + 2));
-            var cosw = (float)Math.Cos(omega);
+            var alpha = Math.Sin(omega) / 2 * Math.Sqrt((a + 1 / a) * (1 / q - 1) + 2);
+            var cosw = Math.Cos(omega);
 
             var b0 = a * (a + 1 - (a - 1) * cosw + 2 * asqrt * alpha);
             var b1 = 2 * a * (a - 1 - (a + 1) * cosw);

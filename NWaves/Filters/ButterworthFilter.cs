@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using NWaves.Filters.Base;
-using NWaves.Signals;
 
 namespace NWaves.Filters
 {
@@ -20,8 +19,8 @@ namespace NWaves.Filters
             // Calculation of filter coefficients is based on Neil Robertson'post:
             // https://www.dsprelated.com/showarticle/1119.php
 
-            var re = new float[order];
-            var im = new float[order];
+            var re = new double[order];
+            var im = new double[order];
             
             var scaleFreq = Math.Tan(Math.PI * freq);
 
@@ -30,8 +29,8 @@ namespace NWaves.Filters
             for (var k = 0; k < order; k++)
             {
                 var theta = Math.PI * (2 * k + 1) / (2 * order);
-                re[k] = (float)(scaleFreq * -Math.Sin(theta));
-                im[k] = (float)(scaleFreq *  Math.Cos(theta));
+                re[k] = scaleFreq * -Math.Sin(theta);
+                im[k] = scaleFreq *  Math.Cos(theta);
             }
 
             // 2) switch to z-domain (bilinear transform)
@@ -58,10 +57,10 @@ namespace NWaves.Filters
             
             // 3) polynomial coefficients
 
-            var z = Enumerable.Repeat(-1, order).ToArray();
+            var z = Enumerable.Repeat(-1.0, order).ToArray();
 
-            B = ZpToTf(new ComplexDiscreteSignal(1, z));
-            A = ZpToTf(new ComplexDiscreteSignal(1, re, im));
+            B = TransferFunction.ZpToTf(z);
+            A = TransferFunction.ZpToTf(re, im);
 
             var ampScale = A.Sum() / B.Sum();
 

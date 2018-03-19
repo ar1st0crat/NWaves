@@ -210,8 +210,8 @@ namespace NWaves.FeatureExtractors
 
                 while (i + windowSize < endSample)
                 {
-                    FastCopy.ToExistingArray(zeroblock, block, zeroblock.Length);
-                    FastCopy.ToExistingArray(signal.Samples, block, windowSize, i);
+                    zeroblock.FastCopyTo(block, zeroblock.Length);
+                    signal.Samples.FastCopyTo(block, windowSize, i);
                     
 
                     // 1) apply window
@@ -291,11 +291,11 @@ namespace NWaves.FeatureExtractors
 
                 foreach (var envelope in _envelopes)
                 {
-                    FastCopy.ToExistingArray(zeroModblock, modBlock, _modulationFftSize);
-                    FastCopy.ToExistingArray(envelope, modBlock, Math.Min(_modulationFftSize, envelopeLength - i), i);
+                    zeroModblock.FastCopyTo(modBlock, _modulationFftSize);
+                    envelope.FastCopyTo(modBlock, Math.Min(_modulationFftSize, envelopeLength - i), i);
 
                     modulationFft.PowerSpectrum(modBlock, modSpectrum);
-                    FastCopy.ToExistingArray(modSpectrum, vector, modSpectrum.Length, 0, offset);
+                    modSpectrum.FastCopyTo(vector, modSpectrum.Length, 0, offset);
 
                     offset += modSpectrum.Length;
                 }
@@ -328,7 +328,7 @@ namespace NWaves.FeatureExtractors
             var offset = 0;
             for (var i = 0; i < spectrum.Length; i++)
             {
-                spectrum[i] = FastCopy.ArrayFragment(featureVector.Features, spectrumSize, offset);
+                spectrum[i] = featureVector.Features.FastCopyFragment(spectrumSize, offset);
                 offset += spectrumSize;
             }
 

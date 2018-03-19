@@ -131,12 +131,12 @@ namespace NWaves.FeatureExtractors
             {
                 // prepare all blocks in memory for the current step:
 
-                FastCopy.ToExistingArray(zeroblock, blockReal, fftSize);
-                FastCopy.ToExistingArray(zeroblock, blockImag, fftSize);
-                FastCopy.ToExistingArray(zeroblock, reversedReal, fftSize);
-                FastCopy.ToExistingArray(zeroblock, reversedImag, fftSize);
+                zeroblock.FastCopyTo(blockReal, fftSize);
+                zeroblock.FastCopyTo(blockImag, fftSize);
+                zeroblock.FastCopyTo(reversedReal, fftSize);
+                zeroblock.FastCopyTo(reversedImag, fftSize);
 
-                FastCopy.ToExistingArray(signal.Samples, blockReal, windowSize, i);
+                signal.Samples.FastCopyTo(blockReal, windowSize, i);
 
                 // 1) apply window
 
@@ -151,7 +151,7 @@ namespace NWaves.FeatureExtractors
 
                 // 3) Levinson-Durbin
 
-                FastCopy.ToExistingArray(zeroblock, lpc, lpc.Length);
+                zeroblock.FastCopyTo(lpc, lpc.Length);
                 var err = LpcExtractor.LevinsonDurbin(cc, lpc, _order);
 
                 // 4) simple and efficient algorithm for obtaining LPCC coefficients from LPC

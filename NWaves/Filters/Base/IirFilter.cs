@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Utils;
@@ -16,26 +17,46 @@ namespace NWaves.Filters.Base
         /// Denominator part coefficients in filter's transfer function 
         /// (recursive part in difference equations)
         /// </summary>
-        public float[] A
+        public double[] A
         {
-            get { return _a; }
-            set
+            get
             {
-                _a = value;
-                Normalize();
+                return _a64;
+            }
+            protected set
+            {
+                _a64 = value;
+                _a = _a64.ToFloats();
             }
         }
+        private double[] _a64;
+
+        /// <summary>
+        /// 
+        /// </summary>
         private float[] _a;
 
         /// <summary>
         /// Numerator part coefficients in filter's transfer function 
         /// (non-recursive part in difference equations)
         /// </summary>
-        public float[] B
+        public double[] B
         {
-            get { return _b; }
-            set { _b = value; }
+            get
+            {
+                return _b64;
+            }
+            protected set
+            {
+                _b64 = value;
+                _b = _b64.ToFloats();
+            }
         }
+        private double[] _b64;
+
+        /// <summary>
+        /// 
+        /// </summary>
         private float[] _b;
 
         /// <summary>
@@ -61,7 +82,7 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="b">TF numerator coefficients</param>
         /// <param name="a">TF denominator coefficients</param>
-        public IirFilter(IEnumerable<float> b, IEnumerable<float> a)
+        public IirFilter(IEnumerable<double> b, IEnumerable<double> a)
         {
             B = b.ToArray();
             A = a.ToArray();
@@ -88,12 +109,14 @@ namespace NWaves.Filters.Base
                 case FilteringOptions.OverlapAdd:
                 {
                     var fftSize = MathUtils.NextPowerOfTwo(4 * DefaultImpulseResponseLength);
-                    return Operation.OverlapAdd(signal, ImpulseResponse(), fftSize);
+                    var ir = new DiscreteSignal(signal.SamplingRate, ImpulseResponse().ToFloats());
+                    return Operation.OverlapAdd(signal, ir, fftSize);
                 }
                 case FilteringOptions.OverlapSave:
                 {
                     var fftSize = MathUtils.NextPowerOfTwo(4 * DefaultImpulseResponseLength);
-                    return Operation.OverlapSave(signal, ImpulseResponse(), fftSize);
+                    var ir = new DiscreteSignal(signal.SamplingRate, ImpulseResponse().ToFloats());
+                    return Operation.OverlapSave(signal, ir, fftSize);
                 }
                 default:
                 {
@@ -236,40 +259,47 @@ namespace NWaves.Filters.Base
         /// </summary>
         public void Normalize()
         {
-            var first = _a[0];
+            var first = A[0];
 
-            if (Math.Abs(first) < 1e-12)
+            if (Math.Abs(first) < 1e-10)
             {
                 throw new ArgumentException("The first A coefficient can not be zero!");
             }
 
-            for (var i = 0; i < _a.Length; i++)
+            if (Math.Abs(first - 1.0) < 1e-10)
             {
-                _a[i] = _a[i] / first;
+                return;
             }
 
-            for (var i = 0; i < _b.Length; i++)
+            for (var i = 0; i < A.Length; i++)
             {
-                _b[i] = _b[i] / first;
+                A[i] /= first;
+                _a[i] = (float) A[i];
+            }
+
+            for (var i = 0; i < B.Length; i++)
+            {
+                B[i] /= first;
+                _b[i] = (float) B[i];
             }
         }
 
         /// <summary>
         /// Zeros of the transfer function
         /// </summary>
-        public override ComplexDiscreteSignal Zeros
+        public override Complex[] Zeros
         {
-            get { return TfToZp(B); }
-            set { B = ZpToTf(value); }
+            get { return TransferFunction.TfToZp(B); }
+            set { B = TransferFunction.ZpToTf(value); }
         }
 
         /// <summary>
         /// Poles of the transfer function
         /// </summary>
-        public override ComplexDiscreteSignal Poles
+        public override Complex[] Poles
         {
-            get { return TfToZp(A); }
-            set { A = ZpToTf(value); Normalize(); }
+            get { return TransferFunction.TfToZp(A); }
+            set { A = TransferFunction.ZpToTf(value); }
         }
 
         /// <summary>
@@ -280,15 +310,15 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public static IirFilter operator *(IirFilter filter1, IirFilter filter2)
         {
-            var num1 = new DiscreteSignal(1, filter1.B);
-            var num2 = new DiscreteSignal(1, filter2.B);
+            var num1 = new DiscreteSignal(1, filter1._b);
+            var num2 = new DiscreteSignal(1, filter2._b);
             var num = Operation.Convolve(num1, num2);
 
-            var den1 = new DiscreteSignal(1, filter1.A);
-            var den2 = new DiscreteSignal(1, filter2.A);
+            var den1 = new DiscreteSignal(1, filter1._a);
+            var den2 = new DiscreteSignal(1, filter2._a);
             var den = Operation.Convolve(den1, den2);
 
-            return new IirFilter(num.Samples, den.Samples);
+            return new IirFilter(num.Samples.ToDoubles(), den.Samples.ToDoubles());
         }
 
         /// <summary>

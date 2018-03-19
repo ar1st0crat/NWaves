@@ -16,7 +16,7 @@ namespace NWaves.Transforms
         /// <summary>
         /// Fft transformer
         /// </summary>
-        private readonly Fft _fft;
+        private readonly Fft64 _fft;
 
         /// <summary>
         /// Constructor
@@ -25,7 +25,7 @@ namespace NWaves.Transforms
         public HilbertTransform(int length = 1024)
         {
             Length = length;
-            _fft = new Fft(length);
+            _fft = new Fft64(length);
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace NWaves.Transforms
         /// <returns>Complex analytic signal</returns>
         public ComplexDiscreteSignal AnalyticSignal(float[] samples)
         {
-            var analyticSignal = new ComplexDiscreteSignal(1, samples, allocateNew: true);
+            var analyticSignal = new ComplexDiscreteSignal(1, samples.ToDoubles());//, allocateNew: true);
 
             var re = analyticSignal.Real;
             var im = analyticSignal.Imag;
@@ -67,7 +67,7 @@ namespace NWaves.Transforms
         public DiscreteSignal Direct(DiscreteSignal signal)
         {
             var analyticSignal = AnalyticSignal(signal.Samples).Imag;
-            return new DiscreteSignal(signal.SamplingRate, analyticSignal);
+            return new DiscreteSignal(signal.SamplingRate, analyticSignal.ToFloats());
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace NWaves.Transforms
         public void Direct(float[] samples, float[] output)
         {
             var analyticSignal = AnalyticSignal(samples).Imag;
-            FastCopy.ToExistingArray(analyticSignal, output, analyticSignal.Length);
+            analyticSignal.ToFloats().FastCopyTo(output, analyticSignal.Length);
         }
     }
 }

@@ -34,12 +34,12 @@ namespace NWaves.Signals
         /// <summary>
         /// Array or real parts of samples
         /// </summary>
-        public float[] Real { get; }
+        public double[] Real { get; }
 
         /// <summary>
         /// Array or imaginary parts of samples
         /// </summary>
-        public float[] Imag { get; }
+        public double[] Imag { get; }
 
         /// <summary>
         /// Length of the signal
@@ -53,7 +53,7 @@ namespace NWaves.Signals
         /// <param name="real">Array of real parts of the complex-valued signal</param>
         /// <param name="imag">Array of imaginary parts of the complex-valued signal</param>
         /// <param name="allocateNew">Set to true if new memory should be allocated for data</param>
-        public ComplexDiscreteSignal(int samplingRate, float[] real, float[] imag = null, bool allocateNew = false)
+        public ComplexDiscreteSignal(int samplingRate, double[] real, double[] imag = null, bool allocateNew = false)
         {
             if (samplingRate <= 0)
             {
@@ -61,7 +61,7 @@ namespace NWaves.Signals
             }
 
             SamplingRate = samplingRate;
-            Real = allocateNew ? FastCopy.EntireArray(real) : real;
+            Real = allocateNew ? real.FastCopy() : real;
 
             // additional logic for imaginary part initialization
 
@@ -72,11 +72,11 @@ namespace NWaves.Signals
                     throw new ArgumentException("Arrays of real and imaginary parts have different size!");
                 }
 
-                Imag = allocateNew ? FastCopy.EntireArray(imag) : imag;
+                Imag = allocateNew ? imag.FastCopy() : imag;
             }
             else
             {
-                Imag = new float[real.Length];
+                Imag = new double[real.Length];
             }
         }
 
@@ -86,7 +86,7 @@ namespace NWaves.Signals
         /// <param name="samplingRate"></param>
         /// <param name="real"></param>
         /// <param name="imag"></param>
-        public ComplexDiscreteSignal(int samplingRate, IEnumerable<float> real, IEnumerable<float> imag = null)
+        public ComplexDiscreteSignal(int samplingRate, IEnumerable<double> real, IEnumerable<double> imag = null)
             : this(samplingRate, real.ToArray(), imag?.ToArray())
         {
         }
@@ -98,7 +98,7 @@ namespace NWaves.Signals
         /// <param name="length"></param>
         /// <param name="real"></param>
         /// <param name="imag"></param>
-        public ComplexDiscreteSignal(int samplingRate, int length, float real = 0.0f, float imag = 0.0f)
+        public ComplexDiscreteSignal(int samplingRate, int length, double real = 0.0, double imag = 0.0)
         {
             if (samplingRate <= 0)
             {
@@ -107,8 +107,8 @@ namespace NWaves.Signals
 
             SamplingRate = samplingRate;
 
-            var reals = new float[length];
-            var imags = new float[length];
+            var reals = new double[length];
+            var imags = new double[length];
             for (var i = 0; i < length; i++)
             {
                 reals[i] = real;
@@ -124,7 +124,7 @@ namespace NWaves.Signals
         /// <param name="samplingRate"></param>
         /// <param name="samples"></param>
         /// <param name="normalizeFactor"></param>
-        public ComplexDiscreteSignal(int samplingRate, IEnumerable<int> samples, float normalizeFactor = 1.0f)
+        public ComplexDiscreteSignal(int samplingRate, IEnumerable<int> samples, double normalizeFactor = 1.0)
         {
             if (samplingRate <= 0)
             {
@@ -134,7 +134,7 @@ namespace NWaves.Signals
             SamplingRate = samplingRate;
 
             var intSamples = samples.ToArray();
-            var realSamples = new float[intSamples.Length];
+            var realSamples = new double[intSamples.Length];
             
             for (var i = 0; i < intSamples.Length; i++)
             {
@@ -142,7 +142,7 @@ namespace NWaves.Signals
             }
 
             Real = realSamples;
-            Imag = new float[intSamples.Length];
+            Imag = new double[intSamples.Length];
         }
         
         /// <summary>
@@ -157,7 +157,7 @@ namespace NWaves.Signals
         /// <summary>
         /// Indexer works only with array of real parts of samples. Use it with caution.
         /// </summary>
-        public float this[int index]
+        public double this[int index]
         { 
             get { return Real[index]; }
             set { Real[index] = value; }
@@ -190,43 +190,43 @@ namespace NWaves.Signals
                 }
 
                 return new ComplexDiscreteSignal(SamplingRate,
-                                    FastCopy.ArrayFragment(Real, rangeLength, startPos),
-                                    FastCopy.ArrayFragment(Imag, rangeLength, startPos));
+                                    Real.FastCopyFragment(rangeLength, startPos),
+                                    Imag.FastCopyFragment(rangeLength, startPos));
             }
         }
 
-        /// <summary>
-        /// Overloaded operator+ for signals concatenates these signals
-        /// </summary>
-        /// <param name="s1">First complex signal</param>
-        /// <param name="s2">Second complex signal</param>
-        /// <returns></returns>
-        public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s1, ComplexDiscreteSignal s2)
-        {
-            return s1.Concatenate(s2);
-        }
+        ///// <summary>
+        ///// Overloaded operator+ for signals concatenates these signals
+        ///// </summary>
+        ///// <param name="s1">First complex signal</param>
+        ///// <param name="s2">Second complex signal</param>
+        ///// <returns></returns>
+        //public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s1, ComplexDiscreteSignal s2)
+        //{
+        //    return s1.Concatenate(s2);
+        //}
 
-        /// <summary>
-        /// Overloaded operator+ for some number performs signal delay by this number
-        /// </summary>
-        /// <param name="s">Complex signal</param>
-        /// <param name="delay">Number of samples</param>
-        /// <returns></returns>
-        public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s, int delay)
-        {
-            return s.Delay(delay);
-        }
+        ///// <summary>
+        ///// Overloaded operator+ for some number performs signal delay by this number
+        ///// </summary>
+        ///// <param name="s">Complex signal</param>
+        ///// <param name="delay">Number of samples</param>
+        ///// <returns></returns>
+        //public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s, int delay)
+        //{
+        //    return s.Delay(delay);
+        //}
 
-        /// <summary>
-        /// Overloaded operator* repeats signal several times
-        /// </summary>
-        /// <param name="s">Complex signal</param>
-        /// <param name="times">Number of times</param>
-        /// <returns></returns>
-        public static ComplexDiscreteSignal operator *(ComplexDiscreteSignal s, int times)
-        {
-            return s.Repeat(times);
-        }
+        ///// <summary>
+        ///// Overloaded operator* repeats signal several times
+        ///// </summary>
+        ///// <param name="s">Complex signal</param>
+        ///// <param name="times">Number of times</param>
+        ///// <returns></returns>
+        //public static ComplexDiscreteSignal operator *(ComplexDiscreteSignal s, int times)
+        //{
+        //    return s.Repeat(times);
+        //}
 
         /// <summary>
         /// Get real-valued signal containing magnitudes of complex-valued samples
@@ -261,7 +261,7 @@ namespace NWaves.Signals
                 var magnitude = new float[real.Length];
                 for (var i = 0; i < magnitude.Length; i++)
                 {
-                    magnitude[i] = real[i] * real[i] + imag[i] * imag[i];
+                    magnitude[i] = (float)(real[i] * real[i] + imag[i] * imag[i]);
                 }
 
                 return magnitude;

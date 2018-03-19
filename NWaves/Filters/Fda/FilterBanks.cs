@@ -386,11 +386,11 @@ namespace NWaves.Filters.Fda
                 var theta = 2 * cf * Math.PI * t;
                 var itheta = Complex.Exp(2 * Complex.ImaginaryOne * theta);
 
-                var a0 = (float)t;
+                var a0 = t;
                 var a2 = 0.0f;
                 var b0 = 1.0f;
-                var b1 = (float)(-2 * Math.Cos(theta) / Math.Exp(b * t));
-                var b2 = (float)Math.Exp(-2 * b * t);
+                var b1 = -2 * Math.Cos(theta) / Math.Exp(b * t);
+                var b2 = Math.Exp(-2 * b * t);
 
                 var common = -t * Math.Exp(-b * t);
 
@@ -399,14 +399,14 @@ namespace NWaves.Filters.Fda
                 var k3 = Math.Cos(theta) + rootNeg * Math.Sin(theta);
                 var k4 = Math.Cos(theta) - rootNeg * Math.Sin(theta);
 
-                var a11 = (float)(common * k1);
-                var a12 = (float)(common * k2);
-                var a13 = (float)(common * k3);
-                var a14 = (float)(common * k4);
+                var a11 = common * k1;
+                var a12 = common * k2;
+                var a13 = common * k3;
+                var a14 = common * k4;
 
                 var gainArg = Complex.Exp(Complex.ImaginaryOne * theta - b * t);
 
-                var gain = (float)Complex.Abs(
+                var gain = Complex.Abs(
                                     (itheta - gainArg * k1) *
                                     (itheta - gainArg * k2) *
                                     (itheta - gainArg * k3) *
@@ -435,7 +435,7 @@ namespace NWaves.Filters.Fda
 
                 for (var j = 0; j < ir.Length; j++)
                 {
-                    ir.Samples[j] = ir[j] / gain;
+                    ir.Samples[j] = (float)(ir[j] / gain);
                 }
 
                 var fft = new Fft(fftSize);

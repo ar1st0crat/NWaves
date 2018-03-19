@@ -1,4 +1,5 @@
 ﻿using NWaves.Signals;
+using NWaves.Utils;
 
 namespace NWaves.Windows
 {
@@ -13,6 +14,19 @@ namespace NWaves.Windows
         /// <param name="samples"></param>
         /// <param name="windowSamples"></param>
         public static void ApplyWindow(this float[] samples, float[] windowSamples)
+        {
+            for (var k = 0; k < windowSamples.Length; k++)
+            {
+                samples[k] *= windowSamples[k];
+            }
+        }
+
+        /// <summary>
+        /// Mutable function that applies window array to an array of samples
+        /// </summary>
+        /// <param name="samples"></param>
+        /// <param name="windowSamples"></param>
+        public static void ApplyWindow(this double[] samples, double[] windowSamples)
         {
             for (var k = 0; k < windowSamples.Length; k++)
             {
@@ -38,6 +52,17 @@ namespace NWaves.Windows
         public static void ApplyWindow(this float[] samples, WindowTypes window)
         {
             var windowSamples = Window.OfType(window, samples.Length);
+            samples.ApplyWindow(windowSamples);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="samples"></param>
+        /// <param name="window"></param>
+        public static void ApplyWindow(this double[] samples, WindowTypes window)
+        {
+            var windowSamples = Window.OfType(window, samples.Length).ToDoubles();
             samples.ApplyWindow(windowSamples);
         }
 

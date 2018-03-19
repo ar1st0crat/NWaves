@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using NWaves.Operations;
+using System.Numerics;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -25,12 +25,12 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Zeros of the transfer function
         /// </summary>
-        public abstract ComplexDiscreteSignal Zeros { get; set; }
+        public abstract Complex[] Zeros { get; set; }
 
         /// <summary>
         /// Poles of the transfer function
         /// </summary>
-        public abstract ComplexDiscreteSignal Poles { get; set; }
+        public abstract Complex[] Poles { get; set; }
 
         /// <summary>
         /// Returns the complex frequency response of a filter.
@@ -41,10 +41,10 @@ namespace NWaves.Filters.Base
         /// <param name="length">Number of frequency response samples</param>
         public virtual ComplexDiscreteSignal FrequencyResponse(int length = 512)
         {
-            var real = ImpulseResponse(length).Samples;
-            var imag = new float[length];
+            var real = ImpulseResponse(length);
+            var imag = new double[length];
 
-            var fft = new Fft(length);
+            var fft = new Fft64(length);
             fft.Direct(real, imag);
 
             return new ComplexDiscreteSignal(1, real.Take(length / 2 + 1),
@@ -61,40 +61,10 @@ namespace NWaves.Filters.Base
         /// The length of an impulse reponse.
         /// If the filter is IIR, then it's the length of truncated infinite impulse reponse.
         /// </param>
-        public virtual DiscreteSignal ImpulseResponse(int length = 512)
+        public virtual double[] ImpulseResponse(int length = 512)
         {
             var impulse = new DiscreteSignal(1, length) { [0] = 1.0f };
-            return ApplyTo(impulse);
-        }
-
-        /// <summary>
-        /// Method for converting zeros(poles) to TF numerator(denominator)
-        /// </summary>
-        /// <param name="zp"></param>
-        /// <returns></returns>
-        public static float[] ZpToTf(ComplexDiscreteSignal zp)
-        {
-            var re = zp.Real;
-            var im = zp.Imag;
-
-            var tf = new ComplexDiscreteSignal(1, new[] { 1.0f, -re[0] }, new[] { 0.0f, -im[0] });
-
-            for (var k = 1; k < re.Length; k++)
-            {
-                tf = Operation.Convolve(tf, new ComplexDiscreteSignal(1, new[] { 1.0f, -re[k] }, new[] { 0.0f, -im[k] }));
-            }
-
-            return tf.Real;
-        }
-
-        /// <summary>
-        /// Method for converting TF numerator(denominator) to zeros(poles)
-        /// </summary>
-        /// <param name="tf"></param>
-        /// <returns></returns>
-        public static ComplexDiscreteSignal TfToZp(float[] tf)
-        {
-            return tf.Length <= 1 ? null : MathUtils.PolynomialRoots(tf.ToDoubles());
+            return ApplyTo(impulse).Samples.ToDoubles();
         }
     }
 }
