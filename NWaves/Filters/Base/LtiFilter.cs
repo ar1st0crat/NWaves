@@ -1,8 +1,6 @@
 ﻿using System.Linq;
-using System.Numerics;
 using NWaves.Signals;
 using NWaves.Transforms;
-using NWaves.Utils;
 
 namespace NWaves.Filters.Base
 {
@@ -25,12 +23,21 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Zeros of the transfer function
         /// </summary>
-        public abstract Complex[] Zeros { get; set; }
+        public abstract ComplexDiscreteSignal Zeros { get; set; }
 
         /// <summary>
         /// Poles of the transfer function
         /// </summary>
-        public abstract Complex[] Poles { get; set; }
+        public abstract ComplexDiscreteSignal Poles { get; set; }
+
+        /// <summary>
+        /// Returns the real-valued impulse response of a filter.
+        /// </summary>
+        /// <param name="length">
+        /// The length of an impulse reponse.
+        /// If the filter is IIR, then it's the length of truncated infinite impulse reponse.
+        /// </param>
+        public abstract double[] ImpulseResponse(int length = 512);
 
         /// <summary>
         /// Returns the complex frequency response of a filter.
@@ -49,22 +56,6 @@ namespace NWaves.Filters.Base
 
             return new ComplexDiscreteSignal(1, real.Take(length / 2 + 1),
                                                 imag.Take(length / 2 + 1));
-        }
-
-        /// <summary>
-        /// Returns the real-valued impulse response of a filter.
-        /// 
-        /// Method calculates the Impulse Response of a filter
-        /// by feeding the unit impulse into it.
-        /// </summary>
-        /// <param name="length">
-        /// The length of an impulse reponse.
-        /// If the filter is IIR, then it's the length of truncated infinite impulse reponse.
-        /// </param>
-        public virtual double[] ImpulseResponse(int length = 512)
-        {
-            var impulse = new DiscreteSignal(1, length) { [0] = 1.0f };
-            return ApplyTo(impulse).Samples.ToDoubles();
         }
     }
 }

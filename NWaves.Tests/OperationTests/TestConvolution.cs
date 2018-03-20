@@ -46,12 +46,12 @@ namespace NWaves.Tests.OperationTests
         [Test]
         public void TestImaginaryParts()
         {
-            var s1 = new ComplexDiscreteSignal(1, new[] { 1, 0.5f }, new[] { 0, -1.5f });
-            var s2 = new ComplexDiscreteSignal(1, new[] { 1, 0.5f }, new[] { 0, 1.5f });
+            var s1 = new ComplexDiscreteSignal(1, new[] { 1, 0.5 }, new[] { 0, -1.5 });
+            var s2 = new ComplexDiscreteSignal(1, new[] { 1, 0.5 }, new[] { 0, 1.5 });
 
             var conv = Operation.Convolve(s1, s2);
 
-            Assert.That(conv.Real, Is.EquivalentTo(new[] { 1, 1, 2.5f }));
+            Assert.That(conv.Real, Is.EquivalentTo(new[] { 1, 1, 2.5 }));
             Assert.That(conv.Imag, Is.EqualTo(new[] { 0, 0, 0 }).Within(1e-6));
         }
     }

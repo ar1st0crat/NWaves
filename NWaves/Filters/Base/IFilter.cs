@@ -9,7 +9,7 @@ namespace NWaves.Filters.Base
     public interface IFilter
     {
         /// <summary>
-        /// Method implements filtering algorithm
+        /// Method implements offline filtering algorithm
         /// </summary>
         /// <param name="signal">Signal for filtering</param>
         /// <param name="filteringOptions">General filtering strategy</param>
@@ -17,7 +17,7 @@ namespace NWaves.Filters.Base
         DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringOptions filteringOptions);
 
         ///// <summary>
-        ///// TODO:
+        ///// TODO: method for online filtering (sample-by-sample, buffer-by-buffer)
         ///// </summary>
         ///// <param name="samples"></param>
         ///// <returns></returns>

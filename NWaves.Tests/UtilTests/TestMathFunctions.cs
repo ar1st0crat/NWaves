@@ -47,8 +47,8 @@ namespace NWaves.Tests.UtilTests
             
             var roots = MathUtils.PolynomialRoots(re);
 
-            double[] expected = {2, -3, -1};
-            Assert.That(roots.Real, Is.EquivalentTo(expected));
+            double[] expected = {-3, -1, 2};
+            Assert.That(roots.Select(r => r.Real).OrderBy(r => r), Is.EqualTo(expected).Within(1e-7));
         }
 
         [Test]
@@ -60,8 +60,8 @@ namespace NWaves.Tests.UtilTests
 
             double[] expectedReal = { -0.5, -0.5 };
             double[] expectedImag = { -1.5, 1.5 };
-            Assert.That(roots.Real.OrderBy(r => r), Is.EqualTo(expectedReal).Within(1e-7));
-            Assert.That(roots.Imag.OrderBy(r => r), Is.EqualTo(expectedImag).Within(1e-7));
+            Assert.That(roots.Select(r => r.Real).OrderBy(r => r), Is.EqualTo(expectedReal).Within(1e-7));
+            Assert.That(roots.Select(r => r.Imaginary).OrderBy(r => r), Is.EqualTo(expectedImag).Within(1e-7));
         }
     }
 }

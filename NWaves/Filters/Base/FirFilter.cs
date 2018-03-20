@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Transforms;
@@ -20,6 +19,7 @@ namespace NWaves.Filters.Base
         /// Numerator part coefficients in filter's transfer function 
         /// (non-recursive part in difference equations)
         /// </summary>
+        protected double[] _kernel;
         public double[] Kernel
         {
             get
@@ -32,12 +32,11 @@ namespace NWaves.Filters.Base
                 _kernel32 = _kernel.ToFloats();
             }
         }
-        private double[] _kernel;
-
+        
         /// <summary>
-        /// 
+        /// Float versions of filter coefficients for computations by default
         /// </summary>
-        private float[] _kernel32;
+        protected float[] _kernel32;
 
         /// <summary>
         /// If Kernel.Length exceeds this value, 
@@ -48,9 +47,7 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Parameterless constructor
         /// </summary>
-        protected FirFilter()
-        {
-        }
+        protected FirFilter() {}
 
         /// <summary>
         /// Constructor accepting the kernel of a filter
@@ -62,7 +59,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// 
+        /// Apply filter to entire signal
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="filteringOptions"></param>
@@ -94,6 +91,7 @@ namespace NWaves.Filters.Base
                 default:
                 {
                     return ApplyFilterDirectly(signal);
+                    //return ApplyFilterCircularBuffer(signal);
                 }
             }
         }
@@ -108,22 +106,22 @@ namespace NWaves.Filters.Base
         {
             var input = signal.Samples;
 
-            var samples = new float[input.Length];
+            var output = new float[input.Length];
 
             for (var n = 0; n < input.Length; n++)
             {
                 for (var k = 0; k < _kernel32.Length; k++)
                 {
-                    if (n >= k) samples[n] += _kernel32[k] * input[n - k];
+                    if (n >= k) output[n] += _kernel32[k] * input[n - k];
                 }
             }
 
-            return new DiscreteSignal(signal.SamplingRate, samples);
+            return new DiscreteSignal(signal.SamplingRate, output);
         }
 
         /// <summary>
-        /// More efficient implementation of filtering in time domain:
-        /// use circular buffers for recursive and non-recursive delay lines.
+        /// Filtering in time domain based on circular buffers 
+        /// for recursive and non-recursive delay lines.
         /// </summary>
         /// <param name="signal"></param>
         /// <returns></returns>        
@@ -131,7 +129,7 @@ namespace NWaves.Filters.Base
         {
             var input = signal.Samples;
             
-            var samples = new float[input.Length];
+            var output = new float[input.Length];
 
             // buffer for delay lines:
             var wb = new float[_kernel32.Length];
@@ -145,18 +143,18 @@ namespace NWaves.Filters.Base
                 var pos = 0;
                 for (var k = wbpos; k < _kernel32.Length; k++)
                 {
-                    samples[n] += _kernel32[pos++] * wb[k];
+                    output[n] += _kernel32[pos++] * wb[k];
                 }
                 for (var k = 0; k < wbpos; k++)
                 {
-                    samples[n] += _kernel32[pos++] * wb[k];
+                    output[n] += _kernel32[pos++] * wb[k];
                 }
 
                 wbpos--;
                 if (wbpos < 0) wbpos = wb.Length - 1;
             }
 
-            return new DiscreteSignal(signal.SamplingRate, samples);
+            return new DiscreteSignal(signal.SamplingRate, output);
         }
 
         /// <summary>
@@ -179,13 +177,13 @@ namespace NWaves.Filters.Base
         /// </summary>
         public override double[] ImpulseResponse(int length = 512)
         {
-            return Kernel;
+            return Kernel.ToArray();    // copy
         } 
 
         /// <summary>
         /// Zeros of the transfer function
         /// </summary>
-        public override Complex[] Zeros
+        public override ComplexDiscreteSignal Zeros
         {
             get { return TransferFunction.TfToZp(Kernel); }
             set { Kernel = TransferFunction.ZpToTf(value); }
@@ -194,14 +192,14 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Poles of the transfer function (FIR filter does not have poles)
         /// </summary>
-        public override Complex[] Poles
+        public override ComplexDiscreteSignal Poles
         {
             get { return null; }
             set { }
         }
 
         /// <summary>
-        /// 
+        /// Convert to IIR filter
         /// </summary>
         /// <returns></returns>
         public IirFilter AsIir()
@@ -244,11 +242,7 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public static FirFilter operator *(FirFilter filter1, FirFilter filter2)
         {
-            var kernel1 = new DiscreteSignal(1, filter1._kernel32);
-            var kernel2 = new DiscreteSignal(1, filter2._kernel32);
-            var kernel = Operation.Convolve(kernel1, kernel2);
-
-            return new FirFilter(kernel.Samples.ToDoubles());
+            return new FirFilter(Operation.Convolve(filter1.Kernel, filter2.Kernel));
         }
 
         /// <summary>
@@ -260,6 +254,17 @@ namespace NWaves.Filters.Base
         public static IirFilter operator *(FirFilter filter1, IirFilter filter2)
         {
             return filter1.AsIir() * filter2;
+        }
+
+        /// <summary>
+        /// Parallel combination of two FIR filters
+        /// </summary>
+        /// <param name="filter1"></param>
+        /// <param name="filter2"></param>
+        /// <returns></returns>
+        public static FirFilter operator +(FirFilter filter1, FirFilter filter2)
+        {
+            return new FirFilter(Operation.Convolve(filter1.Kernel, filter2.Kernel));
         }
     }
 }

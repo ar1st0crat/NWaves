@@ -21,7 +21,7 @@ Already available:
 - [x] non-linear filters (median filter, overdrive and distortion effects)
 - [x] windowing functions (Hamming, Blackman, Hann, cepstral liftering)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB) and perceptual weighting (A, B, C)
-- [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, modulation spectra) and CSV serialization
+- [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, AMS) and CSV serialization
 - [x] feature post-processing (CMN, deltas)
 - [x] spectral features (centroid, spread, flatness, bandwidth, rolloff, contrast, crest)
 - [x] sound synthesis and signal builders (sinusoid, white/pink/red noise, awgn, triangle, sawtooth, square, periodic pulse)
@@ -33,7 +33,7 @@ Already available:
 Planned:
 
 - [ ] more transforms (CQT, DWT, Mellin, Hartley, Haar, Hadamard)
-- [ ] more operations (spectral subtraction, adaptive filtering)
+- [ ] more operations (spectral subtraction, adaptive filtering, Gabor filter)
 - [ ] more feature extraction (MIR descriptors and lots of others)
 - [ ] more sound synthesis (ADSR, etc.)
 - [ ] more sound effects (Reverb, Vibrato, Chorus, Flanger, etc.)
@@ -52,20 +52,23 @@ In the beginning... there were interfaces and factories here and there, and NWav
 ```C#
 
 // Create signal { 0.75f, 0.75f, 0.75f, 0.75f, 0.75f } sampled at 8 kHz:
+
 var constants = new DiscreteSignal(8000, 5, 0.75f);
 
 
 // Create signal { 0.0f, 1.0f, 2.0f, ..., 99.0f } sampled at 22050 Hz
+
 var linear = new DiscreteSignal(22050, Enumerable.Range(0, 100));
 
 
 // Create signal { 1.0f, 0.0f } sampled at 44,1 kHz
+
 var bits = new DiscreteSignal(44100, new float [] { 1, 0 });
 
 
 // Create one more signal from samples repeated 3 times
-var samples = new [] { 0.5f, 0.2f, -0.3f, 1.2f, 1.6f, -1.8f, 0.3f, -0.2f };
 
+var samples = new [] { 0.5f, 0.2f, -0.3f, 1.2f, 1.6f, -1.8f, 0.3f, -0.2f };
 var signal = new DiscreteSignal(16000, samples).Repeat(3);
 
 
@@ -112,18 +115,23 @@ var combination = signal1.Superimpose(signal2);
 
 
 // delay
+
 var delayed = signal1.Delay(1000);
 // or
 var delayed = signal1 + 1000;
 
 
 // make a deep copy of a signal
+
 var copy = signal.Copy();
 
 // equivalent to:
+
 var copy = new DiscreteSignal(signal.SamplingRate, signal.Samples, allocateNew: true);
 
 ```
+
+The ```DiscreteSignal``` class is a wrapper around array of floats, since for most purposes 32bit precision is sufficient and leads to better performance in terms of speed and memory usage. However, alternative versions of functions dealing with double arrays are also available. For instance, filter design and analysis is done with double precision and filtering is carried out with single precision by default. See more in tutorial (*coming soon*).
 
 
 ### Signal builders
@@ -334,7 +342,7 @@ var notchedSignal = notchFilter.ApplyTo(signal);
 
 // filter analysis:
 
-var filter = new IirFilter(new [] {1, 0.5f, 0.2f}, new [] {1, -0.8f, 0.3f});
+var filter = new IirFilter(new [] {1, 0.5, 0.2}, new [] {1, -0.8, 0.3});
 
 var impulseResponse = filter.ImpulseResponse();
 var magnitudeResponse = filter.FrequencyResponse().Magnitude;
@@ -376,11 +384,12 @@ var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
 
 ```C#
 
-var lpcExtractor = new LpcExtractor(16, windowSize: 0.032/*sec*/, hopSize: 0.015/*sec*/);
-var lpcVectors = lpcExtractor.ComputeFrom(signal);
+var lpcExtractor = new LpcExtractor(16, frameSize: 0.032/*sec*/, hopSize: 0.015/*sec*/);
+var lpcVectors = lpcExtractor.ComputeFrom(signal).Take(15);
 
-var mfccExtractor = new MfccExtractor(13, melFilterbanks: 24, preEmphasis: 0.95f);
-var mfccVectors = mfccExtractor.ComputeFrom(signal).Take(15);
+var mfccExtractor = new MfccExtractor(13, melFilterbanks: 24);
+var preEmphasis = new PreEmphasisFilter(0.95);
+var mfccVectors = mfccExtractor.ParallelComputeFrom(preEmphasis.ApplyTo(signal));
 
 var pnccExtractor = new PnccExtractor(13);
 var pnccVectors = pnccExtractor.ComputeFrom(signal.First(10000));

@@ -18,7 +18,7 @@ namespace NWaves.Signals
     ///    for coding DiscreteSignals and ComplexDiscreteSignals. Also for better performance 
     ///    I did not use Complex type (instead we just work with 2 plain arrays).
     ///    The reason is that currently ComplexDiscreteSignal is more like a helper class used in DSP internals.
-    ///    For all tasks users will most likely use real-valued DiscreteSignal.
+    ///    For all tasks users will most likely use real-valued DiscreteSignal or simply an array of samples.
     ///    However they can switch between complex and real-valued signals anytime.
     /// 
     /// 2) Method implementations are LINQ-less for better performance.
@@ -195,39 +195,6 @@ namespace NWaves.Signals
             }
         }
 
-        ///// <summary>
-        ///// Overloaded operator+ for signals concatenates these signals
-        ///// </summary>
-        ///// <param name="s1">First complex signal</param>
-        ///// <param name="s2">Second complex signal</param>
-        ///// <returns></returns>
-        //public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s1, ComplexDiscreteSignal s2)
-        //{
-        //    return s1.Concatenate(s2);
-        //}
-
-        ///// <summary>
-        ///// Overloaded operator+ for some number performs signal delay by this number
-        ///// </summary>
-        ///// <param name="s">Complex signal</param>
-        ///// <param name="delay">Number of samples</param>
-        ///// <returns></returns>
-        //public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s, int delay)
-        //{
-        //    return s.Delay(delay);
-        //}
-
-        ///// <summary>
-        ///// Overloaded operator* repeats signal several times
-        ///// </summary>
-        ///// <param name="s">Complex signal</param>
-        ///// <param name="times">Number of times</param>
-        ///// <returns></returns>
-        //public static ComplexDiscreteSignal operator *(ComplexDiscreteSignal s, int times)
-        //{
-        //    return s.Repeat(times);
-        //}
-
         /// <summary>
         /// Get real-valued signal containing magnitudes of complex-valued samples
         /// </summary>
@@ -287,5 +254,42 @@ namespace NWaves.Signals
                 return phase;
             }
         }
+
+        #region overloaded operators
+
+        /// <summary>
+        /// Overloaded operator+ for signals concatenates these signals
+        /// </summary>
+        /// <param name="s1">First complex signal</param>
+        /// <param name="s2">Second complex signal</param>
+        /// <returns></returns>
+        public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s1, ComplexDiscreteSignal s2)
+        {
+            return s1.Concatenate(s2);
+        }
+
+        /// <summary>
+        /// Overloaded operator+ for some number performs signal delay by this number
+        /// </summary>
+        /// <param name="s">Complex signal</param>
+        /// <param name="delay">Number of samples</param>
+        /// <returns></returns>
+        public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s, int delay)
+        {
+            return s.Delay(delay);
+        }
+
+        /// <summary>
+        /// Overloaded operator* repeats signal several times
+        /// </summary>
+        /// <param name="s">Complex signal</param>
+        /// <param name="times">Number of times</param>
+        /// <returns></returns>
+        public static ComplexDiscreteSignal operator *(ComplexDiscreteSignal s, int times)
+        {
+            return s.Repeat(times);
+        }
+
+        #endregion
     }
 }

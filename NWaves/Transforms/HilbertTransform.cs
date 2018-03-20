@@ -33,9 +33,9 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="samples">Array of samples</param>
         /// <returns>Complex analytic signal</returns>
-        public ComplexDiscreteSignal AnalyticSignal(float[] samples)
+        public ComplexDiscreteSignal AnalyticSignal(double[] samples)
         {
-            var analyticSignal = new ComplexDiscreteSignal(1, samples.ToDoubles());//, allocateNew: true);
+            var analyticSignal = new ComplexDiscreteSignal(1, samples);
 
             var re = analyticSignal.Real;
             var im = analyticSignal.Imag;
@@ -50,8 +50,8 @@ namespace NWaves.Transforms
 
             for (var i = re.Length / 2 + 1; i < re.Length; i++)
             {
-                re[i] = 0.0f;
-                im[i] = 0.0f;
+                re[i] = 0.0;
+                im[i] = 0.0;
             }
 
             _fft.Inverse(re, im);
@@ -66,8 +66,20 @@ namespace NWaves.Transforms
         /// <returns>Hilbert Transform</returns>
         public DiscreteSignal Direct(DiscreteSignal signal)
         {
-            var analyticSignal = AnalyticSignal(signal.Samples).Imag;
-            return new DiscreteSignal(signal.SamplingRate, analyticSignal.ToFloats());
+            var output = new float[signal.Length];
+            Direct(signal.Samples, output);
+            return new DiscreteSignal(signal.SamplingRate, output);
+        }
+
+        /// <summary>
+        /// Direct Hilbert Transform (in-place)
+        /// </summary>
+        /// <param name="samples">Array of samples</param>
+        /// <param name="output">Hilbert Transform array</param>
+        public void Direct(double[] samples, double[] output)
+        {
+            var analyticSignal = AnalyticSignal(samples).Imag;
+            analyticSignal.FastCopyTo(output, analyticSignal.Length);
         }
 
         /// <summary>
@@ -77,8 +89,12 @@ namespace NWaves.Transforms
         /// <param name="output">Hilbert Transform array</param>
         public void Direct(float[] samples, float[] output)
         {
-            var analyticSignal = AnalyticSignal(samples).Imag;
-            analyticSignal.ToFloats().FastCopyTo(output, analyticSignal.Length);
+            var analyticSignal = AnalyticSignal(samples.ToDoubles()).Imag;
+            
+            for (var i = 0; i < output.Length; i++)
+            {
+                output[i] = (float)analyticSignal[i];
+            }
         }
     }
 }

@@ -37,6 +37,7 @@ namespace NWaves.DemoForms.UserControls
             {
                 _markline = value;
                 _logMarkline = null;
+                MakeBitmap();
                 Invalidate();
             }
         }
@@ -51,6 +52,7 @@ namespace NWaves.DemoForms.UserControls
             set
             {
                 _mark = value;
+                MakeBitmap();
                 Invalidate();
             }
         }
@@ -175,7 +177,8 @@ namespace NWaves.DemoForms.UserControls
                     min = line.Min();
                     max = line.Max();
 
-                    gain = (Height - 2*PaddingY) / (max - min);
+                    gain = max - min < 1e-6 ? 1 : (Height - 2*PaddingY) / (max - min);
+
                     offset = (int)(Height - PaddingY + min * gain);
 
                     DrawAxes(g, min, max);

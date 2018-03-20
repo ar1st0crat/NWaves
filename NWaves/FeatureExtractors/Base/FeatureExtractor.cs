@@ -36,7 +36,28 @@ namespace NWaves.FeatureExtractors.Base
         {
             get { return FeatureDescriptions.Select(d => "delta_delta_" + d).ToArray(); }
         }
-        
+
+        /// <summary>
+        /// Length of analysis frame (in seconds)
+        /// </summary>
+        public double FrameSize { get; set; }
+
+        /// <summary>
+        /// Hop length (in seconds)
+        /// </summary>
+        public double HopSize { get; set; }
+
+        /// <summary>
+        /// Constructor requires FrameSize and HopSize to be set
+        /// </summary>
+        /// <param name="frameSize"></param>
+        /// <param name="hopSize"></param>
+        protected FeatureExtractor(double frameSize, double hopSize)
+        {
+            FrameSize = frameSize;
+            HopSize = hopSize;
+        }
+
         /// <summary>
         /// Compute the sequence of feature vectors from some fragment of a signal
         /// </summary>
@@ -76,14 +97,33 @@ namespace NWaves.FeatureExtractors.Base
         {
             var threadCount = Environment.ProcessorCount;
             var chunkSize = signal.Length / threadCount;
+            
+            // ============== carefully define the sample positions for merging ===============
+
+            var startPositions = new int[threadCount];
+            var endPositions = new int[threadCount];
+
+            var frameSize = (int)(FrameSize * signal.SamplingRate);
+            var hopSize = (int)(HopSize * signal.SamplingRate);
+            var hopCount = (chunkSize - frameSize) / hopSize;
+
+            var lastPosition = 0;
+            for (var i = 0; i < threadCount; i++)
+            {
+                startPositions[i] = lastPosition;
+                endPositions[i] = lastPosition + hopCount * hopSize + frameSize;
+                lastPosition = endPositions[i] - frameSize;
+            }
+
+            endPositions[threadCount - 1] = signal.Length;
+
+            // =========================== actual parallel computing ===========================
 
             var featureVectors = new List<FeatureVector>[threadCount];
 
             Parallel.For(0, threadCount, i =>
             {
-                var startSample = i * chunkSize;
-                var endSample = (i < threadCount - 1) ? (i + 1) * chunkSize : signal.Length;
-                featureVectors[i] = ComputeFrom(signal, startSample, endSample);
+                featureVectors[i] = ComputeFrom(signal, startPositions[i], endPositions[i]);
             });
 
             return featureVectors;

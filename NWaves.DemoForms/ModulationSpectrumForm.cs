@@ -62,7 +62,7 @@ namespace NWaves.DemoForms
             var lowFreq = float.Parse(lowFreqTextBox.Text);
             var highFreq = float.Parse(highFreqTextBox.Text);
 
-            Tuple<float, float, float>[] bands;
+            Tuple<double, double, double>[] bands;
 
             switch (filterbankComboBox.Text)
             {
@@ -135,27 +135,27 @@ namespace NWaves.DemoForms
 
         private void computeButton_Click(object sender, EventArgs e)
         {
-            var windowSize = float.Parse(analysisFftTextBox.Text);
-            var overlapSize = float.Parse(hopSizeTextBox.Text);
+            var frameSize = float.Parse(analysisFftTextBox.Text);
+            var hopSize = float.Parse(hopSizeTextBox.Text);
             var modulationFftSize = int.Parse(longTermFftSizeTextBox.Text);
             var modulationHopSize = int.Parse(longTermHopSizeTextBox.Text);
 
             // ===== test modulation spectrum for Mfcc features =====
             //
             //var mfccExtractor = new MfccExtractor(13, _signal.SamplingRate,
-            //                                          windowSize: windowSize,
-            //                                          overlapSize: overlapSize);
+            //                                          frameSize: frameSize,
+            //                                          hopSize: hopSize);
             //var vectors = mfccExtractor.ComputeFrom(_signal);
             //FeaturePostProcessing.NormalizeMean(vectors);
 
             //_extractor = new AmsExtractor(_signal.SamplingRate,
-            //                             windowSize, overlapSize,
+            //                             frameSize, hopSize,
             //                             modulationFftSize, modulationHopSize,
             //                             featuregram: vectors.Select(v => v.Features));
 
-            _extractor = new AmsExtractor(windowSize, overlapSize,
-                                         modulationFftSize, modulationHopSize,
-                                         filterbank: _filterbank, window: WindowTypes.Hamming);
+            _extractor = new AmsExtractor(frameSize, hopSize,
+                                          modulationFftSize, modulationHopSize,
+                                          filterbank: _filterbank, window: WindowTypes.Hamming);
             _features = _extractor.ComputeFrom(_signal);
             _featIndex = 0;
 

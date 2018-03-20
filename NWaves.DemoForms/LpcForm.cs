@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
+using NWaves.Filters;
 using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Transforms;
@@ -16,7 +17,7 @@ namespace NWaves.DemoForms
 {
     public partial class LpcForm : Form
     {
-        private const double WindowSize = 0.032;
+        private const double FrameSize = 0.032;
         private const double HopSize = 0.010;
 
         private DiscreteSignal _signal;
@@ -49,8 +50,8 @@ namespace NWaves.DemoForms
             }
 
             _fft = new Fft(512);
-            
-            var lpcExtractor = new LpcExtractor(16, WindowSize, HopSize);
+
+            var lpcExtractor = new LpcExtractor(16, FrameSize, HopSize);
 
             _lpcVectors = lpcExtractor.ParallelComputeFrom(_signal);
 

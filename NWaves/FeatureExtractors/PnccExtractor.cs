@@ -77,12 +77,12 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Lower frequency
         /// </summary>
-        private readonly float _lowFreq;
+        private readonly double _lowFreq;
 
         /// <summary>
         /// Upper frequency
         /// </summary>
-        private readonly float _highFreq;
+        private readonly double _highFreq;
         
         /// <summary>
         /// Nonlinearity coefficient (if 0 then Log10 is applied)
@@ -95,16 +95,6 @@ namespace NWaves.FeatureExtractors
         private readonly int _fftSize;
 
         /// <summary>
-        /// Length of analysis window (in seconds)
-        /// </summary>
-        private readonly double _windowSize;
-
-        /// <summary>
-        /// Hop length (in seconds)
-        /// </summary>
-        private readonly double _hopSize;
-
-        /// <summary>
         /// Type of the window function
         /// </summary>
         private readonly WindowTypes _window;
@@ -112,7 +102,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Pre-emphasis coefficient
         /// </summary>
-        private readonly float _preEmphasis;
+        private readonly double _preEmphasis;
 
         /// <summary>
         /// Ring buffer for efficient processing of consecutive spectra
@@ -128,22 +118,21 @@ namespace NWaves.FeatureExtractors
         /// <param name="filterbankSize"></param>
         /// <param name="lowFreq"></param>
         /// <param name="highFreq"></param>
-        /// <param name="windowSize">Length of analysis window (in seconds)</param>
+        /// <param name="frameSize">Length of analysis window (in seconds)</param>
         /// <param name="hopSize">Length of overlap (in seconds)</param>
         /// <param name="fftSize">Size of FFT (in samples)</param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
         public PnccExtractor(int featureCount, int power = 15,
-                             int filterbankSize = 40, float lowFreq = 100, float highFreq = 6800,
-                             double windowSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/, int fftSize = 1024,
-                             float preEmphasis = 0.0f, WindowTypes window = WindowTypes.Hamming)
+                             int filterbankSize = 40, double lowFreq = 100, double highFreq = 6800,
+                             double frameSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/, int fftSize = 1024,
+                             double preEmphasis = 0.0, WindowTypes window = WindowTypes.Hamming)
+            : base(frameSize, hopSize)
         {
             FeatureCount = featureCount;
             _power = power;
 
             _window = window;
-            _windowSize = windowSize;
-            _hopSize = hopSize;
             _fftSize = fftSize;
 
             _filterbankSize = filterbankSize;
@@ -175,11 +164,11 @@ namespace NWaves.FeatureExtractors
         {
             // ====================================== PREPARE =======================================
 
-            var hopSize = (int)(signal.SamplingRate * _hopSize);
-            var windowSize = (int)(signal.SamplingRate * _windowSize);
-            var windowSamples = Window.OfType(_window, windowSize);
+            var hopSize = (int)(signal.SamplingRate * HopSize);
+            var frameSize = (int)(signal.SamplingRate * FrameSize);
+            var windowSamples = Window.OfType(_window, frameSize);
 
-            var fftSize = _fftSize >= windowSize ? _fftSize : MathUtils.NextPowerOfTwo(windowSize);
+            var fftSize = _fftSize >= frameSize ? _fftSize : MathUtils.NextPowerOfTwo(frameSize);
 
             _gammatoneFilterBank = FilterBanks.Erb(_filterbankSize, _fftSize, signal.SamplingRate, _lowFreq, _highFreq);
 
@@ -237,12 +226,12 @@ namespace NWaves.FeatureExtractors
 
             var i = 0;
             var timePos = startSample;
-            while (timePos + windowSize < endSample)
+            while (timePos + frameSize < endSample)
             {
                 // prepare next block for processing
 
                 zeroblock.FastCopyTo(block, zeroblock.Length);
-                signal.Samples.FastCopyTo(block, windowSize, timePos);
+                signal.Samples.FastCopyTo(block, frameSize, timePos);
                 
 
                 // 1) apply window

@@ -60,16 +60,6 @@ namespace NWaves.FeatureExtractors
         private readonly int _fftSize;
 
         /// <summary>
-        /// Length of analysis window (in seconds)
-        /// </summary>
-        private readonly double _windowSize;
-        
-        /// <summary>
-        /// Hop length (in seconds)
-        /// </summary>
-        private readonly double _hopSize;
-
-        /// <summary>
         /// Type of the window function
         /// </summary>
         private readonly WindowTypes _window;
@@ -93,7 +83,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Main constructor
         /// </summary>
-        /// <param name="windowSize">In seconds</param>
+        /// <param name="frameSize">In seconds</param>
         /// <param name="hopSize">In seconds</param>
         /// <param name="modulationFftSize">In samples</param>
         /// <param name="modulationOverlapSize">In seconds</param>
@@ -102,23 +92,21 @@ namespace NWaves.FeatureExtractors
         /// <param name="filterbank"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
-        public AmsExtractor(double windowSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/, 
+        public AmsExtractor(double frameSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/, 
                            int modulationFftSize = 64, int modulationOverlapSize = 4, int fftSize = 0,
                            IEnumerable<float[]> featuregram = null, float[][] filterbank = null,
-                           float preEmphasis = 0.0f, WindowTypes window = WindowTypes.Rectangular)
+                           double preEmphasis = 0.0, WindowTypes window = WindowTypes.Rectangular)
+            : base(frameSize, hopSize)
         {
             _window = window;
-            _windowSize = windowSize;
             _fftSize = fftSize;
-            _hopSize = hopSize;
-
             _modulationFftSize = modulationFftSize;
             _modulationHopSize = modulationOverlapSize;
 
             _featuregram = featuregram?.ToArray();
             _filterbank = filterbank;
             
-            _preEmphasis = preEmphasis;
+            _preEmphasis = (float)preEmphasis;
         }
 
         /// <summary>
@@ -133,11 +121,11 @@ namespace NWaves.FeatureExtractors
         {
             // ====================================== PREPARE =======================================
 
-            var hopSize = (int)(signal.SamplingRate * _hopSize);
-            var windowSize = (int)(signal.SamplingRate * _windowSize);
-            var windowSamples = Window.OfType(_window, windowSize);
+            var hopSize = (int)(signal.SamplingRate * HopSize);
+            var frameSize = (int)(signal.SamplingRate * FrameSize);
+            var windowSamples = Window.OfType(_window, frameSize);
 
-            var fftSize = _fftSize >= windowSize ? _fftSize : MathUtils.NextPowerOfTwo(windowSize);
+            var fftSize = _fftSize >= frameSize ? _fftSize : MathUtils.NextPowerOfTwo(frameSize);
 
             var fft = new Fft(fftSize);
             var modulationFft = new Fft(_modulationFftSize);
@@ -200,6 +188,9 @@ namespace NWaves.FeatureExtractors
                     _envelopes[n] = new float[signal.Length / hopSize];
                 }
 
+                var prevSample = startSample > 0 ? signal[startSample - 1] : 0.0f;
+
+
                 // ===================== compute local FFTs (do STFT) =======================
 
                 var spectrum = new float[fftSize / 2 + 1];
@@ -208,12 +199,24 @@ namespace NWaves.FeatureExtractors
                 var block = new float[fftSize];           // buffer for currently processed signal block at each step
                 var zeroblock = new float[fftSize];       // buffer of zeros for quick memset
 
-                while (i + windowSize < endSample)
+                while (i + frameSize < endSample)
                 {
                     zeroblock.FastCopyTo(block, zeroblock.Length);
-                    signal.Samples.FastCopyTo(block, windowSize, i);
-                    
+                    signal.Samples.FastCopyTo(block, frameSize, i);
 
+                    // 0) pre-emphasis (if needed)
+
+                    if (_preEmphasis > 0.0)
+                    {
+                        for (var k = 0; k < frameSize; k++)
+                        {
+                            var y = block[k] - prevSample * _preEmphasis;
+                            prevSample = block[k];
+                            block[k] = y;
+                        }
+                        prevSample = signal[i + hopSize - 1];
+                    }
+                    
                     // 1) apply window
 
                     if (_window != WindowTypes.Rectangular)
@@ -346,7 +349,7 @@ namespace NWaves.FeatureExtractors
         public List<float[]> VectorsAtHerz(IList<FeatureVector> featureVectors, int samplingRate, float herz = 4)
         {
             var length = _filterbank?.Length ?? _featuregram[0].Length;
-            var hopSize = (int)(samplingRate * _hopSize);
+            var hopSize = (int)(samplingRate * HopSize);
 
             var modulationSamplingRate = (float) samplingRate / hopSize;
             var resolution = modulationSamplingRate / _modulationFftSize;

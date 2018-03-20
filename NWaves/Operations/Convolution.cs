@@ -146,42 +146,17 @@ namespace NWaves.Operations
             }
         }
 
-        public static void Convolve(double[] real1, double[] imag1, double[] real2, double[] imag2, double[] res, int center = 0)
+        /// <summary>
+        /// Fast convolution for double arrays
+        /// </summary>
+        /// <param name="samples1"></param>
+        /// <param name="samples2"></param>
+        /// <returns></returns>
+        public static double[] Convolve(double[] samples1, double[] samples2)
         {
-            var fftSize = real1.Length;
-            var fft = new Fft64(fftSize);
-
-            // 1) do FFT of both signals
-
-            fft.Direct(real1, imag1);
-            fft.Direct(real2, imag2);
-
-            // 2) do complex multiplication of spectra and normalize
-
-            for (var i = 0; i < fftSize; i++)
-            {
-                var re = real1[i] * real2[i] - imag1[i] * imag2[i];
-                var im = real1[i] * imag2[i] + imag1[i] * real2[i];
-                real1[i] = re / fftSize;
-                imag1[i] = im / fftSize;
-            }
-
-            // 3) do inverse FFT of resulting spectrum
-
-            fft.Inverse(real1, imag1);
-
-            // 4) return output array
-
-            if (center > 0)
-            {
-                real1.FastCopyTo(res, center, center - 1);
-            }
-            else
-            {
-                real1.FastCopyTo(res, fftSize);
-            }
+            return Convolve(new ComplexDiscreteSignal(1, samples1), 
+                            new ComplexDiscreteSignal(1, samples2)).Real;
         }
-
 
         /// <summary>
         /// Fast cross-correlation via FFT

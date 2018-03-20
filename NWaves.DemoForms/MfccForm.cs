@@ -42,13 +42,13 @@ namespace NWaves.DemoForms
             }
 
             var mfccExtractor = new MfccExtractor(13,
-                                                      //windowSize: 0.03125,
-                                                      //overlapSize: 0.015625,
+                                                      //frameSize: 0.03125,
+                                                      //hopSize: 0.015625,
                                                       melFilterbankSize: 20,
                                                       //lowFreq: 100,
                                                       //highFreq: 4200,
                                                       //lifterSize: 22,
-                                                      preEmphasis: 0.95f,
+                                                      preEmphasis: 0.95,
                                                       window: WindowTypes.Hamming);
 
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);

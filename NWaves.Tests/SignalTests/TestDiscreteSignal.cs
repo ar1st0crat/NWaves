@@ -19,8 +19,8 @@ namespace NWaves.Tests.SignalTests
         [Test]
         public void TestInitializeWithBadSamplingRate()
         {
-            Assert.Throws<ArgumentException>(() => { var s = new ComplexDiscreteSignal(0, new float[] { 1 }); });
-            Assert.Throws<ArgumentException>(() => { var s = new ComplexDiscreteSignal(-8000, new float[] { 1 }); });
+            Assert.Throws<ArgumentException>(() => { var s = new ComplexDiscreteSignal(0, new double[] { 1 }); });
+            Assert.Throws<ArgumentException>(() => { var s = new ComplexDiscreteSignal(-8000, new double[] { 1 }); });
         }
 
         [Test]
@@ -28,7 +28,7 @@ namespace NWaves.Tests.SignalTests
         {
             Assert.Throws<ArgumentException>(() =>
             {
-                var s = new ComplexDiscreteSignal(8000, new float[] { 1, 2 }, new float[] { 3 });
+                var s = new ComplexDiscreteSignal(8000, new double[] { 1, 2 }, new double[] { 3 });
             });
         }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Utils;
@@ -17,47 +16,47 @@ namespace NWaves.Filters.Base
         /// Denominator part coefficients in filter's transfer function 
         /// (recursive part in difference equations)
         /// </summary>
+        protected double[] _a;
         public double[] A
         {
             get
             {
-                return _a64;
+                return _a;
             }
             protected set
             {
-                _a64 = value;
-                _a = _a64.ToFloats();
+                _a = value;
+                _a32 = _a.ToFloats();
             }
         }
-        private double[] _a64;
 
         /// <summary>
-        /// 
+        /// Float versions of denominator coefficients for computations by default
         /// </summary>
-        private float[] _a;
+        protected float[] _a32;
 
         /// <summary>
         /// Numerator part coefficients in filter's transfer function 
         /// (non-recursive part in difference equations)
         /// </summary>
+        protected double[] _b;
         public double[] B
         {
             get
             {
-                return _b64;
+                return _b;
             }
             protected set
             {
-                _b64 = value;
-                _b = _b64.ToFloats();
+                _b = value;
+                _b32 = _b.ToFloats();
             }
         }
-        private double[] _b64;
 
         /// <summary>
-        /// 
+        /// Float versions of numerator coefficients for computations by default
         /// </summary>
-        private float[] _b;
+        protected float[] _b32;
 
         /// <summary>
         /// If _a.Length + _b.Length exceeds this value, 
@@ -134,22 +133,24 @@ namespace NWaves.Filters.Base
         public DiscreteSignal ApplyFilterDirectly(DiscreteSignal signal)
         {
             var input = signal.Samples;
+            var a = _a32;
+            var b = _b32;
 
-            var samples = new float[input.Length];
+            var output = new float[input.Length];
 
             for (var n = 0; n < input.Length; n++)
             {
-                for (var k = 0; k < _b.Length; k++)
+                for (var k = 0; k < b.Length; k++)
                 {
-                    if (n >= k) samples[n] += _b[k] * input[n - k];
+                    if (n >= k) output[n] += b[k] * input[n - k];
                 }
-                for (var m = 1; m < _a.Length; m++)
+                for (var m = 1; m < a.Length; m++)
                 {
-                    if (n >= m) samples[n] -= _a[m] * samples[n - m];
+                    if (n >= m) output[n] -= a[m] * output[n - m];
                 }
             }
 
-            return new DiscreteSignal(signal.SamplingRate, samples);
+            return new DiscreteSignal(signal.SamplingRate, output);
         }
 
         /// <summary>
@@ -161,42 +162,44 @@ namespace NWaves.Filters.Base
         public DiscreteSignal ApplyFilterLinearBuffer(DiscreteSignal signal)
         {
             var input = signal.Samples;
+            var a = _a32;
+            var b = _b32;
 
-            var samples = new float[input.Length];
+            var output = new float[input.Length];
 
             // buffers for delay lines:
-            var wb = new float[_b.Length];
-            var wa = new float[_a.Length];
+            var wb = new float[b.Length];
+            var wa = new float[a.Length];
 
             for (var i = 0; i < input.Length; i++)
             {
                 wb[0] = input[i];
 
-                for (var k = 0; k < _b.Length; k++)
+                for (var k = 0; k < b.Length; k++)
                 {
-                    samples[i] += _b[k] * wb[k];
+                    output[i] += b[k] * wb[k];
                 }
 
-                for (var m = 1; m < _a.Length; m++)
+                for (var m = 1; m < a.Length; m++)
                 {
-                    samples[i] -= _a[m] * wa[m - 1];
+                    output[i] -= a[m] * wa[m - 1];
                 }
 
                 // update delay line
 
-                for (var k = _b.Length - 1; k > 0; k--)
+                for (var k = b.Length - 1; k > 0; k--)
                 {
                     wb[k] = wb[k - 1];
                 }
-                for (var m = _a.Length - 1; m > 0; m--)
+                for (var m = a.Length - 1; m > 0; m--)
                 {
                     wa[m] = wa[m - 1];
                 }
 
-                wa[0] = samples[i];
+                wa[0] = output[i];
             }
 
-            return new DiscreteSignal(signal.SamplingRate, samples);
+            return new DiscreteSignal(signal.SamplingRate, output);
         }
 
         /// <summary>
@@ -208,12 +211,14 @@ namespace NWaves.Filters.Base
         public DiscreteSignal ApplyFilterCircularBuffer(DiscreteSignal signal)
         {
             var input = signal.Samples;
+            var a = _a32;
+            var b = _b32;
 
-            var samples = new float[input.Length];
+            var output = new float[input.Length];
 
             // buffers for delay lines:
-            var wb = new float[_b.Length];
-            var wa = new float[_a.Length];
+            var wb = new float[b.Length];
+            var wa = new float[a.Length];
 
             var wbpos = wb.Length - 1;
             var wapos = wa.Length - 1;
@@ -223,26 +228,26 @@ namespace NWaves.Filters.Base
                 wb[wbpos] = input[n];
 
                 var pos = 0;
-                for (var k = wbpos; k < _b.Length; k++)
+                for (var k = wbpos; k < b.Length; k++)
                 {
-                    samples[n] += _b[pos++] * wb[k];
+                    output[n] += b[pos++] * wb[k];
                 }
                 for (var k = 0; k < wbpos; k++)
                 {
-                    samples[n] += _b[pos++] * wb[k];
+                    output[n] += b[pos++] * wb[k];
                 }
 
                 pos = 1;
-                for (var m = wapos + 1; m < _a.Length; m++)
+                for (var m = wapos + 1; m < a.Length; m++)
                 {
-                    samples[n] -= _a[pos++] * wa[m];
+                    output[n] -= a[pos++] * wa[m];
                 }
                 for (var m = 0; m < wapos; m++)
                 {
-                    samples[n] -= _a[pos++] * wa[m];
+                    output[n] -= a[pos++] * wa[m];
                 }
 
-                wa[wapos] = samples[n];
+                wa[wapos] = output[n];
 
                 wbpos--;
                 if (wbpos < 0) wbpos = wb.Length - 1;
@@ -251,11 +256,11 @@ namespace NWaves.Filters.Base
                 if (wapos < 0) wapos = wa.Length - 1;
             }
 
-            return new DiscreteSignal(signal.SamplingRate, samples);
+            return new DiscreteSignal(signal.SamplingRate, output);
         }
 
         /// <summary>
-        /// Divide all filter coefficients by _a[0]
+        /// Divide all filter coefficients by A[0]
         /// </summary>
         public void Normalize()
         {
@@ -274,20 +279,37 @@ namespace NWaves.Filters.Base
             for (var i = 0; i < A.Length; i++)
             {
                 A[i] /= first;
-                _a[i] = (float) A[i];
+                _a32[i] = (float) A[i];
             }
 
             for (var i = 0; i < B.Length; i++)
             {
                 B[i] /= first;
-                _b[i] = (float) B[i];
+                _b32[i] = (float) B[i];
             }
+        }
+
+        /// <summary>
+        /// Returns the real-valued impulse response of a filter.
+        /// 
+        /// Method calculates the Impulse Response of a filter
+        /// by feeding the unit impulse into it.
+        /// </summary>
+        /// <param name="length">
+        /// The length of an impulse reponse.
+        /// It's the length of truncated infinite impulse reponse.
+        /// </param>
+        public override double[] ImpulseResponse(int length = 512)
+        {
+            var impulse = new double[length];
+            impulse[0] = 1.0;
+            return ApplyTo(impulse);
         }
 
         /// <summary>
         /// Zeros of the transfer function
         /// </summary>
-        public override Complex[] Zeros
+        public override ComplexDiscreteSignal Zeros
         {
             get { return TransferFunction.TfToZp(B); }
             set { B = TransferFunction.ZpToTf(value); }
@@ -296,7 +318,7 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Poles of the transfer function
         /// </summary>
-        public override Complex[] Poles
+        public override ComplexDiscreteSignal Poles
         {
             get { return TransferFunction.TfToZp(A); }
             set { A = TransferFunction.ZpToTf(value); }
@@ -310,15 +332,10 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public static IirFilter operator *(IirFilter filter1, IirFilter filter2)
         {
-            var num1 = new DiscreteSignal(1, filter1._b);
-            var num2 = new DiscreteSignal(1, filter2._b);
-            var num = Operation.Convolve(num1, num2);
+            var num = Operation.Convolve(filter1.B, filter2.B);
+            var den = Operation.Convolve(filter1.A, filter2.A);
 
-            var den1 = new DiscreteSignal(1, filter1._a);
-            var den2 = new DiscreteSignal(1, filter2._a);
-            var den = Operation.Convolve(den1, den2);
-
-            return new IirFilter(num.Samples.ToDoubles(), den.Samples.ToDoubles());
+            return new IirFilter(num, den);
         }
 
         /// <summary>
@@ -331,5 +348,28 @@ namespace NWaves.Filters.Base
         {
             return filter1 * filter2.AsIir();
         }
+
+        #region double precision
+
+        public double[] ApplyTo(double[] input)
+        {
+            var output = new double[input.Length];
+
+            for (var n = 0; n < input.Length; n++)
+            {
+                for (var k = 0; k < _b.Length; k++)
+                {
+                    if (n >= k) output[n] += _b[k] * input[n - k];
+                }
+                for (var m = 1; m < _a.Length; m++)
+                {
+                    if (n >= m) output[n] -= _a[m] * output[n - m];
+                }
+            }
+
+            return output;
+        }
+
+        #endregion
     }
 }

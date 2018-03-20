@@ -34,11 +34,11 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            var windowSize = (float) 4096 / _signal.SamplingRate;
-            var hopSize = (float) 2048 / _signal.SamplingRate;
+            var frameSize = (double) 4096 / _signal.SamplingRate;
+            var hopSize = (double) 2048 / _signal.SamplingRate;
 
-            var tdExtractor = new TimeDomainFeaturesExtractor("all", windowSize, hopSize);
-            var spectralExtractor = new SpectralFeaturesExtractor("all", windowSize, hopSize);
+            var tdExtractor = new TimeDomainFeaturesExtractor("all", frameSize, hopSize);
+            var spectralExtractor = new SpectralFeaturesExtractor("all", frameSize, hopSize);
 
             var tdVectors = tdExtractor.ParallelComputeFrom(_signal);
             var spectralVectors = spectralExtractor.ParallelComputeFrom(_signal);

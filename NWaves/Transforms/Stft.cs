@@ -68,7 +68,7 @@ namespace NWaves.Transforms
 
             // TODO: pad center!
 
-            _norm = 2.0f / (_windowSamples.Sum(s => s*s) * _fftSize / _hopSize);
+            _norm = 2.0f / (_windowSamples.Sum(s => s * s) * _fftSize / _hopSize);
 
             //_norm = 2.0 * Math.Sqrt((float)_fftSize / _hopSize));
             //_norm = 2.0 / (_fftSize / 2 * (_fftSize / _hopSize));
@@ -80,10 +80,9 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="samples">The samples of signal</param>
         /// <returns>STFT of the signal</returns>
-        public Tuple<List<float[]>, List<float[]>> Direct(float[] samples)
+        public List<Tuple<float[], float[]>> Direct(float[] samples)
         {
-            var stft = new Tuple<List<float[]>, List<float[]>>(
-                new List<float[]>(), new List<float[]>());
+            var stft = new List<Tuple<float[], float[]>>();
 
             for (var pos = 0; pos + _windowSize < samples.Length; pos += _hopSize)
             {
@@ -98,8 +97,7 @@ namespace NWaves.Transforms
                 
                 _fft.Direct(re, im);
 
-                stft.Item1.Add(re);
-                stft.Item2.Add(im);
+                stft.Add(new Tuple<float[], float[]>(re, im));
             }
 
             return stft;
@@ -108,12 +106,11 @@ namespace NWaves.Transforms
         /// <summary>
         /// Inverse STFT
         /// </summary>
-        /// <param name="real"></param>
-        /// <param name="imag"></param>
+        /// <param name="stft"></param>
         /// <returns></returns>
-        public float[] Inverse(Tuple<List<float[]>, List<float[]>> stft)
+        public float[] Inverse(List<Tuple<float[], float[]>> stft)
         {
-            var spectraCount = stft.Item1.Count;
+            var spectraCount = stft.Count;
             var samples = new float[spectraCount * _hopSize + _windowSize];
 
             var re = new float[_windowSize];
@@ -122,8 +119,8 @@ namespace NWaves.Transforms
             var pos = 0;
             for (var i = 0; i < spectraCount; i++)
             {
-                stft.Item1[i].FastCopyTo(re, _windowSize);
-                stft.Item2[i].FastCopyTo(im, _windowSize);
+                stft[i].Item1.FastCopyTo(re, _windowSize);
+                stft[i].Item2.FastCopyTo(im, _windowSize);
 
                 _fft.Inverse(re, im);
 
@@ -145,7 +142,7 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="signal">The signal under analysis</param>
         /// <returns>STFT of the signal</returns>
-        public Tuple<List<float[]>, List<float[]>> Direct(DiscreteSignal signal)
+        public List<Tuple<float[], float[]>> Direct(DiscreteSignal signal)
         {
             return Direct(signal.Samples);
         }

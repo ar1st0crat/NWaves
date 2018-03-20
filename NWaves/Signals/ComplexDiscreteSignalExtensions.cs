@@ -49,84 +49,84 @@ namespace NWaves.Signals
                             signal.Imag.FastCopyFragment(length, destinationOffset: delay));
         }
 
-        ///// <summary>
-        ///// Method superimposes two signals.
-        ///// If sizes are different then the smaller signal is broadcasted 
-        ///// to fit the size of the larger signal.
-        ///// </summary>
-        ///// <param name="signal1">Object signal</param>
-        ///// <param name="signal2">Argument signal</param>
-        ///// <returns></returns>
-        //public static ComplexDiscreteSignal Superimpose(this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
-        //{
-        //    if (signal1.SamplingRate != signal2.SamplingRate)
-        //    {
-        //        throw new ArgumentException("Sampling rates must be the same!");
-        //    }
+        /// <summary>
+        /// Method superimposes two signals.
+        /// If sizes are different then the smaller signal is broadcasted 
+        /// to fit the size of the larger signal.
+        /// </summary>
+        /// <param name="signal1">Object signal</param>
+        /// <param name="signal2">Argument signal</param>
+        /// <returns></returns>
+        public static ComplexDiscreteSignal Superimpose(this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
+        {
+            if (signal1.SamplingRate != signal2.SamplingRate)
+            {
+                throw new ArgumentException("Sampling rates must be the same!");
+            }
 
-        //    ComplexDiscreteSignal superimposed;
+            ComplexDiscreteSignal superimposed;
 
-        //    if (signal1.Length > signal2.Length)
-        //    {
-        //        superimposed = signal1.Copy();
+            if (signal1.Length > signal2.Length)
+            {
+                superimposed = signal1.Copy();
 
-        //        for (var i = 0; i < signal2.Length; i++)
-        //        {
-        //            superimposed.Real[i] += signal2.Real[i];
-        //            superimposed.Imag[i] += signal2.Imag[i];
-        //        }
-        //    }
-        //    else
-        //    {
-        //        superimposed = signal2.Copy();
+                for (var i = 0; i < signal2.Length; i++)
+                {
+                    superimposed.Real[i] += signal2.Real[i];
+                    superimposed.Imag[i] += signal2.Imag[i];
+                }
+            }
+            else
+            {
+                superimposed = signal2.Copy();
 
-        //        for (var i = 0; i < signal1.Length; i++)
-        //        {
-        //            superimposed.Real[i] += signal1.Real[i];
-        //            superimposed.Imag[i] += signal1.Imag[i];
-        //        }
-        //    }
+                for (var i = 0; i < signal1.Length; i++)
+                {
+                    superimposed.Real[i] += signal1.Real[i];
+                    superimposed.Imag[i] += signal1.Imag[i];
+                }
+            }
 
-        //    return superimposed;
-        //}
+            return superimposed;
+        }
 
-        ///// <summary>
-        ///// Method concatenates two signals.
-        ///// </summary>
-        ///// <param name="signal1"></param>
-        ///// <param name="signal2"></param>
-        ///// <returns></returns>
-        //public static ComplexDiscreteSignal Concatenate(this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
-        //{
-        //    if (signal1.SamplingRate != signal2.SamplingRate)
-        //    {
-        //        throw new ArgumentException("Sampling rates must be the same!");
-        //    }
+        /// <summary>
+        /// Method concatenates two signals.
+        /// </summary>
+        /// <param name="signal1"></param>
+        /// <param name="signal2"></param>
+        /// <returns></returns>
+        public static ComplexDiscreteSignal Concatenate(this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
+        {
+            if (signal1.SamplingRate != signal2.SamplingRate)
+            {
+                throw new ArgumentException("Sampling rates must be the same!");
+            }
 
-        //    return new ComplexDiscreteSignal(
-        //                    signal1.SamplingRate,
-        //                    signal1.Real.MergeWithArray(signal2.Real),
-        //                    signal1.Imag.MergeWithArray(signal2.Imag));
-        //}
+            return new ComplexDiscreteSignal(
+                            signal1.SamplingRate,
+                            signal1.Real.MergeWithArray(signal2.Real),
+                            signal1.Imag.MergeWithArray(signal2.Imag));
+        }
 
-        ///// <summary>
-        ///// Method returns repeated n times copy of the signal
-        ///// </summary>
-        ///// <param name="signal"></param>
-        ///// <param name="times"></param>
-        ///// <returns></returns>
-        //public static ComplexDiscreteSignal Repeat(this ComplexDiscreteSignal signal, int times)
-        //{
-        //    if (times <= 0)
-        //    {
-        //        throw new ArgumentException("Number of repeat times must be at least once");
-        //    }
+        /// <summary>
+        /// Method returns repeated n times copy of the signal
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="times"></param>
+        /// <returns></returns>
+        public static ComplexDiscreteSignal Repeat(this ComplexDiscreteSignal signal, int times)
+        {
+            if (times <= 0)
+            {
+                throw new ArgumentException("Number of repeat times must be at least once");
+            }
 
-        //    return new ComplexDiscreteSignal(
-        //                    signal.SamplingRate,
-        //                    signal.Real.RepeatArray(times),
-        //                    signal.Imag.RepeatArray(times));
-        //}
+            return new ComplexDiscreteSignal(
+                            signal.SamplingRate,
+                            signal.Real.RepeatArray(times),
+                            signal.Imag.RepeatArray(times));
+        }
 
         /// <summary>
         /// 

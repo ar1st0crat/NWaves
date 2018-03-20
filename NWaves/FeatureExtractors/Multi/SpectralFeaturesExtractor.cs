@@ -32,16 +32,6 @@ namespace NWaves.FeatureExtractors.Multi
         private readonly int _fftSize;
 
         /// <summary>
-        /// Length of analysis window (in seconds)
-        /// </summary>
-        private readonly double _windowSize;
-
-        /// <summary>
-        /// Hop length (in seconds)
-        /// </summary>
-        private readonly double _hopSize;
-
-        /// <summary>
         /// Extractor functions
         /// </summary>
         private readonly Func<float[], float[], float>[] _extractors;
@@ -51,12 +41,13 @@ namespace NWaves.FeatureExtractors.Multi
         /// </summary>
         /// <param name="featureList"></param>
         /// <param name="parameters"></param>
-        /// <param name="windowSize"></param>
+        /// <param name="frameSize"></param>
         /// <param name="hopSize"></param>
         /// <param name="fftSize"></param>
         public SpectralFeaturesExtractor(string featureList,
-                                         double windowSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/, int fftSize = 0,
+                                         double frameSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/, int fftSize = 0,
                                          IReadOnlyDictionary<string, object> parameters = null)
+            : base(frameSize, hopSize)
         {
             if (featureList == "all" || featureList == "full")
             {
@@ -123,8 +114,6 @@ namespace NWaves.FeatureExtractors.Multi
 
             FeatureDescriptions = features;
 
-            _windowSize = windowSize;
-            _hopSize = hopSize;
             _fftSize = fftSize;
         }
 
@@ -137,9 +126,9 @@ namespace NWaves.FeatureExtractors.Multi
         /// <returns>Sequence of feature vectors</returns>
         public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
-            var windowSize = (int)(signal.SamplingRate * _windowSize);
-            var hopSize = (int)(signal.SamplingRate * _hopSize);
-            var fftSize = _fftSize >= windowSize ? _fftSize : MathUtils.NextPowerOfTwo(windowSize);
+            var frameSize = (int)(signal.SamplingRate * FrameSize);
+            var hopSize = (int)(signal.SamplingRate * HopSize);
+            var fftSize = _fftSize >= frameSize ? _fftSize : MathUtils.NextPowerOfTwo(frameSize);
 
             var resolution = (float)signal.SamplingRate / fftSize;
 
@@ -159,12 +148,12 @@ namespace NWaves.FeatureExtractors.Multi
             var zeroblock = new float[fftSize];         // just a buffer of zeros for quick memset
 
             var i = startSample;
-            while (i + windowSize < endSample)
+            while (i + frameSize < endSample)
             {
                 // prepare all blocks in memory for the current step:
 
                 zeroblock.FastCopyTo(block, fftSize);
-                signal.Samples.FastCopyTo(block, windowSize, i);
+                signal.Samples.FastCopyTo(block, frameSize, i);
 
                 fft.MagnitudeSpectrum(block, spectrum);
 

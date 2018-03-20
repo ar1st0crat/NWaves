@@ -174,7 +174,7 @@ namespace NWaves.Signals
         }
 
         ///// <summary>
-        ///// Method wraps discrete signal samples into complex signal
+        ///// Method copies discrete signal samples into complex signal
         ///// </summary>
         ///// <param name="signal">Real-valued signal</param>
         ///// <returns>Corresponding complex-valued signal</returns>

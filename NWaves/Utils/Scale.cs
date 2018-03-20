@@ -9,6 +9,7 @@ namespace NWaves.Utils
     ///     - decibel
     ///     - mel
     ///     - bark
+    ///     - ERB
     /// 
     /// 2) loudness weighting:
     ///     - A-weighting
@@ -102,6 +103,26 @@ namespace NWaves.Utils
         public static double BarkToHerz(double bark)
         {
             return 1960 / (26.81 / (bark + 0.53) - 1);
+        }
+
+        /// <summary>
+        /// Method converts herz frequency to corresponding ERB frequency
+        /// </summary>
+        /// <param name="herz">Herz frequency</param>
+        /// <returns>ERB frequency</returns>
+        public static double HerzToErb(double herz)
+        {
+            return 9.26449 * Math.Log(1.0 + herz) / (24.7 * 9.26449);
+        }
+
+        /// <summary>
+        /// Method converts ERB frequency to corresponding herz frequency
+        /// </summary>
+        /// <param name="erb">ERB frequency</param>
+        /// <returns>Herz frequency</returns>
+        public static double ErbToHerz(double erb)
+        {
+            return (Math.Exp(erb / 9.26449) - 1.0) * (24.7 * 9.26449);
         }
 
         /// <summary>

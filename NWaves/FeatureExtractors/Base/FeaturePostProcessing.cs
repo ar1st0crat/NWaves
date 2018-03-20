@@ -112,6 +112,12 @@ namespace NWaves.FeatureExtractors.Base
                 return vectors.ElementAt(0).ToArray();
             }
 
+            var totalVectors = vectors[0].Count;
+            if (vectors.Any(v => v.Count != totalVectors))
+            {
+                throw new InvalidOperationException("");
+            }
+
             var length = vectors.Sum(v => v[0].Features.Length);
             var joined = new FeatureVector[vectors[0].Count];
             

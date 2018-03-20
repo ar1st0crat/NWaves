@@ -13,7 +13,6 @@ using NWaves.Filters.BiQuad;
 using NWaves.Filters.Fda;
 using NWaves.Operations;
 using NWaves.Transforms;
-using NWaves.Utils;
 
 namespace NWaves.DemoForms
 {
@@ -415,6 +414,7 @@ namespace NWaves.DemoForms
             if (_signal == null) return;
 
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.DifferenceEquation);
+
             signalAfterFilteringPanel.Signal = _filteredSignal;
             spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
         }

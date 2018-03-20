@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Numerics;
 using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Utils;
@@ -7,7 +6,7 @@ using NWaves.Utils;
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Transfer function
+    /// Class providing methods related to the transfer function of a filter
     /// </summary>
     public static class TransferFunction
     {
@@ -16,16 +15,16 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="zp"></param>
         /// <returns></returns>
-        public static double[] ZpToTf(Complex[] zp)
+        public static double[] ZpToTf(ComplexDiscreteSignal zp)
         {
-            var tf = new ComplexDiscreteSignal(1, new[] { 1.0, -zp[0].Real },
-                                                  new[] { 0.0, -zp[0].Imaginary });
+            var tf = new ComplexDiscreteSignal(1, new[] { 1.0, -zp.Real[0] },
+                                                  new[] { 0.0, -zp.Imag[0] });
 
             for (var k = 1; k < zp.Length; k++)
             {
                 tf = Operation.Convolve(tf, new ComplexDiscreteSignal(1, 
-                                                    new[] { 1.0, -zp[k].Real },
-                                                    new[] { 0.0, -zp[k].Imaginary }));
+                                                  new[] { 1.0, -zp.Real[k] },
+                                                  new[] { 0.0, -zp.Imag[k] }));
             }
 
             return tf.Real;
@@ -40,12 +39,7 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public static double[] ZpToTf(double[] re, double[] im = null)
         {
-            if (im == null)
-            {
-                im = new double[re.Length];
-            }
-
-            return ZpToTf(re.Zip(im, (r, i) => new Complex(r, i)).ToArray());
+            return ZpToTf(new ComplexDiscreteSignal(1, re, im));
         }
 
         /// <summary>
@@ -53,9 +47,17 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="tf"></param>
         /// <returns></returns>
-        public static Complex[] TfToZp(double[] tf)
+        public static ComplexDiscreteSignal TfToZp(double[] tf)
         {
-            return tf.Length <= 1 ? null : MathUtils.PolynomialRoots(tf);
+            if (tf.Length <= 1)
+            {
+                return null;
+            }
+
+            var roots = MathUtils.PolynomialRoots(tf);
+
+            return new ComplexDiscreteSignal(1, roots.Select(r => r.Real),
+                                                roots.Select(r => r.Imaginary));
         }
     }
 }

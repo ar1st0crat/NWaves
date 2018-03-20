@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Numerics;
-using NWaves.Signals;
 
 namespace NWaves.Utils
 {
@@ -96,48 +94,44 @@ namespace NWaves.Utils
 
             const int maxIterations = 10000;
 
-            var a0 = new Complex[a.Length - 1];
-            var a1 = new Complex[a.Length - 1];
+            var rootsPrev = new Complex[a.Length - 1];
+            var roots = new Complex[a.Length - 1];
 
             var result = new Complex(0.4, 0.9);
-            a0[0] = Complex.One;
+            rootsPrev[0] = Complex.One;
 
-            for (var i = 1; i < a0.Length; i++)
+            for (var i = 1; i < rootsPrev.Length; i++)
             {
-                a0[i] = a0[i - 1] * result;
+                rootsPrev[i] = rootsPrev[i - 1] * result;
             }
 
-            var count = 0;
+            var iter = 0;
             while (true)
             {
-                for (int i = 0; i < a0.Length; i++)
+                for (int i = 0; i < rootsPrev.Length; i++)
                 {
                     result = Complex.One;
 
-                    for (int j = 0; j < a0.Length; j++)
+                    for (int j = 0; j < rootsPrev.Length; j++)
                     {
                         if (i != j)
                         {
-                            result = (a0[i] - a0[j]) * result;
+                            result = (rootsPrev[i] - rootsPrev[j]) * result;
                         }
                     }
 
-                    a1[i] = a0[i] - (EvaluatePolynomial(a, a0[i]) / result);
+                    roots[i] = rootsPrev[i] - (EvaluatePolynomial(a, rootsPrev[i]) / result);
                 }
 
-                count++;
-
-                if (count > maxIterations || ArraysAreEqual(a0, a1))
+                if (++iter > maxIterations || ArraysAreEqual(rootsPrev, roots))
                 {
                     break;
                 }
 
-                Array.Copy(a1, a0, a1.Length);
+                Array.Copy(roots, rootsPrev, roots.Length);
             }
 
-            return a1;
-            //return new ComplexDiscreteSignal(1, a1.Select(r => (float) r.Real),
-            //                                    a1.Select(r => (float) r.Imaginary));
+            return roots;
         }
 
         /// <summary>
@@ -145,17 +139,21 @@ namespace NWaves.Utils
         /// </summary>
         /// <param name="a">First array</param>
         /// <param name="b">Second array</param>
+        /// <param name="tolerance">Tolerance level</param>
         /// <returns>true if arrays are equal</returns>
-        private static bool ArraysAreEqual(Complex[] a, Complex[] b)
+        private static bool ArraysAreEqual(Complex[] a, Complex[] b, double tolerance = 1e-6)
         {
-            var close = true;
             for (var i = 0; i < a.Length; i++)
             {
                 var delta = a[i] - b[i];
-                close &= Math.Abs(delta.Real) < 1e-6 && Math.Abs(delta.Imaginary) < 1e-6;
+
+                if (Math.Abs(delta.Real) > tolerance || Math.Abs(delta.Imaginary) > tolerance)
+                {
+                    return false;
+                }
             }
 
-            return close;
+            return true;
         }
 
         /// <summary>

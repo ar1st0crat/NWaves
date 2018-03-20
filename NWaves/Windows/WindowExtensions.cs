@@ -9,7 +9,7 @@ namespace NWaves.Windows
     public static class WindowExtensions
     {
         /// <summary>
-        /// Mutable function that applies window array to an array of samples
+        /// Mutable function that applies window array to array of float samples
         /// </summary>
         /// <param name="samples"></param>
         /// <param name="windowSamples"></param>
@@ -22,7 +22,7 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Mutable function that applies window array to an array of samples
+        /// Mutable function that applies window array to array of double samples
         /// </summary>
         /// <param name="samples"></param>
         /// <param name="windowSamples"></param>

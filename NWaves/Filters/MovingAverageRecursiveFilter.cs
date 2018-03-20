@@ -43,6 +43,10 @@ namespace NWaves.Filters
         }
 
         /// <summary>
+        /// Apply filter by fast recursive strategy.
+        /// 
+        /// Note. 
+        /// Working with double coefficients, since floats lead to crucial lost of precision.
         /// 
         /// </summary>
         /// <param name="signal"></param>
@@ -58,17 +62,17 @@ namespace NWaves.Filters
 
             var input = signal.Samples;
             var size = Size;
-            
-            var samples = new float[input.Length];
-            samples[0] = input[0] / size;
+
+            var output = new float[input.Length];
+            output[0] = (float)(input[0] * _b[0]);
 
             for (var n = 1; n < input.Length; n++)
             {
-                if (n >= size) samples[n] -= input[n - size] / size;
-                samples[n] += input[n] / size + samples[n - 1];
+                if (n >= size) output[n] = (float)(input[n - size] * _b[size]);
+                output[n] = (float)(output[n] + input[n] * _b[0] + output[n - 1]);
             }
 
-            return new DiscreteSignal(signal.SamplingRate, samples);
+            return new DiscreteSignal(signal.SamplingRate, output);
         }
     }
 }

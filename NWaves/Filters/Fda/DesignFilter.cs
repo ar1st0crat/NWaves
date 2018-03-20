@@ -20,7 +20,7 @@ namespace NWaves.Filters.Fda
         /// <param name="phaseResponse"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static FirFilter Fir(int order, float[] magnitudeResponse, float[] phaseResponse = null, WindowTypes window = WindowTypes.Blackman)
+        public static FirFilter Fir(int order, double[] magnitudeResponse, double[] phaseResponse = null, WindowTypes window = WindowTypes.Blackman)
         {
             if (order % 2 == 0)
             {
@@ -28,30 +28,21 @@ namespace NWaves.Filters.Fda
             }
 
             var fftSize = MathUtils.NextPowerOfTwo(magnitudeResponse.Length);
-            var fft = new Fft(fftSize);
+            
+            var real = phaseResponse == null ? 
+                       magnitudeResponse.PadZeros(fftSize) :
+                       magnitudeResponse.Zip(phaseResponse, (m, p) => m * Math.Cos(p)).ToArray();
 
-            float[] real, imag;
+            var imag = phaseResponse == null ? 
+                       new double[fftSize] :
+                       magnitudeResponse.Zip(phaseResponse, (m, p) => m * Math.Sin(p)).ToArray();
 
-            real = fftSize != magnitudeResponse.Length ?
-                   magnitudeResponse.PadZeros(fftSize) :
-                   magnitudeResponse.FastCopy();
-
-            if (phaseResponse != null)
-            {
-                imag = fftSize != phaseResponse.Length ?
-                       phaseResponse.PadZeros(fftSize) :
-                       phaseResponse.FastCopy();
-            }
-            else
-            {
-                imag = new float[fftSize];
-            }
-
+            var fft = new Fft64(fftSize);
             fft.Inverse(real, imag);
 
-            var kernel = new float[order];
+            var kernel = new double[order];
 
-            var compensation = 2.0f / fftSize;
+            var compensation = 2.0 / fftSize;
             var middle = order / 2;
             for (var i = 0; i <= middle; i++)
             {
@@ -61,7 +52,7 @@ namespace NWaves.Filters.Fda
             
             kernel.ApplyWindow(window);
 
-            return new FirFilter(kernel.ToDoubles());
+            return new FirFilter(kernel);
         }
 
         /// <summary>
@@ -82,13 +73,13 @@ namespace NWaves.Filters.Fda
 
             var fftSize = Math.Max(512, MathUtils.NextPowerOfTwo(order * 4));
 
-            var magnitudeResponse = new float[fftSize];
-            var phaseResponse = new float[fftSize];
+            var magnitudeResponse = new double[fftSize];
+            var phaseResponse = new double[fftSize];
 
             var cutoffPos = (int)(freq * fftSize);
             for (var i = 0; i < cutoffPos; i++)
             {
-                magnitudeResponse[i] = 1.0f;
+                magnitudeResponse[i] = 1.0;
             }
 
             return Fir(order, magnitudeResponse, phaseResponse, window);

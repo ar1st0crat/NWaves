@@ -24,16 +24,6 @@ namespace NWaves.FeatureExtractors.Multi
         public override int FeatureCount => FeatureDescriptions.Length;
 
         /// <summary>
-        /// Length of analysis window (in seconds)
-        /// </summary>
-        private readonly double _windowSize;
-
-        /// <summary>
-        /// Hop length (in ms)
-        /// </summary>
-        private readonly double _hopSize;
-
-        /// <summary>
         /// Extractor functions
         /// </summary>
         private readonly Func<DiscreteSignal, int, int, float>[] _extractors;
@@ -43,11 +33,12 @@ namespace NWaves.FeatureExtractors.Multi
         /// </summary>
         /// <param name="featureList"></param>
         /// <param name="parameters"></param>
-        /// <param name="windowSize"></param>
+        /// <param name="frameSize"></param>
         /// <param name="hopSize"></param>
         public TimeDomainFeaturesExtractor(string featureList,
-                                           double windowSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/,
+                                           double frameSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/,
                                            IReadOnlyDictionary<string, object> parameters = null)
+            : base(frameSize, hopSize)
         {
             if (featureList == "all" || featureList == "full")
             {
@@ -82,9 +73,6 @@ namespace NWaves.FeatureExtractors.Multi
             }).ToArray();
 
             FeatureDescriptions = features;
-
-            _windowSize = windowSize;
-            _hopSize = hopSize;
         }
 
         /// <summary>
@@ -96,20 +84,20 @@ namespace NWaves.FeatureExtractors.Multi
         /// <returns>Sequence of feature vectors</returns>
         public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
-            var windowSize = (int)(signal.SamplingRate * _windowSize);
-            var hopSize = (int)(signal.SamplingRate * _hopSize);
+            var frameSize = (int)(signal.SamplingRate * FrameSize);
+            var hopSize = (int)(signal.SamplingRate * HopSize);
 
             var featureVectors = new List<FeatureVector>();
             var featureCount = FeatureCount;
             
             var i = startSample;
-            while (i + windowSize < endSample)
+            while (i + frameSize < endSample)
             {
                 var featureVector = new float[featureCount];
 
                 for (var j = 0; j < featureCount; j++)
                 {
-                    featureVector[j] = _extractors[j](signal, i, i + windowSize);
+                    featureVector[j] = _extractors[j](signal, i, i + frameSize);
                 }
 
                 featureVectors.Add(new FeatureVector
