@@ -12,6 +12,11 @@ namespace NWaves.Filters.Base
     public abstract class LtiFilter : IFilter
     {
         /// <summary>
+        /// Transfer function
+        /// </summary>
+        public TransferFunction Tf { get; protected set; }
+
+        /// <summary>
         /// The filtering algorithm that should be implemented by particular subclass
         /// </summary>
         /// <param name="signal">Signal for filtering</param>
@@ -19,17 +24,7 @@ namespace NWaves.Filters.Base
         /// <returns>Filtered signal</returns>
         public abstract DiscreteSignal ApplyTo(DiscreteSignal signal,
                                                FilteringOptions filteringOptions = FilteringOptions.Auto);
-
-        /// <summary>
-        /// Zeros of the transfer function
-        /// </summary>
-        public abstract ComplexDiscreteSignal Zeros { get; set; }
-
-        /// <summary>
-        /// Poles of the transfer function
-        /// </summary>
-        public abstract ComplexDiscreteSignal Poles { get; set; }
-
+        
         /// <summary>
         /// Returns the real-valued impulse response of a filter.
         /// </summary>

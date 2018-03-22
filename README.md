@@ -348,8 +348,8 @@ var impulseResponse = filter.ImpulseResponse();
 var magnitudeResponse = filter.FrequencyResponse().Magnitude;
 var phaseResponse = filter.FrequencyResponse().Phase;
 
-var zeros = filter.Zeros;
-var poles = filter.Poles;
+var zeros = filter.Tf.Zeros;
+var poles = filter.Tf.Poles;
 
 
 // some filter design:
@@ -358,6 +358,18 @@ var firFilter = DesignFilter.Fir(43, magnitudeResponse);
 
 var lowpassFilter = DesignFilter.FirLp(43, 0.12);
 var highpassFilter = DesignFilter.LpToHp(lowpassFilter);
+
+var kernel = lowpassFilter.Tf.Numerator;
+
+
+// transfer function:
+
+var transferFunction = lowPassFilter.Tf;
+
+var b = transferFunction.Numerator;
+var a = transferFunction.Denominator;
+var zeros = transferFunction.Zeros;
+var poles = transferFunction.Poles;
 
 
 // sequence of filters:
@@ -371,6 +383,14 @@ var filtered = filter.ApplyTo(signal);
 filtered = firFilter.ApplyTo(filtered);
 filtered = notchFilter.ApplyTo(filtered);
 
+
+// parallel combination of filters:
+
+var parallel = filter1 + filter2;
+filtered = parallel.ApplyTo(signal);
+
+
+// audio effects:
 
 var pitchShift = new PitchShiftEffect(1.2);
 var wahwah = new WahWahEffect(lfoFrequency: 2/*Hz*/);

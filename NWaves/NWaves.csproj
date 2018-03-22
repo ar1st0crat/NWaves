@@ -78,6 +78,7 @@
     <Compile Include="Filters\Adaptive\KalmanFilter.cs" />
     <Compile Include="Filters\Adaptive\LmsFilter.cs" />
     <Compile Include="Filters\Adaptive\RlsFilter.cs" />
+    <Compile Include="Utils\DecimalComplex.cs" />
     <Compile Include="Utils\MemoryOperationExtensions.cs" />
     <Compile Include="Filters\WienerFilter.cs" />
     <Compile Include="Filters\Base\LtiFilter.cs" />

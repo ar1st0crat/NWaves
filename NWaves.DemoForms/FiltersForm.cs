@@ -77,46 +77,26 @@ namespace NWaves.DemoForms
                     AnalyzePreemphasisFilter();
                     break;
                 case "Butterworth":
-                    _filter = new ButterworthFilter(0.1, 5);
-
-                    numeratorListBox.DataSource = (_filter as IirFilter).B;
-                    denominatorListBox.DataSource = (_filter as IirFilter).A;
-
-                    filterParamsDataGrid.RowCount = 2;
-                    filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
-                    filterParamsDataGrid.Rows[0].Cells[1].Value = "5";
-                    filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
-                    filterParamsDataGrid.Rows[1].Cells[1].Value = "0,1";
-                    orderNumeratorTextBox.Text = "6";
-                    orderDenominatorTextBox.Text = "6";
-
+                    AnalyzeButterworthFilter();
                     break;
                 case "Custom LP/HP":
-                    _filter = DesignFilter.FirLp(33, 0.1);
-                    
-                    //using (var csv = new FileStream("fir.csv", FileMode.Open))
-                    //{
-                    //    _filter = FirFilter.FromCsv(csv);
-                    //}
-
-                    numeratorListBox.DataSource = (_filter as FirFilter)?.Kernel;
-
-                    filterParamsDataGrid.RowCount = 2;
-                    filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
-                    filterParamsDataGrid.Rows[0].Cells[1].Value = "17";
-                    filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
-                    filterParamsDataGrid.Rows[1].Cells[1].Value = "0,1";
-                    orderNumeratorTextBox.Text = "0";
-                    orderDenominatorTextBox.Text = "26";
+                    AnalyzeCustomLpFilter();
                     break;
             }
-
             
             magnitudeResponsePanel.Line = _filter.FrequencyResponse().Magnitude;
             phaseResponsePanel.Line = _filter.FrequencyResponse().Phase;
 
-            poleZeroPanel.Zeros = _filter.Zeros;
-            poleZeroPanel.Poles = _filter.Poles;
+            poleZeroPanel.Zeros = _filter.Tf.Zeros;
+            poleZeroPanel.Poles = _filter.Tf.Poles;
+
+            numeratorListBox.DataSource = _filter.Tf.Numerator;
+            denominatorListBox.DataSource = _filter.Tf.Denominator;
+
+            //using (var csv = new FileStream("fir.csv", FileMode.Open))
+            //{
+            //    _filter = FirFilter.FromCsv(csv);
+            //}
 
             Cursor.Current = Cursors.Default;
         }
@@ -214,8 +194,6 @@ namespace NWaves.DemoForms
                 filterParamsDataGrid.Rows[pos].Cells[0].Value = "a" + i;
                 filterParamsDataGrid.Rows[pos].Cells[1].Value = a[i];
             }
-            numeratorListBox.DataSource = (_filter as IirFilter).B;
-            denominatorListBox.DataSource = (_filter as IirFilter).A;
         }
 
         private void AnalyzeCustomFirFilter()
@@ -249,9 +227,6 @@ namespace NWaves.DemoForms
             }
             filterParamsDataGrid.Rows[b.Count].Cells[0].Value = "a0";
             filterParamsDataGrid.Rows[b.Count].Cells[1].Value = 1.0;
-
-            numeratorListBox.DataSource = (_filter as FirFilter).Kernel;
-            denominatorListBox.DataSource = new[] { 1.0 };
         }
 
         private void AnalyzeBiQuadFilter(string filterType)
@@ -313,8 +288,6 @@ namespace NWaves.DemoForms
                     break;
             }
 
-            numeratorListBox.DataSource = (_filter as IirFilter)?.B;
-            denominatorListBox.DataSource = (_filter as IirFilter)?.A;
             filterParamsDataGrid.RowCount = parameters.Length;
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -338,9 +311,6 @@ namespace NWaves.DemoForms
 
             _filter = new MovingAverageFilter(size);
 
-            numeratorListBox.DataSource = (_filter as FirFilter).Kernel;
-            denominatorListBox.DataSource = new[] { 1.0 };
-
             filterParamsDataGrid.RowCount = 1;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "size";
             filterParamsDataGrid.Rows[0].Cells[1].Value = size;
@@ -359,9 +329,6 @@ namespace NWaves.DemoForms
 
             _filter = new MovingAverageRecursiveFilter(size);
 
-            numeratorListBox.DataSource = (_filter as IirFilter).B;
-            denominatorListBox.DataSource = (_filter as IirFilter).A;
-
             filterParamsDataGrid.RowCount = 1;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "size";
             filterParamsDataGrid.Rows[0].Cells[1].Value = size;
@@ -377,14 +344,57 @@ namespace NWaves.DemoForms
 
             _filter = new PreEmphasisFilter(pre);
 
-            numeratorListBox.DataSource = (_filter as FirFilter).Kernel;
-            denominatorListBox.DataSource = new[] { 1.0 };
-
             filterParamsDataGrid.RowCount = 1;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "a";
             filterParamsDataGrid.Rows[0].Cells[1].Value = pre.ToString("F2");
             orderNumeratorTextBox.Text = "1";
             orderDenominatorTextBox.Text = "0";
+        }
+
+        private void AnalyzeButterworthFilter()
+        {
+            var order = 5;
+            var freq = 0.1;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                freq = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            _filter = new ButterworthFilter(freq, order);
+
+            filterParamsDataGrid.RowCount = 2;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = freq;
+        }
+
+        private void AnalyzeCustomLpFilter()
+        {
+            var order = 15;
+            var freq = 0.1;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                freq = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            _filter = DesignFilter.FirLp(order, freq);
+
+            filterParamsDataGrid.RowCount = 2;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = freq;
         }
 
         #endregion

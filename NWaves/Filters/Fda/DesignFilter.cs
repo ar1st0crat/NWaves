@@ -123,7 +123,7 @@ namespace NWaves.Filters.Fda
         /// <returns></returns>
         public static FirFilter LpToHp(FirFilter filter)
         {
-            var kernel = filter.Kernel.Select(k => -k).ToArray();
+            var kernel = filter.Tf.Numerator.Select(k => -k).ToArray();
             kernel[kernel.Length / 2] += 1.0;
             return new FirFilter(kernel);
         }

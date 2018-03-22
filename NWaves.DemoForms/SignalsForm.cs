@@ -37,80 +37,6 @@ namespace NWaves.DemoForms
             superimposedSignalPanel.Gain = 100;
         }
 
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Close();
-        }
-
-        private void openToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            OpenSignal();
-        }
-
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var sfd = new SaveFileDialog();
-            if (sfd.ShowDialog() != DialogResult.OK)
-            {
-                return;
-            }
-
-            using (var stream = new FileStream(sfd.FileName, FileMode.Create))
-            {
-                var waveFile = new WaveFile(_signal2);
-                waveFile.SaveTo(stream);
-            }
-        }
-
-        private void filtersToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var filtersForm = new FiltersForm();
-            filtersForm.ShowDialog();
-        }
-
-        private void pitchToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var pitchForm = new PitchForm();
-            pitchForm.ShowDialog();
-        }
-
-        private void mfccToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var mfccForm = new MfccForm();
-            mfccForm.ShowDialog();
-        }
-
-        private void lpcToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var lpcForm = new LpcForm();
-            lpcForm.ShowDialog();
-        }
-
-        private void modulationSpectrumToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var msForm = new ModulationSpectrumForm();
-            msForm.ShowDialog();
-        }
-
-        private void effectsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var effectsForm = new EffectsForm();
-            effectsForm.ShowDialog();
-        }
-
-        private void featuresToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var featuresForm = new FeaturesForm();
-            featuresForm.ShowDialog();
-        }
-
-        private void stftButton_Click(object sender, EventArgs e)
-        {
-            var stftForm = new StftForm();
-            stftForm.ShowDialog();
-        }
-
-
         private void OpenSignal()
         {
             var ofd = new OpenFileDialog();
@@ -385,6 +311,83 @@ namespace NWaves.DemoForms
             }
 
             _isRecording = !_isRecording;
+        }
+
+        #endregion
+
+        #region menu
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void openToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            OpenSignal();
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var sfd = new SaveFileDialog();
+            if (sfd.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            using (var stream = new FileStream(sfd.FileName, FileMode.Create))
+            {
+                var waveFile = new WaveFile(_signal2);
+                waveFile.SaveTo(stream);
+            }
+        }
+
+        private void filtersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var filtersForm = new FiltersForm();
+            filtersForm.ShowDialog();
+        }
+
+        private void pitchToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var pitchForm = new PitchForm();
+            pitchForm.ShowDialog();
+        }
+
+        private void mfccToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var mfccForm = new MfccForm();
+            mfccForm.ShowDialog();
+        }
+
+        private void lpcToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var lpcForm = new LpcForm();
+            lpcForm.ShowDialog();
+        }
+
+        private void modulationSpectrumToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var msForm = new ModulationSpectrumForm();
+            msForm.ShowDialog();
+        }
+
+        private void effectsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var effectsForm = new EffectsForm();
+            effectsForm.ShowDialog();
+        }
+
+        private void featuresToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var featuresForm = new FeaturesForm();
+            featuresForm.ShowDialog();
+        }
+
+        private void stftButton_Click(object sender, EventArgs e)
+        {
+            var stftForm = new StftForm();
+            stftForm.ShowDialog();
         }
 
         #endregion

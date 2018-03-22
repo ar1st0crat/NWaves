@@ -23,25 +23,15 @@ namespace NWaves.Filters
         /// <param name="m">Delay</param>
         /// <param name="b0">Coefficient b0</param>
         /// <param name="am">Coefficient am</param>
-        public CombFeedbackFilter(int m, double b0 = 1.0, double am = 1.0) : 
-            base(new[] { b0 }, MakeDenominator(m, am))
+        public CombFeedbackFilter(int m, double b0 = 1.0, double am = 1.0)
         {
             _delay = m;
-        }
 
-        /// <summary>
-        /// Static helper method
-        /// </summary>
-        /// <param name="m"></param>
-        /// <param name="am"></param>
-        /// <returns></returns>
-        private static double[] MakeDenominator(int m, double am)
-        {
-            var kernel = new double[m + 1];
-            kernel[0] = 1.0f;
-            kernel[m] = am;
+            B = new[] { b0 };
 
-            return kernel;
+            A = new double[m + 1];
+            A[0] = 1.0;
+            A[m] = am;
         }
 
         /// <summary>

@@ -9,7 +9,7 @@ namespace NWaves.Audio
 {
     /// <summary>
     /// WAV file container.
-    /// Supports only 8bits/sec and 16bits/sec formats.
+    /// Currently supports only 8bits/sample and 16bits/sample formats.
     /// </summary>
     public class WaveFile : IAudioContainer
     {

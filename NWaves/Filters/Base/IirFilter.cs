@@ -17,21 +17,22 @@ namespace NWaves.Filters.Base
         /// (recursive part in difference equations)
         /// </summary>
         protected double[] _a;
-        public double[] A
+        protected double[] A
         {
             get
             {
                 return _a;
             }
-            protected set
+            set
             {
                 _a = value;
                 _a32 = _a.ToFloats();
+                if (_b != null) Tf = new TransferFunction(_b, _a);
             }
         }
 
         /// <summary>
-        /// Float versions of denominator coefficients for computations by default
+        /// Float versions of denominator coefficients for filtering (by default)
         /// </summary>
         protected float[] _a32;
 
@@ -40,26 +41,27 @@ namespace NWaves.Filters.Base
         /// (non-recursive part in difference equations)
         /// </summary>
         protected double[] _b;
-        public double[] B
+        protected double[] B
         {
             get
             {
                 return _b;
             }
-            protected set
+            set
             {
                 _b = value;
                 _b32 = _b.ToFloats();
+                if (_a != null) Tf = new TransferFunction(_b, _a);
             }
         }
 
         /// <summary>
-        /// Float versions of numerator coefficients for computations by default
+        /// Float versions of numerator coefficients for filtering (by default)
         /// </summary>
         protected float[] _b32;
 
         /// <summary>
-        /// If _a.Length + _b.Length exceeds this value, 
+        /// If A.Length + B.Length exceeds this value, 
         /// the filtering code will use a circular buffer.
         /// </summary>
         public const int FilterSizeForOptimizedProcessing = 64;
@@ -266,16 +268,16 @@ namespace NWaves.Filters.Base
         {
             var first = A[0];
 
-            if (Math.Abs(first) < 1e-10)
-            {
-                throw new ArgumentException("The first A coefficient can not be zero!");
-            }
-
             if (Math.Abs(first - 1.0) < 1e-10)
             {
                 return;
             }
 
+            if (Math.Abs(first) < 1e-10)
+            {
+                throw new ArgumentException("The first A coefficient can not be zero!");
+            }
+            
             for (var i = 0; i < A.Length; i++)
             {
                 A[i] /= first;
@@ -307,24 +309,6 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Zeros of the transfer function
-        /// </summary>
-        public override ComplexDiscreteSignal Zeros
-        {
-            get { return TransferFunction.TfToZp(B); }
-            set { B = TransferFunction.ZpToTf(value); }
-        }
-
-        /// <summary>
-        /// Poles of the transfer function
-        /// </summary>
-        public override ComplexDiscreteSignal Poles
-        {
-            get { return TransferFunction.TfToZp(A); }
-            set { A = TransferFunction.ZpToTf(value); }
-        }
-
-        /// <summary>
         /// Sequential combination of two IIR filters
         /// </summary>
         /// <param name="filter1"></param>
@@ -332,24 +316,23 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public static IirFilter operator *(IirFilter filter1, IirFilter filter2)
         {
-            var num = Operation.Convolve(filter1.B, filter2.B);
-            var den = Operation.Convolve(filter1.A, filter2.A);
-
-            return new IirFilter(num, den);
+            var tf = filter1.Tf * filter2.Tf;
+            return new IirFilter(tf.Numerator, tf.Denominator);
         }
 
         /// <summary>
-        /// Sequential combination of an IIR and a FIR filters
+        /// Parallel combination of an IIR and any LTI filter
         /// </summary>
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
-        public static IirFilter operator *(IirFilter filter1, FirFilter filter2)
+        public static IirFilter operator +(IirFilter filter1, LtiFilter filter2)
         {
-            return filter1 * filter2.AsIir();
+            var tf = filter1.Tf + filter2.Tf;
+            return new IirFilter(tf.Numerator, tf.Denominator);
         }
 
-        #region double precision
+        #region double precision computations
 
         public double[] ApplyTo(double[] input)
         {

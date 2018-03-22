@@ -70,8 +70,9 @@ namespace NWaves.Effects
             for (var i = 2; i < signal.Length; i++)
             {
                 var filter = new NotchFilter((float)(lfo[i] * samplingRateInverted), Q);
-                var b = filter.B;
-                var a = filter.A;
+
+                var b = filter.Tf.Numerator;
+                var a = filter.Tf.Denominator;
 
                 y[i] = (float)(b[0] * x[i] + b[1] * x[i - 1] + b[2] * x[i - 2] - (a[1] * y[i - 1] + a[2] * y[i - 2]));
             }

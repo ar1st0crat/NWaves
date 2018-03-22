@@ -20,16 +20,17 @@ namespace NWaves.Filters.Base
         /// (non-recursive part in difference equations)
         /// </summary>
         protected double[] _kernel;
-        public double[] Kernel
+        protected double[] Kernel
         {
             get
             {
                 return _kernel;
             }
-            protected set
+            set
             {
                 _kernel = value;
                 _kernel32 = _kernel.ToFloats();
+                Tf = new TransferFunction(_kernel, new [] { 1.0 });
             }
         }
         
@@ -181,24 +182,6 @@ namespace NWaves.Filters.Base
         } 
 
         /// <summary>
-        /// Zeros of the transfer function
-        /// </summary>
-        public override ComplexDiscreteSignal Zeros
-        {
-            get { return TransferFunction.TfToZp(Kernel); }
-            set { Kernel = TransferFunction.ZpToTf(value); }
-        }
-
-        /// <summary>
-        /// Poles of the transfer function (FIR filter does not have poles)
-        /// </summary>
-        public override ComplexDiscreteSignal Poles
-        {
-            get { return null; }
-            set { }
-        }
-
-        /// <summary>
         /// Convert to IIR filter
         /// </summary>
         /// <returns></returns>
@@ -235,25 +218,27 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Sequential combination of two FIR filters
+        /// Sequential combination of two FIR filters (also an FIR filter)
         /// </summary>
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
         public static FirFilter operator *(FirFilter filter1, FirFilter filter2)
         {
-            return new FirFilter(Operation.Convolve(filter1.Kernel, filter2.Kernel));
+            var tf = filter1.Tf * filter2.Tf;
+            return new FirFilter(tf.Numerator);
         }
 
         /// <summary>
-        /// Sequential combination of a FIR and an IIR filters
+        /// Sequential combination of an FIR and IIR filter
         /// </summary>
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
         public static IirFilter operator *(FirFilter filter1, IirFilter filter2)
         {
-            return filter1.AsIir() * filter2;
+            var tf = filter1.Tf * filter2.Tf;
+            return new IirFilter(tf.Numerator, tf.Denominator);
         }
 
         /// <summary>
@@ -264,7 +249,20 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public static FirFilter operator +(FirFilter filter1, FirFilter filter2)
         {
-            return new FirFilter(Operation.Convolve(filter1.Kernel, filter2.Kernel));
+            var tf = filter1.Tf + filter2.Tf;
+            return new FirFilter(tf.Numerator);
+        }
+
+        /// <summary>
+        /// Parallel combination of an FIR and IIR filter
+        /// </summary>
+        /// <param name="filter1"></param>
+        /// <param name="filter2"></param>
+        /// <returns></returns>
+        public static IirFilter operator +(FirFilter filter1, IirFilter filter2)
+        {
+            var tf = filter1.Tf + filter2.Tf;
+            return new IirFilter(tf.Numerator, tf.Denominator);
         }
     }
 }

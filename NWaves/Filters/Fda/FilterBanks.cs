@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using NWaves.Filters.Base;
@@ -414,27 +415,26 @@ namespace NWaves.Filters.Fda
                                     (itheta - gainArg * k4) *
                                     Complex.Pow(t * Math.Exp(b * t) / (-1.0/Math.Exp(b*t) + 1 + itheta*(1 - Math.Exp(b*t))), 4.0));
 
-                //var ir = new DiscreteSignal(1, fftSize) { [0] = 1.0 };
-                var ir = new double[fftSize];
-                ir[0] = 1.0;
-
                 var filter1 = new IirFilter(new[] { a0, a11, a2 }, new[] { b0, b1, b2 });
                 var filter2 = new IirFilter(new[] { a0, a12, a2 }, new[] { b0, b1, b2 });
                 var filter3 = new IirFilter(new[] { a0, a13, a2 }, new[] { b0, b1, b2 });
                 var filter4 = new IirFilter(new[] { a0, a14, a2 }, new[] { b0, b1, b2 });
 
+                var ir = new double[fftSize];
+                ir[0] = 1.0;
+
                 // for doubles the following code will work ok
                 // (however there's a crucial lost of precision in case of floats):
 
-                var filter = filter1 * filter2 * filter3 * filter4;
-                ir = filter.ApplyTo(ir);
+                //var filter = filter1 * filter2 * filter3 * filter4;
+                //ir = filter.ApplyTo(ir);
 
                 // this code is ok both for floats and for doubles:
 
-                //ir = filter1.ApplyTo(ir);
-                //ir = filter2.ApplyTo(ir);
-                //ir = filter3.ApplyTo(ir);
-                //ir = filter4.ApplyTo(ir);
+                ir = filter1.ApplyTo(ir);
+                ir = filter2.ApplyTo(ir);
+                ir = filter3.ApplyTo(ir);
+                ir = filter4.ApplyTo(ir);
 
                 var kernel = new DiscreteSignal(1, ir.Select(s => (float)(s / gain)));
                 
@@ -484,6 +484,36 @@ namespace NWaves.Filters.Fda
                     filtered[i] += filterbank[i][j] * spectrum[j];
                 }
             }
+        }
+
+        /// <summary>
+        /// Method applies filters to sequence of spectra
+        /// </summary>
+        /// <param name="filterbank"></param>
+        /// <param name="spectrogram"></param>
+        public static float[][] Apply(float[][] filterbank, IList<float[]> spectrogram)
+        {
+            var filtered = new float[spectrogram.Count][];
+
+            for (var k = 0; k < filtered.Length; k++)
+            {
+                filtered[k] = new float[filterbank.Length];
+            }
+
+            for (var i = 0; i < filterbank.Length; i++)
+            {
+                for (var k = 0; k < filtered.Length; k++)
+                {
+                    filtered[k][i] = 0.0f;
+
+                    for (var j = 0; j < spectrogram[i].Length; j++)
+                    {
+                        filtered[k][i] += filterbank[i][j] * spectrogram[k][j];
+                    }
+                }
+            }
+
+            return filtered;
         }
 
         /// <summary>

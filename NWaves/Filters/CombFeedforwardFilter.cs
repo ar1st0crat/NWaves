@@ -23,25 +23,13 @@ namespace NWaves.Filters
         /// <param name="m">Delay</param>
         /// <param name="b0">Coefficient b0</param>
         /// <param name="bm">Coefficient bm</param>
-        public CombFeedforwardFilter(int m, double b0 = 1.0, double bm = 1.0) : base(MakeKernel(m, b0, bm))
+        public CombFeedforwardFilter(int m, double b0 = 1.0, double bm = 1.0)
         {
             _delay = m;
-        }
 
-        /// <summary>
-        /// Static helper method
-        /// </summary>
-        /// <param name="m"></param>
-        /// <param name="b0"></param>
-        /// <param name="bm"></param>
-        /// <returns></returns>
-        private static double[] MakeKernel(int m, double b0, double bm)
-        {
-            var kernel = new double[m + 1];
-            kernel[0] = b0;
-            kernel[m] = bm;
-
-            return kernel;
+            Kernel = new double[m + 1];
+            Kernel[0] = b0;
+            Kernel[m] = bm;
         }
 
         /// <summary>
