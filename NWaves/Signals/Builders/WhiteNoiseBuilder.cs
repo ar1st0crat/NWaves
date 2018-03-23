@@ -20,6 +20,9 @@ namespace NWaves.Signals.Builders
         /// </summary>
         private double _high;
         
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public WhiteNoiseBuilder()
         {
             ParameterSetters = new Dictionary<string, Action<double>>
@@ -39,10 +42,7 @@ namespace NWaves.Signals.Builders
         /// <returns></returns>
         protected override DiscreteSignal Generate()
         {
-            if (_high < _low)
-            {
-                throw new FormatException("Upper level must be greater than the lower one!");
-            }
+            Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
 
             var rand = new Random();
             var noise = Enumerable.Range(0, Length)

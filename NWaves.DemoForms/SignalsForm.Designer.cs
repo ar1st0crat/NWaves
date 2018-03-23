@@ -107,9 +107,11 @@ namespace NWaves.DemoForms
             this.signalPanel.AutoScroll = true;
             this.signalPanel.BackColor = System.Drawing.SystemColors.ButtonHighlight;
             this.signalPanel.ForeColor = System.Drawing.Color.Blue;
-            this.signalPanel.Gain = 1;
+            this.signalPanel.Gain = 1F;
             this.signalPanel.Location = new System.Drawing.Point(196, 99);
             this.signalPanel.Name = "signalPanel";
+            this.signalPanel.PaddingX = 24;
+            this.signalPanel.PaddingY = 5;
             this.signalPanel.Signal = null;
             this.signalPanel.Size = new System.Drawing.Size(1001, 165);
             this.signalPanel.Stride = 64;
@@ -120,9 +122,11 @@ namespace NWaves.DemoForms
             this.generatedSignalPanel.AutoScroll = true;
             this.generatedSignalPanel.BackColor = System.Drawing.SystemColors.ButtonHighlight;
             this.generatedSignalPanel.ForeColor = System.Drawing.Color.Red;
-            this.generatedSignalPanel.Gain = 1;
+            this.generatedSignalPanel.Gain = 1F;
             this.generatedSignalPanel.Location = new System.Drawing.Point(196, 332);
             this.generatedSignalPanel.Name = "generatedSignalPanel";
+            this.generatedSignalPanel.PaddingX = 24;
+            this.generatedSignalPanel.PaddingY = 5;
             this.generatedSignalPanel.Signal = null;
             this.generatedSignalPanel.Size = new System.Drawing.Size(610, 184);
             this.generatedSignalPanel.Stride = 64;
@@ -133,9 +137,11 @@ namespace NWaves.DemoForms
             this.superimposedSignalPanel.AutoScroll = true;
             this.superimposedSignalPanel.BackColor = System.Drawing.SystemColors.ButtonHighlight;
             this.superimposedSignalPanel.ForeColor = System.Drawing.Color.SeaGreen;
-            this.superimposedSignalPanel.Gain = 1;
+            this.superimposedSignalPanel.Gain = 1F;
             this.superimposedSignalPanel.Location = new System.Drawing.Point(197, 543);
             this.superimposedSignalPanel.Name = "superimposedSignalPanel";
+            this.superimposedSignalPanel.PaddingX = 24;
+            this.superimposedSignalPanel.PaddingY = 5;
             this.superimposedSignalPanel.Signal = null;
             this.superimposedSignalPanel.Size = new System.Drawing.Size(1000, 181);
             this.superimposedSignalPanel.Stride = 64;
@@ -146,8 +152,15 @@ namespace NWaves.DemoForms
             this.spectrumPanel.AutoScroll = true;
             this.spectrumPanel.BackColor = System.Drawing.SystemColors.ButtonHighlight;
             this.spectrumPanel.ForeColor = System.Drawing.Color.Blue;
+            this.spectrumPanel.Gain = null;
+            this.spectrumPanel.Legend = null;
+            this.spectrumPanel.Line = null;
             this.spectrumPanel.Location = new System.Drawing.Point(812, 332);
+            this.spectrumPanel.Mark = null;
+            this.spectrumPanel.Markline = null;
             this.spectrumPanel.Name = "spectrumPanel";
+            this.spectrumPanel.PaddingX = 30;
+            this.spectrumPanel.PaddingY = 20;
             this.spectrumPanel.Size = new System.Drawing.Size(385, 184);
             this.spectrumPanel.Stride = 1;
             this.spectrumPanel.TabIndex = 5;
@@ -162,6 +175,7 @@ namespace NWaves.DemoForms
             "Triangle Wave",
             "Square Wave",
             "Pulse Wave",
+            "Chirp",
             "White Noise",
             "AWGN",
             "Pink Noise",

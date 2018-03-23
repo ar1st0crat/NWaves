@@ -8,7 +8,7 @@ namespace NWaves.Effects
 {
     /// <summary>
     /// Class for tube distortion effect.
-    /// DAFX book [Udo Zolzer], p.123-124.
+    /// DAFX book [Udo Zoelzer], p.123-124.
     /// </summary>
     public class TubeDistortionEffect : IFilter
     {
@@ -77,7 +77,7 @@ namespace NWaves.Effects
             Rl = rl;
 
             var filter1 = new IirFilter(new[] { 1.0, -2, 1 }, new[] { 1.0, -2 * Rh, Rh * Rh });
-            var filter2 = new IirFilter(new[] { 1.0 - Rl },     new[] { 1.0, -Rl });
+            var filter2 = new IirFilter(new[] { 1.0 - Rl },   new[] { 1.0, -Rl });
 
             _outputFilter = filter1 * filter2;
         }

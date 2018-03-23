@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using NWaves.Signals;
+using NWaves.Utils;
 
 namespace NWaves.Operations
 {
@@ -49,9 +50,9 @@ namespace NWaves.Operations
             var mi = modulationIndex;
 
             var output = Enumerable.Range(0, carrier.Length)
-                                   .Select(i => (float)(carrier[i] * (1 + mi * Math.Cos(2 * Math.PI * mf / fs * i))));
+                                   .Select(i => carrier[i] * (1 + mi * Math.Cos(2 * Math.PI * mf / fs * i)));
 
-            return new DiscreteSignal(fs, output);
+            return new DiscreteSignal(fs, output.ToFloats());
         }
 
         /// <summary>
@@ -73,10 +74,10 @@ namespace NWaves.Operations
 
             var integral = 0.0;
             var output = Enumerable.Range(0, baseband.Length)
-                                   .Select(i => (float)(ca * Math.Cos(2 * Math.PI * cf / fs * i +
-                                                         2 * Math.PI * deviation * (integral += baseband[i]))));
+                                   .Select(i => ca * Math.Cos(2 * Math.PI * cf / fs * i +
+                                                 2 * Math.PI * deviation * (integral += baseband[i])));
 
-            return new DiscreteSignal(fs, output);
+            return new DiscreteSignal(fs, output.ToFloats());
         }
 
         /// <summary>
@@ -104,10 +105,10 @@ namespace NWaves.Operations
             var mi = modulationIndex;
 
             var output = Enumerable.Range(0, length)
-                                   .Select(i => (float)(ca * Math.Cos(2 * Math.PI * cf / fs * i + 
-                                                        mi * Math.Sin(2 * Math.PI * mf / fs * i))));
+                                   .Select(i => ca * Math.Cos(2 * Math.PI * cf / fs * i + 
+                                                mi * Math.Sin(2 * Math.PI * mf / fs * i)));
 
-            return new DiscreteSignal(samplingRate, output);
+            return new DiscreteSignal(samplingRate, output.ToFloats());
         }
 
         /// <summary>
@@ -132,9 +133,9 @@ namespace NWaves.Operations
             var mi = modulationIndex;
 
             var output = Enumerable.Range(0, length)
-                                   .Select(i => (float)(ca * Math.Cos(2 * Math.PI * cf / fs * i + (mi * i * i) / (2 * fs * fs ))));
+                                   .Select(i => ca * Math.Cos(2 * Math.PI * (cf / fs + mi * i) * i / fs));
 
-            return new DiscreteSignal(fs, output);
+            return new DiscreteSignal(fs, output.ToFloats());
         }
 
         /// <summary>
@@ -155,9 +156,9 @@ namespace NWaves.Operations
             var cf = carrierFrequency;
 
             var output = Enumerable.Range(0, baseband.Length)
-                                   .Select(i => (float)(ca * Math.Cos(2 * Math.PI * cf / fs * i + deviation * baseband[i])));
+                                   .Select(i => ca * Math.Cos(2 * Math.PI * cf / fs * i + deviation * baseband[i]));
 
-            return new DiscreteSignal(fs, output);
+            return new DiscreteSignal(fs, output.ToFloats());
         }
     }
 }

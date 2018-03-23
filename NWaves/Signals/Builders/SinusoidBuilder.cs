@@ -25,6 +25,9 @@ namespace NWaves.Signals.Builders
         /// </summary>
         private double _phase;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public SinusoidBuilder()
         {
             ParameterSetters = new Dictionary<string, Action<double>>
@@ -48,10 +51,7 @@ namespace NWaves.Signals.Builders
         /// <returns></returns>
         protected override DiscreteSignal Generate()
         {
-            if (_frequency <= 0)
-            {
-                throw new FormatException("Frequency must be positive!");
-            }
+            Guard.AgainstNonPositive(_frequency, "Frequency");
 
             var samples = Enumerable.Range(0, Length)
                                     .Select(i => _amplitude * Math.Sin(2 * Math.PI * _frequency / SamplingRate * i + _phase));

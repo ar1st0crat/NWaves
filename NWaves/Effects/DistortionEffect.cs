@@ -7,7 +7,7 @@ namespace NWaves.Effects
 {
     /// <summary>
     /// Class for distortion effect.
-    /// DAFX book [Udo Zolzer], p.124-125.
+    /// DAFX book [Udo Zoelzer], p.124-125.
     /// </summary>
     public class DistortionEffect : IFilter
     {

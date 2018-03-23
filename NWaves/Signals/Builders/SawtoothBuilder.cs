@@ -25,6 +25,9 @@ namespace NWaves.Signals.Builders
         /// </summary>
         private double _frequency;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public SawtoothBuilder()
         {
             ParameterSetters = new Dictionary<string, Action<double>>
@@ -50,15 +53,8 @@ namespace NWaves.Signals.Builders
         /// <returns></returns>
         protected override DiscreteSignal Generate()
         {
-            if (_frequency <= 0)
-            {
-                throw new FormatException("Frequency must be positive!");
-            }
-
-            if (_high < _low)
-            {
-                throw new FormatException("Upper level must be greater than the lower one!");
-            }
+            Guard.AgainstNonPositive(_frequency, "Frequency");
+            Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
 
             var n = SamplingRate / _frequency;
             var start = (int)(n / 2);

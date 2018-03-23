@@ -18,6 +18,9 @@ namespace NWaves.Signals.Builders
         /// </summary>
         private double _sigma;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public AwgnBuilder()
         {
             ParameterSetters = new Dictionary<string, Action<double>>

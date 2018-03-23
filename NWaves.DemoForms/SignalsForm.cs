@@ -126,6 +126,16 @@ namespace NWaves.DemoForms
                                     .Build();
                     break;
 
+                case "Chirp":
+                    signalBuilder = new ChirpBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("amp", 0.75f)
+                                    .OfLength(sampleCount)
+                                    .RepeatedTimes(3)
+                                    .SampledAt(samplingRate)
+                                    .Build();
+                    break;
+
                 case "AWGN":
                     signalBuilder = new AwgnBuilder();
                     _signal2 = signalBuilder

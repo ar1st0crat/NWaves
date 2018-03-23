@@ -7,7 +7,7 @@ namespace NWaves.Effects
 {
     /// <summary>
     /// Class for overdrive effect.
-    /// DAFX book [Udo Zolzer], p.118.
+    /// DAFX book [Udo Zoelzer], p.118.
     /// </summary>
     public class OverdriveEffect : IFilter
     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
 {
@@ -39,10 +40,7 @@ namespace NWaves.Signals.Builders
         /// <returns></returns>
         protected override DiscreteSignal Generate()
         {
-            if (_high < _low)
-            {
-                throw new FormatException("Upper level must be greater than the lower one!");
-            }
+            Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
 
             var mean = (_low + _high) / 2;
             _low -= mean;

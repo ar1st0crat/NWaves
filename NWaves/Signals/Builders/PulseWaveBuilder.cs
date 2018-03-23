@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
 {
@@ -8,10 +9,24 @@ namespace NWaves.Signals.Builders
     /// </summary>
     public class PulseWaveBuilder : SignalBuilder
     {
+        /// <summary>
+        /// Amplitude
+        /// </summary>
         private double _amplitude;
+
+        /// <summary>
+        /// Pulse duration
+        /// </summary>
         private double _pulse;
+
+        /// <summary>
+        /// Period of pulse wave
+        /// </summary>
         private double _period;
-        
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public PulseWaveBuilder()
         {
             ParameterSetters = new Dictionary<string, Action<double>>
@@ -32,15 +47,10 @@ namespace NWaves.Signals.Builders
         /// <returns></returns>
         protected override DiscreteSignal Generate()
         {
-            if (_period <= _pulse)
-            {
-                throw new FormatException("The period must be greater than pulse duration!");
-            }
+            Guard.AgainstNonPositive(_period, "Period");
+            Guard.AgainstNonPositive(_pulse, "Pulse duration");
 
-            if (_period <= 0.0 || _pulse <= 0.0)
-            {
-                throw new FormatException("The period and pulse duration must be positive!");
-            }
+            Guard.AgainstInvalidRange(_pulse, _period, "Pulse duration", "Period");
 
             var ones = new DiscreteSignal(SamplingRate, (int)(_pulse * SamplingRate), (float)_amplitude);
             var zeros = new DiscreteSignal(SamplingRate, (int)((_period - _pulse) * SamplingRate), 0.0f);

@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Filters\Base\TransferFunction.cs" />
+    <Compile Include="Signals\Builders\ChirpBuilder.cs" />
     <Compile Include="Transforms\Fft64.cs" />
     <Compile Include="Audio\Channels.cs" />
     <Compile Include="Audio\Interfaces\IAudioContainer.cs" />
@@ -79,6 +80,7 @@
     <Compile Include="Filters\Adaptive\LmsFilter.cs" />
     <Compile Include="Filters\Adaptive\RlsFilter.cs" />
     <Compile Include="Utils\DecimalComplex.cs" />
+    <Compile Include="Utils\Guard.cs" />
     <Compile Include="Utils\MemoryOperationExtensions.cs" />
     <Compile Include="Filters\WienerFilter.cs" />
     <Compile Include="Filters\Base\LtiFilter.cs" />
