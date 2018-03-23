@@ -89,7 +89,7 @@ namespace NWaves.FeatureExtractors
         public SpnccExtractor(int featureCount, int power = 15,
                              int filterbankSize = 40, double lowFreq = 100, double highFreq = 6800,
                              double frameSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/, int fftSize = 1024,
-                             double preEmphasis = 0.0f, WindowTypes window = WindowTypes.Hamming)
+                             double preEmphasis = 0.0, WindowTypes window = WindowTypes.Hamming)
             : base(frameSize, hopSize)
         {
             FeatureCount = featureCount;

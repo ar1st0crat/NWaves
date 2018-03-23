@@ -8,8 +8,7 @@ using NWaves.Signals;
 namespace NWaves.Audio
 {
     /// <summary>
-    /// WAV file container.
-    /// Currently supports only 8bits/sample and 16bits/sample formats.
+    /// WAV file container
     /// </summary>
     public class WaveFile : IAudioContainer
     {
@@ -28,6 +27,11 @@ namespace NWaves.Audio
         /// Wav header struct
         /// </summary>
         public WaveFormat WaveFmt { get; }
+
+        /// <summary>
+        /// Supported bit depths
+        /// </summary>
+        public short[] SupportedBitDepths = { 8, 16, 24, 32 };
 
         /// <summary>
         /// This constructor loads signals from a wave file.
@@ -127,27 +131,67 @@ namespace NWaves.Audio
                     Signals.Add(new DiscreteSignal(waveFmt.SamplingRate, length));
                 }
 
-                if (waveFmt.BitsPerSample == 8)
+                switch (waveFmt.BitsPerSample)
                 {
-                    for (var i = 0; i < length; i++)
+                    case 8:
                     {
-                        for (var j = 0; j < waveFmt.ChannelCount; j++)
+                        for (var i = 0; i < length; i++)
                         {
-                            Signals[j][i] = reader.ReadByte() - 128;
-                            if (normalized) Signals[j][i] /= 128;
+                            for (var j = 0; j < waveFmt.ChannelCount; j++)
+                            {
+                                Signals[j][i] = reader.ReadByte() - 128;
+                                if (normalized) Signals[j][i] /= 128;
+                            }
                         }
+                        break;
                     }
-                }
-                else
-                {
-                    for (var i = 0; i < length; i++)
+
+                    case 16:
                     {
-                        for (var j = 0; j < waveFmt.ChannelCount; j++)
+                        for (var i = 0; i < length; i++)
                         {
-                            Signals[j][i] = reader.ReadInt16();
-                            if (normalized) Signals[j][i] /= short.MaxValue;
+                            for (var j = 0; j < waveFmt.ChannelCount; j++)
+                            {
+                                Signals[j][i] = reader.ReadInt16();
+                                if (normalized) Signals[j][i] /= 32768;
+                            }
                         }
+                        break;
                     }
+
+                    case 32:
+                    {
+                        for (var i = 0; i < length; i++)
+                        {
+                            for (var j = 0; j < waveFmt.ChannelCount; j++)
+                            {
+                                Signals[j][i] = reader.ReadInt32();
+                                if (normalized) Signals[j][i] /= 2147483648;
+                            }
+                        }
+                        break;
+                    }
+
+                    case 24:
+                    {
+                        for (var i = 0; i < length; i++)
+                        {
+                            for (var j = 0; j < waveFmt.ChannelCount; j++)
+                            {
+                                var b1 = reader.ReadByte();
+                                var b2 = reader.ReadByte();
+                                var b3 = reader.ReadByte();
+
+                                Signals[j][i] = (b1 << 8 | b2 << 16 | b3 << 24);
+                                if (normalized) Signals[j][i] /= 2147483648;
+                            }
+                        }
+                        break;
+                    }
+
+                    default:
+                        throw new ArgumentException(
+                            "Wrong bit depth! Supported values are: " + string.Join(", ", SupportedBitDepths));
                 }
             }
         }
@@ -156,8 +200,8 @@ namespace NWaves.Audio
         /// This constructor loads signals into container.
         /// </summary>
         /// <param name="signals">Signals to be loaded into container</param>
-        /// <param name="normalized">Normalization flag</param>
-        public WaveFile(IList<DiscreteSignal> signals, bool normalized = true)
+        /// <param name="bitsPerSample">Bit depth</param>
+        public WaveFile(IList<DiscreteSignal> signals, short bitsPerSample = 16)
         {
             if (signals == null || !signals.Any())
             {
@@ -176,10 +220,16 @@ namespace NWaves.Audio
                 throw new ArgumentException("Signals must have the same length");
             }
             
+            if (!SupportedBitDepths.Contains(bitsPerSample))
+            {
+                throw new ArgumentException(
+                            "Wrong bit depth! Supported values are: " + string.Join(", ", SupportedBitDepths));
+            }
+            
             WaveFormat waveFmt;
             waveFmt.AudioFormat = 1;                        // PCM
             waveFmt.ChannelCount = (short)signals.Count;    // mono
-            waveFmt.BitsPerSample = 16;                     // 16 bits/sample
+            waveFmt.BitsPerSample = bitsPerSample;          // 8, 16, 24 or 32
 
             waveFmt.Align = (short)(waveFmt.ChannelCount * waveFmt.BitsPerSample / 8);
             waveFmt.SamplingRate = samplingRate;
@@ -188,41 +238,14 @@ namespace NWaves.Audio
             WaveFmt = waveFmt;
 
             Signals = signals.ToList();
-
-            if (!normalized)
-            {
-                return;
-            }
-            
-            if (WaveFmt.BitsPerSample == 8)
-            {
-                for (var i = 0; i < length; i++)
-                {
-                    for (var j = 0; j < WaveFmt.ChannelCount; j++)
-                    {
-                        Signals[j][i] = Signals[j][i] * 128 + 128;
-                    }
-                }
-            }
-            else
-            {
-                for (var i = 0; i < length; i++)
-                {
-                    for (var j = 0; j < WaveFmt.ChannelCount; j++)
-                    {
-                        Signals[j][i] = Signals[j][i] * short.MaxValue;
-                    }
-                }
-            }
         }
 
         /// <summary>
         /// This constructor loads one signal into container.
         /// </summary>
         /// <param name="signal">Signal to be loaded into container</param>
-        /// <param name="normalized">Normalization flag</param>
-        public WaveFile(DiscreteSignal signal, bool normalized = true) 
-            : this(new [] { signal }, normalized)
+        /// <param name="bitsPerSample">Bit depth</param>
+        public WaveFile(DiscreteSignal signal, short bitsPerSample = 16) : this(new [] { signal }, bitsPerSample)
         {
         }
 
@@ -230,7 +253,8 @@ namespace NWaves.Audio
         /// Method saves the contents of a wave file to stream.
         /// </summary>
         /// <param name="waveStream">Output stream for saving</param>
-        public void SaveTo(Stream waveStream)
+        /// <param name="normalized">Normalization flag</param>
+        public void SaveTo(Stream waveStream, bool normalized = true)
         {
             using (var writer = new BinaryWriter(waveStream))
             {
@@ -257,24 +281,62 @@ namespace NWaves.Audio
                 writer.Write(0x61746164);      // "data"
                 writer.Write(dataSize);
 
-                if (WaveFmt.BitsPerSample == 8)
+                switch (WaveFmt.BitsPerSample)
                 {
-                    for (var i = 0; i < length; i++)
+                    case 8:
                     {
-                        for (var j = 0; j < WaveFmt.ChannelCount; j++)
+                        for (var i = 0; i < length; i++)
                         {
-                            writer.Write((sbyte)Signals[j][i]);
+                            for (var j = 0; j < WaveFmt.ChannelCount; j++)
+                            {
+                                var sample = normalized ? Signals[j][i] * 128 + 128 : Signals[j][i];
+                                writer.Write((sbyte) sample);
+                            }
                         }
+                        break;
                     }
-                }
-                else
-                {
-                    for (var i = 0; i < length; i++)
+
+                    case 16:
                     {
-                        for (var j = 0; j < WaveFmt.ChannelCount; j++)
+                        for (var i = 0; i < length; i++)
                         {
-                            writer.Write((short)Signals[j][i]);
+                            for (var j = 0; j < WaveFmt.ChannelCount; j++)
+                            {
+                                var sample = normalized ? Signals[j][i] * 32768 : Signals[j][i];
+                                writer.Write((short) sample);
+                            }
                         }
+                        break;
+                    }
+
+                    case 32:
+                    {
+                        for (var i = 0; i < length; i++)
+                        {
+                            for (var j = 0; j < WaveFmt.ChannelCount; j++)
+                            {
+                                var sample = normalized ? Signals[j][i] * 2147483648 : Signals[j][i];
+                                writer.Write((int) sample);
+                            }
+                        }
+                        break;
+                    }
+
+                    case 24:
+                    {
+                        for (var i = 0; i < length; i++)
+                        {
+                            for (var j = 0; j < WaveFmt.ChannelCount; j++)
+                            {
+                                var sample = normalized ? Signals[j][i] * 2147483648 : Signals[j][i];
+                                var s = (int) sample;
+
+                                var b = (byte)(s >> 8);  writer.Write(b);
+                                    b = (byte)(s >> 16); writer.Write(b);
+                                    b = (byte)(s >> 24); writer.Write(b);
+                            }
+                        }
+                        break;
                     }
                 }
             }

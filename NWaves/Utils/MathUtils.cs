@@ -6,7 +6,7 @@ namespace NWaves.Utils
     /// <summary>
     /// Static class providing some helpful math functions
     /// </summary>
-    static class MathUtils
+    public static class MathUtils
     {
         /// <summary>
         /// Sinc-function
@@ -15,7 +15,7 @@ namespace NWaves.Utils
         /// <returns>sinc(x)</returns>
         public static double Sinc(double x)
         {
-            return Math.Abs(x) > 1e-10 ? Math.Sin(Math.PI * x) / (Math.PI * x) : 1.0;
+            return Math.Abs(x) > 1e-20 ? Math.Sin(Math.PI * x) / (Math.PI * x) : 1.0;
         }
 
         /// <summary>

@@ -407,9 +407,17 @@ var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
 var lpcExtractor = new LpcExtractor(16, frameSize: 0.032/*sec*/, hopSize: 0.015/*sec*/);
 var lpcVectors = lpcExtractor.ComputeFrom(signal).Take(15);
 
+
+var mfccExtractor = new MfccExtractor(13, melFilterbanks: 24, preEmphasis: 0.95);
+var mfccVectors = mfccExtractor.ParallelComputeFrom(signal);
+
+/* equivalent to:
+
 var mfccExtractor = new MfccExtractor(13, melFilterbanks: 24);
 var preEmphasis = new PreEmphasisFilter(0.95);
 var mfccVectors = mfccExtractor.ParallelComputeFrom(preEmphasis.ApplyTo(signal));
+
+*/
 
 var pnccExtractor = new PnccExtractor(13);
 var pnccVectors = pnccExtractor.ComputeFrom(signal.First(10000));

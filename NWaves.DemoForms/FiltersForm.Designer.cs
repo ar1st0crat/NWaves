@@ -459,11 +459,7 @@ namespace NWaves.DemoForms
             this.phaseResponsePanel.AutoScroll = true;
             this.phaseResponsePanel.BackColor = System.Drawing.SystemColors.Window;
             this.phaseResponsePanel.ForeColor = System.Drawing.Color.Blue;
-            this.phaseResponsePanel.Legend = null;
-            this.phaseResponsePanel.Line = null;
             this.phaseResponsePanel.Location = new System.Drawing.Point(219, 217);
-            this.phaseResponsePanel.Mark = null;
-            this.phaseResponsePanel.Markline = null;
             this.phaseResponsePanel.Name = "phaseResponsePanel";
             this.phaseResponsePanel.Size = new System.Drawing.Size(538, 157);
             this.phaseResponsePanel.Stride = 1;
@@ -475,11 +471,7 @@ namespace NWaves.DemoForms
             this.magnitudeResponsePanel.AutoScroll = true;
             this.magnitudeResponsePanel.BackColor = System.Drawing.SystemColors.Window;
             this.magnitudeResponsePanel.ForeColor = System.Drawing.Color.Blue;
-            this.magnitudeResponsePanel.Legend = null;
-            this.magnitudeResponsePanel.Line = null;
             this.magnitudeResponsePanel.Location = new System.Drawing.Point(219, 50);
-            this.magnitudeResponsePanel.Mark = null;
-            this.magnitudeResponsePanel.Markline = null;
             this.magnitudeResponsePanel.Name = "magnitudeResponsePanel";
             this.magnitudeResponsePanel.Size = new System.Drawing.Size(538, 157);
             this.magnitudeResponsePanel.Stride = 1;

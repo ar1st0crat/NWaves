@@ -7,7 +7,6 @@ using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
-using NWaves.Filters;
 using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Transforms;
