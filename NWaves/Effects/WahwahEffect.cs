@@ -88,5 +88,15 @@ namespace NWaves.Effects
             
             return new DiscreteSignal(signal.SamplingRate, yb.Select(y => y / maxYb));
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public float[] Process(float[] input)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

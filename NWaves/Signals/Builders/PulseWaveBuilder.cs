@@ -56,7 +56,7 @@ namespace NWaves.Signals.Builders
             var zeros = new DiscreteSignal(SamplingRate, (int)((_period - _pulse) * SamplingRate), 0.0f);
 
             var repeatTimes = Length / (int)(_period * SamplingRate) + 1;
-            var repeated = (ones + zeros) * repeatTimes;
+            var repeated = (ones.Concatenate(zeros)) * repeatTimes;
             
             return repeated.First(Length);
         }

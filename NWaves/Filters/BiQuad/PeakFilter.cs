@@ -16,7 +16,19 @@ namespace NWaves.Filters.BiQuad
         /// <param name="freq"></param>
         /// <param name="q"></param>
         /// <param name="gain"></param>
-        public PeakFilter(double freq, double q = 1, double gain = 1.0)
+        public PeakFilter(double freq, double q = 1, double gain = 1.0) : base(MakeTf(freq, q, gain))
+        {
+            Normalize();
+        }
+
+        /// <summary>
+        /// TF generator
+        /// </summary>
+        /// <param name="freq"></param>
+        /// <param name="q"></param>
+        /// <param name="gain"></param>
+        /// <returns></returns>
+        private static TransferFunction MakeTf(double freq, double q, double gain)
         {
             var a = Math.Pow(10, gain / 40);
             var omega = 2 * Math.PI * freq;
@@ -31,10 +43,7 @@ namespace NWaves.Filters.BiQuad
             var a1 = -2 * cosw;
             var a2 = 1 - alpha / a;
 
-            B = new[] { b0, b1, b2 };
-            A = new[] { a0, a1, a2 };
-
-            Normalize();
+            return new TransferFunction(new[] { b0, b1, b2 }, new [] { a0, a1, a2 });
         }
     }
 }

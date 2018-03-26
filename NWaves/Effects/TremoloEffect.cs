@@ -1,4 +1,5 @@
-﻿using NWaves.Filters.Base;
+﻿using System;
+using NWaves.Filters.Base;
 using NWaves.Operations;
 using NWaves.Signals;
 
@@ -40,6 +41,16 @@ namespace NWaves.Effects
                                       FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
             return Modulate.Amplitude(signal, Frequency, TremoloIndex);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public float[] Process(float[] input)
+        {
+            throw new NotImplementedException();
         }
     }
 }

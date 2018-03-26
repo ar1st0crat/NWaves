@@ -14,7 +14,7 @@ Already available:
 - [x] basic LTI digital filters (FIR, IIR, comb, moving average, pre/de-emphasis, DC removal)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
-- [x] basic operations (convolution, cross-correlation, rectification, envelope detection, resampling, time stretching)
+- [x] basic operations (convolution, cross-correlation, rectification, envelope detection, resampling)
 - [x] block convolution (overlap-add, overlap-save)
 - [x] modulation (AM, ring, FM, PM)
 - [x] basic filter design & analysis (zeros and poles, window method, HP from/to LP, combining filters)
@@ -27,6 +27,7 @@ Already available:
 - [x] sound synthesis and signal builders (sinusoid, white/pink/red noise, awgn, triangle, sawtooth, square, periodic pulse)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking
+- [x] time scale modification (phase vocoder)
 - [x] sound effects (delay, echo, tremolo, wahwah, phaser, distortion, pitch shift)
 - [x] simple audio playback and recording (Windows only)
 
@@ -41,7 +42,7 @@ Planned:
 
 ## Philosophy of NWaves
 
-NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and designed mostly for offline processing. It doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C++ or Asm, but it's not that *very* slow for many purposes either.
+NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and first designed mostly for offline processing (now some online methods are also available). It doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C++ or Asm, but it's not that *very* slow for many purposes either.
 
 In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOD-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in separate classes, so that one wouldn't get lost in object-oriented labyrinths.
 
@@ -103,14 +104,14 @@ var bitStream = bits.Repeat(100);
 
 // concatenate signals
 
-var concat = signal1 + signal2;
-// or
 var concat = signal1.Concatenate(signal2);
 
 
 // add signals element-wise 
 // (sizes don't need to fit; broadcasting takes place)
 
+var combination = signal1 + signal2;
+// or
 var combination = signal1.Superimpose(signal2);
 
 
@@ -315,8 +316,8 @@ var correlated = Operation.CrossCorrelate(signal1, signal2);
 
 // block convolution (each block contains 4096 samples)
 
-var olaFiltered = Operation.OverlapAdd(signal, kernel, 4096);
-var olsFiltered = Operation.OverlapSave(signal, kernel, 4096);
+var olaFiltered = Operation.BlockConvolve(signal, kernel, 4096, BlockConvolution.OverlapAdd);
+var olsFiltered = Operation.BlockConvolve(signal, kernel, 4096, BlockConvolution.OverlapSave);
 
 
 // resampling:
@@ -418,6 +419,17 @@ var preEmphasis = new PreEmphasisFilter(0.95);
 var mfccVectors = mfccExtractor.ParallelComputeFrom(preEmphasis.ApplyTo(signal));
 
 */
+
+var tdExtractor = new TimeDomainFeaturesExtractor("all", frameSize, hopSize);
+var spectralExtractor = new SpectralFeaturesExtractor("centroid, flatness, c1+c2+c3", frameSize, hopSize);
+
+var vectors = FeaturePostProcessing.Join(
+					tdExtractor.ParallelComputeFrom(_signal), 
+					spectralExtractor.ParallelComputeFrom(_signal));
+
+// each vector will contain 1) all time-domain features (energy, rms, entropy, zcr)
+//                          2) specified spectral features
+
 
 var pnccExtractor = new PnccExtractor(13);
 var pnccVectors = pnccExtractor.ComputeFrom(signal.First(10000));

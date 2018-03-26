@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NWaves.Filters.Base;
 
@@ -21,15 +22,24 @@ namespace NWaves.Filters
         /// Constructor
         /// </summary>
         /// <param name="size">size of the filter (must be odd number)</param>
-        public MovingAverageFilter(int size = 9)
+        public MovingAverageFilter(int size = 9) : base(MakeKernel(size))
+        {
+            Size = size;
+        }
+
+        /// <summary>
+        /// Kernel generator
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        private static IEnumerable<double> MakeKernel(int size)
         {
             if (size % 2 == 0)
             {
                 throw new ArgumentException("Size of the filter must be an odd number!");
             }
 
-            Size = size;
-            Kernel = Enumerable.Repeat(1.0 / size, size).ToArray();
+            return Enumerable.Repeat(1.0 / size, size);
         }
     }
 }

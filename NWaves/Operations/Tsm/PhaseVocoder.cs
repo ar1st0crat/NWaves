@@ -119,6 +119,16 @@ namespace NWaves.Operations.Tsm
             return new DiscreteSignal(signal.SamplingRate, output);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public float[] Process(float[] input)
+        {
+            throw new NotImplementedException();
+        }
+
         /*
         /// <summary>
         /// Phase Vocoder algorithm (slower, but more readable for tutorial)

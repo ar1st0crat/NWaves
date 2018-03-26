@@ -1,4 +1,5 @@
-﻿using NWaves.Filters.Base;
+﻿using System;
+using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Utils;
 
@@ -107,6 +108,16 @@ namespace NWaves.Filters
                     start = pivot + 1;
                 }
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public float[] Process(float[] input)
+        {
+            throw new NotImplementedException();
         }
     }
 }

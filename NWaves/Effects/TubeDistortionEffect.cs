@@ -129,5 +129,15 @@ namespace NWaves.Effects
 
             return _outputFilter.ApplyTo(new DiscreteSignal(signal.SamplingRate, output));
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public float[] Process(float[] input)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

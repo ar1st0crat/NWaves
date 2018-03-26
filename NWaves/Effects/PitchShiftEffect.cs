@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NWaves.Filters.Base;
 using NWaves.Operations;
 using NWaves.Signals;
@@ -55,6 +56,16 @@ namespace NWaves.Effects
                                                       .ToArray());                  // [0.0, _shift, 2*_shift, ...]
 
             return new DiscreteSignal(signal.SamplingRate, resampled);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public float[] Process(float[] input)
+        {
+            throw new NotImplementedException();
         }
     }
 }

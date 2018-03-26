@@ -424,6 +424,7 @@ namespace NWaves.DemoForms
             if (_signal == null) return;
 
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.DifferenceEquation);
+            //_filteredSignal = _filter.ApplyFilterCircularBuffer(_signal);
 
             signalAfterFilteringPanel.Signal = _filteredSignal;
             spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);

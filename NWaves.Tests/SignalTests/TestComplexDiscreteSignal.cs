@@ -79,11 +79,14 @@ namespace NWaves.Tests.SignalTests
         public void TestSuperimposeBroadcastObject()
         {
             //Act
-            var combination = _constant.Superimpose(_signal);
+            var combination1 = _constant.Superimpose(_signal);
+            var combination2 = _constant + _signal;
 
             //Assert
-            Assert.That(combination.Real, Is.EqualTo(new double[] { 5, 6, 7, 8, 9, 5, 6, 7, 8, 9 }));
-            Assert.That(combination.Imag, Is.EqualTo(new double[] { 1, 1, 2, 1, 1, 1, 0, 0, 1, 0 }));
+            Assert.That(combination1.Real, Is.EqualTo(new double[] { 5, 6, 7, 8, 9, 5, 6, 7, 8, 9 }));
+            Assert.That(combination1.Imag, Is.EqualTo(new double[] { 1, 1, 2, 1, 1, 1, 0, 0, 1, 0 }));
+            Assert.That(combination2.Real, Is.EqualTo(new double[] { 5, 6, 7, 8, 9, 5, 6, 7, 8, 9 }));
+            Assert.That(combination2.Imag, Is.EqualTo(new double[] { 1, 1, 2, 1, 1, 1, 0, 0, 1, 0 }));
         }
 
         [Test]
@@ -96,14 +99,11 @@ namespace NWaves.Tests.SignalTests
         public void TestConcatenate()
         {
             //Act
-            var concatenation1 = _signal.Concatenate(_constant);
-            var concatenation2 = _constant + _signal;
-
+            var concatenation = _signal.Concatenate(_constant);
+            
             //Assert
-            Assert.That(concatenation1.Real, Is.EqualTo(new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 5, 5, 5, 5, 5 }));
-            Assert.That(concatenation1.Imag, Is.EqualTo(new double[] { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1 }));
-            Assert.That(concatenation2.Real, Is.EqualTo(new double[] { 5, 5, 5, 5, 5, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }));
-            Assert.That(concatenation2.Imag, Is.EqualTo(new double[] { 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 }));
+            Assert.That(concatenation.Real, Is.EqualTo(new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 5, 5, 5, 5, 5 }));
+            Assert.That(concatenation.Imag, Is.EqualTo(new double[] { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1 }));
         }
 
         [Test]

@@ -14,14 +14,24 @@ namespace NWaves.Filters
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="order"></param>
-        public ButterworthFilter(double freq, int order)
+        public ButterworthFilter(double freq, int order) : base(MakeTf(freq, order))
         {
-            // Calculation of filter coefficients is based on Neil Robertson'post:
+        }
+
+        /// <summary>
+        /// TF generator
+        /// </summary>
+        /// <param name="freq"></param>
+        /// <param name="order"></param>
+        /// <returns></returns>
+        private static TransferFunction MakeTf(double freq, int order)
+        {
+            // Calculation of filter coefficients is based on Neil Robertson's post:
             // https://www.dsprelated.com/showarticle/1119.php
 
             var re = new double[order];
             var im = new double[order];
-            
+
             var scaleFreq = Math.Tan(Math.PI * freq);
 
             // 1) poles of analog filter (scaled)
@@ -30,7 +40,7 @@ namespace NWaves.Filters
             {
                 var theta = Math.PI * (2 * k + 1) / (2 * order);
                 re[k] = scaleFreq * -Math.Sin(theta);
-                im[k] = scaleFreq *  Math.Cos(theta);
+                im[k] = scaleFreq * Math.Cos(theta);
             }
 
             // 2) switch to z-domain (bilinear transform)
@@ -54,20 +64,22 @@ namespace NWaves.Filters
             //      im[k] = c.Imaginary;
             //}
 
-            
+
             // 3) polynomial coefficients
 
             var z = Enumerable.Repeat(-1.0, order).ToArray();
 
-            B = TransferFunction.ZpToTf(z);
-            A = TransferFunction.ZpToTf(re, im);
+            var b = TransferFunction.ZpToTf(z);
+            var a = TransferFunction.ZpToTf(re, im);
 
-            var ampScale = A.Sum() / B.Sum();
+            var ampScale = a.Sum() / b.Sum();
 
-            for (var i = 0; i < B.Length; i++)
+            for (var i = 0; i < b.Length; i++)
             {
-                B[i] *= ampScale;
+                b[i] *= ampScale;
             }
+
+            return new TransferFunction(b, a);
         }
     }
 }

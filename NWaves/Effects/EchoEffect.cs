@@ -1,4 +1,5 @@
-﻿using NWaves.Filters;
+﻿using System;
+using NWaves.Filters;
 using NWaves.Filters.Base;
 using NWaves.Signals;
 
@@ -38,11 +39,21 @@ namespace NWaves.Effects
         /// <param name="filteringOptions"></param>
         /// <returns></returns>
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
-            FilteringOptions filteringOptions = FilteringOptions.Auto)
+                                      FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
             var delay = (int)(Length * signal.SamplingRate);
             var delayFilter = new CombFeedbackFilter(delay, am: Decay);
             return delayFilter.ApplyTo(signal);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public float[] Process(float[] input)
+        {
+            throw new NotImplementedException();
         }
     }
 }

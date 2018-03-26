@@ -185,7 +185,7 @@ namespace NWaves.DemoForms
 
             if (_signal1 != null)
             {
-                _signal3 = _signal1.Superimpose(_signal2);
+                _signal3 = _signal1 + _signal2;
                 superimposedSignalPanel.Signal = _signal3;
             }
 

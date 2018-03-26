@@ -22,15 +22,9 @@ namespace NWaves.Tests.FilterTests
         }
 
         [Test]
-        public void TestFilterImplementedViaLinearBuffer()
-        {
-            AssertFilterOutput(_filter.ApplyFilterLinearBuffer(_signal));
-        }
-
-        [Test]
         public void TestFilterImplementedViaCircularBuffer()
         {
-            AssertFilterOutput(_filter.ApplyFilterCircularBuffer(_signal));
+            AssertFilterOutput(_filter.ApplyFilterCircularBuffer(_signal, _signal.Length - 1));
         }
 
         [Test]

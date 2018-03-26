@@ -16,14 +16,11 @@ namespace NWaves.Filters.Base
         /// <returns>Filtered signal</returns>
         DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringOptions filteringOptions);
 
-        ///// <summary>
-        ///// TODO: method for online filtering (sample-by-sample, buffer-by-buffer)
-        ///// </summary>
-        ///// <param name="samples"></param>
-        ///// <returns></returns>
-        //float[] Process(float[] samples)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        /// <summary>
+        /// Method implements online filtering (sample-by-sample, buffer-by-buffer)
+        /// </summary>
+        /// <param name="input">Input block of samples</param>
+        /// <returns>Filtered block</returns>
+        float[] Process(float[] input);
     }
 }

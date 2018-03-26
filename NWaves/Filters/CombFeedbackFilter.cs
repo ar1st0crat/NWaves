@@ -23,15 +23,24 @@ namespace NWaves.Filters
         /// <param name="m">Delay</param>
         /// <param name="b0">Coefficient b0</param>
         /// <param name="am">Coefficient am</param>
-        public CombFeedbackFilter(int m, double b0 = 1.0, double am = 1.0)
+        public CombFeedbackFilter(int m, double b0 = 1.0, double am = 1.0) : base(MakeTf(m, b0, am))
         {
             _delay = m;
+        }
 
-            B = new[] { b0 };
+        /// <summary>
+        /// TF generator
+        /// </summary>
+        /// <param name="m">Delay</param>
+        /// <param name="b0">Coefficient b0</param>
+        /// <param name="am">Coefficient am</param>
+        private static TransferFunction MakeTf(int m, double b0, double am)
+        {
+            var a = new double[m + 1];
+            a[0] = 1.0;
+            a[m] = am;
 
-            A = new double[m + 1];
-            A[0] = 1.0;
-            A[m] = am;
+            return new TransferFunction(new [] {b0}, a);
         }
 
         /// <summary>

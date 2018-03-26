@@ -1,4 +1,5 @@
-﻿using NWaves.Filters.Base;
+﻿using System;
+using NWaves.Filters.Base;
 using NWaves.Filters.BiQuad;
 using NWaves.Signals;
 using NWaves.Signals.Builders;
@@ -78,6 +79,16 @@ namespace NWaves.Effects
             }
 
             return new DiscreteSignal(signal.SamplingRate, y);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public float[] Process(float[] input)
+        {
+            throw new NotImplementedException();
         }
     }
 }

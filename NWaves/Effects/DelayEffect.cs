@@ -1,4 +1,5 @@
-﻿using NWaves.Filters;
+﻿using System;
+using NWaves.Filters;
 using NWaves.Filters.Base;
 using NWaves.Signals;
 
@@ -43,6 +44,16 @@ namespace NWaves.Effects
             var delay = (int)(Length * signal.SamplingRate);
             var delayFilter = new CombFeedforwardFilter(delay, bm: Decay);
             return delayFilter.ApplyTo(signal);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public float[] Process(float[] input)
+        {
+            throw new NotImplementedException();
         }
     }
 }

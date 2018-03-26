@@ -65,21 +65,26 @@ namespace NWaves.Filters.Base
         /// the filtering code will use a circular buffer.
         /// </summary>
         public const int FilterSizeForOptimizedProcessing = 64;
-
+        
         /// <summary>
         /// Default length of truncated impulse response
         /// </summary>
         public const int DefaultImpulseResponseLength = 512;
 
         /// <summary>
-        /// Parameterless constructor
+        /// Internal buffers for delay lines
         /// </summary>
-        protected IirFilter()
-        {
-        }
+        private float[] _delayLineB;
+        private float[] _delayLineA;
 
         /// <summary>
-        /// Parameterized constructor
+        /// Current offsets in delay lines
+        /// </summary>
+        private int _delayLineOffsetB;
+        private int _delayLineOffsetA;
+
+        /// <summary>
+        /// Parameterized constructor (from arrays of coefficients)
         /// </summary>
         /// <param name="b">TF numerator coefficients</param>
         /// <param name="a">TF denominator coefficients</param>
@@ -87,6 +92,18 @@ namespace NWaves.Filters.Base
         {
             B = b.ToArray();
             A = a.ToArray();
+            ResetInternals();
+        }
+
+        /// <summary>
+        /// Parameterized constructor (from transfer function)
+        /// </summary>
+        /// <param name="tf">Transfer function</param>
+        public IirFilter(TransferFunction tf)
+        {
+            B = tf.Numerator;
+            A = tf.Denominator;
+            ResetInternals();
         }
 
         /// <summary>
@@ -98,32 +115,83 @@ namespace NWaves.Filters.Base
         public override DiscreteSignal ApplyTo(DiscreteSignal signal,
                                                FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
+            if (_a.Length + _b.Length >= FilterSizeForOptimizedProcessing && filteringOptions == FilteringOptions.Auto)
+            {
+                filteringOptions = FilteringOptions.OverlapAdd;
+            }
+
             switch (filteringOptions)
             {
-                case FilteringOptions.Auto:
                 case FilteringOptions.Custom:
                 {
-                    return _a.Length + _b.Length <= FilterSizeForOptimizedProcessing ?
-                        ApplyFilterDirectly(signal) : 
-                        ApplyFilterCircularBuffer(signal);
+                    return ApplyFilterCircularBuffer(signal);
                 }
                 case FilteringOptions.OverlapAdd:
-                {
-                    var fftSize = MathUtils.NextPowerOfTwo(4 * DefaultImpulseResponseLength);
-                    var ir = new DiscreteSignal(signal.SamplingRate, ImpulseResponse().ToFloats());
-                    return Operation.OverlapAdd(signal, ir, fftSize);
-                }
                 case FilteringOptions.OverlapSave:
                 {
                     var fftSize = MathUtils.NextPowerOfTwo(4 * DefaultImpulseResponseLength);
                     var ir = new DiscreteSignal(signal.SamplingRate, ImpulseResponse().ToFloats());
-                    return Operation.OverlapSave(signal, ir, fftSize);
+                    return filteringOptions == FilteringOptions.OverlapAdd ?
+                                Operation.BlockConvolve(signal, ir, fftSize, BlockConvolution.OverlapAdd) :
+                                Operation.BlockConvolve(signal, ir, fftSize, BlockConvolution.OverlapSave);
                 }
                 default:
                 {
                     return ApplyFilterDirectly(signal);
                 }
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public override float[] Process(float[] input)
+        {
+            var output = new float[input.Length];
+
+            var a = _a32;
+            var b = _b32;
+
+            for (var n = 0; n < input.Length; n++)
+            {
+                _delayLineB[_delayLineOffsetB] = input[n];
+
+                var pos = 0;
+                for (var k = _delayLineOffsetB; k < b.Length; k++)
+                {
+                    output[n] += b[pos++] * _delayLineB[k];
+                }
+                for (var k = 0; k < _delayLineOffsetB; k++)
+                {
+                    output[n] += b[pos++] * _delayLineB[k];
+                }
+
+                pos = 1;
+                for (var m = _delayLineOffsetA + 1; m < a.Length; m++)
+                {
+                    output[n] -= a[pos++] * _delayLineA[m];
+                }
+                for (var m = 0; m < _delayLineOffsetA; m++)
+                {
+                    output[n] -= a[pos++] * _delayLineA[m];
+                }
+
+                _delayLineA[_delayLineOffsetA] = output[n];
+
+                if (--_delayLineOffsetB < 0)
+                {
+                    _delayLineOffsetB = _delayLineB.Length - 1;
+                }
+
+                if (--_delayLineOffsetA < 0)
+                {
+                    _delayLineOffsetA = _delayLineA.Length - 1;
+                }
+            }
+
+            return output;
         }
 
         /// <summary>
@@ -156,109 +224,37 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Quite inefficient implementation of filtering in time domain:
-        /// use linear buffers for recursive and non-recursive delay lines.
+        /// Reset internal buffers
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>        
-        public DiscreteSignal ApplyFilterLinearBuffer(DiscreteSignal signal)
+        private void ResetInternals()
         {
-            var input = signal.Samples;
-            var a = _a32;
-            var b = _b32;
-
-            var output = new float[input.Length];
-
-            // buffers for delay lines:
-            var wb = new float[b.Length];
-            var wa = new float[a.Length];
-
-            for (var i = 0; i < input.Length; i++)
+            if (_delayLineB == null || _delayLineA == null)
             {
-                wb[0] = input[i];
-
-                for (var k = 0; k < b.Length; k++)
+                _delayLineB = new float[_b.Length];
+                _delayLineA = new float[_a.Length];
+            }
+            else
+            {
+                for (var i = 0; i < _delayLineB.Length; i++)
                 {
-                    output[i] += b[k] * wb[k];
+                    _delayLineB[i] = 0;
                 }
-
-                for (var m = 1; m < a.Length; m++)
+                for (var i = 0; i < _delayLineA.Length; i++)
                 {
-                    output[i] -= a[m] * wa[m - 1];
+                    _delayLineA[i] = 0;
                 }
-
-                // update delay line
-
-                for (var k = b.Length - 1; k > 0; k--)
-                {
-                    wb[k] = wb[k - 1];
-                }
-                for (var m = a.Length - 1; m > 0; m--)
-                {
-                    wa[m] = wa[m - 1];
-                }
-
-                wa[0] = output[i];
             }
 
-            return new DiscreteSignal(signal.SamplingRate, output);
+            _delayLineOffsetB = _delayLineB.Length - 1;
+            _delayLineOffsetA = _delayLineA.Length - 1;
         }
 
         /// <summary>
-        /// More efficient implementation of filtering in time domain:
-        /// use circular buffers for recursive and non-recursive delay lines.
+        /// Reset filter
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>        
-        public DiscreteSignal ApplyFilterCircularBuffer(DiscreteSignal signal)
+        public override void Reset()
         {
-            var input = signal.Samples;
-            var a = _a32;
-            var b = _b32;
-
-            var output = new float[input.Length];
-
-            // buffers for delay lines:
-            var wb = new float[b.Length];
-            var wa = new float[a.Length];
-
-            var wbpos = wb.Length - 1;
-            var wapos = wa.Length - 1;
-            
-            for (var n = 0; n < input.Length; n++)
-            {
-                wb[wbpos] = input[n];
-
-                var pos = 0;
-                for (var k = wbpos; k < b.Length; k++)
-                {
-                    output[n] += b[pos++] * wb[k];
-                }
-                for (var k = 0; k < wbpos; k++)
-                {
-                    output[n] += b[pos++] * wb[k];
-                }
-
-                pos = 1;
-                for (var m = wapos + 1; m < a.Length; m++)
-                {
-                    output[n] -= a[pos++] * wa[m];
-                }
-                for (var m = 0; m < wapos; m++)
-                {
-                    output[n] -= a[pos++] * wa[m];
-                }
-
-                wa[wapos] = output[n];
-
-                wbpos--;
-                if (wbpos < 0) wbpos = wb.Length - 1;
-
-                wapos--;
-                if (wapos < 0) wapos = wa.Length - 1;
-            }
-
-            return new DiscreteSignal(signal.SamplingRate, output);
+            ResetInternals();
         }
 
         /// <summary>
@@ -356,3 +352,53 @@ namespace NWaves.Filters.Base
         #endregion
     }
 }
+
+
+///// <summary>
+///// Quite inefficient implementation of filtering in time domain:
+///// use linear buffers for recursive and non-recursive delay lines.
+///// </summary>
+///// <param name="signal"></param>
+///// <returns></returns>        
+//public DiscreteSignal ApplyFilterLinearBuffer(DiscreteSignal signal)
+//{
+//    var input = signal.Samples;
+//    var a = _a32;
+//    var b = _b32;
+
+//    var output = new float[input.Length];
+
+//    // buffers for delay lines:
+//    var wb = new float[b.Length];
+//    var wa = new float[a.Length];
+
+//    for (var i = 0; i < input.Length; i++)
+//    {
+//        wb[0] = input[i];
+
+//        for (var k = 0; k < b.Length; k++)
+//        {
+//            output[i] += b[k] * wb[k];
+//        }
+
+//        for (var m = 1; m < a.Length; m++)
+//        {
+//            output[i] -= a[m] * wa[m - 1];
+//        }
+
+//        // update delay line
+
+//        for (var k = b.Length - 1; k > 0; k--)
+//        {
+//            wb[k] = wb[k - 1];
+//        }
+//        for (var m = a.Length - 1; m > 0; m--)
+//        {
+//            wa[m] = wa[m - 1];
+//        }
+
+//        wa[0] = output[i];
+//    }
+
+//    return new DiscreteSignal(signal.SamplingRate, output);
+//}

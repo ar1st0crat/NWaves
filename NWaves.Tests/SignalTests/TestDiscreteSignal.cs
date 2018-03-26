@@ -62,10 +62,12 @@ namespace NWaves.Tests.SignalTests
         public void TestSuperimposeBroadcastArgument()
         {
             //Act
-            var combination = _signal.Superimpose(_constant);
+            var combination1 = _signal.Superimpose(_constant);
+            var combination2 = _constant + _signal;
 
             //Assert
-            Assert.That(combination.Samples, Is.EqualTo(new float[] { 5, 6, 7, 8, 9, 5, 6, 7, 8, 9 }));
+            Assert.That(combination1.Samples, Is.EqualTo(new float[] { 5, 6, 7, 8, 9, 5, 6, 7, 8, 9 }));
+            Assert.That(combination2.Samples, Is.EqualTo(new float[] { 5, 6, 7, 8, 9, 5, 6, 7, 8, 9 }));
         }
 
         [Test]
@@ -88,12 +90,10 @@ namespace NWaves.Tests.SignalTests
         public void TestConcatenate()
         {
             //Act
-            var concatenation1 = _signal.Concatenate(_constant);
-            var concatenation2 = _constant + _signal;
+            var concatenation = _signal.Concatenate(_constant);
 
             //Assert
-            Assert.That(concatenation1.Samples, Is.EqualTo(new float[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 5, 5, 5, 5, 5 }));
-            Assert.That(concatenation2.Samples, Is.EqualTo(new float[] { 5, 5, 5, 5, 5, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }));
+            Assert.That(concatenation.Samples, Is.EqualTo(new float[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 5, 5, 5, 5, 5 }));
         }
 
         [Test]

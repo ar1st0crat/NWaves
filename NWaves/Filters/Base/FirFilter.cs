@@ -46,9 +46,14 @@ namespace NWaves.Filters.Base
         public const int FilterSizeForOptimizedProcessing = 64;
 
         /// <summary>
-        /// Parameterless constructor
+        /// Internal buffer for delay line
         /// </summary>
-        protected FirFilter() {}
+        private float[] _delayLine;
+
+        /// <summary>
+        /// Current offset in delay line
+        /// </summary>
+        private int _delayLineOffset;
 
         /// <summary>
         /// Constructor accepting the kernel of a filter
@@ -57,6 +62,7 @@ namespace NWaves.Filters.Base
         public FirFilter(IEnumerable<double> kernel)
         {
             Kernel = kernel.ToArray();
+            ResetInternals();
         }
 
         /// <summary>
@@ -68,7 +74,7 @@ namespace NWaves.Filters.Base
         public override DiscreteSignal ApplyTo(DiscreteSignal signal, 
                                                FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
-            if (Kernel.Length >= FilterSizeForOptimizedProcessing && filteringOptions == FilteringOptions.Auto)
+            if (_kernel.Length >= FilterSizeForOptimizedProcessing && filteringOptions == FilteringOptions.Auto)
             {
                 filteringOptions = FilteringOptions.OverlapAdd;
             }
@@ -80,21 +86,51 @@ namespace NWaves.Filters.Base
                     return ApplyFilterCircularBuffer(signal);
                 }
                 case FilteringOptions.OverlapAdd:
-                {
-                    var fftSize = MathUtils.NextPowerOfTwo(4 * Kernel.Length);
-                    return Operation.OverlapAdd(signal, new DiscreteSignal(signal.SamplingRate, _kernel32), fftSize);
-                }
                 case FilteringOptions.OverlapSave:
                 {
                     var fftSize = MathUtils.NextPowerOfTwo(4 * Kernel.Length);
-                    return Operation.OverlapSave(signal, new DiscreteSignal(signal.SamplingRate, _kernel32), fftSize);
+                    var ir = new DiscreteSignal(signal.SamplingRate, _kernel32);
+                    return filteringOptions == FilteringOptions.OverlapAdd ?
+                                Operation.BlockConvolve(signal, ir, fftSize, BlockConvolution.OverlapAdd) :
+                                Operation.BlockConvolve(signal, ir, fftSize, BlockConvolution.OverlapSave);
                 }
                 default:
                 {
                     return ApplyFilterDirectly(signal);
-                    //return ApplyFilterCircularBuffer(signal);
                 }
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public override float[] Process(float[] input)
+        {
+            var output = new float[input.Length];
+            
+            for (var n = 0; n < input.Length; n++)
+            {
+                _delayLine[_delayLineOffset] = input[n];
+
+                var pos = 0;
+                for (var k = _delayLineOffset; k < _kernel32.Length; k++)
+                {
+                    output[n] += _kernel32[pos++] * _delayLine[k];
+                }
+                for (var k = 0; k < _delayLineOffset; k++)
+                {
+                    output[n] += _kernel32[pos++] * _delayLine[k];
+                }
+
+                if (--_delayLineOffset < 0)
+                {
+                    _delayLineOffset = _delayLine.Length - 1;
+                }
+            }
+
+            return output;
         }
 
         /// <summary>
@@ -121,41 +157,30 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Filtering in time domain based on circular buffers 
-        /// for recursive and non-recursive delay lines.
+        /// Reset internal buffer
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>        
-        public DiscreteSignal ApplyFilterCircularBuffer(DiscreteSignal signal)
+        private void ResetInternals()
         {
-            var input = signal.Samples;
-            
-            var output = new float[input.Length];
-
-            // buffer for delay lines:
-            var wb = new float[_kernel32.Length];
-            
-            var wbpos = wb.Length - 1;
-            
-            for (var n = 0; n < input.Length; n++)
+            if (_delayLine == null)
             {
-                wb[wbpos] = input[n];
-
-                var pos = 0;
-                for (var k = wbpos; k < _kernel32.Length; k++)
-                {
-                    output[n] += _kernel32[pos++] * wb[k];
-                }
-                for (var k = 0; k < wbpos; k++)
-                {
-                    output[n] += _kernel32[pos++] * wb[k];
-                }
-
-                wbpos--;
-                if (wbpos < 0) wbpos = wb.Length - 1;
+                _delayLine = new float[_kernel32.Length];
             }
+            else
+            {
+                for (var i = 0; i < _delayLine.Length; i++)
+                {
+                    _delayLine[i] = 0;
+                }
+            }
+            _delayLineOffset = _delayLine.Length - 1;
+        }
 
-            return new DiscreteSignal(signal.SamplingRate, output);
+        /// <summary>
+        /// Reset filter
+        /// </summary>
+        public override void Reset()
+        {
+            ResetInternals();
         }
 
         /// <summary>

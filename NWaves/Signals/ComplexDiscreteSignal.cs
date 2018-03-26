@@ -265,7 +265,7 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s1, ComplexDiscreteSignal s2)
         {
-            return s1.Concatenate(s2);
+            return s1.Superimpose(s2);
         }
 
         /// <summary>

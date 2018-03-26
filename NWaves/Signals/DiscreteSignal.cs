@@ -288,7 +288,7 @@ namespace NWaves.Signals
         /// <returns>Concatenated signal</returns>
         public static DiscreteSignal operator +(DiscreteSignal s1, DiscreteSignal s2)
         {
-            return s1.Concatenate(s2);
+            return s1.Superimpose(s2);
         }
 
         /// <summary>
