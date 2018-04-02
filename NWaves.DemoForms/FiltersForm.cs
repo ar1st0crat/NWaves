@@ -13,6 +13,7 @@ using NWaves.Filters.BiQuad;
 using NWaves.Filters.Fda;
 using NWaves.Operations;
 using NWaves.Transforms;
+using NWaves.Utils;
 
 namespace NWaves.DemoForms
 {
@@ -84,11 +85,14 @@ namespace NWaves.DemoForms
                     break;
             }
             
-            magnitudeResponsePanel.Line = _filter.FrequencyResponse().Magnitude;
-            phaseResponsePanel.Line = _filter.FrequencyResponse().Phase;
-
-            poleZeroPanel.Zeros = _filter.Tf.Zeros;
-            poleZeroPanel.Poles = _filter.Tf.Poles;
+            magnitudeResponsePanel.Line = _filter.FrequencyResponse().Magnitude.ToFloats();
+            UpdatePhaseResponse();
+            
+            if (_filter.Tf.Numerator.Length + _filter.Tf.Denominator.Length < 50)
+            {
+                poleZeroPanel.Zeros = _filter.Tf.Zeros;
+                poleZeroPanel.Poles = _filter.Tf.Poles;
+            }
 
             numeratorListBox.DataSource = _filter.Tf.Numerator;
             denominatorListBox.DataSource = _filter.Tf.Denominator;
@@ -126,6 +130,11 @@ namespace NWaves.DemoForms
             filterParamsDataGrid.RowCount = 0;
         }
 
+        private void phaseViewComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdatePhaseResponse();
+        }
+
         private void changeOrderButton_Click(object sender, EventArgs e)
         {
             var b = int.Parse(orderNumeratorTextBox.Text) + 1;
@@ -149,6 +158,27 @@ namespace NWaves.DemoForms
             {
                 filterParamsDataGrid.Rows[pos].Cells[0].Value = "a" + i;
                 filterParamsDataGrid.Rows[pos].Cells[1].Value = 0;
+            }
+        }
+
+        private void UpdatePhaseResponse()
+        {
+            var fr = _filter.FrequencyResponse();
+
+            switch (phaseViewComboBox.Text)
+            {
+                case "Phase unwrapped":
+                    phaseResponsePanel.Line = MathUtils.Unwrap(fr.Phase).ToFloats();
+                    break;
+                case "Group delay":
+                    phaseResponsePanel.Line = fr.GroupDelay.ToFloats();
+                    break;
+                case "Phase delay":
+                    phaseResponsePanel.Line = fr.PhaseDelay.ToFloats();
+                    break;
+                default:
+                    phaseResponsePanel.Line = fr.Phase.ToFloats();
+                    break;
             }
         }
 
@@ -424,8 +454,6 @@ namespace NWaves.DemoForms
             if (_signal == null) return;
 
             _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.DifferenceEquation);
-            //_filteredSignal = _filter.ApplyFilterCircularBuffer(_signal);
-
             signalAfterFilteringPanel.Signal = _filteredSignal;
             spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
         }

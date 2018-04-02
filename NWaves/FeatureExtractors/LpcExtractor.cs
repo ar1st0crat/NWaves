@@ -140,7 +140,7 @@ namespace NWaves.FeatureExtractors
                 // 3) levinson-durbin
 
                 var a = new float[_order + 1];
-                var err = LevinsonDurbin(cc, a, _order);
+                var err = MathUtils.LevinsonDurbin(cc, a, _order);
                 a[0] = err;
 
                 // add LPC vector to output sequence
@@ -156,43 +156,7 @@ namespace NWaves.FeatureExtractors
 
             return featureVectors;
         }
-
-        /// <summary>
-        /// Levinson-Durbin algorithm for solving main LPC task
-        /// </summary>
-        /// <param name="input">Auto-correlation vector</param>
-        /// <param name="a">LP coefficients</param>
-        /// <param name="order">Order of LPC</param>
-        /// <returns>Prediction error</returns>
-        public static float LevinsonDurbin(float[] input, float[] a, int order)
-        {
-            var err = input[0];
-
-            a[0] = 1.0f;
-
-            for (var i = 1; i <= order; i++)
-            {
-                var lambda = 0.0f;
-                for (var j = 0; j < i; j++)
-                {
-                    lambda -= a[j] * input[i - j];
-                }
-
-                lambda /= err;
-
-                for (var n = 0; n <= i / 2; n++)
-                {
-                    var tmp = a[i - n] + lambda * a[n];
-                    a[n] = a[n] + lambda * a[i - n];
-                    a[i - n] = tmp;
-                }
-
-                err *= (1.0f - lambda * lambda);
-            }
-
-            return err;
-        }
-
+        
         /// <summary>
         /// Method returns LPC order for a given sampling rate 
         /// according to the best practices.

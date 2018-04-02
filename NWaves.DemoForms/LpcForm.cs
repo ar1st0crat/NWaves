@@ -80,7 +80,7 @@ namespace NWaves.DemoForms
 
             var lpcFilter = new IirFilter(new[] { gain }, vector);
 
-            return lpcFilter.FrequencyResponse().Power;
+            return lpcFilter.FrequencyResponse().Power.ToFloats();
         }
 
         private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors, 

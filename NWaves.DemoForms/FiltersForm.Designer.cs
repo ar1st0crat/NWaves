@@ -65,6 +65,7 @@ namespace NWaves.DemoForms
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.changeOrderButton = new System.Windows.Forms.Button();
+            this.phaseViewComboBox = new System.Windows.Forms.ComboBox();
             this.spectrogramAfterFilteringPanel = new NWaves.DemoForms.UserControls.SpectrogramPlot();
             this.signalAfterFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
             this.spectrogramBeforeFilteringPanel = new NWaves.DemoForms.UserControls.SpectrogramPlot();
@@ -193,7 +194,7 @@ namespace NWaves.DemoForms
             // 
             this.resampleTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.resampleTextBox.Name = "resampleTextBox";
-            this.resampleTextBox.Size = new System.Drawing.Size(60, 27);
+            this.resampleTextBox.Size = new System.Drawing.Size(50, 27);
             this.resampleTextBox.Text = "2";
             // 
             // analyzeFilterButton
@@ -395,6 +396,21 @@ namespace NWaves.DemoForms
             this.changeOrderButton.UseVisualStyleBackColor = true;
             this.changeOrderButton.Click += new System.EventHandler(this.changeOrderButton_Click);
             // 
+            // phaseViewComboBox
+            // 
+            this.phaseViewComboBox.FormattingEnabled = true;
+            this.phaseViewComboBox.Items.AddRange(new object[] {
+            "Phase",
+            "Phase unwrapped",
+            "Group delay",
+            "Phase delay"});
+            this.phaseViewComboBox.Location = new System.Drawing.Point(402, 205);
+            this.phaseViewComboBox.Name = "phaseViewComboBox";
+            this.phaseViewComboBox.Size = new System.Drawing.Size(140, 24);
+            this.phaseViewComboBox.TabIndex = 25;
+            this.phaseViewComboBox.Text = "Phase unwrapped";
+            this.phaseViewComboBox.SelectedIndexChanged += new System.EventHandler(this.phaseViewComboBox_SelectedIndexChanged);
+            // 
             // spectrogramAfterFilteringPanel
             // 
             this.spectrogramAfterFilteringPanel.AutoScroll = true;
@@ -412,8 +428,11 @@ namespace NWaves.DemoForms
             this.signalAfterFilteringPanel.AutoScroll = true;
             this.signalAfterFilteringPanel.BackColor = System.Drawing.SystemColors.Window;
             this.signalAfterFilteringPanel.ForeColor = System.Drawing.Color.Blue;
+            this.signalAfterFilteringPanel.Gain = 1F;
             this.signalAfterFilteringPanel.Location = new System.Drawing.Point(499, 427);
             this.signalAfterFilteringPanel.Name = "signalAfterFilteringPanel";
+            this.signalAfterFilteringPanel.PaddingX = 24;
+            this.signalAfterFilteringPanel.PaddingY = 5;
             this.signalAfterFilteringPanel.Signal = null;
             this.signalAfterFilteringPanel.Size = new System.Drawing.Size(490, 133);
             this.signalAfterFilteringPanel.Stride = 256;
@@ -436,8 +455,11 @@ namespace NWaves.DemoForms
             this.signalBeforeFilteringPanel.AutoScroll = true;
             this.signalBeforeFilteringPanel.BackColor = System.Drawing.SystemColors.Window;
             this.signalBeforeFilteringPanel.ForeColor = System.Drawing.Color.Blue;
+            this.signalBeforeFilteringPanel.Gain = 1F;
             this.signalBeforeFilteringPanel.Location = new System.Drawing.Point(13, 427);
             this.signalBeforeFilteringPanel.Name = "signalBeforeFilteringPanel";
+            this.signalBeforeFilteringPanel.PaddingX = 24;
+            this.signalBeforeFilteringPanel.PaddingY = 5;
             this.signalBeforeFilteringPanel.Signal = null;
             this.signalBeforeFilteringPanel.Size = new System.Drawing.Size(480, 133);
             this.signalBeforeFilteringPanel.Stride = 256;
@@ -459,9 +481,11 @@ namespace NWaves.DemoForms
             this.phaseResponsePanel.AutoScroll = true;
             this.phaseResponsePanel.BackColor = System.Drawing.SystemColors.Window;
             this.phaseResponsePanel.ForeColor = System.Drawing.Color.Blue;
-            this.phaseResponsePanel.Location = new System.Drawing.Point(219, 217);
+            this.phaseResponsePanel.Location = new System.Drawing.Point(219, 231);
             this.phaseResponsePanel.Name = "phaseResponsePanel";
-            this.phaseResponsePanel.Size = new System.Drawing.Size(538, 157);
+            this.phaseResponsePanel.PaddingX = 30;
+            this.phaseResponsePanel.PaddingY = 20;
+            this.phaseResponsePanel.Size = new System.Drawing.Size(538, 143);
             this.phaseResponsePanel.Stride = 1;
             this.phaseResponsePanel.TabIndex = 1;
             this.phaseResponsePanel.Thickness = 1;
@@ -473,7 +497,9 @@ namespace NWaves.DemoForms
             this.magnitudeResponsePanel.ForeColor = System.Drawing.Color.Blue;
             this.magnitudeResponsePanel.Location = new System.Drawing.Point(219, 50);
             this.magnitudeResponsePanel.Name = "magnitudeResponsePanel";
-            this.magnitudeResponsePanel.Size = new System.Drawing.Size(538, 157);
+            this.magnitudeResponsePanel.PaddingX = 30;
+            this.magnitudeResponsePanel.PaddingY = 20;
+            this.magnitudeResponsePanel.Size = new System.Drawing.Size(538, 149);
             this.magnitudeResponsePanel.Stride = 1;
             this.magnitudeResponsePanel.TabIndex = 0;
             this.magnitudeResponsePanel.Thickness = 1;
@@ -483,6 +509,7 @@ namespace NWaves.DemoForms
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1001, 729);
+            this.Controls.Add(this.phaseViewComboBox);
             this.Controls.Add(this.changeOrderButton);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.label7);
@@ -564,5 +591,6 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.ToolStripMenuItem decimateToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem customToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox resampleTextBox;
+        private System.Windows.Forms.ComboBox phaseViewComboBox;
     }
 }

@@ -129,8 +129,9 @@ namespace NWaves.Filters.Base
                 case FilteringOptions.OverlapAdd:
                 case FilteringOptions.OverlapSave:
                 {
-                    var fftSize = MathUtils.NextPowerOfTwo(4 * DefaultImpulseResponseLength);
-                    var ir = new DiscreteSignal(signal.SamplingRate, ImpulseResponse().ToFloats());
+                    var length = Math.Max(DefaultImpulseResponseLength, _a.Length + _b.Length);
+                    var fftSize = MathUtils.NextPowerOfTwo(4 * length);
+                    var ir = new DiscreteSignal(signal.SamplingRate, ImpulseResponse(length).ToFloats());
                     return filteringOptions == FilteringOptions.OverlapAdd ?
                                 Operation.BlockConvolve(signal, ir, fftSize, BlockConvolution.OverlapAdd) :
                                 Operation.BlockConvolve(signal, ir, fftSize, BlockConvolution.OverlapSave);
@@ -297,7 +298,7 @@ namespace NWaves.Filters.Base
         /// The length of an impulse reponse.
         /// It's the length of truncated infinite impulse reponse.
         /// </param>
-        public override double[] ImpulseResponse(int length = 512)
+        public override double[] ImpulseResponse(int length = DefaultImpulseResponseLength)
         {
             var impulse = new double[length];
             impulse[0] = 1.0;

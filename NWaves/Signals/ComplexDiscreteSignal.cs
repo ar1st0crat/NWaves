@@ -198,17 +198,17 @@ namespace NWaves.Signals
         /// <summary>
         /// Get real-valued signal containing magnitudes of complex-valued samples
         /// </summary>
-        public float[] Magnitude
+        public double[] Magnitude
         {
             get
             {
                 var real = Real;
                 var imag = Imag;
 
-                var magnitude = new float[real.Length];
+                var magnitude = new double[real.Length];
                 for (var i = 0; i < magnitude.Length; i++)
                 {
-                    magnitude[i] = (float)(Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]));
+                    magnitude[i] = Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]);
                 }
 
                 return magnitude;
@@ -218,17 +218,17 @@ namespace NWaves.Signals
         /// <summary>
         /// Get real-valued signal containing squared magnitudes of complex-valued samples
         /// </summary>
-        public float[] Power
+        public double[] Power
         {
             get
             {
                 var real = Real;
                 var imag = Imag;
 
-                var magnitude = new float[real.Length];
+                var magnitude = new double[real.Length];
                 for (var i = 0; i < magnitude.Length; i++)
                 {
-                    magnitude[i] = (float)(real[i] * real[i] + imag[i] * imag[i]);
+                    magnitude[i] = real[i] * real[i] + imag[i] * imag[i];
                 }
 
                 return magnitude;
@@ -238,20 +238,75 @@ namespace NWaves.Signals
         /// <summary>
         /// Get real-valued signal containing phases of complex-valued samples
         /// </summary>
-        public float[] Phase
+        public double[] Phase
         {
             get
             {
                 var real = Real;
                 var imag = Imag;
 
-                var phase = new float[real.Length];
+                var phase = new double[real.Length];
                 for (var i = 0; i < phase.Length; i++)
                 {
-                    phase[i] = (float)(Math.Atan2(imag[i], real[i]));
+                    phase[i] = Math.Atan2(imag[i], real[i]);
                 }
 
                 return phase;
+            }
+        }
+
+        /// <summary>
+        /// Get group delay of complex-valued samples
+        /// </summary>
+        public double[] GroupDelay
+        {
+            get
+            {
+                var phase = MathUtils.Unwrap(Phase);
+
+                var gd = new double[phase.Length - 1];
+                for (var i = 0; i < gd.Length; i++)
+                {
+                    gd[i] = (phase[i] - phase[i + 1]) * gd.Length / Math.PI;
+                }
+
+                // replace each outlier with averaged value of neigboring samples
+
+                var diffThreshold = gd.Average(g => Math.Abs(g)) * 5;
+
+                for (var i = 1; i < gd.Length - 1; i++)
+                {
+                    if (Math.Abs(gd[i]) > diffThreshold)
+                    {
+                        gd[i] = (gd[i - 1] + gd[i + 1]) / 2;
+                    }
+                }
+
+                if (Math.Abs(gd[0]) > diffThreshold) gd[0] = gd[1];
+                if (Math.Abs(gd[gd.Length - 1]) > diffThreshold) gd[gd.Length - 1] = gd[gd.Length - 2];
+
+                return gd;
+            }
+        }
+
+        /// <summary>
+        /// Get phase delay of complex-valued samples
+        /// </summary>
+        public double[] PhaseDelay
+        {
+            get
+            {
+                var gd = GroupDelay;
+
+                var pd = new double[gd.Length];
+                var acc = 0.0;
+                for (var i = 0; i < pd.Length; i++)     // integrate group delay
+                {
+                    acc += gd[i];
+                    pd[i] = acc / (i + 1);
+                }
+                
+                return pd;
             }
         }
 

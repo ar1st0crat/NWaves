@@ -51,5 +51,34 @@ namespace NWaves.Filters
 
             return new TransferFunction(b, a);
         }
+
+        /// <summary>
+        /// Apply filter by fast recursive strategy
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="filteringOptions"></param>
+        /// <returns></returns>
+        public override DiscreteSignal ApplyTo(DiscreteSignal signal,
+                                               FilteringOptions filteringOptions = FilteringOptions.Auto)
+        {
+            if (filteringOptions != FilteringOptions.Auto)
+            {
+                return base.ApplyTo(signal, filteringOptions);
+            }
+
+            var input = signal.Samples;
+            var size = Size;
+
+            var output = new float[input.Length];
+            output[0] = input[0] * _b32[0];
+
+            for (var n = 1; n < input.Length; n++)
+            {
+                if (n >= size) output[n] = input[n - size] * _b32[size];
+                output[n] += input[n] * _b32[0] + output[n - 1];
+            }
+
+            return new DiscreteSignal(signal.SamplingRate, output);
+        }
     }
 }

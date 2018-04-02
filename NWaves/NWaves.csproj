@@ -37,6 +37,7 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Effects\AutowahEffect.cs" />
     <Compile Include="Filters\Base\TransferFunction.cs" />
     <Compile Include="Signals\Builders\ChirpBuilder.cs" />
     <Compile Include="Transforms\Fft64.cs" />

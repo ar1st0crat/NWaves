@@ -144,7 +144,7 @@ namespace NWaves.FeatureExtractors
                 // 3) Levinson-Durbin
 
                 zeroblock.FastCopyTo(lpc, lpc.Length);
-                var err = LpcExtractor.LevinsonDurbin(cc, lpc, _order);
+                var err = MathUtils.LevinsonDurbin(cc, lpc, _order);
 
                 // 4) simple and efficient algorithm for obtaining LPCC coefficients from LPC
 

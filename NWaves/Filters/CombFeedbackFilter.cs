@@ -23,7 +23,7 @@ namespace NWaves.Filters
         /// <param name="m">Delay</param>
         /// <param name="b0">Coefficient b0</param>
         /// <param name="am">Coefficient am</param>
-        public CombFeedbackFilter(int m, double b0 = 1.0, double am = 1.0) : base(MakeTf(m, b0, am))
+        public CombFeedbackFilter(int m, double b0 = 1.0, double am = 0.6) : base(MakeTf(m, b0, am))
         {
             _delay = m;
         }
@@ -62,8 +62,8 @@ namespace NWaves.Filters
 
             input.FastCopyTo(output, _delay);
 
-            var b0 = (float)B[0];
-            var am = (float)A[_delay];
+            var b0 = _b32[0];
+            var am = _a32[_delay];
 
             for (var i = _delay; i < signal.Length; i++)
             {

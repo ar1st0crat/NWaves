@@ -62,8 +62,8 @@ namespace NWaves.Filters
 
             input.FastCopyTo(output, _delay);
 
-            var b0 = (float)Kernel[0];
-            var bm = (float)Kernel[_delay];
+            var b0 = _kernel32[0];
+            var bm = _kernel32[_delay];
 
             for (var i = _delay; i < signal.Length; i++)
             {
