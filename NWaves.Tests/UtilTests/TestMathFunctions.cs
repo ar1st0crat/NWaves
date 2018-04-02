@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Numerics;
 using NUnit.Framework;
 using NWaves.Utils;
 
@@ -62,6 +63,22 @@ namespace NWaves.Tests.UtilTests
             double[] expectedImag = { -1.5, 1.5 };
             Assert.That(roots.Select(r => r.Real).OrderBy(r => r), Is.EqualTo(expectedReal).Within(1e-7));
             Assert.That(roots.Select(r => r.Imaginary).OrderBy(r => r), Is.EqualTo(expectedImag).Within(1e-7));
+        }
+
+        [Test]
+        public void TestPolynomialDivision()
+        {
+            Complex[] num = { 2, 4, 6, 1, 2, 3 };
+            Complex[] den = { 1, 2, 3 };
+
+            var div = MathUtils.PolynomialDivision(num, den);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(div[0].Select(d => d.Real), Is.EqualTo(new[] {2.0, 0, 0, 1}).Within(1e-10));
+                Assert.That(div[0].Select(d => d.Imaginary), Is.EqualTo(new[] { 0.0, 0, 0, 0 }).Within(1e-10));
+                Assert.That(div[1].Select(d => d.Real), Is.All.EqualTo(0.0).Within(1e-10));
+            });
         }
     }
 }

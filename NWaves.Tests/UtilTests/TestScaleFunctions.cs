@@ -57,5 +57,17 @@ namespace NWaves.Tests.UtilTests
         {
             Assert.That(Scale.BarkToHerz(18.73), Is.EqualTo(5000).Within(0.1));
         }
+
+        [Test]
+        public void TestConvertPitchToFreq()
+        {
+            Assert.That(Scale.PitchToFreq(60), Is.EqualTo(261.626).Within(1e-3));
+        }
+
+        [Test]
+        public void TestConvertFreqToPitch()
+        {
+            Assert.That(Scale.FreqToPitch(261.626), Is.EqualTo(60));
+        }
     }
 }

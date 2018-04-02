@@ -244,5 +244,41 @@ namespace NWaves.Utils
 
             return res;
         }
+
+        /// <summary>
+        /// Divide polynomials
+        /// </summary>
+        /// <param name="dividend">Dividend</param>
+        /// <param name="divisor">Divisor</param>
+        /// <returns></returns>
+        public static Complex[][] PolynomialDivision(Complex[] dividend, Complex[] divisor)
+        {
+            var output = (Complex[])dividend.Clone();
+            var normalizer = divisor[0];
+
+            for (var i = 0; i < dividend.Length - divisor.Length + 1; i++)
+            {
+                output[i] /= normalizer;
+
+                var coeff = output[i];
+                if (Math.Abs(coeff.Real) > 1e-10 || Math.Abs(coeff.Imaginary) > 1e-10)
+                {
+                    for (var j = 1; j < divisor.Length; j++)
+                    {
+                        output[i + j] -= divisor[j] * coeff;
+                    }
+                }
+            }
+
+            var separator = output.Length - divisor.Length + 1;
+
+            var q = new Complex[separator];
+            var r = new Complex[output.Length - separator];
+
+            Array.Copy(output, 0, q, 0, separator);
+            Array.Copy(output, separator, r, 0, output.Length - separator);
+
+            return new [] { q, r };
+        }
     }
 }

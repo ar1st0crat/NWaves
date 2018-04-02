@@ -7,6 +7,7 @@ namespace NWaves.Utils
     /// 
     /// 1) converting between different scales:
     ///     - decibel
+    ///     - MIDI pitch
     ///     - mel
     ///     - bark
     ///     - ERB
@@ -61,6 +62,26 @@ namespace NWaves.Utils
         public static double FromDecibelPower(double level, double valueReference = 1.0)
         {
             return valueReference * Math.Pow(10, level / 10);
+        }
+
+        /// <summary>
+        /// Method converts MIDI pitch to frequency
+        /// </summary>
+        /// <param name="pitch"></param>
+        /// <returns></returns>
+        public static double PitchToFreq(int pitch)
+        {
+            return 440 * Math.Pow(2, (pitch - 69) / 12.0);
+        }
+
+        /// <summary>
+        /// Method converts frequency to MIDI pitch
+        /// </summary>
+        /// <param name="freq"></param>
+        /// <returns></returns>
+        public static int FreqToPitch(double freq)
+        {
+            return (int)Math.Round(69 + 12 * Math.Log(freq / 440, 2), MidpointRounding.AwayFromZero);
         }
 
         /// <summary>

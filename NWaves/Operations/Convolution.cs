@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Numerics;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -223,6 +225,23 @@ namespace NWaves.Operations
         /// <returns></returns>
         public static ComplexDiscreteSignal Deconvolve(ComplexDiscreteSignal signal, ComplexDiscreteSignal kernel)
         {
+            // first, try to divide polynomials
+
+            var div = MathUtils.PolynomialDivision(signal.Real.Zip(signal.Imag, (r, i) => new Complex(r, i)).ToArray(),
+                                                   kernel.Real.Zip(kernel.Imag, (r, i) => new Complex(r, i)).ToArray());
+
+            var quotient = div[0];
+            var remainder = div[1];
+            if (remainder.All(d => Math.Abs(d.Real)      < 1e-10) && 
+                remainder.All(d => Math.Abs(d.Imaginary) < 1e-10))
+            {
+                return new ComplexDiscreteSignal(signal.SamplingRate, 
+                                                 quotient.Select(q => q.Real),
+                                                 quotient.Select(q => q.Imaginary));
+            }
+
+            // ... deconvolve via FFT
+
             var length = signal.Length - kernel.Length + 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(signal.Length);
@@ -238,10 +257,10 @@ namespace NWaves.Operations
 
             for (var i = 0; i < fftSize; i++)
             {
-                signal.Real[i] += 1e-10f;
-                signal.Imag[i] += 1e-10f;
-                kernel.Real[i] += 1e-10f;
-                kernel.Imag[i] += 1e-10f;
+                signal.Real[i] += 1e-10;
+                signal.Imag[i] += 1e-10;
+                kernel.Real[i] += 1e-10;
+                kernel.Imag[i] += 1e-10;
             }
 
             // 2) do complex division of spectra
@@ -255,8 +274,8 @@ namespace NWaves.Operations
             // 4) return resulting meaningful part of the signal (truncate to N - M + 1)
 
             return new ComplexDiscreteSignal(signal.SamplingRate,
-                                spectrum.Real.FastCopyFragment(length),
-                                spectrum.Imag.FastCopyFragment(length));
+                                             spectrum.Real.FastCopyFragment(length),
+                                             spectrum.Imag.FastCopyFragment(length));
         }
 
 

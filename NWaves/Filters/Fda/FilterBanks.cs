@@ -264,7 +264,7 @@ namespace NWaves.Filters.Fda
         {
             return UniformBands(Scale.HerzToBark, Scale.BarkToHerz, barkFilterCount, samplingRate, lowFreq, highFreq, overlap);
         }
-
+        
         /// <summary>
         /// Method returns frequency tuples for critical bands.
         /// </summary>
@@ -287,11 +287,11 @@ namespace NWaves.Filters.Fda
                 highFreq = samplingRate / 2.0;
             }
 
-            float[] edgeFrequencies = { 20,   100,  200,  300,  400,  510,  630,  770,  920,  1080, 1270,  1480,  1720,
-                                        2000, 2320, 2700, 3150, 3700, 4400, 5300, 6400, 7700, 9500, 12000, 15500, 20500 };
+            double[] edgeFrequencies = { 20,   100,  200,  300,  400,  510,  630,  770,  920,  1080, 1270,  1480,  1720,
+                                         2000, 2320, 2700, 3150, 3700, 4400, 5300, 6400, 7700, 9500, 12000, 15500, 20500 };
 
-            float[] centerFrequencies = { 50,   150,  250,  350,  450,  570,  700,  840,  1000, 1170, 1370,  1600,
-                                          1850, 2150, 2500, 2900, 3400, 4000, 4800, 5800, 7000, 8500, 10500, 13500, 17500 };
+            double[] centerFrequencies = { 50,   150,  250,  350,  450,  570,  700,  840,  1000, 1170, 1370,  1600,
+                                           1850, 2150, 2500, 2900, 3400, 4000, 4800, 5800, 7000, 8500, 10500, 13500, 17500 };
 
             var startIndex = 0;
             for (var i = 0; i < centerFrequencies.Length; i++)
@@ -328,6 +328,44 @@ namespace NWaves.Filters.Fda
             }
 
             return frequencyTuples;
+        }
+
+        /// <summary>
+        /// Method returns frequency tuples for octave bands.
+        /// </summary>
+        /// <param name="octaveCount">Number of octave filters to create</param>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="lowFreq">Lower bound of the frequency range</param>
+        /// <param name="highFreq">Upper bound of the frequency range</param>
+        /// <param name="overlap">Flag indicating that bands should overlap</param>
+        /// <returns>Array of frequency tuples for each octave filter</returns>
+        public static Tuple<double, double, double>[] OctaveBands(
+            int octaveCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = false)
+        {
+            if (lowFreq < 1e-10)
+            {
+                lowFreq = 62.5;//Hz
+            }
+
+            if (highFreq <= lowFreq)
+            {
+                highFreq = samplingRate / 2.0;
+            }
+
+            var f1 = lowFreq;
+            var f2 = lowFreq * 2;
+
+            var frequencyTuples = new List<Tuple<double, double, double>>();
+
+            for (var i = 0; i < octaveCount && f2 < highFreq; i++)
+            {
+                frequencyTuples.Add(new Tuple<double, double, double>(f1, (f1 + f2) / 2, f2));
+                f1 *= 2;
+                f2 *= 2;
+            }
+
+            return frequencyTuples.ToArray();
         }
 
         /// <summary>

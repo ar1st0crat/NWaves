@@ -201,7 +201,8 @@
             "Mel",
             "Bark",
             "Critical bands",
-            "ERB"});
+            "ERB",
+            "Octave bands"});
             this.filterbankComboBox.Location = new System.Drawing.Point(184, 42);
             this.filterbankComboBox.Name = "filterbankComboBox";
             this.filterbankComboBox.Size = new System.Drawing.Size(92, 24);
