@@ -5,8 +5,6 @@ using System.IO;
 using System.Windows.Forms;
 using NWaves.Signals;
 using NWaves.Audio;
-using NWaves.Audio.Interfaces;
-using NWaves.Audio.Mci;
 using NWaves.Filters;
 using NWaves.Filters.Base;
 using NWaves.Filters.BiQuad;
@@ -27,8 +25,9 @@ namespace NWaves.DemoForms
         private readonly Stft _stft = new Stft(256, fftSize: 256);
 
         private string _waveFileName;
+        private short _bitDepth;
 
-        private readonly MciAudioPlayer _player = new MciAudioPlayer();
+        private readonly MemoryStreamPlayer _player = new MemoryStreamPlayer();
 
 
         public FiltersForm()
@@ -168,13 +167,17 @@ namespace NWaves.DemoForms
             switch (phaseViewComboBox.Text)
             {
                 case "Phase unwrapped":
-                    phaseResponsePanel.Line = MathUtils.Unwrap(fr.Phase).ToFloats();
+                    phaseResponsePanel.Line = fr.PhaseUnwrapped.ToFloats();
                     break;
                 case "Group delay":
-                    phaseResponsePanel.Line = fr.GroupDelay.ToFloats();
+                    phaseResponsePanel.Line = _filter.Tf.GroupDelay().ToFloats();
+                    // or like this:
+                    // fr.GroupDelay.ToFloats();
                     break;
                 case "Phase delay":
-                    phaseResponsePanel.Line = fr.PhaseDelay.ToFloats();
+                    phaseResponsePanel.Line = _filter.Tf.PhaseDelay().ToFloats();
+                    // or like this:
+                    // fr.PhaseDelay.ToFloats();
                     break;
                 default:
                     phaseResponsePanel.Line = fr.Phase.ToFloats();
@@ -515,7 +518,8 @@ namespace NWaves.DemoForms
 
             using (var stream = new FileStream(_waveFileName, FileMode.Open))
             {
-                IAudioContainer waveFile = new WaveFile(stream);
+                var waveFile = new WaveFile(stream);
+                _bitDepth = waveFile.WaveFmt.BitsPerSample;
                 _signal = waveFile[Channels.Left];
             }
 
@@ -533,7 +537,7 @@ namespace NWaves.DemoForms
 
             using (var stream = new FileStream(sfd.FileName, FileMode.Create))
             {
-                var waveFile = new WaveFile(_filteredSignal);
+                var waveFile = new WaveFile(_filteredSignal, _bitDepth);
                 waveFile.SaveTo(stream);
             }
         }
@@ -554,15 +558,7 @@ namespace NWaves.DemoForms
 
         private async void playFilteredSignalButton_Click(object sender, EventArgs e)
         {
-            // create temporary file
-            const string tmpFilename = "tmpfiltered.wav";
-            using (var stream = new FileStream(tmpFilename, FileMode.Create))
-            {
-                var waveFile = new WaveFile(_filteredSignal);
-                waveFile.SaveTo(stream);
-            }
-
-            await _player.PlayAsync(tmpFilename);
+            await _player.PlayAsync(_filteredSignal, _bitDepth);
         }
 
         #endregion

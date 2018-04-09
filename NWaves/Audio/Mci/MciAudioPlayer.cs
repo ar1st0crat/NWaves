@@ -129,7 +129,8 @@ namespace NWaves.Audio.Mci
         /// <param name="signal"></param>
         /// <param name="startPos"></param>
         /// <param name="endPos"></param>
-        public Task PlayAsync(DiscreteSignal signal, int startPos = 0, int endPos = -1)
+        /// <param name="bitDepth"></param>
+        public Task PlayAsync(DiscreteSignal signal, int startPos = 0, int endPos = -1, short bitDepth = 16)
         {
             throw new NotImplementedException();
         }

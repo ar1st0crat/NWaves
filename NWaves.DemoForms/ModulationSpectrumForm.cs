@@ -76,7 +76,7 @@ namespace NWaves.DemoForms
                     bands = FilterBanks.CriticalBands(filterCount, fftSize, samplingRate, lowFreq, highFreq);
                     break;
                 case "Octave bands":
-                    bands = FilterBanks.OctaveBands(filterCount, fftSize, samplingRate, lowFreq, highFreq);
+                    bands = FilterBanks.OctaveBands(filterCount, fftSize, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
                     break;
                 case "ERB":
                     bands = null;

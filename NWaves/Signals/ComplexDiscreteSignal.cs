@@ -256,6 +256,11 @@ namespace NWaves.Signals
         }
 
         /// <summary>
+        /// Get unwrapped phase
+        /// </summary>
+        public double[] PhaseUnwrapped => MathUtils.Unwrap(Phase);
+
+        /// <summary>
         /// Get group delay of complex-valued samples
         /// </summary>
         public double[] GroupDelay

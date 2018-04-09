@@ -17,10 +17,10 @@ Already available:
 - [x] basic operations (convolution, cross-correlation, rectification, envelope detection, resampling)
 - [x] block convolution (overlap-add, overlap-save)
 - [x] modulation (AM, ring, FM, PM)
-- [x] basic filter design & analysis (zeros and poles, window method, HP from/to LP, combining filters)
+- [x] basic filter design & analysis (group delay, zeros/poles, window-sinc, HP from/to LP, combining filters)
 - [x] non-linear filters (median filter, overdrive and distortion effects)
-- [x] windowing functions (Hamming, Blackman, Hann, cepstral liftering)
-- [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB) and perceptual weighting (A, B, C)
+- [x] windowing functions (Hamming, Blackman, Hann, Gaussian, triangular, cepstral liftering)
+- [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and perceptual weighting (A, B, C)
 - [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, AMS) and CSV serialization
 - [x] feature post-processing (CMN, deltas)
 - [x] spectral features (centroid, spread, flatness, bandwidth, rolloff, contrast, crest)
@@ -29,7 +29,7 @@ Already available:
 - [x] pitch tracking
 - [x] time scale modification (phase vocoder)
 - [x] sound effects (delay, echo, tremolo, wahwah, phaser, distortion, pitch shift)
-- [x] simple audio playback and recording (Windows only)
+- [x] simple audio playback and recording
 
 Planned:
 
@@ -372,6 +372,9 @@ var a = transferFunction.Denominator;
 var zeros = transferFunction.Zeros;
 var poles = transferFunction.Poles;
 
+var gd = transferFunction.GroupDelay();
+var pd = transferFunction.PhaseDelay();
+
 
 // sequence of filters:
 
@@ -446,7 +449,7 @@ using (var csvFile = new FileStream("mfccs.csv", FileMode.Create))
 
 ### Playing and recording (Windows only)
 
-MciAudioPlayer and MciAudioRecorder work only with Windows, since they use winmm.dll and MCI commands
+```MciAudioPlayer``` and ```MciAudioRecorder``` work only with Windows, since they use winmm.dll and MCI commands
 
 ```C#
 
@@ -481,7 +484,7 @@ recorder.StopRecording("temp.wav");
 
 ```
 
-Playing audio from buffers in memory is implied by design but it's not implemented in MciAudioPlayer so far. Still there's some workaround: in the calling code the signal can be saved to a temporary wave file, and then player can play this file.
+Playing audio from buffers in memory is implied by design but it's not implemented in ```MciAudioPlayer```. If you want to use NWaves library alone, there's a possible workaround: in the calling code the signal can be saved to a temporary wave file, and then player can play this file.
 
 ```C#
 
@@ -508,6 +511,16 @@ File.Delete(filename);
 
 ```
 
+I have also included a very simple wrapper around ```System.Media.SoundPlayer``` - the ```MemoryStreamPlayer``` class. This class implements the same ```IAudioPlayer``` interface as ```MciAudioPlayer``` and can be used at Windows-client side. You can find it in DemoForms project.
+
+```C#
+
+// use MemoryStreamPlayer class:
+
+var mplayer = new MemoryStreamPlayer();
+await player.PlayAsync(signal);
+
+```
 
 ### Demos
 

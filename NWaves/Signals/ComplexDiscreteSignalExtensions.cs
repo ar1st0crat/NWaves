@@ -244,5 +244,16 @@ namespace NWaves.Signals
 
             return new ComplexDiscreteSignal(signal1.SamplingRate, real, imag);
         }
+
+        /// <summary>
+        /// Just another way for calling Unwrap() function
+        /// </summary>
+        /// <param name="phase"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static double[] Unwrap(this double[] phase, double tolerance = Math.PI)
+        {
+            return MathUtils.Unwrap(phase, tolerance);
+        }
     }
 }

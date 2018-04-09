@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
+using System.Numerics;
 using NWaves.Operations;
 using NWaves.Signals;
+using NWaves.Transforms;
 using NWaves.Utils;
 
 namespace NWaves.Filters.Base
@@ -124,6 +126,67 @@ namespace NWaves.Filters.Base
 
             return new ComplexDiscreteSignal(1, roots.Select(r => r.Real),
                                                 roots.Select(r => r.Imaginary));
+        }
+
+        /// <summary>
+        /// Group delay calculated from TF coefficients
+        /// </summary>
+        public double[] GroupDelay(int fftSize = 512)
+        {
+            var cc = Operation.CrossCorrelate(new ComplexDiscreteSignal(1, Numerator),
+                                              new ComplexDiscreteSignal(1, Denominator)).Real;
+
+            var cr = Enumerable.Range(0, cc.Length)
+                               .Zip(cc, (r, c) => r * c)
+                               .ToArray();
+
+            var re = cc.PadZeros(fftSize);
+            var im = new double[fftSize];
+            
+            var fft = new Fft64(fftSize);
+            fft.Direct(re, im);
+
+            var rre = cr.PadZeros(fftSize);
+            var rim = new double[fftSize];
+            fft.Direct(rre, rim);
+
+            var num = rre.Zip(rim, (r, i) => new Complex(r, i)).ToArray();
+            var den =  re.Zip( im, (r, i) => new Complex(r, i)).ToArray();
+
+            var dn = Numerator.Length - 1;
+
+            var gd = new double[fftSize / 2];
+            for (var i = 1; i <= gd.Length; i++)
+            {
+                if (Complex.Abs(den[i]) < 1e-10)
+                {
+                    num[i] = Complex.Zero;
+                    den[i] = Complex.One;
+                }
+
+                var t = dn - num[i] / den[i];
+                gd[i - 1] = t.Real;
+            }
+
+            return gd;
+        }
+
+        /// <summary>
+        /// Phase delay calculated from TF coefficients
+        /// </summary>
+        public double[] PhaseDelay(int fftSize = 512)
+        {
+            var gd = GroupDelay(fftSize);
+
+            var pd = new double[gd.Length];
+            var acc = 0.0;
+            for (var i = 0; i < pd.Length; i++)     // integrate group delay
+            {
+                acc += gd[i];
+                pd[i] = acc / (i + 1);
+            }
+
+            return pd;
         }
 
         /// <summary>

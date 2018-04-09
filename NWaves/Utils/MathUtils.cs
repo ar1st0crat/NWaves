@@ -80,7 +80,7 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Phase unwrap
+        /// Unwrap (phase)
         /// </summary>
         /// <param name="phase"></param>
         /// <param name="tolerance">Jump size</param>
@@ -89,27 +89,54 @@ namespace NWaves.Utils
         {
             var unwrapped = phase.FastCopy();
 
+            var offset = 0.0;
+
             for (var n = 1; n < phase.Length; n++)
             {
                 var delta = phase[n] - phase[n - 1];
 
                 if (delta > tolerance)
                 {
-                    for (var i = n; i < unwrapped.Length; i++)
-                    {
-                        unwrapped[i] -= tolerance * 2;
-                    }
+                    offset -= tolerance * 2;
                 }
                 else if (delta < -tolerance)
                 {
-                    for (var i = n; i < unwrapped.Length; i++)
-                    {
-                        unwrapped[i] += tolerance * 2;
-                    }
+                    offset += tolerance * 2;
                 }
+
+                unwrapped[n] = phase[n] + offset;
             }
 
             return unwrapped;
+        }
+
+        /// <summary>
+        /// Wrap (phase)
+        /// </summary>
+        /// <param name="phase"></param>
+        /// <param name="tolerance">Jump size</param>
+        /// <returns></returns>
+        public static double[] Wrap(double[] phase, double tolerance = Math.PI)
+        {
+            var wrapped = phase.FastCopy();
+
+            for (var n = 0; n < phase.Length; n++)
+            {
+                var offset = phase[n] % (tolerance * 2);
+
+                if (offset > tolerance)
+                {
+                    offset -= tolerance * 2;
+                }
+                else if (offset < -tolerance)
+                {
+                    offset += tolerance * 2;
+                }
+
+                wrapped[n] = offset;
+            }
+
+            return wrapped;
         }
 
         /// <summary>

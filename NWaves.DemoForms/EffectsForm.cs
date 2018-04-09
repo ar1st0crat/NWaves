@@ -2,7 +2,6 @@
 using System.IO;
 using System.Windows.Forms;
 using NWaves.Audio;
-using NWaves.Audio.Mci;
 using NWaves.Effects;
 using NWaves.Filters.Base;
 using NWaves.Operations;
@@ -19,8 +18,9 @@ namespace NWaves.DemoForms
         private readonly Stft _stft = new Stft(256, fftSize: 256);
 
         private string _waveFileName;
+        private short _bitDepth;
 
-        private readonly MciAudioPlayer _player = new MciAudioPlayer();
+        private readonly MemoryStreamPlayer _player = new MemoryStreamPlayer();
 
 
         public EffectsForm()
@@ -44,6 +44,7 @@ namespace NWaves.DemoForms
             using (var stream = new FileStream(_waveFileName, FileMode.Open))
             {
                 var waveFile = new WaveFile(stream);
+                _bitDepth = waveFile.WaveFmt.BitsPerSample;
                 _signal = waveFile[Channels.Average];
             }
 
@@ -130,15 +131,7 @@ namespace NWaves.DemoForms
 
         private async void playFilteredSignalButton_Click(object sender, EventArgs e)
         {
-            // create temporary file
-            const string tmpFilename = "tmpfiltered.wav";
-            using (var stream = new FileStream(tmpFilename, FileMode.Create))
-            {
-                var waveFile = new WaveFile(_filteredSignal);
-                waveFile.SaveTo(stream);
-            }
-
-            await _player.PlayAsync(tmpFilename);
+            await _player.PlayAsync(_filteredSignal, _bitDepth);
         }
 
         private void stopButton_Click(object sender, EventArgs e)

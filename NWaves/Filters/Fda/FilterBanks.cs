@@ -358,11 +358,26 @@ namespace NWaves.Filters.Fda
 
             var frequencyTuples = new List<Tuple<double, double, double>>();
 
-            for (var i = 0; i < octaveCount && f2 < highFreq; i++)
+            if (overlap)
             {
-                frequencyTuples.Add(new Tuple<double, double, double>(f1, (f1 + f2) / 2, f2));
-                f1 *= 2;
-                f2 *= 2;
+                var f3 = f2 * 2;
+
+                for (var i = 0; i < octaveCount && f3 < highFreq; i++)
+                {
+                    frequencyTuples.Add(new Tuple<double, double, double>(f1, f2, f3));
+                    f1 = f2;
+                    f2 = f3;
+                    f3 *= 2;
+                }
+            }
+            else
+            {
+                for (var i = 0; i < octaveCount && f2 < highFreq; i++)
+                {
+                    frequencyTuples.Add(new Tuple<double, double, double>(f1, (f1 + f2) / 2, f2));
+                    f1 *= 2;
+                    f2 *= 2;
+                }
             }
 
             return frequencyTuples.ToArray();

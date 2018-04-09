@@ -87,6 +87,7 @@
     <Compile Include="ModulationSpectrumForm.Designer.cs">
       <DependentUpon>ModulationSpectrumForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MemoryStreamPlayer.cs" />
     <Compile Include="PitchForm.cs">
       <SubType>Form</SubType>
     </Compile>

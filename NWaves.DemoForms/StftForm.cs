@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using NWaves.Audio;
-using NWaves.Audio.Interfaces;
-using NWaves.Audio.Mci;
 using NWaves.Signals;
 using NWaves.Transforms;
 
@@ -19,8 +17,9 @@ namespace NWaves.DemoForms
         private List<float[]> _spectrogram;
 
         private string _waveFileName;
+        private short _bitDepth;
 
-        private readonly IAudioPlayer _player = new MciAudioPlayer();
+        private readonly MemoryStreamPlayer _player = new MemoryStreamPlayer();
 
 
         public StftForm()
@@ -41,6 +40,7 @@ namespace NWaves.DemoForms
             using (var stream = new FileStream(_waveFileName, FileMode.Open))
             {
                 var waveFile = new WaveFile(stream);
+                _bitDepth = waveFile.WaveFmt.BitsPerSample;
                 _signal = waveFile[Channels.Average];
             }
 
@@ -60,14 +60,7 @@ namespace NWaves.DemoForms
 
         private async void playToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            const string tmpFilename = "tmpfiltered.wav";
-            using (var stream = new FileStream(tmpFilename, FileMode.Create))
-            {
-                var waveFile = new WaveFile(_processedSignal);
-                waveFile.SaveTo(stream);
-            }
-
-            await _player.PlayAsync(tmpFilename);
+            await _player.PlayAsync(_processedSignal, _bitDepth);
         }
     }
 }
