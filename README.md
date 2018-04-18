@@ -24,7 +24,7 @@ Already available:
 - [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, AMS) and CSV serialization
 - [x] feature post-processing (CMN, deltas)
 - [x] spectral features (centroid, spread, flatness, bandwidth, rolloff, contrast, crest)
-- [x] sound synthesis and signal builders (sinusoid, white/pink/red noise, awgn, triangle, sawtooth, square, periodic pulse)
+- [x] signal builders (sinusoid, white/pink/red noise, Perlin noise, awgn, triangle, sawtooth, square, periodic pulse)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking
 - [x] time scale modification (phase vocoder)

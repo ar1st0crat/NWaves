@@ -165,6 +165,16 @@ namespace NWaves.DemoForms
                                     .Build();
                     break;
 
+                case "Perlin Noise":
+                    signalBuilder = new PerlinNoiseBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("min", -0.3f)
+                                    .SetParameter("max", 0.7f)
+                                    .OfLength(sampleCount)
+                                    .SampledAt(samplingRate)
+                                    .Build();
+                    break;
+
                 default:
                     signalBuilder = new WhiteNoiseBuilder();
                     _signal2 = signalBuilder

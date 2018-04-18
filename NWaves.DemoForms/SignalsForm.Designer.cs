@@ -174,7 +174,8 @@ namespace NWaves.DemoForms
             "White Noise",
             "AWGN",
             "Pink Noise",
-            "Red Noise"});
+            "Red Noise",
+            "Perlin Noise"});
             this.builderComboBox.Location = new System.Drawing.Point(197, 271);
             this.builderComboBox.Name = "builderComboBox";
             this.builderComboBox.Size = new System.Drawing.Size(124, 24);
