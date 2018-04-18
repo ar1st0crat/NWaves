@@ -38,7 +38,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effects\AutowahEffect.cs" />
+    <Compile Include="Filters\Base\IFilterExtensions.cs" />
     <Compile Include="Filters\Base\TransferFunction.cs" />
+    <Compile Include="Filters\BiQuad\BiQuadFilter.cs" />
+    <Compile Include="Filters\OnePole\OnePoleFilter.cs" />
+    <Compile Include="Filters\RastaFilter.cs" />
     <Compile Include="Signals\Builders\ChirpBuilder.cs" />
     <Compile Include="Transforms\Fft64.cs" />
     <Compile Include="Audio\Channels.cs" />

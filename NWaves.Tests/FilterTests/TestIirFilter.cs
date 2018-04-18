@@ -45,7 +45,7 @@ namespace NWaves.Tests.FilterTests
             var signal = new DiscreteSignal(1, samples);
             var filtered = filter.ApplyTo(signal);
 
-            Assert.That(signal.Samples, Is.EqualTo(filtered.Samples).Within(1e-7));
+            Assert.That(filtered.Samples, Is.EqualTo(signal.Samples).Within(1e-7));
         }
 
         private static void AssertFilterOutput(DiscreteSignal output)

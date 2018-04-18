@@ -59,12 +59,6 @@ namespace NWaves.Filters.Base
         /// Float versions of numerator coefficients for filtering (by default)
         /// </summary>
         protected float[] _b32;
-
-        /// <summary>
-        /// If A.Length + B.Length exceeds this value, 
-        /// the filtering code will use a circular buffer.
-        /// </summary>
-        public const int FilterSizeForOptimizedProcessing = 64;
         
         /// <summary>
         /// Default length of truncated impulse response
@@ -74,14 +68,14 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Internal buffers for delay lines
         /// </summary>
-        private float[] _delayLineB;
-        private float[] _delayLineA;
+        protected float[] _delayLineB;
+        protected float[] _delayLineA;
 
         /// <summary>
         /// Current offsets in delay lines
         /// </summary>
-        private int _delayLineOffsetB;
-        private int _delayLineOffsetA;
+        protected int _delayLineOffsetB;
+        protected int _delayLineOffsetA;
 
         /// <summary>
         /// Parameterized constructor (from arrays of coefficients)
@@ -115,11 +109,6 @@ namespace NWaves.Filters.Base
         public override DiscreteSignal ApplyTo(DiscreteSignal signal,
                                                FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
-            if (_a.Length + _b.Length >= FilterSizeForOptimizedProcessing && filteringOptions == FilteringOptions.Auto)
-            {
-                filteringOptions = FilteringOptions.OverlapAdd;
-            }
-
             switch (filteringOptions)
             {
                 case FilteringOptions.Custom:
@@ -147,8 +136,9 @@ namespace NWaves.Filters.Base
         /// 
         /// </summary>
         /// <param name="input"></param>
+        /// <param name="filteringOptions"></param>
         /// <returns></returns>
-        public override float[] Process(float[] input)
+        public override float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
             var output = new float[input.Length];
 
@@ -227,7 +217,7 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Reset internal buffers
         /// </summary>
-        private void ResetInternals()
+        protected void ResetInternals()
         {
             if (_delayLineB == null || _delayLineA == null)
             {

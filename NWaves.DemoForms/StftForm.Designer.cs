@@ -32,9 +32,11 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.signalPanel = new NWaves.DemoForms.UserControls.SignalPlot();
-            this.processedSignalPanel = new NWaves.DemoForms.UserControls.SignalPlot();
+            this.windowsComboBox = new System.Windows.Forms.ComboBox();
+            this.windowPlot = new NWaves.DemoForms.UserControls.LinePlot();
             this.spectrogramPanel = new NWaves.DemoForms.UserControls.SpectrogramPlot();
+            this.processedSignalPanel = new NWaves.DemoForms.UserControls.SignalPlot();
+            this.signalPanel = new NWaves.DemoForms.UserControls.SignalPlot();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -72,31 +74,28 @@
             this.playToolStripMenuItem.Text = "&Play";
             this.playToolStripMenuItem.Click += new System.EventHandler(this.playToolStripMenuItem_Click);
             // 
-            // signalPanel
+            // windowsComboBox
             // 
-            this.signalPanel.AutoScroll = true;
-            this.signalPanel.BackColor = System.Drawing.Color.White;
-            this.signalPanel.ForeColor = System.Drawing.Color.Blue;
-            this.signalPanel.Gain = 1;
-            this.signalPanel.Location = new System.Drawing.Point(12, 42);
-            this.signalPanel.Name = "signalPanel";
-            this.signalPanel.Signal = null;
-            this.signalPanel.Size = new System.Drawing.Size(1081, 165);
-            this.signalPanel.Stride = 64;
-            this.signalPanel.TabIndex = 9;
+            this.windowsComboBox.FormattingEnabled = true;
+            this.windowsComboBox.Location = new System.Drawing.Point(773, 394);
+            this.windowsComboBox.Name = "windowsComboBox";
+            this.windowsComboBox.Size = new System.Drawing.Size(319, 24);
+            this.windowsComboBox.TabIndex = 13;
+            this.windowsComboBox.SelectedIndexChanged += new System.EventHandler(this.windowsComboBox_SelectedIndexChanged);
             // 
-            // processedSignalPanel
+            // windowPlot
             // 
-            this.processedSignalPanel.AutoScroll = true;
-            this.processedSignalPanel.BackColor = System.Drawing.Color.White;
-            this.processedSignalPanel.ForeColor = System.Drawing.Color.Blue;
-            this.processedSignalPanel.Gain = 1;
-            this.processedSignalPanel.Location = new System.Drawing.Point(13, 214);
-            this.processedSignalPanel.Name = "processedSignalPanel";
-            this.processedSignalPanel.Signal = null;
-            this.processedSignalPanel.Size = new System.Drawing.Size(1080, 173);
-            this.processedSignalPanel.Stride = 64;
-            this.processedSignalPanel.TabIndex = 10;
+            this.windowPlot.AutoScroll = true;
+            this.windowPlot.BackColor = System.Drawing.Color.White;
+            this.windowPlot.ForeColor = System.Drawing.Color.Blue;
+            this.windowPlot.Location = new System.Drawing.Point(773, 426);
+            this.windowPlot.Name = "windowPlot";
+            this.windowPlot.PaddingX = 30;
+            this.windowPlot.PaddingY = 20;
+            this.windowPlot.Size = new System.Drawing.Size(320, 198);
+            this.windowPlot.Stride = 1;
+            this.windowPlot.TabIndex = 12;
+            this.windowPlot.Thickness = 1;
             // 
             // spectrogramPanel
             // 
@@ -106,15 +105,47 @@
             this.spectrogramPanel.Location = new System.Drawing.Point(13, 394);
             this.spectrogramPanel.Markline = null;
             this.spectrogramPanel.Name = "spectrogramPanel";
-            this.spectrogramPanel.Size = new System.Drawing.Size(1080, 230);
+            this.spectrogramPanel.Size = new System.Drawing.Size(754, 230);
             this.spectrogramPanel.Spectrogram = null;
             this.spectrogramPanel.TabIndex = 11;
+            // 
+            // processedSignalPanel
+            // 
+            this.processedSignalPanel.AutoScroll = true;
+            this.processedSignalPanel.BackColor = System.Drawing.Color.White;
+            this.processedSignalPanel.ForeColor = System.Drawing.Color.Blue;
+            this.processedSignalPanel.Gain = 1F;
+            this.processedSignalPanel.Location = new System.Drawing.Point(13, 214);
+            this.processedSignalPanel.Name = "processedSignalPanel";
+            this.processedSignalPanel.PaddingX = 24;
+            this.processedSignalPanel.PaddingY = 5;
+            this.processedSignalPanel.Signal = null;
+            this.processedSignalPanel.Size = new System.Drawing.Size(1080, 173);
+            this.processedSignalPanel.Stride = 64;
+            this.processedSignalPanel.TabIndex = 10;
+            // 
+            // signalPanel
+            // 
+            this.signalPanel.AutoScroll = true;
+            this.signalPanel.BackColor = System.Drawing.Color.White;
+            this.signalPanel.ForeColor = System.Drawing.Color.Blue;
+            this.signalPanel.Gain = 1F;
+            this.signalPanel.Location = new System.Drawing.Point(12, 42);
+            this.signalPanel.Name = "signalPanel";
+            this.signalPanel.PaddingX = 24;
+            this.signalPanel.PaddingY = 5;
+            this.signalPanel.Signal = null;
+            this.signalPanel.Size = new System.Drawing.Size(1081, 165);
+            this.signalPanel.Stride = 64;
+            this.signalPanel.TabIndex = 9;
             // 
             // StftForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1105, 636);
+            this.Controls.Add(this.windowsComboBox);
+            this.Controls.Add(this.windowPlot);
             this.Controls.Add(this.spectrogramPanel);
             this.Controls.Add(this.processedSignalPanel);
             this.Controls.Add(this.signalPanel);
@@ -122,6 +153,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "StftForm";
             this.Text = "StftForm";
+            this.Load += new System.EventHandler(this.StftForm_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -137,5 +169,7 @@
         private UserControls.SignalPlot signalPanel;
         private UserControls.SignalPlot processedSignalPanel;
         private UserControls.SpectrogramPlot spectrogramPanel;
+        private UserControls.LinePlot windowPlot;
+        private System.Windows.Forms.ComboBox windowsComboBox;
     }
 }

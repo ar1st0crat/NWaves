@@ -48,12 +48,12 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Internal buffer for delay line
         /// </summary>
-        private float[] _delayLine;
+        protected float[] _delayLine;
 
         /// <summary>
         /// Current offset in delay line
         /// </summary>
-        private int _delayLineOffset;
+        protected int _delayLineOffset;
 
         /// <summary>
         /// Constructor accepting the kernel of a filter
@@ -102,12 +102,19 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// 
+        /// Online filtering (buffer-by-buffer)
         /// </summary>
         /// <param name="input"></param>
+        /// <param name="filteringOptions"></param>
         /// <returns></returns>
-        public override float[] Process(float[] input)
+        public override float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
+            if (filteringOptions == FilteringOptions.OverlapAdd ||
+                filteringOptions == FilteringOptions.OverlapSave)
+            {
+                return null;
+            }
+
             var output = new float[input.Length];
             
             for (var n = 0; n < input.Length; n++)

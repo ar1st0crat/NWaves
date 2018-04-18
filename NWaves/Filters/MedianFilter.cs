@@ -21,6 +21,11 @@ namespace NWaves.Filters
         /// <param name="size"></param>
         public MedianFilter(int size = 9)
         {
+            if (size % 2 == 0)
+            {
+                throw new ArgumentException("Size of the filter must be an odd number!");
+            }
+
             Size = size;
         }
 
@@ -31,93 +36,60 @@ namespace NWaves.Filters
         /// <param name="filteringOptions"></param>
         /// <returns></returns>
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringOptions filteringOptions = FilteringOptions.Custom)
+                                      FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
             var input = signal.Samples;
             var output = new float[input.Length];
 
-            var mid = (Size - 1) / 2;
+            var mid = Size / 2;
 
-            var buf = input.FastCopyFragment(Size);
-            var value = FindNth(buf, mid, 0, Size - 1);
-            
-            for (var i = 0; i < Size; i++)
+            var buf = new float[Size + mid];
+            var zeros = new float[Size];
+
+            var n = 0;
+            var i = Size / 2;
+            while (i >= 0)
             {
-                output[i] = value;
+                zeros.FastCopyTo(buf, zeros.Length);
+                input.FastCopyTo(buf, Size, 0, i--);
+                output[n++] = MathUtils.FindNth(buf, mid, 0, Size - 1);
             }
 
-            var n = Size;
-            for (var i = 1; i < input.Length - Size + 1; i++)
+            i = 1;
+            while (i <= input.Length - Size)
             {
-                input.FastCopyTo(buf, Size, i);
-                output[n++] = FindNth(buf, mid, 0, Size - 1);
+                input.FastCopyTo(buf, Size, i++);
+                output[n++] = MathUtils.FindNth(buf, mid, 0, Size - 1);
+            }
+
+            var offset = 1;
+            while (i < input.Length - Size / 2)
+            {
+                zeros.FastCopyTo(buf, zeros.Length, 0, offset);
+                input.FastCopyTo(buf, Size - offset, i++, offset);
+                output[n++] = MathUtils.FindNth(buf, mid + offset, offset, offset + Size - 1);
+                offset++;
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
         }
-
+        
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        /// <returns></returns>
-        private static int Partition(float[] a, int start, int end)
-        {
-            var pivot = a[end];
-            var last = start - 1;
-            for (var i = start; i < end; i++)
-            {
-                if (a[i] <= pivot)
-                {
-                    last++;
-                    var temp = a[i]; a[i] = a[last]; a[last] = temp;
-                }
-            }
-            last++;
-            var tmp = a[end]; a[end] = a[last]; a[last] = tmp;
-
-            return last;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="n"></param>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        /// <returns></returns>
-        private static float FindNth(float[] a, int n, int start, int end)
-        {
-            while (true)
-            {
-                var pivot = Partition(a, start, end);
-
-                if (pivot == n)
-                {
-                    return a[pivot];
-                }
-                if (n < pivot)
-                {
-                    end = pivot - 1;
-                }
-                else
-                {
-                    start = pivot + 1;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 
+        /// Online processing (buffer-by-buffer)
         /// </summary>
         /// <param name="input"></param>
+        /// <param name="filteringOptions"></param>
         /// <returns></returns>
-        public float[] Process(float[] input)
+        public float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
-            throw new NotImplementedException();
+            return ApplyTo(new DiscreteSignal(1, input)).Samples;
+        }
+
+        /// <summary>
+        /// Reset filter
+        /// </summary>
+        public void Reset()
+        {
         }
     }
 }

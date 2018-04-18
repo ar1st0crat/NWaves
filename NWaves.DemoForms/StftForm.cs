@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.Signals;
 using NWaves.Transforms;
+using NWaves.Windows;
 
 namespace NWaves.DemoForms
 {
@@ -25,6 +26,11 @@ namespace NWaves.DemoForms
         public StftForm()
         {
             InitializeComponent();
+        }
+
+        private void StftForm_Load(object sender, EventArgs e)
+        {
+            windowsComboBox.Items.AddRange(Enum.GetNames(typeof(WindowTypes)));
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -61,6 +67,12 @@ namespace NWaves.DemoForms
         private async void playToolStripMenuItem_Click(object sender, EventArgs e)
         {
             await _player.PlayAsync(_processedSignal, _bitDepth);
+        }
+
+        private void windowsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var windowType = (WindowTypes)windowsComboBox.SelectedIndex;
+            windowPlot.Line = Window.OfType(windowType, 256);
         }
     }
 }

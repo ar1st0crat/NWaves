@@ -1,6 +1,9 @@
-﻿namespace NWaves.Filters
+﻿using NWaves.Filters.Base;
+
+namespace NWaves.Filters
 {
-    public class WienerFilter
+    public class WienerFilter// : IFilter
     {
+
     }
 }

@@ -12,6 +12,8 @@ using NWaves.Filters.Fda;
 using NWaves.Operations;
 using NWaves.Transforms;
 using NWaves.Utils;
+using HighPassFilter = NWaves.Filters.BiQuad.HighPassFilter;
+using LowPassFilter = NWaves.Filters.BiQuad.LowPassFilter;
 
 namespace NWaves.DemoForms
 {
@@ -67,6 +69,18 @@ namespace NWaves.DemoForms
                 case "BiQuad highshelf":
                     AnalyzeBiQuadFilter(filterTypesComboBox.Text);
                     break;
+                case "One-pole LP":
+                    _filter = new Filters.OnePole.LowPassFilter(0.25);
+                    break;
+                case "One-pole HP":
+                    _filter = new Filters.OnePole.HighPassFilter(0.25);
+                    break;
+                case "Comb feed-forward":
+                    _filter = new CombFeedforwardFilter(500);
+                    break;
+                case "Comb feed-back":
+                    _filter = new CombFeedbackFilter(1800);
+                    break;
                 case "Moving average":
                     AnalyzeMovingAverageFilter();
                     break;
@@ -75,6 +89,15 @@ namespace NWaves.DemoForms
                     break;
                 case "Pre-emphasis":
                     AnalyzePreemphasisFilter();
+                    break;
+                case "De-emphasis":
+                    _filter = new DeEmphasisFilter();
+                    break;
+                case "DC removal":
+                    _filter = new DcRemovalFilter();
+                    break;
+                case "RASTA":
+                    _filter = new RastaFilter();
                     break;
                 case "Butterworth":
                     AnalyzeButterworthFilter();
@@ -434,6 +457,15 @@ namespace NWaves.DemoForms
 
         #region filtering
 
+        private void autoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_signal == null) return;
+
+            _filteredSignal = _filter.ApplyTo(_signal);
+            signalAfterFilteringPanel.Signal = _filteredSignal;
+            spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
+        }
+
         private void overlapAddToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (_signal == null) return;
@@ -461,6 +493,17 @@ namespace NWaves.DemoForms
             spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
         }
 
+        private void framebyFrameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_signal == null) return;
+
+            _filter.Reset();
+
+            _filteredSignal = _filter.ApplyFilterCircularBuffer(_signal);
+            signalAfterFilteringPanel.Signal = _filteredSignal;
+            spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
+        }
+        
         #endregion
 
         #region resampling

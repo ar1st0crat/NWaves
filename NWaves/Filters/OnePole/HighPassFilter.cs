@@ -6,7 +6,7 @@ namespace NWaves.Filters.OnePole
     /// <summary>
     /// Class for one-pole high-pass filter
     /// </summary>
-    public class HighPassFilter : IirFilter
+    public class HighPassFilter : OnePoleFilter
     {
         /// <summary>
         /// Constructor computes the filter coefficients.

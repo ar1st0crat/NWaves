@@ -11,6 +11,11 @@ namespace NWaves.Windows
         Rectangular,
 
         /// <summary>
+        /// Triangular window
+        /// </summary>
+        Triangular,
+
+        /// <summary>
         /// Hamming window
         /// </summary>
         Hamming,
@@ -25,6 +30,11 @@ namespace NWaves.Windows
         /// </summary>
         Hann,
 
+        /// <summary>
+        /// Gaussian window
+        /// </summary>
+        Gaussian,
+        
         /// <summary>
         /// Window for cepstral liftering
         /// </summary>

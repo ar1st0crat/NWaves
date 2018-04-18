@@ -8,7 +8,7 @@ namespace NWaves.Filters.BiQuad
     /// The coefficients are calculated automatically according to 
     /// audio-eq-cookbook by R.Bristow-Johnson and WebAudio API.
     /// </summary>
-    public class PeakFilter : IirFilter
+    public class PeakFilter : BiQuadFilter
     {
         /// <summary>
         /// Constructor computes the filter coefficients.

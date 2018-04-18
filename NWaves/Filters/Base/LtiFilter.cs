@@ -30,8 +30,10 @@ namespace NWaves.Filters.Base
         /// The online filtering algorithm should be implemented by particular subclass
         /// </summary>
         /// <param name="input">Input block of samples</param>
+        /// <param name="filteringOptions">General filtering strategy</param>
         /// <returns>Filtered block</returns>
-        public abstract float[] Process(float[] input);
+        public abstract float[] Process(float[] input,
+                                        FilteringOptions filteringOptions = FilteringOptions.Auto);
 
         /// <summary>
         /// Reset filter (clear all internal buffers)

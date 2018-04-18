@@ -14,14 +14,14 @@ namespace NWaves.Operations
         /// <param name="fftSize"></param>
         /// <param name="hopSize"></param>
         /// <returns></returns>
-        public static DiscreteSignal TimeStretch(DiscreteSignal signal, double stretch, int fftSize = 4096, int hopSize = -1)
+        public static DiscreteSignal TimeStretch(DiscreteSignal signal, double stretch, int fftSize = 1024, int hopSize = -1)
         {
             if (Math.Abs(stretch - 1.0) < 1e-10)
             {
                 return signal.Copy();
             }
 
-            var hopAnalysis = hopSize > 0 ? hopSize : fftSize / 8;
+            var hopAnalysis = hopSize > 0 ? hopSize : fftSize / 4;
             var hopSynthesis = (int)(hopAnalysis * stretch);
 
             var vocoder = new PhaseVocoder(hopAnalysis, hopSynthesis, fftSize);

@@ -22,6 +22,11 @@ namespace NWaves.Effects
         public float Decay { get; }
 
         /// <summary>
+        /// Delay filter
+        /// </summary>
+        private CombFeedforwardFilter _delayFilter;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="length"></param>
@@ -42,18 +47,26 @@ namespace NWaves.Effects
                                       FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
             var delay = (int)(Length * signal.SamplingRate);
-            var delayFilter = new CombFeedforwardFilter(delay, bm: Decay);
-            return delayFilter.ApplyTo(signal);
+            _delayFilter = new CombFeedforwardFilter(delay, bm: Decay);
+            return _delayFilter.ApplyTo(signal);
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="input"></param>
+        /// <param name="filteringOptions"></param>
         /// <returns></returns>
-        public float[] Process(float[] input)
+        public float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Reset()
+        {
         }
     }
 }

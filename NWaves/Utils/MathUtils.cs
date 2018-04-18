@@ -176,6 +176,52 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Nth order statistics
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="n"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        public static float FindNth(float[] a, int n, int start, int end)
+        {
+            while (true)
+            {
+                // ============== Partitioning =============
+                var pivotElem = a[end];
+                var pivot = start - 1;
+                for (var i = start; i < end; i++)
+                {
+                    if (a[i] <= pivotElem)
+                    {
+                        pivot++;
+                        var temp = a[i];
+                        a[i] = a[pivot];
+                        a[pivot] = temp;
+                    }
+                }
+                pivot++;
+                var tmp = a[end];
+                a[end] = a[pivot];
+                a[pivot] = tmp;
+                // ========================================
+                
+                if (pivot == n)
+                {
+                    return a[pivot];
+                }
+                if (n < pivot)
+                {
+                    end = pivot - 1;
+                }
+                else
+                {
+                    start = pivot + 1;
+                }
+            }
+        }
+
+        /// <summary>
         /// Method implementing Durand-Kerner algorithm for finding complex roots of polynomials.
         /// Works for polynomials of order up to approx. 45. 
         /// </summary>

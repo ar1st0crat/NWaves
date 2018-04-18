@@ -123,10 +123,18 @@ namespace NWaves.Operations.Tsm
         /// 
         /// </summary>
         /// <param name="input"></param>
+        /// <param name="filteringOptions"></param>
         /// <returns></returns>
-        public float[] Process(float[] input)
+        public float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Reset
+        /// </summary>
+        public void Reset()
+        {
         }
 
         /*

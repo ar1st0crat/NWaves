@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using NWaves.Utils;
 
 namespace NWaves.Windows
 {
@@ -18,6 +19,9 @@ namespace NWaves.Windows
         {
             switch (type)
             {
+                case WindowTypes.Triangular:
+                    return Triangular(length);
+
                 case WindowTypes.Hamming:
                     return Hamming(length);
 
@@ -26,6 +30,9 @@ namespace NWaves.Windows
 
                 case WindowTypes.Hann:
                     return Hann(length);
+
+                case WindowTypes.Gaussian:
+                    return Gaussian(length);
 
                 case WindowTypes.Liftering:
                     return Liftering(length);
@@ -46,21 +53,29 @@ namespace NWaves.Windows
         }
 
         /// <summary>
+        /// Triangular window
+        /// </summary>
+        /// <param name="length">Length of the window</param>
+        /// <returns>Triangular window</returns>
+        public static float[] Triangular(int length)
+        {
+            var n = length - 1;
+            return Enumerable.Range(0, length)
+                             .Select(i => 1.0 - 2 * Math.Abs(i - n / 2.0) / length)
+                             .ToFloats();
+        }
+
+        /// <summary>
         /// Hamming window
         /// </summary>
         /// <param name="length">Length of the window</param>
         /// <returns>Hamming window</returns>
         public static float[] Hamming(int length)
         {
-            var window = new float[length];
-            var N = length - 1;
-
-            for (var n = 0; n < window.Length; n++)
-            {
-                window[n] = (float)(0.54 - 0.46 * Math.Cos(2 * Math.PI * n / N));
-            }
-
-            return window;
+            var n = length - 1;
+            return Enumerable.Range(0, length)
+                             .Select(i => 0.54 - 0.46 * Math.Cos(2 * Math.PI * i / n))
+                             .ToFloats();
         }
 
         /// <summary>
@@ -70,15 +85,10 @@ namespace NWaves.Windows
         /// <returns>Blackman window</returns>
         public static float[] Blackman(int length)
         {
-            var window = new float[length];
-            var N = length - 1;
-
-            for (var n = 0; n < window.Length; n++)
-            {
-                window[n] = (float)(0.42 - 0.5 * Math.Cos(2 * Math.PI * n / N) + 0.08 * Math.Cos(4 * Math.PI * n / N));
-            }
-
-            return window;
+            var n = length - 1;
+            return Enumerable.Range(0, length)
+                             .Select(i => 0.42 - 0.5 * Math.Cos(2 * Math.PI * i / n) + 0.08 * Math.Cos(4 * Math.PI * i / n))
+                             .ToFloats();
         }
 
         /// <summary>
@@ -88,15 +98,23 @@ namespace NWaves.Windows
         /// <returns>Hann window</returns>
         public static float[] Hann(int length)
         {
-            var window = new float[length];
-            var N = length - 1;
+            var n = length - 1;
+            return Enumerable.Range(0, length)
+                             .Select(i => 0.5 * (1 - Math.Cos(2 * Math.PI * i / n)))
+                             .ToFloats();
+        }
 
-            for (var n = 0; n < window.Length; n++)
-            {
-                window[n] = (float)(0.5 * (1 - Math.Cos(2 * Math.PI * n / N)));
-            }
-
-            return window;
+        /// <summary>
+        /// Gaussian window
+        /// </summary>
+        /// <param name="length">Length of the window</param>
+        /// <returns>Gaussian window</returns>
+        public static float[] Gaussian(int length)
+        {
+            var n = (length - 1) / 2;
+            return Enumerable.Range(0, length)
+                             .Select(i => Math.Exp(-0.5 * Math.Pow((i - n) / (0.4 * n), 2)))
+                             .ToFloats();
         }
 
         /// <summary>
@@ -110,14 +128,10 @@ namespace NWaves.Windows
             {
                 return Rectangular(length);
             }
-
-            var window = new float[length];
-            for (var i = 0; i < length; i++)
-            {
-                window[i] = (float)(1 + l * Math.Sin(Math.PI * i / l) / 2);
-            }
-
-            return window;
+            
+            return Enumerable.Range(0, length)
+                             .Select(i => 1 + l * Math.Sin(Math.PI * i / l) / 2)
+                             .ToFloats();
         }
     }
 }

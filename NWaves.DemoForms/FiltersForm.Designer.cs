@@ -37,9 +37,11 @@ namespace NWaves.DemoForms
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.filterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.autoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.overlapAddToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.overlapSaveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.differenceEquationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.framebyFrameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resampleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.interpolateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.decimateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -131,12 +133,21 @@ namespace NWaves.DemoForms
             // filterToolStripMenuItem
             // 
             this.filterToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.autoToolStripMenuItem,
             this.overlapAddToolStripMenuItem,
             this.overlapSaveToolStripMenuItem,
-            this.differenceEquationToolStripMenuItem});
+            this.differenceEquationToolStripMenuItem,
+            this.framebyFrameToolStripMenuItem});
             this.filterToolStripMenuItem.Name = "filterToolStripMenuItem";
             this.filterToolStripMenuItem.Size = new System.Drawing.Size(54, 27);
             this.filterToolStripMenuItem.Text = "Fi&lter";
+            // 
+            // autoToolStripMenuItem
+            // 
+            this.autoToolStripMenuItem.Name = "autoToolStripMenuItem";
+            this.autoToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.autoToolStripMenuItem.Text = "Auto";
+            this.autoToolStripMenuItem.Click += new System.EventHandler(this.autoToolStripMenuItem_Click);
             // 
             // overlapAddToolStripMenuItem
             // 
@@ -158,6 +169,13 @@ namespace NWaves.DemoForms
             this.differenceEquationToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
             this.differenceEquationToolStripMenuItem.Text = "Difference &Equation";
             this.differenceEquationToolStripMenuItem.Click += new System.EventHandler(this.differenceEquationToolStripMenuItem_Click);
+            // 
+            // framebyFrameToolStripMenuItem
+            // 
+            this.framebyFrameToolStripMenuItem.Name = "framebyFrameToolStripMenuItem";
+            this.framebyFrameToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.framebyFrameToolStripMenuItem.Text = "Frame-by-Frame";
+            this.framebyFrameToolStripMenuItem.Click += new System.EventHandler(this.framebyFrameToolStripMenuItem_Click);
             // 
             // resampleToolStripMenuItem
             // 
@@ -221,9 +239,16 @@ namespace NWaves.DemoForms
             "BiQuad peaking",
             "BiQuad lowshelf",
             "BiQuad highshelf",
+            "One-pole LP",
+            "One-pole HP",
+            "Comb feed-forward",
+            "Comb feed-back",
             "Moving average",
             "Moving average recursive",
             "Pre-emphasis",
+            "De-emphasis",
+            "DC removal",
+            "RASTA",
             "Butterworth",
             "Custom LP/HP"});
             this.filterTypesComboBox.Location = new System.Drawing.Point(12, 50);
@@ -592,5 +617,7 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.ToolStripMenuItem customToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox resampleTextBox;
         private System.Windows.Forms.ComboBox phaseViewComboBox;
+        private System.Windows.Forms.ToolStripMenuItem framebyFrameToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem autoToolStripMenuItem;
     }
 }

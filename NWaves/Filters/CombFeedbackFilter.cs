@@ -1,6 +1,5 @@
 ﻿using NWaves.Filters.Base;
 using NWaves.Signals;
-using NWaves.Utils;
 
 namespace NWaves.Filters
 {
@@ -60,17 +59,47 @@ namespace NWaves.Filters
             var input = signal.Samples;
             var output = new float[input.Length];
 
-            input.FastCopyTo(output, _delay);
-
             var b0 = _b32[0];
             var am = _a32[_delay];
 
+            for (var i = 0; i < _delay; i++)
+            {
+                output[i] = b0 * input[i];
+            }
             for (var i = _delay; i < signal.Length; i++)
             {
                 output[i] = b0 * input[i] - am * output[i - _delay];
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
+        }
+
+        /// <summary>
+        /// Online filtering (frame-by-frame)
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="filteringOptions"></param>
+        /// <returns></returns>
+        public override float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
+        {
+            var output = new float[input.Length];
+
+            var b0 = _b32[0];
+            var am = _a32[_delay];
+
+            for (var n = 0; n < input.Length; n++)
+            {
+                output[n] = b0 * input[n] - am * _delayLineA[_delayLineOffsetA];
+
+                _delayLineA[_delayLineOffsetA] = output[n];
+                
+                if (--_delayLineOffsetA < 1)
+                {
+                    _delayLineOffsetA = _delayLineA.Length - 1;
+                }
+            }
+
+            return output;
         }
     }
 }
