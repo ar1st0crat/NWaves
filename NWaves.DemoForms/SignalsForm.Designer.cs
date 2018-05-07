@@ -73,6 +73,7 @@ namespace NWaves.DemoForms
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.stftButton = new System.Windows.Forms.Button();
+            this.noiseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -294,7 +295,8 @@ namespace NWaves.DemoForms
             this.lpcToolStripMenuItem,
             this.modulationSpectrumToolStripMenuItem,
             this.effectsToolStripMenuItem,
-            this.featuresToolStripMenuItem});
+            this.featuresToolStripMenuItem,
+            this.noiseToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1207, 28);
@@ -397,8 +399,8 @@ namespace NWaves.DemoForms
             // modulationSpectrumToolStripMenuItem
             // 
             this.modulationSpectrumToolStripMenuItem.Name = "modulationSpectrumToolStripMenuItem";
-            this.modulationSpectrumToolStripMenuItem.Size = new System.Drawing.Size(165, 24);
-            this.modulationSpectrumToolStripMenuItem.Text = "Mo&dulation Spectrum";
+            this.modulationSpectrumToolStripMenuItem.Size = new System.Drawing.Size(50, 24);
+            this.modulationSpectrumToolStripMenuItem.Text = "&Ams";
             this.modulationSpectrumToolStripMenuItem.Click += new System.EventHandler(this.modulationSpectrumToolStripMenuItem_Click);
             // 
             // effectsToolStripMenuItem
@@ -469,6 +471,13 @@ namespace NWaves.DemoForms
             this.stftButton.Text = "More...";
             this.stftButton.UseVisualStyleBackColor = true;
             this.stftButton.Click += new System.EventHandler(this.stftButton_Click);
+            // 
+            // noiseToolStripMenuItem
+            // 
+            this.noiseToolStripMenuItem.Name = "noiseToolStripMenuItem";
+            this.noiseToolStripMenuItem.Size = new System.Drawing.Size(59, 24);
+            this.noiseToolStripMenuItem.Text = "&Noise";
+            this.noiseToolStripMenuItem.Click += new System.EventHandler(this.noiseToolStripMenuItem_Click);
             // 
             // SignalsForm
             // 
@@ -555,6 +564,7 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.ToolStripMenuItem effectsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem featuresToolStripMenuItem;
         private System.Windows.Forms.Button stftButton;
+        private System.Windows.Forms.ToolStripMenuItem noiseToolStripMenuItem;
     }
 }
 

@@ -81,13 +81,19 @@
     <Compile Include="MfccForm.Designer.cs">
       <DependentUpon>MfccForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ModulationSpectrumForm.cs">
+    <Compile Include="AmsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ModulationSpectrumForm.Designer.cs">
-      <DependentUpon>ModulationSpectrumForm.cs</DependentUpon>
+    <Compile Include="AmsForm.Designer.cs">
+      <DependentUpon>AmsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MemoryStreamPlayer.cs" />
+    <Compile Include="NoiseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NoiseForm.Designer.cs">
+      <DependentUpon>NoiseForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="PitchForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -153,8 +159,11 @@
     <EmbeddedResource Include="MfccForm.resx">
       <DependentUpon>MfccForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ModulationSpectrumForm.resx">
-      <DependentUpon>ModulationSpectrumForm.cs</DependentUpon>
+    <EmbeddedResource Include="AmsForm.resx">
+      <DependentUpon>AmsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NoiseForm.resx">
+      <DependentUpon>NoiseForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PitchForm.resx">
       <DependentUpon>PitchForm.cs</DependentUpon>

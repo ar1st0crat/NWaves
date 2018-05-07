@@ -370,44 +370,42 @@ namespace NWaves.DemoForms
 
         private void pitchToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var pitchForm = new PitchForm();
-            pitchForm.ShowDialog();
+            new PitchForm().ShowDialog();
         }
 
         private void mfccToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var mfccForm = new MfccForm();
-            mfccForm.ShowDialog();
+            new MfccForm().ShowDialog();
         }
 
         private void lpcToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var lpcForm = new LpcForm();
-            lpcForm.ShowDialog();
+            new LpcForm().ShowDialog();
         }
 
         private void modulationSpectrumToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var msForm = new ModulationSpectrumForm();
-            msForm.ShowDialog();
+            new AmsForm().ShowDialog();
         }
 
         private void effectsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var effectsForm = new EffectsForm();
-            effectsForm.ShowDialog();
+            new EffectsForm().ShowDialog();
         }
 
         private void featuresToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var featuresForm = new FeaturesForm();
-            featuresForm.ShowDialog();
+            new FeaturesForm().ShowDialog();
         }
 
         private void stftButton_Click(object sender, EventArgs e)
         {
-            var stftForm = new StftForm();
-            stftForm.ShowDialog();
+            new StftForm().ShowDialog();
+        }
+
+        private void noiseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new NoiseForm().ShowDialog();
         }
 
         #endregion

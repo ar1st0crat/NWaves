@@ -14,7 +14,7 @@ using SciColorMaps;
 
 namespace NWaves.DemoForms
 {
-    public partial class ModulationSpectrumForm : Form
+    public partial class AmsForm : Form
     {
         private DiscreteSignal _signal;
         private AmsExtractor _extractor;
@@ -24,7 +24,7 @@ namespace NWaves.DemoForms
 
         private float[][] _filterbank;
 
-        public ModulationSpectrumForm()
+        public AmsForm()
         {
             InitializeComponent();
 

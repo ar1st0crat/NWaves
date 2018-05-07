@@ -1,6 +1,6 @@
 ﻿namespace NWaves.DemoForms
 {
-    partial class ModulationSpectrumForm
+    partial class AmsForm
     {
         /// <summary>
         /// Required designer variable.
@@ -526,7 +526,7 @@
             this.filterbankPanel.Stride = 2;
             this.filterbankPanel.TabIndex = 38;
             // 
-            // ModulationSpectrumForm
+            // AmsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -559,8 +559,8 @@
             this.Controls.Add(this.envelopesPanel);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
-            this.Name = "ModulationSpectrumForm";
-            this.Text = "ModulationSpectrumForm";
+            this.Name = "AmsForm";
+            this.Text = "AmsForm";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.envelopesPanel.ResumeLayout(false);

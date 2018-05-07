@@ -14,7 +14,7 @@ Already available:
 - [x] basic LTI digital filters (FIR, IIR, comb, moving average, pre/de-emphasis, DC removal, RASTA)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
-- [x] basic operations (convolution, cross-correlation, rectification, envelope detection, resampling)
+- [x] basic operations (convolution, cross-correlation, rectification, resampling, spectral subtraction)
 - [x] block convolution (overlap-add, overlap-save)
 - [x] modulation (AM, ring, FM, PM)
 - [x] basic filter design & analysis (group delay, zeros/poles, window-sinc, HP from/to LP, combining filters)
@@ -34,9 +34,9 @@ Already available:
 Planned:
 
 - [ ] more transforms (CQT, DWT, Mellin, Hartley, Haar, Hadamard)
-- [ ] more operations (spectral subtraction, adaptive filtering, Gabor filter)
+- [ ] more operations (adaptive filtering, Gabor filter)
 - [ ] more feature extraction (MIR descriptors and lots of others)
-- [ ] more sound synthesis (ADSR, Perlin noise, etc.)
+- [ ] more sound synthesis (ADSR, etc.)
 - [ ] more sound effects (Reverb, Vibrato, Chorus, Flanger, etc.)
 
 
@@ -517,7 +517,7 @@ I have also included a very simple wrapper around ```System.Media.SoundPlayer```
 
 // use MemoryStreamPlayer class:
 
-var mplayer = new MemoryStreamPlayer();
+var player = new MemoryStreamPlayer();
 await player.PlayAsync(signal);
 
 ```
