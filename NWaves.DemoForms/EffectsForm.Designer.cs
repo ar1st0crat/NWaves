@@ -34,8 +34,8 @@ namespace NWaves.DemoForms
             this.playSignalButton = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.spectrogramAfterFilteringPanel = new SpectrogramPlot();
-            this.spectrogramBeforeFilteringPanel = new SpectrogramPlot();
+            this.spectrogramAfterFilteringPanel = new NWaves.DemoForms.UserControls.SpectrogramPlot();
+            this.spectrogramBeforeFilteringPanel = new NWaves.DemoForms.UserControls.SpectrogramPlot();
             this.stopButton = new System.Windows.Forms.Button();
             this.stopFilteredButton = new System.Windows.Forms.Button();
             this.applyEffectButton = new System.Windows.Forms.Button();
@@ -79,8 +79,9 @@ namespace NWaves.DemoForms
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.signalAfterFilteringPanel = new SignalPlot();
-            this.signalBeforeFilteringPanel = new SignalPlot();
+            this.signalAfterFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
+            this.signalBeforeFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
+            this.tsmComboBox = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -127,7 +128,9 @@ namespace NWaves.DemoForms
             // 
             this.spectrogramAfterFilteringPanel.AutoScroll = true;
             this.spectrogramAfterFilteringPanel.BackColor = System.Drawing.Color.White;
+            this.spectrogramAfterFilteringPanel.ColorMapName = "magma";
             this.spectrogramAfterFilteringPanel.Location = new System.Drawing.Point(480, 476);
+            this.spectrogramAfterFilteringPanel.Markline = null;
             this.spectrogramAfterFilteringPanel.Name = "spectrogramAfterFilteringPanel";
             this.spectrogramAfterFilteringPanel.Size = new System.Drawing.Size(475, 152);
             this.spectrogramAfterFilteringPanel.Spectrogram = null;
@@ -137,7 +140,9 @@ namespace NWaves.DemoForms
             // 
             this.spectrogramBeforeFilteringPanel.AutoScroll = true;
             this.spectrogramBeforeFilteringPanel.BackColor = System.Drawing.Color.White;
+            this.spectrogramBeforeFilteringPanel.ColorMapName = "magma";
             this.spectrogramBeforeFilteringPanel.Location = new System.Drawing.Point(13, 475);
+            this.spectrogramBeforeFilteringPanel.Markline = null;
             this.spectrogramBeforeFilteringPanel.Name = "spectrogramBeforeFilteringPanel";
             this.spectrogramBeforeFilteringPanel.Size = new System.Drawing.Size(461, 153);
             this.spectrogramBeforeFilteringPanel.Spectrogram = null;
@@ -175,6 +180,7 @@ namespace NWaves.DemoForms
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.tsmComboBox);
             this.groupBox1.Controls.Add(this.pitchShiftCheckBox);
             this.groupBox1.Controls.Add(this.delayRadioButton);
             this.groupBox1.Controls.Add(this.label15);
@@ -571,8 +577,12 @@ namespace NWaves.DemoForms
             // 
             this.signalAfterFilteringPanel.AutoScroll = true;
             this.signalAfterFilteringPanel.BackColor = System.Drawing.Color.White;
+            this.signalAfterFilteringPanel.ForeColor = System.Drawing.Color.Blue;
+            this.signalAfterFilteringPanel.Gain = 1F;
             this.signalAfterFilteringPanel.Location = new System.Drawing.Point(480, 316);
             this.signalAfterFilteringPanel.Name = "signalAfterFilteringPanel";
+            this.signalAfterFilteringPanel.PaddingX = 24;
+            this.signalAfterFilteringPanel.PaddingY = 5;
             this.signalAfterFilteringPanel.Signal = null;
             this.signalAfterFilteringPanel.Size = new System.Drawing.Size(475, 153);
             this.signalAfterFilteringPanel.Stride = 256;
@@ -582,12 +592,30 @@ namespace NWaves.DemoForms
             // 
             this.signalBeforeFilteringPanel.AutoScroll = true;
             this.signalBeforeFilteringPanel.BackColor = System.Drawing.Color.White;
+            this.signalBeforeFilteringPanel.ForeColor = System.Drawing.Color.Blue;
+            this.signalBeforeFilteringPanel.Gain = 1F;
             this.signalBeforeFilteringPanel.Location = new System.Drawing.Point(13, 316);
             this.signalBeforeFilteringPanel.Name = "signalBeforeFilteringPanel";
+            this.signalBeforeFilteringPanel.PaddingX = 24;
+            this.signalBeforeFilteringPanel.PaddingY = 5;
             this.signalBeforeFilteringPanel.Signal = null;
             this.signalBeforeFilteringPanel.Size = new System.Drawing.Size(461, 153);
             this.signalBeforeFilteringPanel.Stride = 256;
             this.signalBeforeFilteringPanel.TabIndex = 20;
+            // 
+            // tsmComboBox
+            // 
+            this.tsmComboBox.FormattingEnabled = true;
+            this.tsmComboBox.Items.AddRange(new object[] {
+            "Phase Vocoder",
+            "Phase Vocoder (Phase Locking)",
+            "WSOLA",
+            "PSOLA"});
+            this.tsmComboBox.Location = new System.Drawing.Point(778, 159);
+            this.tsmComboBox.Name = "tsmComboBox";
+            this.tsmComboBox.Size = new System.Drawing.Size(148, 24);
+            this.tsmComboBox.TabIndex = 36;
+            this.tsmComboBox.Text = "Phase Vocoder";
             // 
             // EffectsForm
             // 
@@ -672,5 +700,6 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.CheckBox pitchShiftCheckBox;
         private SignalPlot signalAfterFilteringPanel;
         private SignalPlot signalBeforeFilteringPanel;
+        private System.Windows.Forms.ComboBox tsmComboBox;
     }
 }
