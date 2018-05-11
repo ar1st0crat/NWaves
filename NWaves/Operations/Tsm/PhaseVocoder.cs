@@ -49,9 +49,9 @@ namespace NWaves.Operations.Tsm
         private readonly float[] _window;
 
         /// <summary>
-        /// Normalization coefficient for inverse STFT
+        /// Window coefficients squared
         /// </summary>
-        private readonly float _norm;
+        private readonly float[] _windowSquared;
 
         /// <summary>
         /// Linearly spaced frequencies
@@ -77,9 +77,7 @@ namespace NWaves.Operations.Tsm
 
             _fft = new Fft(_fftSize);
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
-
-            var ratio = _fftSize / (2.0f * _hopAnalysis);
-            _norm = 4.0f / (_fftSize * ratio);
+            _windowSquared = _window.Select(w => w * w).ToArray();
 
             _omega = Enumerable.Range(0, _fftSize / 2 + 1)
                                .Select(f => 2 * Math.PI * f / _fftSize)
@@ -102,7 +100,9 @@ namespace NWaves.Operations.Tsm
             
             var input = signal.Samples;
             var output = new float[(int)(input.Length * _stretch) + _fftSize];
-            
+
+            var windowSum = new float[output.Length];
+
             var re = new float[_fftSize];
             var im = new float[_fftSize];
             var zeroblock = new float[_fftSize];
@@ -148,10 +148,17 @@ namespace NWaves.Operations.Tsm
 
                 for (var j = 0; j < re.Length; j++)
                 {
-                    output[posSynthesis + j] += re[j] * _window[j] * _norm;
+                    output[posSynthesis + j] += re[j] * _window[j];
+                    windowSum[posSynthesis + j] += _windowSquared[j];
                 }
 
                 posSynthesis += _hopSynthesis;
+            }
+
+            for (var j = 0; j < output.Length; j++)
+            {
+                if (windowSum[j] < 1e-3) continue;
+                output[j] /= (windowSum[j] * _fftSize / 2);
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
@@ -166,6 +173,8 @@ namespace NWaves.Operations.Tsm
         {
             var input = signal.Samples;
             var output = new float[(int)(input.Length * _stretch) + _fftSize];
+
+            var windowSum = new float[output.Length];
             
             var re = new float[_fftSize];
             var im = new float[_fftSize];
@@ -260,10 +269,17 @@ namespace NWaves.Operations.Tsm
 
                 for (var j = 0; j < re.Length; j++)
                 {
-                    output[posSynthesis + j] += re[j] * _window[j] * _norm;
+                    output[posSynthesis + j] += re[j] * _window[j];
+                    windowSum[posSynthesis + j] += _windowSquared[j];
                 }
 
                 posSynthesis += _hopSynthesis;
+            }
+
+            for (var j = 0; j < output.Length; j++)
+            {
+                if (windowSum[j] < 1e-3) continue;
+                output[j] /= (windowSum[j] * _fftSize / 2);
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);

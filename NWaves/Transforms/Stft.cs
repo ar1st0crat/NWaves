@@ -43,9 +43,9 @@ namespace NWaves.Transforms
         private readonly float[] _windowSamples;
 
         /// <summary>
-        /// Normalization factor
+        /// Window coefficients squared
         /// </summary>
-        private readonly float _norm;
+        private readonly float[] _windowSquared;
 
 
         /// <summary>
@@ -65,13 +65,9 @@ namespace NWaves.Transforms
             _windowSize = windowSize;
             _window = window;
             _windowSamples = Window.OfType(_window, _windowSize);
+            _windowSquared = _windowSamples.Select(w => w * w).ToArray();
 
             // TODO: pad center!
-
-            _norm = 2.0f / (_windowSamples.Sum(s => s * s) * _fftSize / _hopSize);
-
-            //_norm = 2.0 * Math.Sqrt((float)_fftSize / _hopSize));
-            //_norm = 2.0 / (_fftSize / 2 * (_fftSize / _hopSize));
         }
 
         /// <summary>
@@ -111,7 +107,8 @@ namespace NWaves.Transforms
         public float[] Inverse(List<Tuple<float[], float[]>> stft)
         {
             var spectraCount = stft.Count;
-            var samples = new float[spectraCount * _hopSize + _windowSize];
+            var output = new float[spectraCount * _hopSize + _windowSize];
+            var windowSum = new float[output.Length];
 
             var re = new float[_windowSize];
             var im = new float[_windowSize];
@@ -128,13 +125,20 @@ namespace NWaves.Transforms
                 
                 for (var j = 0; j < re.Length; j++)
                 {
-                    samples[pos + j] += re[j] * _windowSamples[j] * _norm;
+                    output[pos + j] += re[j] * _windowSamples[j];
+                    windowSum[pos + j] += _windowSquared[j];
                 }
 
                 pos += _hopSize;
             }
 
-            return samples;
+            for (var j = 0; j < output.Length; j++)
+            {
+                if (windowSum[j] < 1e-10) continue;
+                output[j] /= (windowSum[j] * _fftSize);
+            }
+
+            return output;
         }
 
         /// <summary>
