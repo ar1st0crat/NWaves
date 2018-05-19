@@ -43,6 +43,7 @@
     <Compile Include="Filters\BiQuad\BiQuadFilter.cs" />
     <Compile Include="Filters\OnePole\OnePoleFilter.cs" />
     <Compile Include="Filters\RastaFilter.cs" />
+    <Compile Include="Operations\Tsm\TsmAlgorithm.cs" />
     <Compile Include="Signals\Builders\ChirpBuilder.cs" />
     <Compile Include="Signals\Builders\PerlinNoiseBuilder.cs" />
     <Compile Include="Transforms\Fft64.cs" />

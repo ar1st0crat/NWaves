@@ -27,7 +27,7 @@ Already available:
 - [x] signal builders (sinusoid, white/pink/red noise, Perlin noise, awgn, triangle, sawtooth, square, periodic pulse)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking
-- [x] time scale modification (phase vocoder)
+- [x] time scale modification (phase vocoder, WSOLA)
 - [x] sound effects (delay, echo, tremolo, wahwah, phaser, distortion, pitch shift)
 - [x] simple audio playback and recording
 

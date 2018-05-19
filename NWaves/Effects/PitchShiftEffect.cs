@@ -2,13 +2,14 @@
 using System.Linq;
 using NWaves.Filters.Base;
 using NWaves.Operations;
+using NWaves.Operations.Tsm;
 using NWaves.Signals;
 using NWaves.Utils;
 
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Pitch Shift effect based on classic phase vocoder
+    /// Pitch Shift effect based on one of the available TSM algorithms
     /// </summary>
     public class PitchShiftEffect : IFilter
     {
@@ -23,27 +24,34 @@ namespace NWaves.Effects
         private readonly int _fftSize;
 
         /// <summary>
+        /// Algorithm of time-scale modification
+        /// </summary>
+        private readonly TsmAlgorithm _tsm;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="shift"></param>
         /// <param name="fftSize"></param>
-        public PitchShiftEffect(double shift, int fftSize = 4096)
+        /// <param name="tsm"></param>
+        public PitchShiftEffect(double shift, int fftSize = 4096, TsmAlgorithm tsm = TsmAlgorithm.Wsola)
         {
             _shift = shift;
             _fftSize = fftSize;
+            _tsm = tsm;
         }
 
         /// <summary>
         /// Algorithm is based on Phase Vocoder
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="filteringOptions"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="filteringOptions">Filtering options</param>
+        /// <returns>Pitch shifted signal</returns>
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
                                       FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
             // 1) just stretch
-            var stretched = Operation.TimeStretch(signal, _shift, _fftSize);
+            var stretched = Operation.TimeStretch(signal, _shift, _fftSize, algorithm: _tsm);
             
             // 2) and interpolate
             var resampled = MathUtils.InterpolateLinear(
@@ -59,18 +67,18 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// 
+        /// Online filtering (frame-by-frame)
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="filteringOptions"></param>
-        /// <returns></returns>
+        /// <param name="input">Input frame</param>
+        /// <param name="filteringOptions">Filtering frame</param>
+        /// <returns>Processed frame</returns>
         public float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// Reset
+        /// Reset filter
         /// </summary>
         public void Reset()
         {

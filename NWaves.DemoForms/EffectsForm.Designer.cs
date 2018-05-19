@@ -40,6 +40,7 @@ namespace NWaves.DemoForms
             this.stopFilteredButton = new System.Windows.Forms.Button();
             this.applyEffectButton = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.tsmComboBox = new System.Windows.Forms.ComboBox();
             this.pitchShiftCheckBox = new System.Windows.Forms.CheckBox();
             this.delayRadioButton = new System.Windows.Forms.RadioButton();
             this.label15 = new System.Windows.Forms.Label();
@@ -81,7 +82,7 @@ namespace NWaves.DemoForms
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.signalAfterFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
             this.signalBeforeFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
-            this.tsmComboBox = new System.Windows.Forms.ComboBox();
+            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -223,6 +224,20 @@ namespace NWaves.DemoForms
             this.groupBox1.TabIndex = 31;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Sound Effects";
+            // 
+            // tsmComboBox
+            // 
+            this.tsmComboBox.FormattingEnabled = true;
+            this.tsmComboBox.Items.AddRange(new object[] {
+            "Phase Vocoder",
+            "Phase Vocoder (Phase Locking)",
+            "WSOLA",
+            "PSOLA"});
+            this.tsmComboBox.Location = new System.Drawing.Point(778, 159);
+            this.tsmComboBox.Name = "tsmComboBox";
+            this.tsmComboBox.Size = new System.Drawing.Size(148, 24);
+            this.tsmComboBox.TabIndex = 36;
+            this.tsmComboBox.Text = "Phase Vocoder";
             // 
             // pitchShiftCheckBox
             // 
@@ -561,7 +576,8 @@ namespace NWaves.DemoForms
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openToolStripMenuItem});
+            this.openToolStripMenuItem,
+            this.saveAsToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(44, 24);
             this.fileToolStripMenuItem.Text = "&File";
@@ -569,7 +585,7 @@ namespace NWaves.DemoForms
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(129, 26);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.openToolStripMenuItem.Text = "&Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
@@ -603,19 +619,12 @@ namespace NWaves.DemoForms
             this.signalBeforeFilteringPanel.Stride = 256;
             this.signalBeforeFilteringPanel.TabIndex = 20;
             // 
-            // tsmComboBox
+            // saveAsToolStripMenuItem
             // 
-            this.tsmComboBox.FormattingEnabled = true;
-            this.tsmComboBox.Items.AddRange(new object[] {
-            "Phase Vocoder",
-            "Phase Vocoder (Phase Locking)",
-            "WSOLA",
-            "PSOLA"});
-            this.tsmComboBox.Location = new System.Drawing.Point(778, 159);
-            this.tsmComboBox.Name = "tsmComboBox";
-            this.tsmComboBox.Size = new System.Drawing.Size(148, 24);
-            this.tsmComboBox.TabIndex = 36;
-            this.tsmComboBox.Text = "Phase Vocoder";
+            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.saveAsToolStripMenuItem.Text = "&Save As...";
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
             // EffectsForm
             // 
@@ -701,5 +710,6 @@ namespace NWaves.DemoForms
         private SignalPlot signalAfterFilteringPanel;
         private SignalPlot signalBeforeFilteringPanel;
         private System.Windows.Forms.ComboBox tsmComboBox;
+        private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
     }
 }

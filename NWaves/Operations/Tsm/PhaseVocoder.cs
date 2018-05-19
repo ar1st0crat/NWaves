@@ -36,7 +36,7 @@ namespace NWaves.Operations.Tsm
         /// <summary>
         /// Stretch ratio
         /// </summary>
-        private readonly float _stretch;
+        private readonly double _stretch;
 
         /// <summary>
         /// Internal FFT transformer
@@ -62,19 +62,18 @@ namespace NWaves.Operations.Tsm
         /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="stretch"></param>
         /// <param name="hopAnalysis"></param>
-        /// <param name="hopSynthesis"></param>
         /// <param name="fftSize"></param>
         /// <param name="phaseLocking"></param>
-        public PhaseVocoder(int hopAnalysis, int hopSynthesis, int fftSize = 0, bool phaseLocking = true)
+        public PhaseVocoder(double stretch, int hopAnalysis, int fftSize = 0, bool phaseLocking = true)
         {
+            _stretch = stretch;
             _hopAnalysis = hopAnalysis;
-            _hopSynthesis = hopSynthesis;
-            _fftSize= (fftSize > 0) ? fftSize : 4 * Math.Max(hopAnalysis, hopSynthesis);
+            _hopSynthesis = (int)(hopAnalysis * stretch);
+            _fftSize = (fftSize > 0) ? fftSize : 4 * Math.Max(_hopAnalysis, _hopSynthesis);
             _phaseLocking = phaseLocking;
-
-            _stretch = (float)_hopSynthesis / _hopAnalysis;
-
+            
             _fft = new Fft(_fftSize);
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
             _windowSquared = _window.Select(w => w * w).ToArray();

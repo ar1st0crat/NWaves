@@ -15,9 +15,9 @@ namespace NWaves.Filters.Base
         /// <param name="filteringOptions">General filtering strategy</param>
         /// <returns>Filtered signal</returns>
         DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringOptions filteringOptions);
-        
+
         /// <summary>
-        /// Method implements online filtering (sample-by-sample, buffer-by-buffer)
+        /// Method implements online filtering (buffer-by-buffer / sample-by-sample)
         /// </summary>
         /// <param name="input">Input block of samples</param>
         /// <param name="filteringOptions">General filtering strategy</param>

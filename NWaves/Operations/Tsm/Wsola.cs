@@ -2,7 +2,6 @@
 using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Utils;
-using NWaves.Windows;
 
 namespace NWaves.Operations.Tsm
 {
@@ -12,54 +11,25 @@ namespace NWaves.Operations.Tsm
     public class Wsola : IFilter
     {
         /// <summary>
-        /// Hop size at analysis stage (STFT decomposition)
-        /// </summary>
-        private readonly int _hopAnalysis;
-
-        /// <summary>
-        /// Hop size at synthesis stage (STFT merging)
-        /// </summary>
-        private readonly int _hopSynthesis;
-
-        /// <summary>
         /// Size of FFT for analysis and synthesis
         /// </summary>
-        private readonly int _fftSize;
+        private int _windowSize;
 
         /// <summary>
         /// Stretch ratio
         /// </summary>
-        private readonly float _stretch;
-
-        /// <summary>
-        /// Window coefficients
-        /// </summary>
-        private readonly float[] _window;
-
-        /// <summary>
-        /// Normalization coefficient for inverse STFT
-        /// </summary>
-        private readonly float _norm;
+        private readonly double _stretch;
 
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="hopAnalysis"></param>
-        /// <param name="hopSynthesis"></param>
-        /// <param name="fftSize"></param>
-        public Wsola(int hopAnalysis, int hopSynthesis, int fftSize = 0)
+        /// <param name="stretch">Stretch ratio</param>
+        /// <param name="windowSize"></param>
+        public Wsola(double stretch, int windowSize = 0)
         {
-            _hopAnalysis = hopAnalysis;
-            _hopSynthesis = hopSynthesis;
-            _fftSize = (fftSize > 0) ? fftSize : 4 * Math.Max(hopAnalysis, hopSynthesis);
-
-            _stretch = (float)_hopSynthesis / _hopAnalysis;
-
-            _window = Window.OfType(WindowTypes.Hann, _fftSize);
-
-            var ratio = _fftSize / (2.0f * _hopAnalysis);
-            _norm = 4.0f / (_fftSize * ratio);
+            _stretch = stretch;
+            _windowSize = windowSize;
         }
 
         /// <summary>
@@ -71,49 +41,106 @@ namespace NWaves.Operations.Tsm
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
                                       FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
+            _windowSize = (int)(signal.SamplingRate * 0.08);      // 80 msec
+            var overlapSize = (int)(signal.SamplingRate * 0.03);  // 30 msec
+            var deltaSize = (int)(signal.SamplingRate * 0.02);    // 20 msec (interval to look for optimal shift)
+            var middleSize = _windowSize - 2 * overlapSize;
+            var hopSize = (int)((_windowSize - overlapSize) / _stretch);
+
             var input = signal.Samples;
-            var output = new float[(int)(input.Length * _stretch) + _fftSize];
+            var output = new float[(int)(_stretch * (input.Length + _windowSize))];
 
-            var re = new float[_fftSize];
-            var im = new float[_fftSize];
-            var cc = new float[_fftSize];
+            var offset = 0;
+            var inputOffset = 0;
+            var outputOffset = 0;
 
-            var posSynthesis = 0;
-            for (var posAnalysis = 0; posAnalysis + _fftSize < input.Length; posAnalysis += _hopAnalysis)
+            var pos = 0;
+            while (pos + hopSize + deltaSize < input.Length)
             {
-                input.FastCopyTo(re, _fftSize, posAnalysis);
+                input.FastCopyTo(output, middleSize, offset, outputOffset);
+                inputOffset += hopSize - overlapSize;
 
-                re.ApplyWindow(_window);
+                // optimal overlap offset is the argmax of cross-correlation signal
 
-                Operation.CrossCorrelate(re, im, re, im, cc);
+                var endOffset = offset + middleSize;
 
-                for (var j = 0; j < re.Length; j++)
+                var optimalShift = 0;
+                var maxCorrelation = 0.0f;
+                
+                for (var i = 0; i < deltaSize; i++)
                 {
-                    output[posSynthesis + j] += re[j] * _window[j] * _norm;
+                    var xcorr = 0.0f;
+
+                    for (var j = 0; j < overlapSize; j++)
+                    {
+                        xcorr += input[inputOffset + i + j] * input[endOffset + j];
+                    }
+
+                    if (xcorr > maxCorrelation)
+                    {
+                        maxCorrelation = xcorr;
+                        optimalShift = i;
+                    }
                 }
 
-                posSynthesis += _hopSynthesis;
+                // =================================================================
+
+                offset = inputOffset + optimalShift;
+
+                for (var i = 0; i < overlapSize; i++)
+                {
+                    output[outputOffset + middleSize + i] =
+                        (input[endOffset + i] * (overlapSize - i) + input[offset + i] * i) / overlapSize;
+                }
+
+                offset += overlapSize;
+                inputOffset += overlapSize;
+                outputOffset += _windowSize - overlapSize;
+
+                pos += hopSize;
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
         }
 
         /// <summary>
-        /// 
+        /// Online filtering (frame-by-frame)
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="filteringOptions"></param>
-        /// <returns></returns>
+        /// <param name="input">Input frame</param>
+        /// <param name="filteringOptions">Filtering options</param>
+        /// <returns>Processed frame</returns>
         public float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// Reset
+        /// Reset filter
         /// </summary>
         public void Reset()
         {
         }
     }
 }
+
+
+//var re = new float[_fftSize];
+//var im = new float[_fftSize];
+//var cc = new float[_fftSize];
+
+//var posSynthesis = 0;
+//for (var posAnalysis = 0; posAnalysis + _fftSize < input.Length; posAnalysis += _hopAnalysis)
+//{
+//    input.FastCopyTo(re, _fftSize, posAnalysis);
+
+//    re.ApplyWindow(_window);
+
+//    Operation.CrossCorrelate(re, im, re, im, cc);
+
+//    for (var j = 0; j < re.Length; j++)
+//    {
+//        output[posSynthesis + j] += re[j] * _window[j] * _norm;
+//    }
+
+//    posSynthesis += _hopSynthesis;
+//}

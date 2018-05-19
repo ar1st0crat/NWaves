@@ -52,6 +52,21 @@ namespace NWaves.DemoForms
             spectrogramBeforeFilteringPanel.Spectrogram = _stft.Spectrogram(_signal);
         }
 
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var sfd = new SaveFileDialog();
+            if (sfd.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            using (var stream = new FileStream(sfd.FileName, FileMode.Create))
+            {
+                var waveFile = new WaveFile(_filteredSignal, _bitDepth);
+                waveFile.SaveTo(stream);
+            }
+        }
+
         private void applyEffectButton_Click(object sender, EventArgs e)
         {
             IFilter effect;

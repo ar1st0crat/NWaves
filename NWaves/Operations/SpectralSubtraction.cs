@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -26,7 +27,7 @@ namespace NWaves.Operations
                                                       int hopSize = 410)
         {
             var input = signal.Samples;
-            var output = new float[input.Length];// + fftSize];
+            var output = new float[input.Length];
             
             const float beta = 0.009f;
             const float alphaMin = 2f;
@@ -39,8 +40,8 @@ namespace NWaves.Operations
 
             var fft = new Fft(fftSize);
             var hannWindow = Window.OfType(WindowTypes.Hann, fftSize);
-            var ratio = fftSize / (2.0f * hopSize);
-            var norm = 4.0f / (fftSize * ratio);
+            var windowSquared = hannWindow.Select(w => w * w).ToArray();
+            var windowSum = new float[output.Length];
 
             var re = new float[fftSize];
             var im = new float[fftSize];
@@ -115,8 +116,15 @@ namespace NWaves.Operations
 
                 for (var j = 0; j < re.Length; j++)
                 {
-                    output[pos + j] += re[j] * hannWindow[j] * norm;
+                    output[pos + j] += re[j] * hannWindow[j];
+                    windowSum[pos + j] += windowSquared[j];
                 }
+            }
+
+            for (var j = 0; j < output.Length; j++)
+            {
+                if (windowSum[j] < 1e-3) continue;
+                output[j] /= (windowSum[j] * fftSize / 2);
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
