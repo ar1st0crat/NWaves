@@ -100,5 +100,63 @@ namespace NWaves.Transforms
             Direct(signal.Samples, cepstrum, power);
             return new DiscreteSignal(signal.SamplingRate, cepstrum);
         }
+
+        /// <summary>
+        /// Method for computing inverse cepstrum
+        /// </summary>
+        /// <param name="cepstrum"></param>
+        /// <param name="samples"></param>
+        /// <param name="power"></param>
+        /// <returns></returns>
+        public void Inverse(float[] cepstrum, float[] samples, bool power = false)
+        {
+            if (cepstrum.Length != _realSpectrum.Length)
+            {
+                throw new ArgumentException("");
+            }
+
+            for (var i = 0; i < _realSpectrum.Length; i++)
+            {
+                _realSpectrum[i] = cepstrum[i];
+                _imagSpectrum[i] = 0.0f;
+            }
+
+            if (power)
+            {
+                for (var i = 0; i < _realSpectrum.Length; i++)
+                {
+                    _realSpectrum[i] = (float) Math.Sqrt(_realSpectrum[i]) * _realSpectrum.Length;
+                }
+            }
+
+            // FFT
+
+            _fft.Direct(_realSpectrum, _imagSpectrum);
+
+            // Pow ("inverse" logarithm)
+
+            for (var i = 0; i < _realSpectrum.Length; i++)
+            {
+                samples[i] = (float)Math.Sqrt(Math.Pow(_realSpectrum[i], 10));
+                _imagSpectrum[i] = 0.0f;
+            }
+            
+            // IFFT
+            
+            _fft.Inverse(samples, _imagSpectrum);
+        }
+
+        /// <summary>
+        /// Method for computing inverse cepstrum
+        /// </summary>
+        /// <param name="cepstrum"></param>
+        /// <param name="power"></param>
+        /// <returns>Cepstrum signal</returns>
+        public DiscreteSignal Inverse(DiscreteSignal cepstrum, bool power = false)
+        {
+            var output = new float[_realSpectrum.Length];
+            Inverse(cepstrum.Samples, output, power);
+            return new DiscreteSignal(cepstrum.SamplingRate, output);
+        }
     }
 }

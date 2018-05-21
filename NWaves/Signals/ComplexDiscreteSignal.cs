@@ -318,36 +318,49 @@ namespace NWaves.Signals
         #region overloaded operators
 
         /// <summary>
-        /// Overloaded operator+ for signals concatenates these signals
+        /// Overloaded + (superimpose signals)
         /// </summary>
-        /// <param name="s1">First complex signal</param>
-        /// <param name="s2">Second complex signal</param>
-        /// <returns></returns>
+        /// <param name="s1">Left signal</param>
+        /// <param name="s2">Right signal</param>
+        /// <returns>Superimposed signal</returns>
         public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s1, ComplexDiscreteSignal s2)
         {
             return s1.Superimpose(s2);
         }
 
         /// <summary>
-        /// Overloaded operator+ for some number performs signal delay by this number
+        /// Overloaded + (add constant)
         /// </summary>
-        /// <param name="s">Complex signal</param>
-        /// <param name="delay">Number of samples</param>
-        /// <returns></returns>
-        public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s, int delay)
+        /// <param name="s">Signal</param>
+        /// <param name="constant">Constant to add to each sample</param>
+        /// <returns>Modified signal</returns>
+        public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s, double constant)
         {
-            return s.Delay(delay);
+            return new ComplexDiscreteSignal(s.SamplingRate, s.Real.Select(x => x + constant));
         }
 
         /// <summary>
-        /// Overloaded operator* repeats signal several times
+        /// Overloaded - (subtract constant)
         /// </summary>
-        /// <param name="s">Complex signal</param>
-        /// <param name="times">Number of times</param>
-        /// <returns></returns>
-        public static ComplexDiscreteSignal operator *(ComplexDiscreteSignal s, int times)
+        /// <param name="s">Signal</param>
+        /// <param name="constant">Constant to subtract from each sample</param>
+        /// <returns>Modified signal</returns>
+        public static ComplexDiscreteSignal operator -(ComplexDiscreteSignal s, double constant)
         {
-            return s.Repeat(times);
+            return new ComplexDiscreteSignal(s.SamplingRate, s.Real.Select(x => x - constant));
+        }
+
+        /// <summary>
+        /// Overloaded * (signal amplification)
+        /// </summary>
+        /// <param name="s">Signal</param>
+        /// <param name="coeff">Amplification coefficient</param>
+        /// <returns>Amplified signal</returns>
+        public static ComplexDiscreteSignal operator *(ComplexDiscreteSignal s, float coeff)
+        {
+            var signal = s.Copy();
+            signal.Amplify(coeff);
+            return signal;
         }
 
         #endregion

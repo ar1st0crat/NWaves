@@ -51,8 +51,11 @@ namespace NWaves.Tests.OperationTests
 
             var conv = Operation.Convolve(s1, s2);
 
-            Assert.That(conv.Real, Is.EquivalentTo(new[] { 1, 1, 2.5 }));
-            Assert.That(conv.Imag, Is.EqualTo(new[] { 0, 0, 0 }).Within(1e-6));
+            Assert.Multiple(() =>
+            {
+                Assert.That(conv.Real, Is.EquivalentTo(new[] {1, 1, 2.5}));
+                Assert.That(conv.Imag, Is.EqualTo(new[] {0, 0, 0}).Within(1e-6));
+            });
         }
     }
 }

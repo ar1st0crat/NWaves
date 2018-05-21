@@ -11,6 +11,7 @@ namespace NWaves.Signals
     ///     - superimposed with another array of samples (another signal)
     ///     - concatenated with another array of samples (another signal)
     ///     - repeated N times
+    ///     - amplified
     ///
     /// Note.
     /// Method implementations are LINQ-less and do Buffer.BlockCopy() for better performance.
@@ -124,7 +125,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// In-place signal amplification by coeff
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="coeff"></param>
@@ -137,11 +138,26 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
+        /// In-place signal attenuation by coeff
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="sampleCount"></param>
-        /// <returns></returns>
+        /// <param name="coeff"></param>
+        public static void Attenuate(this DiscreteSignal signal, float coeff)
+        {
+            if (Math.Abs(coeff) < 1e-10)
+            {
+                throw new ArgumentException("Attenuation coefficient can't be zero");
+            }
+
+            signal.Amplify(1 / coeff);
+        }
+
+        /// <summary>
+        /// Return copy of first N samples
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="sampleCount">Number of samples</param>
+        /// <returns>Copy of the first samples of signal</returns>
         public static DiscreteSignal First(this DiscreteSignal signal, int sampleCount)
         {
             if (sampleCount <= 0 || sampleCount > signal.Length)
@@ -173,11 +189,11 @@ namespace NWaves.Signals
                             signal.Samples.FastCopyFragment(sampleCount, signal.Length - sampleCount));
         }
 
-        ///// <summary>
-        ///// Method copies discrete signal samples into complex signal
-        ///// </summary>
-        ///// <param name="signal">Real-valued signal</param>
-        ///// <returns>Corresponding complex-valued signal</returns>
+        /// <summary>
+        /// Method copies discrete signal samples into complex signal
+        /// </summary>
+        /// <param name="signal">Real-valued signal</param>
+        /// <returns>Corresponding complex-valued signal</returns>
         public static ComplexDiscreteSignal ToComplex(this DiscreteSignal signal)
         {
             return new ComplexDiscreteSignal(signal.SamplingRate, signal.Samples.ToDoubles());

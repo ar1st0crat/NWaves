@@ -97,13 +97,13 @@ namespace NWaves.Signals.Builders
             // perhaps, delay
             if (_delay != 0)
             {
-                signal = signal + _delay;
+                signal = signal.Delay(_delay);
             }
 
             // and perhaps, repeat
             if (_repeatTimes > 1)
             {
-                signal = signal * _repeatTimes;
+                signal = signal.Repeat(_repeatTimes);
             }
 
             return signal;

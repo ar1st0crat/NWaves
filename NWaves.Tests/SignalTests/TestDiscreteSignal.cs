@@ -19,8 +19,11 @@ namespace NWaves.Tests.SignalTests
         [Test]
         public void TestInitializeWithBadSamplingRate()
         {
-            Assert.Throws<ArgumentException>(() => { var s = new ComplexDiscreteSignal(0, new double[] { 1 }); });
-            Assert.Throws<ArgumentException>(() => { var s = new ComplexDiscreteSignal(-8000, new double[] { 1 }); });
+            Assert.Multiple(() =>
+            {
+                Assert.Throws<ArgumentException>(() => { var s = new ComplexDiscreteSignal(0, new double[] {1}); });
+                Assert.Throws<ArgumentException>(() => { var s = new ComplexDiscreteSignal(-8000, new double[] {1}); });
+            });
         }
 
         [Test]
@@ -66,8 +69,11 @@ namespace NWaves.Tests.SignalTests
             var combination2 = _constant + _signal;
 
             //Assert
-            Assert.That(combination1.Samples, Is.EqualTo(new float[] { 5, 6, 7, 8, 9, 5, 6, 7, 8, 9 }));
-            Assert.That(combination2.Samples, Is.EqualTo(new float[] { 5, 6, 7, 8, 9, 5, 6, 7, 8, 9 }));
+            Assert.Multiple(() =>
+            {
+                Assert.That(combination1.Samples, Is.EqualTo(new float[] {5, 6, 7, 8, 9, 5, 6, 7, 8, 9}));
+                Assert.That(combination2.Samples, Is.EqualTo(new float[] {5, 6, 7, 8, 9, 5, 6, 7, 8, 9}));
+            });
         }
 
         [Test]
@@ -107,13 +113,11 @@ namespace NWaves.Tests.SignalTests
         {
             //Act
             var repeated1 = _small.Repeat(3);
-            var repeated2 = _small * 3;
 
             //Assert
             Assert.That(repeated1.Samples, Is.EqualTo(new float[] { 5, 2, 4, 5, 2, 4, 5, 2, 4 }));
-            Assert.That(repeated2.Samples, Is.EqualTo(new float[] { 5, 2, 4, 5, 2, 4, 5, 2, 4 }));
         }
-
+        
         [Test]
         public void TestRepeatNegativeTimes()
         {
@@ -123,7 +127,17 @@ namespace NWaves.Tests.SignalTests
         [Test]
         public void TestRepeatZeroTimes()
         {
-            Assert.Throws<ArgumentException>(() => { var repeated = _signal * 0; });
+            Assert.Throws<ArgumentException>(() => { var repeated = _signal.Repeat(0); });
+        }
+
+        [Test]
+        public void TestAmplification()
+        {
+            //Act
+            var amplified = _small * 2;
+
+            //Assert
+            Assert.That(amplified.Samples, Is.EqualTo(new float[] { 10, 4, 8 }));
         }
 
         [Test]
@@ -145,8 +159,11 @@ namespace NWaves.Tests.SignalTests
         [Test]
         public void TestSliceWrongRange()
         {
-            Assert.Throws<ArgumentException>(() => { var slice = _signal[5, 5]; });
-            Assert.Throws<ArgumentException>(() => { var slice = _signal[5, 4]; });
+            Assert.Multiple(() =>
+            {
+                Assert.Throws<ArgumentException>(() => { var slice = _signal[5, 5]; });
+                Assert.Throws<ArgumentException>(() => { var slice = _signal[5, 4]; });
+            });
         }
 
         [Test]
@@ -172,8 +189,11 @@ namespace NWaves.Tests.SignalTests
         [Test]
         public void TestNegativeFirstOrLast()
         {
-            Assert.Throws<ArgumentException>(() => { var first = _signal.First(-3); });
-            Assert.Throws<ArgumentException>(() => { var last = _signal.Last(-5); });
+            Assert.Multiple(() =>
+            {
+                Assert.Throws<ArgumentException>(() => { var first = _signal.First(-3); });
+                Assert.Throws<ArgumentException>(() => { var last = _signal.Last(-5); });
+            });
         }
     }
 }

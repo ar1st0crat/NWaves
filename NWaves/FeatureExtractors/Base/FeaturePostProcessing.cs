@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NWaves.Utils;
 
 namespace NWaves.FeatureExtractors.Base
 {
@@ -12,18 +13,50 @@ namespace NWaves.FeatureExtractors.Base
         /// <summary>
         /// Method for mean subtraction (in particular, CMN).
         /// </summary>
-        /// <param name="vectors"></param>
+        /// <param name="vectors">Sequence of feature vectors</param>
         public static void NormalizeMean(IList<FeatureVector> vectors)
         {
+            if (vectors.Count < 2)
+            {
+                return;
+            }
+
             var featureCount = vectors[0].Features.Length;
 
             for (var i = 0; i < featureCount; i++)
             {
-                var cmean = vectors.Average(t => t.Features[i]);
-
-                for (var j = 0; j < vectors.Count; j++)
+                var mean = vectors.Average(t => t.Features[i]);
+                
+                foreach (var vector in vectors)
                 {
-                    vectors[j].Features[i] -= cmean;
+                    vector.Features[i] -= mean;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Variance normalization (divide by unbiased estimate of stdev)
+        /// </summary>
+        /// <param name="vectors">Sequence of feature vectors</param>
+        public static void NormalizeVariance(IList<FeatureVector> vectors)
+        {
+            var n = vectors.Count;
+
+            if (n < 2)
+            {
+                return;
+            }
+
+            var featureCount = vectors[0].Features.Length;
+
+            for (var i = 0; i < featureCount; i++)
+            {
+                var mean = vectors.Average(t => t.Features[i]);
+                var std = vectors.Sum(t => (t.Features[i] - mean) * (t.Features[i] - mean) / (n - 1));
+
+                foreach (var vector in vectors)
+                {
+                    vector.Features[i] /= std;
                 }
             }
         }
@@ -102,34 +135,32 @@ namespace NWaves.FeatureExtractors.Base
         {
             var vectorCount = vectors.Length;
 
-            if (vectorCount == 0)
+            switch (vectorCount)
             {
-                throw new ArgumentException("Empty collection of feature vectors!");
-            }
-
-            if (vectorCount == 1)
-            {
-                return vectors.ElementAt(0).ToArray();
+                case 0:
+                    throw new ArgumentException("Empty collection of feature vectors!");
+                case 1:
+                    return vectors.ElementAt(0).ToArray();
             }
 
             var totalVectors = vectors[0].Count;
             if (vectors.Any(v => v.Count != totalVectors))
             {
-                throw new InvalidOperationException("");
+                throw new InvalidOperationException("All sequences of feature vectors must have the same length!");
             }
 
             var length = vectors.Sum(v => v[0].Features.Length);
-            var joined = new FeatureVector[vectors[0].Count];
+            var joined = new FeatureVector[totalVectors];
             
             for (var i = 0; i < joined.Length; i++)
             {
                 var features = new float[length];
 
-                var offset = 0;
-                for (var j = 0; j < vectorCount; j++)
+                for (int offset = 0, j = 0; j < vectorCount; j++)
                 {
-                    Buffer.BlockCopy(vectors[j][i].Features, 0, features, offset, vectors[j][i].Features.Length * 4);
-                    offset += vectors[j][i].Features.Length * 4;
+                    var size = vectors[j][i].Features.Length;
+                    vectors[j][i].Features.FastCopyTo(features, size, 0, offset);
+                    offset += size;
                 }
 
                 joined[i] = new FeatureVector

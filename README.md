@@ -22,7 +22,7 @@ Already available:
 - [x] windowing functions (Hamming, Blackman, Hann, Gaussian, triangular, cepstral liftering)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and perceptual weighting (A, B, C)
 - [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, AMS) and CSV serialization
-- [x] feature post-processing (CMN, deltas)
+- [x] feature post-processing (mean and variance normalization, deltas)
 - [x] spectral features (centroid, spread, flatness, bandwidth, rolloff, contrast, crest)
 - [x] signal builders (sinusoid, white/pink/red noise, Perlin noise, awgn, triangle, sawtooth, square, periodic pulse)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
@@ -52,19 +52,19 @@ In the beginning... there were interfaces and factories here and there, and NWav
 
 ```C#
 
-// Create signal { 0.75f, 0.75f, 0.75f, 0.75f, 0.75f } sampled at 8 kHz:
+// Create signal { 0.75, 0.75, 0.75, 0.75, 0.75 } sampled at 8 kHz:
 
 var constants = new DiscreteSignal(8000, 5, 0.75f);
 
 
-// Create signal { 0.0f, 1.0f, 2.0f, ..., 99.0f } sampled at 22050 Hz
+// Create signal { 0.0, 1.0, 2.0, ..., 99.0 } sampled at 22050 Hz
 
 var linear = new DiscreteSignal(22050, Enumerable.Range(0, 100));
 
 
-// Create signal { 1.0f, 0.0f } sampled at 44,1 kHz
+// Create signal { 1.0, 0.0 } sampled at 800 Hz
 
-var bits = new DiscreteSignal(44100, new float [] { 1, 0 });
+var bits = new DiscreteSignal(800, new float [] { 1, 0 });
 
 
 // Create one more signal from samples repeated 3 times
@@ -97,9 +97,13 @@ var samples = signal.Samples;
 
 // repeat signal 100 times {1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, ...}
 
-var bitStream = bits * 100;
-// or
 var bitStream = bits.Repeat(100);
+
+
+// delay by 1000 samples and -500 samples (ahead)
+
+var delayed = signal1.Delay(1000);
+var front = signal1.Delay(-500);
 
 
 // concatenate signals
@@ -115,11 +119,17 @@ var combination = signal1 + signal2;
 var combination = signal1.Superimpose(signal2);
 
 
-// delay
+// amplify / attenuate
 
-var delayed = signal1.Delay(1000);
-// or
-var delayed = signal1 + 1000;
+bits.Amplify(10);				// in-place
+bits.Attenuate(10);				// in-place
+
+var bitStream = bits * 10;		// new signal
+
+
+// add constant 0.5 to each sample
+
+var offset = signal1 + 0.5f;
 
 
 // make a deep copy of a signal

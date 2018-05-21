@@ -129,6 +129,35 @@ namespace NWaves.Signals
         }
 
         /// <summary>
+        /// In-place signal amplification by coeff
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="coeff"></param>
+        public static void Amplify(this ComplexDiscreteSignal signal, double coeff)
+        {
+            for (var i = 0; i < signal.Length; i++)
+            {
+                signal.Real[i] *= coeff;
+                signal.Imag[i] *= coeff;
+            }
+        }
+
+        /// <summary>
+        /// In-place signal attenuation by coeff
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="coeff"></param>
+        public static void Attenuate(this ComplexDiscreteSignal signal, double coeff)
+        {
+            if (Math.Abs(coeff) < 1e-10)
+            {
+                throw new ArgumentException("Attenuation coefficient can't be zero");
+            }
+
+            signal.Amplify(1 / coeff);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="signal"></param>

@@ -151,5 +151,26 @@ namespace NWaves.Transforms
             PowerSpectrum(signal.Samples, spectrum, normalize);
             return new DiscreteSignal(signal.SamplingRate, spectrum);
         }
+
+        /// <summary>
+        /// FFT shift (in-place)
+        /// </summary>
+        /// <param name="samples"></param>
+        public void Shift(float[] samples)
+        {
+            if ((samples.Length & 1) == 1)
+            {
+                throw new ArgumentException("FFT shift is not supported for arrays with odd lengths");
+            }
+
+            var mid = samples.Length / 2;
+
+            for (var i = 0; i < mid; i++)
+            {
+                var tmp = samples[i];
+                samples[i] = samples[mid + i];
+                samples[mid + i] = tmp;
+            }
+        }
     }
 }

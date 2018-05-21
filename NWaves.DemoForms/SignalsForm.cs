@@ -220,11 +220,11 @@ namespace NWaves.DemoForms
             switch (operationComboBox.Text)
             {
                 case "Delay by":
-                    _signal2 = _signal2 + param;
+                    _signal2 = _signal2.Delay(param);
                     break;
 
                 case "Repeat times":
-                    _signal2 = _signal2 * param;
+                    _signal2 = _signal2.Repeat(param);
                     break;
             }
 

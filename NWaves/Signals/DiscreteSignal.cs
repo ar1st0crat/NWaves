@@ -281,47 +281,49 @@ namespace NWaves.Signals
         #region overloaded operators
 
         /// <summary>
-        /// Overloaded + (signal concatentaion)
+        /// Overloaded + (superimpose signals)
         /// </summary>
         /// <param name="s1">Left signal</param>
         /// <param name="s2">Right signal</param>
-        /// <returns>Concatenated signal</returns>
+        /// <returns>Superimposed signal</returns>
         public static DiscreteSignal operator +(DiscreteSignal s1, DiscreteSignal s2)
         {
             return s1.Superimpose(s2);
         }
 
         /// <summary>
-        /// Overloaded + (signal delay late)
+        /// Overloaded + (add constant)
         /// </summary>
         /// <param name="s">Signal</param>
-        /// <param name="delay">Number of samples to delay</param>
-        /// <returns>Delayed signal</returns>
-        public static DiscreteSignal operator +(DiscreteSignal s, int delay)
+        /// <param name="constant">Constant to add to each sample</param>
+        /// <returns>Modified signal</returns>
+        public static DiscreteSignal operator +(DiscreteSignal s, float constant)
         {
-            return s.Delay(delay);
+            return new DiscreteSignal(s.SamplingRate, s.Samples.Select(x => x + constant));
         }
 
         /// <summary>
-        /// Overloaded - (signal delay early)
+        /// Overloaded - (subtract constant)
         /// </summary>
         /// <param name="s">Signal</param>
-        /// <param name="delay">Number of samples to delay</param>
-        /// <returns></returns>
-        public static DiscreteSignal operator -(DiscreteSignal s, int delay)
+        /// <param name="constant">Constant to subtract from each sample</param>
+        /// <returns>Modified signal</returns>
+        public static DiscreteSignal operator -(DiscreteSignal s, float constant)
         {
-            return s.Delay(-delay);
+            return new DiscreteSignal(s.SamplingRate, s.Samples.Select(x => x - constant));
         }
 
         /// <summary>
-        /// Overloaded * (signal repetition)
+        /// Overloaded * (signal amplification)
         /// </summary>
         /// <param name="s">Signal</param>
-        /// <param name="times">Repeat times</param>
-        /// <returns>Repeated signal</returns>
-        public static DiscreteSignal operator *(DiscreteSignal s, int times)
+        /// <param name="coeff">Amplification coefficient</param>
+        /// <returns>Amplified signal</returns>
+        public static DiscreteSignal operator *(DiscreteSignal s, float coeff)
         {
-            return s.Repeat(times);
+            var signal = s.Copy();
+            signal.Amplify(coeff);
+            return signal;
         }
 
         #endregion

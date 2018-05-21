@@ -92,10 +92,11 @@ namespace NWaves.FeatureExtractors.Base
         /// Parallel computation (returns chunks of fecture vector lists)
         /// </summary>
         /// <param name="signal"></param>
+        /// <param name="parallelThreads"></param>
         /// <returns></returns>
-        public virtual List<FeatureVector>[] ParallelChunksComputeFrom(DiscreteSignal signal)
+        public virtual List<FeatureVector>[] ParallelChunksComputeFrom(DiscreteSignal signal, int parallelThreads = 0)
         {
-            var threadCount = Environment.ProcessorCount;
+            var threadCount = parallelThreads > 0 ? parallelThreads : Environment.ProcessorCount;
             var chunkSize = signal.Length / threadCount;
             
             // ============== carefully define the sample positions for merging ===============

@@ -412,8 +412,9 @@ namespace NWaves.FeatureExtractors
         /// Parallel computation of PNCC is not currently implemented
         /// </summary>
         /// <param name="signal"></param>
+        /// <param name="parallelThreads"></param>
         /// <returns></returns>
-        public override List<FeatureVector>[] ParallelChunksComputeFrom(DiscreteSignal signal)
+        public override List<FeatureVector>[] ParallelChunksComputeFrom(DiscreteSignal signal, int parallelThreads = 0)
         {
             throw new NotImplementedException();
         }
