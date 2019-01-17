@@ -15,10 +15,10 @@ namespace NWaves.Effects
         /// Method implements simple overdrive effect
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="filteringOptions"></param>
+        /// <param name="method"></param>
         /// <returns></returns>
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringOptions filteringOptions = FilteringOptions.Auto)
+                                      FilteringMethod method = FilteringMethod.Auto)
         {
             var maxAmp = signal.Samples.Max(s => Math.Abs(s));
 
@@ -43,24 +43,6 @@ namespace NWaves.Effects
             });
             
             return new DiscreteSignal(signal.SamplingRate, output);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="filteringOptions"></param>
-        /// <returns></returns>
-        public float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Reset
-        /// </summary>
-        public void Reset()
-        {
         }
     }
 }

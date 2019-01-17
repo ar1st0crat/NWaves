@@ -12,21 +12,8 @@ namespace NWaves.Filters.Base
         /// Method implements offline filtering algorithm
         /// </summary>
         /// <param name="signal">Signal for filtering</param>
-        /// <param name="filteringOptions">General filtering strategy</param>
+        /// <param name="method">General filtering strategy</param>
         /// <returns>Filtered signal</returns>
-        DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringOptions filteringOptions);
-
-        /// <summary>
-        /// Method implements online filtering (buffer-by-buffer / sample-by-sample)
-        /// </summary>
-        /// <param name="input">Input block of samples</param>
-        /// <param name="filteringOptions">General filtering strategy</param>
-        /// <returns>Filtered block</returns>
-        float[] Process(float[] input, FilteringOptions filteringOptions);
-
-        /// <summary>
-        /// Method for resetting the filter
-        /// </summary>
-        void Reset();
+        DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method);
     }
 }

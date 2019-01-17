@@ -35,30 +35,12 @@ namespace NWaves.Effects
         /// Method implements simple tremolo effect
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="filteringOptions"></param>
+        /// <param name="method"></param>
         /// <returns></returns>
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringOptions filteringOptions = FilteringOptions.Auto)
+                                      FilteringMethod method = FilteringMethod.Auto)
         {
             return Modulate.Amplitude(signal, Frequency, TremoloIndex);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="filteringOptions"></param>
-        /// <returns></returns>
-        public float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Reset
-        /// </summary>
-        public void Reset()
-        {
         }
     }
 }

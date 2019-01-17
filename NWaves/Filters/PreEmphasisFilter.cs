@@ -23,22 +23,28 @@ namespace NWaves.Filters
         /// <summary>
         /// Online filtering
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="filteringOptions"></param>
-        /// <returns></returns>
-        public override float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
+        /// <param name="input">Input block of samples</param>
+        /// <param name="output">Block of filtered samples</param>
+        /// <param name="count">Number of samples to filter</param>
+        /// <param name="inputPos">Input starting position</param>
+        /// <param name="outputPos">Output starting position</param>
+        /// <param name="method">General filtering strategy</param>
+        public override void Process(float[] input,
+                                     float[] output,
+                                     int count,
+                                     int inputPos = 0,
+                                     int outputPos = 0,
+                                     FilteringMethod method = FilteringMethod.Auto)
         {
-            var output = new float[input.Length];
-
             var b = _kernel32;
 
-            for (var n = 0; n < input.Length; n++)
+            var endPos = inputPos + count;
+
+            for (int n = inputPos, m = outputPos; n < endPos; n++, m++)
             {
-                output[n] = b[0] * input[n] + b[1] * _prev;
+                output[m] = b[0] * input[n] + b[1] * _prev;
                 _prev = input[n];
             }
-
-            return output;
         }
 
         /// <summary>

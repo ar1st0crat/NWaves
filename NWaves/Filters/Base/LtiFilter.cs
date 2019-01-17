@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using NWaves.Signals;
 using NWaves.Transforms;
-using NWaves.Utils;
 
 namespace NWaves.Filters.Base
 {
@@ -10,7 +9,7 @@ namespace NWaves.Filters.Base
     /// Provides general algorithms for computing impulse and frequency responses
     /// and leaves methods ApplyTo() and Process() abstract.
     /// </summary>
-    public abstract class LtiFilter : IFilter
+    public abstract class LtiFilter : IFilter, IOnlineFilter
     {
         /// <summary>
         /// Transfer function
@@ -21,19 +20,26 @@ namespace NWaves.Filters.Base
         /// The filtering algorithm that should be implemented by particular subclass
         /// </summary>
         /// <param name="signal">Signal for filtering</param>
-        /// <param name="filteringOptions">General filtering strategy</param>
+        /// <param name="method">General filtering strategy</param>
         /// <returns>Filtered signal</returns>
         public abstract DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                               FilteringOptions filteringOptions = FilteringOptions.Auto);
+                                               FilteringMethod method = FilteringMethod.Auto);
 
         /// <summary>
         /// The online filtering algorithm should be implemented by particular subclass
         /// </summary>
         /// <param name="input">Input block of samples</param>
-        /// <param name="filteringOptions">General filtering strategy</param>
-        /// <returns>Filtered block</returns>
-        public abstract float[] Process(float[] input,
-                                        FilteringOptions filteringOptions = FilteringOptions.Auto);
+        /// <param name="output">Block of filtered samples</param>
+        /// <param name="count">Number of samples to filter</param>
+        /// <param name="inputPos">Input starting position</param>
+        /// <param name="outputPos">Output starting position</param>
+        /// <param name="method">General filtering strategy</param>
+        public abstract void Process(float[] input,
+                                     float[] output,
+                                     int count,
+                                     int inputPos = 0,
+                                     int outputPos = 0,
+                                     FilteringMethod method = FilteringMethod.Auto);
 
         /// <summary>
         /// Reset filter (clear all internal buffers)
@@ -66,32 +72,6 @@ namespace NWaves.Filters.Base
 
             return new ComplexDiscreteSignal(1, real.Take(length / 2 + 1),
                                                 imag.Take(length / 2 + 1));
-        }
-
-        /// <summary>
-        /// NOTE. For educational purposes and for testing online filtering.
-        /// 
-        /// Implementation of offline filtering in time domain frame-by-frame.
-        /// 
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="frameSize"></param>
-        /// <returns></returns>        
-        public DiscreteSignal ApplyFilterCircularBuffer(DiscreteSignal signal, int frameSize = 4096)
-        {
-            var input = signal.Samples;
-            var output = new float[input.Length];
-
-            var i = 0;
-            while (i + frameSize < input.Length)
-            {
-                var buf = input.FastCopyFragment(frameSize, i);
-                var filtered = Process(buf);
-                filtered.FastCopyTo(output, frameSize, 0, i);
-                i += frameSize;
-            }
-
-            return new DiscreteSignal(signal.SamplingRate, output);
         }
     }
 }

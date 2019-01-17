@@ -46,14 +46,14 @@ namespace NWaves.Filters
         /// Apply filter
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="filteringOptions"></param>
+        /// <param name="method"></param>
         /// <returns></returns>
         public override DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                               FilteringOptions filteringOptions = FilteringOptions.Auto)
+                                               FilteringMethod method = FilteringMethod.Auto)
         {
-            if (filteringOptions != FilteringOptions.Auto)
+            if (method != FilteringMethod.Auto)
             {
-                return base.ApplyTo(signal, filteringOptions);
+                return base.ApplyTo(signal, method);
             }
 
             var input = signal.Samples;
@@ -75,21 +75,29 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Online filtering (frame-by-frame)
+        /// Online filtering
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="filteringOptions"></param>
-        /// <returns></returns>
-        public override float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
+        /// <param name="input">Input block of samples</param>
+        /// <param name="output">Block of filtered samples</param>
+        /// <param name="count">Number of samples to filter</param>
+        /// <param name="inputPos">Input starting position</param>
+        /// <param name="outputPos">Output starting position</param>
+        /// <param name="method">General filtering strategy</param>
+        public override void Process(float[] input,
+                                     float[] output,
+                                     int count,
+                                     int inputPos = 0,
+                                     int outputPos = 0,
+                                     FilteringMethod method = FilteringMethod.Auto)
         {
-            var output = new float[input.Length];
-
             var b0 = _kernel32[0];
             var bm = _kernel32[_delay];
 
-            for (var n = 0; n < input.Length; n++)
+            var endPos = inputPos + count;
+
+            for (int n = inputPos, m = outputPos; n < endPos; n++, m++)
             {
-                output[n] = b0 * input[n] + bm * _delayLine[_delayLineOffset];
+                output[m] = b0 * input[n] + bm * _delayLine[_delayLineOffset];
 
                 _delayLine[_delayLineOffset] = input[n];
 
@@ -98,8 +106,6 @@ namespace NWaves.Filters
                     _delayLineOffset = _delayLine.Length - 1;
                 }
             }
-
-            return output;
         }
     }
 }

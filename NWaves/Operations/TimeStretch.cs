@@ -41,7 +41,7 @@ namespace NWaves.Operations
                     break;
             }
 
-            return stretchFilter.ApplyTo(signal, FilteringOptions.Auto);
+            return stretchFilter.ApplyTo(signal, FilteringMethod.Auto);
         }
     }
 }

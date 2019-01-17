@@ -121,8 +121,8 @@ var combination = signal1.Superimpose(signal2);
 
 // amplify / attenuate
 
-bits.Amplify(10);				// in-place
-bits.Attenuate(10);				// in-place
+bits.Amplify(10);			// in-place
+bits.Attenuate(10);			// in-place
 
 var bitStream = bits * 10;		// new signal
 

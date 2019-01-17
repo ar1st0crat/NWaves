@@ -48,30 +48,12 @@ namespace NWaves.Operations.Tsm
         /// PSOLA algorithm
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="filteringOptions"></param>
+        /// <param name="method"></param>
         /// <returns></returns>
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringOptions filteringOptions = FilteringOptions.Auto)
+                                      FilteringMethod method = FilteringMethod.Auto)
         {
             throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="filteringOptions"></param>
-        /// <returns></returns>
-        public float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Reset
-        /// </summary>
-        public void Reset()
-        {
         }
     }
 }

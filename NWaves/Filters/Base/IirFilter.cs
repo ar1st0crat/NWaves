@@ -104,26 +104,24 @@ namespace NWaves.Filters.Base
         /// 
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="filteringOptions"></param>
+        /// <param name="method"></param>
         /// <returns></returns>
         public override DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                               FilteringOptions filteringOptions = FilteringOptions.Auto)
+                                               FilteringMethod method = FilteringMethod.Auto)
         {
-            switch (filteringOptions)
+            switch (method)
             {
-                case FilteringOptions.Custom:
+                case FilteringMethod.Custom:
                 {
-                    return ApplyFilterCircularBuffer(signal);
+                    return this.OnlineChunks(signal);
                 }
-                case FilteringOptions.OverlapAdd:
-                case FilteringOptions.OverlapSave:
+                case FilteringMethod.OverlapAdd:       // are you sure you wanna do this? It's IIR filter!
+                case FilteringMethod.OverlapSave:
                 {
                     var length = Math.Max(DefaultImpulseResponseLength, _a.Length + _b.Length);
                     var fftSize = MathUtils.NextPowerOfTwo(4 * length);
                     var ir = new DiscreteSignal(signal.SamplingRate, ImpulseResponse(length).ToFloats());
-                    return filteringOptions == FilteringOptions.OverlapAdd ?
-                                Operation.BlockConvolve(signal, ir, fftSize, BlockConvolution.OverlapAdd) :
-                                Operation.BlockConvolve(signal, ir, fftSize, BlockConvolution.OverlapSave);
+                    return Operation.BlockConvolve(signal, ir, fftSize, method);
                 }
                 default:
                 {
@@ -133,43 +131,51 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// 
+        /// The online filtering
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="filteringOptions"></param>
-        /// <returns></returns>
-        public override float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
+        /// <param name="input">Input block of samples</param>
+        /// <param name="output">Block of filtered samples</param>
+        /// <param name="count">Number of samples to filter</param>
+        /// <param name="inputPos">Input starting position</param>
+        /// <param name="outputPos">Output starting position</param>
+        /// <param name="method">General filtering strategy</param>
+        public override void Process(float[] input,
+                                     float[] output,
+                                     int count,
+                                     int inputPos = 0,
+                                     int outputPos = 0,
+                                     FilteringMethod method = FilteringMethod.Auto)
         {
-            var output = new float[input.Length];
-
             var a = _a32;
             var b = _b32;
 
-            for (var n = 0; n < input.Length; n++)
+            var endPos = inputPos + count;
+
+            for (int n = inputPos, m = outputPos; n < endPos; n++, m++)
             {
                 _delayLineB[_delayLineOffsetB] = input[n];
 
                 var pos = 0;
                 for (var k = _delayLineOffsetB; k < b.Length; k++)
                 {
-                    output[n] += b[pos++] * _delayLineB[k];
+                    output[m] += b[pos++] * _delayLineB[k];
                 }
                 for (var k = 0; k < _delayLineOffsetB; k++)
                 {
-                    output[n] += b[pos++] * _delayLineB[k];
+                    output[m] += b[pos++] * _delayLineB[k];
                 }
 
                 pos = 1;
-                for (var m = _delayLineOffsetA + 1; m < a.Length; m++)
+                for (var p = _delayLineOffsetA + 1; p < a.Length; p++)
                 {
-                    output[n] -= a[pos++] * _delayLineA[m];
+                    output[m] -= a[pos++] * _delayLineA[p];
                 }
-                for (var m = 0; m < _delayLineOffsetA; m++)
+                for (var p = 0; p < _delayLineOffsetA; p++)
                 {
-                    output[n] -= a[pos++] * _delayLineA[m];
+                    output[m] -= a[pos++] * _delayLineA[p];
                 }
 
-                _delayLineA[_delayLineOffsetA] = output[n];
+                _delayLineA[_delayLineOffsetA] = output[m];
 
                 if (--_delayLineOffsetB < 0)
                 {
@@ -181,8 +187,6 @@ namespace NWaves.Filters.Base
                     _delayLineOffsetA = _delayLineA.Length - 1;
                 }
             }
-
-            return output;
         }
 
         /// <summary>
@@ -290,9 +294,13 @@ namespace NWaves.Filters.Base
         /// </param>
         public override double[] ImpulseResponse(int length = DefaultImpulseResponseLength)
         {
+            var response = new double[length];
             var impulse = new double[length];
             impulse[0] = 1.0;
-            return ApplyTo(impulse);
+
+            ApplyTo(impulse, response);
+
+            return response;
         }
 
         /// <summary>
@@ -321,10 +329,8 @@ namespace NWaves.Filters.Base
 
         #region double precision computations
 
-        public double[] ApplyTo(double[] input)
+        public void ApplyTo(double[] input, double[] output)
         {
-            var output = new double[input.Length];
-
             for (var n = 0; n < input.Length; n++)
             {
                 for (var k = 0; k < _b.Length; k++)
@@ -336,60 +342,8 @@ namespace NWaves.Filters.Base
                     if (n >= m) output[n] -= _a[m] * output[n - m];
                 }
             }
-
-            return output;
         }
 
         #endregion
     }
 }
-
-
-///// <summary>
-///// Quite inefficient implementation of filtering in time domain:
-///// use linear buffers for recursive and non-recursive delay lines.
-///// </summary>
-///// <param name="signal"></param>
-///// <returns></returns>        
-//public DiscreteSignal ApplyFilterLinearBuffer(DiscreteSignal signal)
-//{
-//    var input = signal.Samples;
-//    var a = _a32;
-//    var b = _b32;
-
-//    var output = new float[input.Length];
-
-//    // buffers for delay lines:
-//    var wb = new float[b.Length];
-//    var wa = new float[a.Length];
-
-//    for (var i = 0; i < input.Length; i++)
-//    {
-//        wb[0] = input[i];
-
-//        for (var k = 0; k < b.Length; k++)
-//        {
-//            output[i] += b[k] * wb[k];
-//        }
-
-//        for (var m = 1; m < a.Length; m++)
-//        {
-//            output[i] -= a[m] * wa[m - 1];
-//        }
-
-//        // update delay line
-
-//        for (var k = b.Length - 1; k > 0; k--)
-//        {
-//            wb[k] = wb[k - 1];
-//        }
-//        for (var m = a.Length - 1; m > 0; m--)
-//        {
-//            wa[m] = wa[m - 1];
-//        }
-
-//        wa[0] = output[i];
-//    }
-
-//    return new DiscreteSignal(signal.SamplingRate, output);
-//}

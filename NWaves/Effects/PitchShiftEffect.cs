@@ -45,10 +45,10 @@ namespace NWaves.Effects
         /// Algorithm is based on Phase Vocoder
         /// </summary>
         /// <param name="signal">Input signal</param>
-        /// <param name="filteringOptions">Filtering options</param>
+        /// <param name="method">Filtering method</param>
         /// <returns>Pitch shifted signal</returns>
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringOptions filteringOptions = FilteringOptions.Auto)
+                                      FilteringMethod method = FilteringMethod.Auto)
         {
             // 1) just stretch
             var stretched = Operation.TimeStretch(signal, _shift, _fftSize, algorithm: _tsm);
@@ -64,24 +64,6 @@ namespace NWaves.Effects
                                                       .ToArray());                  // [0.0, _shift, 2*_shift, ...]
 
             return new DiscreteSignal(signal.SamplingRate, resampled);
-        }
-
-        /// <summary>
-        /// Online filtering (frame-by-frame)
-        /// </summary>
-        /// <param name="input">Input frame</param>
-        /// <param name="filteringOptions">Filtering frame</param>
-        /// <returns>Processed frame</returns>
-        public float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Reset filter
-        /// </summary>
-        public void Reset()
-        {
         }
     }
 }

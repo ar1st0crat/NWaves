@@ -3,7 +3,7 @@
     /// <summary>
     /// General filtering strategy
     /// </summary>
-    public enum FilteringOptions
+    public enum FilteringMethod
     {
         /// <summary>
         /// Filtering strategy is dynamically defined by NWaves library

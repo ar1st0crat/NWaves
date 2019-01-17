@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NWaves.Operations;
+using NWaves.Operations.BlockConvolution;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -69,30 +69,28 @@ namespace NWaves.Filters.Base
         /// Apply filter to entire signal
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="filteringOptions"></param>
+        /// <param name="method"></param>
         /// <returns></returns>
         public override DiscreteSignal ApplyTo(DiscreteSignal signal, 
-                                               FilteringOptions filteringOptions = FilteringOptions.Auto)
+                                               FilteringMethod method = FilteringMethod.Auto)
         {
-            if (_kernel.Length >= FilterSizeForOptimizedProcessing && filteringOptions == FilteringOptions.Auto)
+            if (_kernel.Length >= FilterSizeForOptimizedProcessing && method == FilteringMethod.Auto)
             {
-                filteringOptions = FilteringOptions.OverlapAdd;
+                method = FilteringMethod.OverlapAdd;
             }
 
-            switch (filteringOptions)
+            switch (method)
             {
-                case FilteringOptions.Custom:
-                {
-                    return ApplyFilterCircularBuffer(signal);
-                }
-                case FilteringOptions.OverlapAdd:
-                case FilteringOptions.OverlapSave:
+                case FilteringMethod.OverlapAdd:
+                case FilteringMethod.OverlapSave:
                 {
                     var fftSize = MathUtils.NextPowerOfTwo(4 * Kernel.Length);
-                    var ir = new DiscreteSignal(signal.SamplingRate, _kernel32);
-                    return filteringOptions == FilteringOptions.OverlapAdd ?
-                                Operation.BlockConvolve(signal, ir, fftSize, BlockConvolution.OverlapAdd) :
-                                Operation.BlockConvolve(signal, ir, fftSize, BlockConvolution.OverlapSave);
+                    var blockConvolver = BlockConvolver.FromFilter(this, fftSize);
+                    return blockConvolver.ApplyTo(signal, method);
+                }
+                case FilteringMethod.Custom:
+                {
+                    return this.OnlineChunks(signal);
                 }
                 default:
                 {
@@ -102,33 +100,35 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Online filtering (buffer-by-buffer)
+        /// The online filtering
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="filteringOptions"></param>
-        /// <returns></returns>
-        public override float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
+        /// <param name="input">Input block of samples</param>
+        /// <param name="output">Block of filtered samples</param>
+        /// <param name="count">Number of samples to filter</param>
+        /// <param name="inputPos">Input starting position</param>
+        /// <param name="outputPos">Output starting position</param>
+        /// <param name="method">General filtering strategy (ignored)</param>
+        public override void Process(float[] input,
+                                     float[] output,
+                                     int count,
+                                     int inputPos = 0,
+                                     int outputPos = 0,
+                                     FilteringMethod method = FilteringMethod.Auto)
         {
-            if (filteringOptions == FilteringOptions.OverlapAdd ||
-                filteringOptions == FilteringOptions.OverlapSave)
-            {
-                return null;
-            }
+            var endPos = inputPos + count;
 
-            var output = new float[input.Length];
-            
-            for (var n = 0; n < input.Length; n++)
+            for (int n = inputPos, m = outputPos; n < endPos; n++, m++)
             {
                 _delayLine[_delayLineOffset] = input[n];
 
                 var pos = 0;
                 for (var k = _delayLineOffset; k < _kernel32.Length; k++)
                 {
-                    output[n] += _kernel32[pos++] * _delayLine[k];
+                    output[m] += _kernel32[pos++] * _delayLine[k];
                 }
                 for (var k = 0; k < _delayLineOffset; k++)
                 {
-                    output[n] += _kernel32[pos++] * _delayLine[k];
+                    output[m] += _kernel32[pos++] * _delayLine[k];
                 }
 
                 if (--_delayLineOffset < 0)
@@ -136,8 +136,6 @@ namespace NWaves.Filters.Base
                     _delayLineOffset = _delayLine.Length - 1;
                 }
             }
-
-            return output;
         }
 
         /// <summary>
@@ -150,13 +148,16 @@ namespace NWaves.Filters.Base
         {
             var input = signal.Samples;
 
-            var output = new float[input.Length];
+            var output = new float[input.Length + _kernel32.Length - 1];
 
-            for (var n = 0; n < input.Length; n++)
+            for (var n = 0; n < output.Length; n++)
             {
                 for (var k = 0; k < _kernel32.Length; k++)
                 {
-                    if (n >= k) output[n] += _kernel32[k] * input[n - k];
+                    if (n >= k && n < input.Length + k)
+                    {
+                        output[n] += _kernel32[k] * input[n - k];
+                    }
                 }
             }
 

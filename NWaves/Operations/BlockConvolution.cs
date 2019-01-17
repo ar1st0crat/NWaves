@@ -1,7 +1,7 @@
 ﻿using System;
+using NWaves.Filters.Base;
+using NWaves.Operations.BlockConvolution;
 using NWaves.Signals;
-using NWaves.Transforms;
-using NWaves.Utils;
 
 namespace NWaves.Operations
 {
@@ -18,141 +18,30 @@ namespace NWaves.Operations
         public static DiscreteSignal BlockConvolve(DiscreteSignal signal,
                                                    DiscreteSignal kernel,
                                                    int fftSize,
-                                                   BlockConvolution method = BlockConvolution.OverlapAdd)
+                                                   FilteringMethod method = FilteringMethod.OverlapAdd)
         {
-            var m = kernel.Length;
-
-            if (m > fftSize)
+            //fftSize = 512;
+            if (kernel.Length > fftSize)
             {
                 throw new ArgumentException("Kernel length must not exceed the size of FFT!");
             }
 
-            var fft = new Fft(fftSize);
-
-            // pre-compute kernel's FFT:
-
-            var kernelReal = kernel.Samples.PadZeros(fftSize);
-            var kernelImag = new float[fftSize];
-
-            fft.Direct(kernelReal, kernelImag);
-
-            // reserve space for current signal block:
-
-            var blockReal = new float[fftSize];
-            var blockImag = new float[fftSize];
-            var zeroblock = new float[fftSize];
-
-            // reserve space for resulting spectrum at each step:
-
-            var spectrumReal = new float[fftSize];
-            var spectrumImag = new float[fftSize];
-
-            var filtered = new DiscreteSignal(signal.SamplingRate, signal.Length);
-
-            var hopSize = fftSize - m + 1;
-
-            if (method == BlockConvolution.OverlapAdd)
+            if (signal.Length < fftSize)
             {
-                var i = 0;
-                while (i < signal.Length)
-                {
-                    // ============================== FFT CONVOLUTION SECTION =================================
-
-                    // for better performance we inline FFT convolution here;
-                    // alternatively, we could simply write:
-                    //
-                    //        var res = Convolve(signal[i, i + hopSize], kernel);
-                    //
-                    // ...but that would require unnecessary memory allocations 
-                    //    and recalculating of kernel FFT at each step.
-
-                    zeroblock.FastCopyTo(blockReal, fftSize);
-                    zeroblock.FastCopyTo(blockImag, fftSize);
-                    signal.Samples.FastCopyTo(blockReal, Math.Min(hopSize, signal.Length - i), i);
-
-                    // 1) do FFT of a signal block:
-
-                    fft.Direct(blockReal, blockImag);
-
-                    // 2) do complex multiplication of spectra
-
-                    for (var j = 0; j < fftSize; j++)
-                    {
-                        spectrumReal[j] = (blockReal[j] * kernelReal[j] - blockImag[j] * kernelImag[j]) / fftSize;
-                        spectrumImag[j] = (blockReal[j] * kernelImag[j] + blockImag[j] * kernelReal[j]) / fftSize;
-                    }
-
-                    // 3) do inverse FFT of resulting spectrum
-
-                    fft.Inverse(spectrumReal, spectrumImag);
-
-                    // ========================================================================================
-
-                    for (var j = 0; j < m - 1 && i + j < filtered.Length; j++)
-                    {
-                        filtered[i + j] += spectrumReal[j];
-                    }
-
-                    for (var j = m - 1; j < spectrumReal.Length && i + j < filtered.Length; j++)
-                    {
-                        filtered[i + j] = spectrumReal[j];
-                    }
-
-                    i += hopSize;
-                }
-
-                return filtered;
+                return signal.Copy();
             }
-            else
+
+            var blockConvolver = new BlockConvolver(kernel.Samples, fftSize);
+            var filtered = new float[signal.Length + kernel.Length - 1];
+
+            var chunkSize = blockConvolver.ChunkSize;
+
+            for (var i = 0; i < signal.Length; i += chunkSize)
             {
-                signal = new DiscreteSignal(signal.SamplingRate, m - 1).Concatenate(signal);
-
-                var i = 0;
-                while (i < signal.Length)
-                {
-                    // ============================== FFT CONVOLUTION SECTION =================================
-
-                    signal.Samples.FastCopyTo(blockReal, Math.Min(fftSize, signal.Length - i), i);
-                    zeroblock.FastCopyTo(blockImag, fftSize);
-
-                    // 1) do FFT of a signal block:
-
-                    fft.Direct(blockReal, blockImag);
-
-                    // 2) do complex multiplication of spectra
-
-                    for (var j = 0; j < fftSize; j++)
-                    {
-                        spectrumReal[j] = (blockReal[j] * kernelReal[j] - blockImag[j] * kernelImag[j]) / fftSize;
-                        spectrumImag[j] = (blockReal[j] * kernelImag[j] + blockImag[j] * kernelReal[j]) / fftSize;
-                    }
-
-                    // 3) do inverse FFT of resulting spectrum
-
-                    fft.Inverse(spectrumReal, spectrumImag);
-
-                    // ========================================================================================
-
-
-                    for (var j = 0; j + m - 1 < spectrumReal.Length && i + j < filtered.Length; j++)
-                    {
-                        filtered[i + j] = spectrumReal[j + m - 1];
-                    }
-
-                    i += hopSize;
-                }
-
-                return filtered;
+                blockConvolver.Process(signal.Samples, filtered, chunkSize, i, i, method);
             }
+
+            return new DiscreteSignal(signal.SamplingRate, filtered);
         }
-    }
-
-    /// <summary>
-    /// Block convolution algorithms (methods)
-    /// </summary>
-    public enum BlockConvolution
-    {
-        OverlapAdd,
-        OverlapSave
     }
 }

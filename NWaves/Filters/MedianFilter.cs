@@ -8,7 +8,7 @@ namespace NWaves.Filters
     /// <summary>
     /// Nonlinear median filter
     /// </summary>
-    public class MedianFilter : IFilter
+    public class MedianFilter : IFilter, IOnlineFilter
     {
         /// <summary>
         /// The size of median filter
@@ -33,10 +33,10 @@ namespace NWaves.Filters
         /// Method implements median filtering algorithm
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="filteringOptions"></param>
+        /// <param name="method"></param>
         /// <returns></returns>
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringOptions filteringOptions = FilteringOptions.Auto)
+                                      FilteringMethod method = FilteringMethod.Auto)
         {
             var input = signal.Samples;
             var output = new float[input.Length];
@@ -73,16 +73,25 @@ namespace NWaves.Filters
 
             return new DiscreteSignal(signal.SamplingRate, output);
         }
-        
+
         /// <summary>
-        /// Online processing (buffer-by-buffer)
+        /// Online filtering
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="filteringOptions"></param>
-        /// <returns></returns>
-        public float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
+        /// <param name="input">Input block of samples</param>
+        /// <param name="output">Block of filtered samples</param>
+        /// <param name="count">Number of samples to filter</param>
+        /// <param name="inputPos">Input starting position</param>
+        /// <param name="outputPos">Output starting position</param>
+        /// <param name="method">General filtering strategy</param>
+        public void Process(float[] input,
+                            float[] output,
+                            int count,
+                            int inputPos = 0,
+                            int outputPos = 0,
+                            FilteringMethod method = FilteringMethod.Auto)
         {
-            return ApplyTo(new DiscreteSignal(1, input)).Samples;
+            throw new NotImplementedException();
+            //return ApplyTo(new DiscreteSignal(1, input)).Samples;
         }
 
         /// <summary>

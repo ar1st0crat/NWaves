@@ -39,10 +39,13 @@
   <ItemGroup>
     <Compile Include="Effects\AutowahEffect.cs" />
     <Compile Include="Filters\Base\IFilterExtensions.cs" />
+    <Compile Include="Filters\Base\IOnlineFilter.cs" />
     <Compile Include="Filters\Base\TransferFunction.cs" />
     <Compile Include="Filters\BiQuad\BiQuadFilter.cs" />
     <Compile Include="Filters\OnePole\OnePoleFilter.cs" />
     <Compile Include="Filters\RastaFilter.cs" />
+    <Compile Include="Operations\BlockConvolution\BlockConvolutionMethod.cs" />
+    <Compile Include="Operations\BlockConvolution\BlockConvolver.cs" />
     <Compile Include="Operations\Tsm\TsmAlgorithm.cs" />
     <Compile Include="Signals\Builders\ChirpBuilder.cs" />
     <Compile Include="Signals\Builders\PerlinNoiseBuilder.cs" />
@@ -91,7 +94,7 @@
     <Compile Include="Utils\MemoryOperationExtensions.cs" />
     <Compile Include="Filters\WienerFilter.cs" />
     <Compile Include="Filters\Base\LtiFilter.cs" />
-    <Compile Include="Filters\Base\FilteringOptions.cs" />
+    <Compile Include="Filters\Base\FilteringMethod.cs" />
     <Compile Include="Filters\Base\FirFilter.cs" />
     <Compile Include="Filters\Base\IFilter.cs" />
     <Compile Include="Filters\Base\IirFilter.cs" />

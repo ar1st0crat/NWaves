@@ -45,15 +45,15 @@ namespace NWaves.Effects
             MaxFrequency = maxFrequency;
             Q = q;
         }
-        
+
         /// <summary>
         /// Method implements simple wah-wah effect
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="filteringOptions"></param>
+        /// <param name="method"></param>
         /// <returns></returns>
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringOptions filteringOptions = FilteringOptions.Auto)
+                                      FilteringMethod method = FilteringMethod.Auto)
         {
             var x = signal.Samples;
             var samplingRateInverted = 2 * Math.PI / signal.SamplingRate;
@@ -87,24 +87,6 @@ namespace NWaves.Effects
             var maxYb = yb.Max(y => Math.Abs(y));
             
             return new DiscreteSignal(signal.SamplingRate, yb.Select(y => y / maxYb));
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="filteringOptions"></param>
-        /// <returns></returns>
-        public float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Reset
-        /// </summary>
-        public void Reset()
-        {
         }
     }
 }

@@ -484,12 +484,17 @@ namespace NWaves.Filters.Fda
 
                 // this code is ok both for floats and for doubles:
 
-                ir = filter1.ApplyTo(ir);
-                ir = filter2.ApplyTo(ir);
-                ir = filter3.ApplyTo(ir);
-                ir = filter4.ApplyTo(ir);
+                var ir1 = new double [fftSize];
+                var ir2 = new double [fftSize];
+                var ir3 = new double [fftSize];
+                var ir4 = new double [fftSize];
 
-                var kernel = new DiscreteSignal(1, ir.Select(s => (float)(s / gain)));
+                filter1.ApplyTo(ir,  ir1);
+                filter2.ApplyTo(ir1, ir2);
+                filter3.ApplyTo(ir2, ir3);
+                filter4.ApplyTo(ir3, ir4);
+
+                var kernel = new DiscreteSignal(1, ir4.Select(s => (float)(s / gain)));
                 
                 erbFilterBank[i] = fft.PowerSpectrum(kernel, false).Samples;
             }

@@ -202,10 +202,13 @@ namespace NWaves.Operations
         public static void CrossCorrelate(float[] real1, float[] imag1, float[] real2, float[] imag2, float[] res, int center = 0)
         {
             // reverse second signal
-            for (var i = 0; i < center; i++)
+
+            int last = real2.Length - 1;
+
+            for (var i = 0; i < real2.Length; i++)
             {
-                real2[i] = real1[center - 1 - i];
-                imag2[i] = imag1[center - 1 - i];
+                real2[i] = real2[last - i];
+                imag2[i] = imag2[last - i];
             }
 
             Convolve(real1, imag1, real2, imag2, res, center);

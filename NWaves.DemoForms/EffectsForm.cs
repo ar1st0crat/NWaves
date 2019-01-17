@@ -130,7 +130,7 @@ namespace NWaves.DemoForms
             }
 
             _filteredSignal = effect != null ? 
-                              effect.ApplyTo(_signal, FilteringOptions.Auto) : 
+                              effect.ApplyTo(_signal, FilteringMethod.Auto) : 
                               Operation.TimeStretch(_signal, float.Parse(pitchShiftTextBox.Text));
 
             signalAfterFilteringPanel.Signal = _filteredSignal;

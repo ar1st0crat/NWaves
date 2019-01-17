@@ -1,5 +1,4 @@
-﻿using System;
-using NWaves.Filters.Base;
+﻿using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Utils;
 
@@ -36,10 +35,10 @@ namespace NWaves.Operations.Tsm
         /// WSOLA algorithm
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="filteringOptions"></param>
+        /// <param name="method"></param>
         /// <returns></returns>
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringOptions filteringOptions = FilteringOptions.Auto)
+                                      FilteringMethod method = FilteringMethod.Auto)
         {
             _windowSize = (int)(signal.SamplingRate * 0.08);      // 80 msec
             var overlapSize = (int)(signal.SamplingRate * 0.03);  // 30 msec
@@ -101,24 +100,6 @@ namespace NWaves.Operations.Tsm
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
-        }
-
-        /// <summary>
-        /// Online filtering (frame-by-frame)
-        /// </summary>
-        /// <param name="input">Input frame</param>
-        /// <param name="filteringOptions">Filtering options</param>
-        /// <returns>Processed frame</returns>
-        public float[] Process(float[] input, FilteringOptions filteringOptions = FilteringOptions.Auto)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Reset filter
-        /// </summary>
-        public void Reset()
-        {
         }
     }
 }

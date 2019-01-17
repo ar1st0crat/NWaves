@@ -470,7 +470,7 @@ namespace NWaves.DemoForms
         {
             if (_signal == null) return;
 
-            _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.OverlapAdd);
+            _filteredSignal = _filter.ApplyTo(_signal, FilteringMethod.OverlapAdd);
             signalAfterFilteringPanel.Signal = _filteredSignal;
             spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
         }
@@ -479,7 +479,7 @@ namespace NWaves.DemoForms
         {
             if (_signal == null) return;
 
-            _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.OverlapSave);
+            _filteredSignal = _filter.ApplyTo(_signal, FilteringMethod.OverlapSave);
             signalAfterFilteringPanel.Signal = _filteredSignal;
             spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
         }
@@ -488,7 +488,7 @@ namespace NWaves.DemoForms
         {
             if (_signal == null) return;
 
-            _filteredSignal = _filter.ApplyTo(_signal, FilteringOptions.DifferenceEquation);
+            _filteredSignal = _filter.ApplyTo(_signal, FilteringMethod.DifferenceEquation);
             signalAfterFilteringPanel.Signal = _filteredSignal;
             spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
         }
@@ -499,7 +499,8 @@ namespace NWaves.DemoForms
 
             _filter.Reset();
 
-            _filteredSignal = _filter.ApplyFilterCircularBuffer(_signal);
+            _filteredSignal = _filter.OnlineChunks(_signal);
+            //_filteredSignal = _filter.OnlineChunks(_signal, method: FilteringMethod.OverlapAdd);
             signalAfterFilteringPanel.Signal = _filteredSignal;
             spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
         }
