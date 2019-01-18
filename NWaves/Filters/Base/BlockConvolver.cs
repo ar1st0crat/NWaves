@@ -1,12 +1,11 @@
-﻿using NWaves.Filters.Base;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace NWaves.Operations.BlockConvolution
+namespace NWaves.Filters.Base
 {
     /// <summary>
     /// Class responsible for OLA/OLS block convolution.
@@ -39,6 +38,11 @@ namespace NWaves.Operations.BlockConvolution
         private float[] _convIm;
         private float[] _zeroblock;
         private float[] _lastDiscarded;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int HopSize => _fftSize - _kernel.Length + 1;
 
         /// <summary>
         /// Constructor
@@ -81,11 +85,6 @@ namespace NWaves.Operations.BlockConvolution
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public int ChunkSize => _fftSize - _kernel.Length + 1;
-
-        /// <summary>
         /// Offline OLA/OLS filtering (essential the same as Operation.BlockConvolve() method)
         /// </summary>
         /// <param name="signal"></param>
@@ -101,11 +100,11 @@ namespace NWaves.Operations.BlockConvolution
             var blockConvolver = new BlockConvolver(_kernel, _fftSize);
             var filtered = new float[signal.Length + _kernel.Length - 1];
 
-            var chunkSize = ChunkSize;
+            var hopSize = HopSize;
 
-            for (var i = 0; i < signal.Length; i += chunkSize)
+            for (var i = 0; i < signal.Length; i += hopSize)
             {
-                blockConvolver.Process(signal.Samples, filtered, chunkSize, i, i, method);
+                blockConvolver.Process(signal.Samples, filtered, _fftSize, i, i, method);
             }
 
             return new DiscreteSignal(signal.SamplingRate, filtered);
@@ -122,14 +121,14 @@ namespace NWaves.Operations.BlockConvolution
         /// <param name="method"></param>
         public void Process(float[] input,
                             float[] output,
-                            int count,
+                            int count = 0,
                             int inputPos = 0,
                             int outputPos = 0,
                             FilteringMethod method = FilteringMethod.Auto)
         {
             var M = _kernel.Length;
 
-            var hopSize = _fftSize - (M - 1);
+            var hopSize = HopSize;
 
             int n = inputPos, m = outputPos;
 

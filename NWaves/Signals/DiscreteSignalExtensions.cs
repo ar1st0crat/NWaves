@@ -66,7 +66,7 @@ namespace NWaves.Signals
 
             DiscreteSignal superimposed;
 
-            if (signal1.Length > signal2.Length)
+            if (signal1.Length >= signal2.Length)
             {
                 superimposed = signal1.Copy();
 
@@ -86,6 +86,49 @@ namespace NWaves.Signals
             }
 
             return superimposed;
+        }
+
+        /// <summary>
+        /// Method subtracts one signal from another.
+        /// If sizes are different then the smaller signal is broadcasted 
+        /// to fit the size of the larger signal.
+        /// </summary>
+        /// <param name="signal1"></param>
+        /// <param name="signal2"></param>
+        /// <returns></returns>
+        public static DiscreteSignal Subtract(this DiscreteSignal signal1, DiscreteSignal signal2)
+        {
+            if (signal1.SamplingRate != signal2.SamplingRate)
+            {
+                throw new ArgumentException("Sampling rates must be the same!");
+            }
+
+            DiscreteSignal subtracted;
+
+            if (signal1.Length >= signal2.Length)
+            {
+                subtracted = signal1.Copy();
+
+                for (var i = 0; i < signal2.Length; i++)
+                {
+                    subtracted[i] -= signal2.Samples[i];
+                }
+            }
+            else
+            {
+                subtracted = new DiscreteSignal(signal2.SamplingRate, signal2.Length);
+
+                for (var i = 0; i < signal1.Length; i++)
+                {
+                    subtracted[i] = signal1.Samples[i] - signal2.Samples[i];
+                }
+                for (var i = signal1.Length; i < signal2.Length; i++)
+                {
+                    subtracted[i] = -signal2.Samples[i];
+                }
+            }
+
+            return subtracted;
         }
 
         /// <summary>

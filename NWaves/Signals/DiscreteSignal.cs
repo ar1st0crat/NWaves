@@ -35,6 +35,11 @@ namespace NWaves.Signals
         public int Length => Samples.Length;
 
         /// <summary>
+        /// Duration of the signal (in sec)
+        /// </summary>
+        public double Duration => (double) Samples.Length / SamplingRate;
+
+        /// <summary>
         /// The most efficient constructor for initializing discrete signals
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
@@ -194,7 +199,7 @@ namespace NWaves.Signals
         /// <returns>RMS</returns>
         public float Rms(int startPos, int endPos)
         {
-            return (float)(Math.Sqrt(Energy(startPos, endPos)));
+            return (float) Math.Sqrt(Energy(startPos, endPos));
         }
 
         /// <summary>
@@ -203,7 +208,7 @@ namespace NWaves.Signals
         /// <returns>RMS</returns>
         public float Rms()
         {
-            return (float)(Math.Sqrt(Energy(0, Length)));
+            return (float) Math.Sqrt(Energy(0, Length));
         }
 
         /// <summary>
@@ -281,7 +286,7 @@ namespace NWaves.Signals
         #region overloaded operators
 
         /// <summary>
-        /// Overloaded + (superimpose signals)
+        /// Overloaded binary plus (superimpose signals)
         /// </summary>
         /// <param name="s1">Left signal</param>
         /// <param name="s2">Right signal</param>
@@ -289,6 +294,27 @@ namespace NWaves.Signals
         public static DiscreteSignal operator +(DiscreteSignal s1, DiscreteSignal s2)
         {
             return s1.Superimpose(s2);
+        }
+
+        /// <summary>
+        /// Overloaded unary minus (negated signal)
+        /// </summary>
+        /// <param name="s">Signal</param>
+        /// <returns>Negated signal</returns>
+        public static DiscreteSignal operator -(DiscreteSignal s)
+        {
+            return new DiscreteSignal(s.SamplingRate, s.Samples.Select(x => -x));
+        }
+
+        /// <summary>
+        /// Overloaded binary minus (difference signal)
+        /// </summary>
+        /// <param name="s1">Left signal</param>
+        /// <param name="s2">Right signal</param>
+        /// <returns>Difference signal</returns>
+        public static DiscreteSignal operator -(DiscreteSignal s1, DiscreteSignal s2)
+        {
+            return s1.Subtract(s2);
         }
 
         /// <summary>
@@ -314,7 +340,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Overloaded * (signal amplification)
+        /// Overloaded * (signal amplification/attenuation)
         /// </summary>
         /// <param name="s">Signal</param>
         /// <param name="coeff">Amplification coefficient</param>

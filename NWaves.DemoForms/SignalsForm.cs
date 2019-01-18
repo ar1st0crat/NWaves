@@ -55,6 +55,8 @@ namespace NWaves.DemoForms
             }
 
             signalPanel.Signal = _signal1;
+
+            Text = $"{ofd.FileName} | {_signal1.Length} samples | {_signal1.Duration} seconds";
         }
 
         private void openFileButton_Click(object sender, EventArgs e)
@@ -406,6 +408,11 @@ namespace NWaves.DemoForms
         private void noiseToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new NoiseForm().ShowDialog();
+        }
+
+        private void onlineToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new OnlineDemoForm().ShowDialog();
         }
 
         #endregion

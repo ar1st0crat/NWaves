@@ -94,6 +94,12 @@
     <Compile Include="NoiseForm.Designer.cs">
       <DependentUpon>NoiseForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="OnlineDemoForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OnlineDemoForm.Designer.cs">
+      <DependentUpon>OnlineDemoForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="PitchForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -164,6 +170,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="NoiseForm.resx">
       <DependentUpon>NoiseForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OnlineDemoForm.resx">
+      <DependentUpon>OnlineDemoForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PitchForm.resx">
       <DependentUpon>PitchForm.cs</DependentUpon>

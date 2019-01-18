@@ -121,8 +121,8 @@ var combination = signal1.Superimpose(signal2);
 
 // amplify / attenuate
 
-bits.Amplify(10);			// in-place
-bits.Attenuate(10);			// in-place
+bits.Amplify(10);		// in-place
+bits.Attenuate(10);		// in-place
 
 var bitStream = bits * 10;		// new signal
 
@@ -326,9 +326,8 @@ var correlated = Operation.CrossCorrelate(signal1, signal2);
 
 // block convolution (each block contains 4096 samples)
 
-var olaFiltered = Operation.BlockConvolve(signal, kernel, 4096, BlockConvolution.OverlapAdd);
-var olsFiltered = Operation.BlockConvolve(signal, kernel, 4096, BlockConvolution.OverlapSave);
-
+var olaFiltered = Operation.BlockConvolve(signal, kernel, 4096, FilteringMethod.OverlapAdd);
+var olsFiltered = Operation.BlockConvolve(signal, kernel, 4096, FilteringMethod.OverlapSave);
 
 // resampling:
 
@@ -412,6 +411,45 @@ var wahwah = new WahWahEffect(lfoFrequency: 2/*Hz*/);
 var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
 
 ```
+
+
+### Online processing
+
+```C#
+
+// OLA/OLS:
+
+FirFilter filter = new FirFilter(kernel);
+
+var blockConvolver = BlockConvolver.FromFilter(filter, 16384);
+
+var output = new float[16384];	// or bigger
+
+
+// processing loop:
+// while new input is available
+{
+	blockConvolver.Process(input, output, method: FilteringMethod.OverlapSave);
+}
+// input and output must be at least 16384-size arrays of floats (FFT size)
+// Note. for OLS chunk size (FFT size) must be at least twice as large as filter kernel.
+
+// =====================================================================================
+
+// filters act the same way essentially;
+// for demo let's emulate the frame-by-frame loop:
+
+var input = signal.Samples;
+var output = new float[input.Length];
+
+for (int i = 0; i + frameSize < input.Length; i += frameSize)
+{
+	filter.Process(input, output, frameSize, i, i, method);
+}
+
+```
+
+See also OnlineDemoForm code.
 
 
 ### Feature extractors

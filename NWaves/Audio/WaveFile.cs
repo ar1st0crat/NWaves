@@ -357,7 +357,7 @@ namespace NWaves.Audio
         {
             get
             {
-                if (channel != Channels.Interleave && channel != Channels.Average)
+                if (channel != Channels.Interleave && channel != Channels.Sum && channel != Channels.Average)
                 {
                     return Signals[(int)channel];
                 }
@@ -371,7 +371,24 @@ namespace NWaves.Audio
 
                 var length = Signals[0].Length;
 
-                // 1) AVERAGING
+                // 1) SUMMING
+
+                if (channel == Channels.Sum)
+                {
+                    var sumSamples = new float[length];
+
+                    for (var i = 0; i < sumSamples.Length; i++)
+                    {
+                        for (var j = 0; j < Signals.Count; j++)
+                        {
+                            sumSamples[i] += Signals[j][i];
+                        }
+                    }
+
+                    return new DiscreteSignal(WaveFmt.SamplingRate, sumSamples);
+                }
+
+                // 2) AVERAGING
 
                 if (channel == Channels.Average)
                 {
@@ -389,8 +406,8 @@ namespace NWaves.Audio
                     return new DiscreteSignal(WaveFmt.SamplingRate, avgSamples);
                 }
 
-                // 2) if it ain't mono, we start ACTUALLY interleaving:
-                
+                // 3) if it ain't mono, we start ACTUALLY interleaving:
+
                 var samples = new float[WaveFmt.ChannelCount * length];
 
                 var idx = 0;

@@ -38,8 +38,10 @@ namespace NWaves.Features
         /// <param name="hopSize"></param>
         /// <param name="low"></param>
         /// <param name="high"></param>
-        public Pitch(double windowSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/,
-                     double low = 80, double high = 400)
+        public Pitch(double windowSize = 0.0256/*sec*/,
+                     double hopSize = 0.010/*sec*/,
+                     double low = 80,
+                     double high = 400)
         {
             _windowSize = windowSize;
             _hopSize = hopSize;
