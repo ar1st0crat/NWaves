@@ -16,9 +16,12 @@ namespace NWaves.DemoForms
         BlockConvolver _blockConvolver;
 
         int _chunkPos = 0;
+        int _chunkNo = 0;
 
         float[] _input;
         float[] _output;
+
+        int _fftSize;
 
         public OnlineDemoForm()
         {
@@ -28,14 +31,14 @@ namespace NWaves.DemoForms
 
         private void ApplySettings()
         {
-            var fftSize = int.Parse(fftSizeTextBox.Text);
+            _fftSize = int.Parse(fftSizeTextBox.Text);
 
             chunkTimer.Interval = int.Parse(intervalTextBox.Text);
-            var filter = DesignFilter.FirLp(int.Parse(kernelSizeTextBox.Text), 0.25);
-            _blockConvolver = BlockConvolver.FromFilter(filter, fftSize);
+            var filter = DesignFilter.FirLp(int.Parse(kernelSizeTextBox.Text), 0.2);
+            _blockConvolver = BlockConvolver.FromFilter(filter, _fftSize);
 
-            _input = new float[fftSize];
-            _output = new float[fftSize];
+            _input = new float[_fftSize];
+            _output = new float[_fftSize];
         }
 
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
@@ -71,6 +74,7 @@ namespace NWaves.DemoForms
         {
             chunkTimer.Stop();
             _chunkPos = 0;
+            _chunkNo = 0;
         }
 
         private void applyButton_Click(object sender, EventArgs e)
@@ -85,18 +89,23 @@ namespace NWaves.DemoForms
             var length = Math.Min(_input.Length, _signal.Length - _chunkPos);
             _signal.Samples.FastCopyTo(_input, length, _chunkPos);
             _chunkPos += _blockConvolver.HopSize;
+            _chunkNo++;
 
             // process it
 
-            _blockConvolver.Process(_input, _output, method: FilteringMethod.OverlapAdd);
+            _blockConvolver.Process(_input, _output, method: FilteringMethod.OverlapSave);
 
             signalPlot.Signal = new DiscreteSignal(_signal.SamplingRate, _input);
             filteredSignalPlot.Signal = new DiscreteSignal(_signal.SamplingRate, _output);
 
             if (_chunkPos > _signal.Length)
             {
-                _chunkPos = 0;  // start all over again
+                _chunkPos = 0;              // start all over again
+                _chunkNo = 0;
+                _blockConvolver.Reset();
             }
+
+            labelInfo.Text = $"Chunk #{_chunkNo + 1} / Processed {(float)_chunkNo*_fftSize/_signal.SamplingRate} seconds";
         }
     }
 }

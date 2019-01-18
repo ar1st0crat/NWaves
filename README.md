@@ -15,7 +15,8 @@ Already available:
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
 - [x] basic operations (convolution, cross-correlation, rectification, resampling, spectral subtraction)
-- [x] block convolution (overlap-add, overlap-save)
+- [x] block convolution (overlap-add / overlap-save offline and online)
+- [x] FIR/IIR filtering (offline and online)
 - [x] modulation (AM, ring, FM, PM)
 - [x] basic filter design & analysis (group delay, zeros/poles, window-sinc, HP from/to LP, combining filters)
 - [x] non-linear filters (median filter, overdrive and distortion effects)
@@ -431,15 +432,30 @@ var output = new float[16384];	// or bigger
 {
 	blockConvolver.Process(input, output, method: FilteringMethod.OverlapSave);
 }
-// input and output must be at least 16384-size arrays of floats (FFT size)
-// Note. for OLS chunk size (FFT size) must be at least twice as large as filter kernel.
+// input and output arrays must be at least 16384-size arrays of floats (FFT size)
+// but chunks, fed to the block convolver, MUST have length <FFTsize> and be fed one after another.
+
 
 // =====================================================================================
 
-// filters act the same way essentially;
-// for demo let's emulate the frame-by-frame loop:
+// filters act the same way essentially
+// however input and output arrays can have any length at any given processing step
+// (so the code above will also work for filters);
 
+// while new input is available
+{
+	filter.Process(input, output, input.Length);
+}
+
+
+// yet for demo let's also emulate the frame-by-frame loop:
+
+var frameSize = 128;
+
+// big input array (we'll process it frame-by-frame in a loop)
 var input = signal.Samples;
+
+// big resulting array that will be filled more and more after processing each frame
 var output = new float[input.Length];
 
 for (int i = 0; i + frameSize < input.Length; i += frameSize)

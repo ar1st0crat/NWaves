@@ -22,6 +22,13 @@
                      FilteringMethod method = FilteringMethod.Auto);
 
         /// <summary>
+        /// TODO:
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        //float Process(float input);
+
+        /// <summary>
         /// Method for resetting the filter
         /// </summary>
         void Reset();

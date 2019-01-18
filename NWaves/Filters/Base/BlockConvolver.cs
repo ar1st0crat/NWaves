@@ -37,7 +37,7 @@ namespace NWaves.Filters.Base
         private float[] _convRe;
         private float[] _convIm;
         private float[] _zeroblock;
-        private float[] _lastDiscarded;
+        private float[] _lastSaved;
 
         /// <summary>
         /// 
@@ -70,6 +70,8 @@ namespace NWaves.Filters.Base
             _zeroblock = new float[_fftSize];
 
             _fft.Direct(_kernelSpectrumRe, _kernelSpectrumIm);
+
+            Reset();
         }
 
         /// <summary>
@@ -90,7 +92,7 @@ namespace NWaves.Filters.Base
         /// <param name="signal"></param>
         /// <param name="method"></param>
         /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.OverlapAdd)
+        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.OverlapSave)
         {
             if (signal.Length < _fftSize)
             {
@@ -124,7 +126,7 @@ namespace NWaves.Filters.Base
                             int count = 0,
                             int inputPos = 0,
                             int outputPos = 0,
-                            FilteringMethod method = FilteringMethod.Auto)
+                            FilteringMethod method = FilteringMethod.OverlapSave)
         {
             var M = _kernel.Length;
 
@@ -135,6 +137,9 @@ namespace NWaves.Filters.Base
             _zeroblock.FastCopyTo(_blockRe, _fftSize);
             _zeroblock.FastCopyTo(_blockIm, _fftSize);
 
+            /**
+             *  ===================================== OVERLAP-ADD ========================================
+             */ 
             if (method == FilteringMethod.OverlapAdd)
             {
                 int k = Math.Min(hopSize, input.Length - n);
@@ -151,26 +156,23 @@ namespace NWaves.Filters.Base
 
                 for (var j = 0; j < M - 1; j++)
                 {
-                    output[m + j] += _convRe[j];
+                    _convRe[j] += _lastSaved[j];
                 }
 
-                _convRe.FastCopyTo(output, k, M - 1, m + M - 1);
+                _convRe.FastCopyTo(_lastSaved, M - 1, hopSize);
+                _convRe.FastCopyTo(output, k, 0, m);
             }
+            /**
+             *  ===================================== OVERLAP-SAVE ========================================
+             */
             else
             {
                 int k = Math.Min(hopSize, input.Length - n);
                 input.FastCopyTo(_blockRe, k, n, M - 1);
 
-                if (_lastDiscarded != null)
-                {
-                    _lastDiscarded.FastCopyTo(_blockRe, M - 1);
-                }
-                else
-                { 
-                    _lastDiscarded = new float[M - 1];
-                }
+                _lastSaved.FastCopyTo(_blockRe, M - 1);
 
-                input.FastCopyTo(_lastDiscarded, M - 1, n + k - (M - 1));
+                _blockRe.FastCopyTo(_lastSaved, M - 1, k);
 
                 _fft.Direct(_blockRe, _blockIm);
                 for (var j = 0; j < _fftSize; j++)
@@ -189,7 +191,8 @@ namespace NWaves.Filters.Base
         /// </summary>
         public void Reset()
         {
-            _lastDiscarded = null;
+            _lastSaved = null;
+            _lastSaved = new float[_kernel.Length - 1];
         }
     }
 }

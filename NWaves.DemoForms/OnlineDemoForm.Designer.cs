@@ -44,6 +44,7 @@
             this.chunkTimer = new System.Windows.Forms.Timer(this.components);
             this.applyButton = new System.Windows.Forms.Button();
             this.filteredSignalPlot = new NWaves.DemoForms.UserControls.SignalPlot();
+            this.labelInfo = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -190,11 +191,21 @@
             this.filteredSignalPlot.Stride = 64;
             this.filteredSignalPlot.TabIndex = 13;
             // 
+            // labelInfo
+            // 
+            this.labelInfo.AutoSize = true;
+            this.labelInfo.Location = new System.Drawing.Point(278, 161);
+            this.labelInfo.Name = "labelInfo";
+            this.labelInfo.Size = new System.Drawing.Size(208, 17);
+            this.labelInfo.TabIndex = 14;
+            this.labelInfo.Text = "Chunk #1 Processed 0 seconds";
+            // 
             // OnlineDemoForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(702, 539);
+            this.Controls.Add(this.labelInfo);
             this.Controls.Add(this.filteredSignalPlot);
             this.Controls.Add(this.applyButton);
             this.Controls.Add(this.label3);
@@ -235,5 +246,6 @@
         private System.Windows.Forms.Timer chunkTimer;
         private System.Windows.Forms.Button applyButton;
         private UserControls.SignalPlot filteredSignalPlot;
+        private System.Windows.Forms.Label labelInfo;
     }
 }

@@ -174,7 +174,6 @@ namespace NWaves.Operations
                                                    int fftSize,
                                                    FilteringMethod method = FilteringMethod.OverlapAdd)
         {
-            //fftSize = 512;
             if (kernel.Length > fftSize)
             {
                 throw new ArgumentException("Kernel length must not exceed the size of FFT!");
