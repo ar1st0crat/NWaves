@@ -41,8 +41,10 @@
     <Compile Include="FilterTests\TestIirFilter.cs" />
     <Compile Include="FilterTests\TestMedianFilter.cs" />
     <Compile Include="FilterTests\TestTransferFunction.cs" />
+    <Compile Include="FeaturesTest\TestFeaturePostProcessing.cs" />
     <Compile Include="OperationTests\TestResampling.cs" />
     <Compile Include="SignalTests\TestSignalBuilders.cs" />
+    <Compile Include="TransformTests\TestFft.cs" />
     <Compile Include="UtilTests\TestMathFunctions.cs" />
     <Compile Include="UtilTests\TestScaleFunctions.cs" />
     <Compile Include="OperationTests\TestConvolution.cs" />

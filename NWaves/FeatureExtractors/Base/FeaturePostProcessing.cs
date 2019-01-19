@@ -38,7 +38,7 @@ namespace NWaves.FeatureExtractors.Base
         /// Variance normalization (divide by unbiased estimate of stdev)
         /// </summary>
         /// <param name="vectors">Sequence of feature vectors</param>
-        public static void NormalizeVariance(IList<FeatureVector> vectors)
+        public static void NormalizeVariance(IList<FeatureVector> vectors, int bias = 1)
         {
             var n = vectors.Count;
 
@@ -52,27 +52,32 @@ namespace NWaves.FeatureExtractors.Base
             for (var i = 0; i < featureCount; i++)
             {
                 var mean = vectors.Average(t => t.Features[i]);
-                var std = vectors.Sum(t => (t.Features[i] - mean) * (t.Features[i] - mean) / (n - 1));
+                var std = vectors.Sum(t => (t.Features[i] - mean) * (t.Features[i] - mean) / (n - bias));
+
+                if (std < Math.Abs(1e-10))      // avoid dividing by zero
+                {
+                    std = 1;
+                }
 
                 foreach (var vector in vectors)
                 {
-                    vector.Features[i] /= std;
+                    vector.Features[i] /= (float)Math.Sqrt(std);
                 }
             }
         }
 
         /// <summary>
-        /// Method for complementing feature vectors with 1st and 2nd order derivatives.
+        /// Method for complementing feature vectors with 1st and (by default) 2nd order derivatives.
         /// </summary>
         /// <param name="vectors"></param>
         /// <param name="previous"></param>
         /// <param name="next"></param>
+        /// <param name="includeDeltaDelta"></param>
         public static void AddDeltas(IList<FeatureVector> vectors, 
                                      IList<FeatureVector> previous = null,
-                                     IList<FeatureVector> next = null)
+                                     IList<FeatureVector> next = null,
+                                     bool includeDeltaDelta = true)
         {
-            const int N = 2;
-
             if (previous == null)
             {
                 previous = new List<FeatureVector> { vectors[0], vectors[0] };
@@ -85,12 +90,15 @@ namespace NWaves.FeatureExtractors.Base
             var featureCount = vectors[0].Features.Length;
 
             var sequence = previous.Concat(vectors).Concat(next).ToArray();
-            
+
             // deltas:
+
+            const int N = 2;
+            int M = 2 * Enumerable.Range(1, N).Sum(x => x * x);  // scaling in denominator
 
             for (var i = N; i < sequence.Length - N; i++)
             {
-                var f = new float[3 * featureCount];
+                var f = includeDeltaDelta ? new float[3 * featureCount] : new float[2 * featureCount];
 
                 for (var j = 0; j < featureCount; j++)
                 {
@@ -103,12 +111,19 @@ namespace NWaves.FeatureExtractors.Base
                     {
                         num += n * (sequence[i + n].Features[j] - sequence[i - n].Features[j]);
                     }
-                    f[j + featureCount] = num / 10;
+                    f[j + featureCount] = num / M;
                 }
                 vectors[i - N].Features = f;
             }
 
+            if (!includeDeltaDelta) return;
+
             // delta-deltas:
+
+            vectors[0].Features.FastCopyTo(sequence[0].Features, featureCount, featureCount, featureCount);
+            vectors[0].Features.FastCopyTo(sequence[1].Features, featureCount, featureCount, featureCount);
+            vectors.Last().Features.FastCopyTo(sequence[vectors.Count].Features, featureCount, featureCount, featureCount);
+            vectors.Last().Features.FastCopyTo(sequence[vectors.Count+1].Features, featureCount, featureCount, featureCount);
 
             for (var i = N; i < sequence.Length - N; i++)
             {
@@ -120,7 +135,7 @@ namespace NWaves.FeatureExtractors.Base
                         num += n * (sequence[i + n].Features[j + featureCount] -
                                     sequence[i - n].Features[j + featureCount]);
                     }
-                    vectors[i - N].Features[j + 2 * featureCount] = num / 10;
+                    vectors[i - N].Features[j + 2 * featureCount] = num / M;
                 }
             }
         }

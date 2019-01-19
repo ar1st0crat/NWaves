@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NWaves.Signals;
+using NWaves.Utils;
 
 namespace NWaves.FeatureExtractors.Base
 {
@@ -75,6 +76,20 @@ namespace NWaves.FeatureExtractors.Base
         public List<FeatureVector> ComputeFrom(DiscreteSignal signal)
         {
             return ComputeFrom(signal, 0, signal.Length);
+        }
+
+        /// <summary>
+        /// Compute the sequence of feature vectors from custom sequence of samples
+        /// </summary>
+        /// <param name="samples">Sequence of real-valued samples</param>
+        /// <param name="samplingRate">The sampling rate of the sequence</param>
+        /// <returns>Sequence of feature vectors</returns>
+        public List<FeatureVector> ComputeFrom(float[] samples, int samplingRate, int startSample, int endSample)
+        {
+            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
+
+            return ComputeFrom(new DiscreteSignal(samplingRate,
+                                                  samples.FastCopyFragment(endSample - startSample, startSample)));
         }
 
         /// <summary>

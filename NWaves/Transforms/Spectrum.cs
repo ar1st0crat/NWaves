@@ -156,7 +156,7 @@ namespace NWaves.Transforms
         /// FFT shift (in-place)
         /// </summary>
         /// <param name="samples"></param>
-        public void Shift(float[] samples)
+        public static void Shift(float[] samples)
         {
             if ((samples.Length & 1) == 1)
             {
@@ -165,11 +165,12 @@ namespace NWaves.Transforms
 
             var mid = samples.Length / 2;
 
-            for (var i = 0; i < mid; i++)
+            for (var i = 0; i < samples.Length / 2; i++)
             {
+                var shift = i + mid;
                 var tmp = samples[i];
-                samples[i] = samples[mid + i];
-                samples[mid + i] = tmp;
+                samples[i] = samples[shift];
+                samples[shift] = tmp;
             }
         }
     }

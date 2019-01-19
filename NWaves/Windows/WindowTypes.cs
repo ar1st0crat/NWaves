@@ -34,6 +34,16 @@ namespace NWaves.Windows
         /// Gaussian window
         /// </summary>
         Gaussian,
+
+        /// <summary>
+        /// Kaiser window
+        /// </summary>
+        Kaiser,
+
+        /// <summary>
+        /// Kaiser-Bessel Derived window
+        /// </summary>
+        Kbd,
         
         /// <summary>
         /// Window for cepstral liftering

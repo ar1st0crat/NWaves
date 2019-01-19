@@ -157,12 +157,7 @@ namespace NWaves.DemoForms
             this.spectrumPanel.AutoScroll = true;
             this.spectrumPanel.BackColor = System.Drawing.SystemColors.ButtonHighlight;
             this.spectrumPanel.ForeColor = System.Drawing.Color.Blue;
-            this.spectrumPanel.Gain = null;
-            this.spectrumPanel.Legend = null;
-            this.spectrumPanel.Line = null;
             this.spectrumPanel.Location = new System.Drawing.Point(812, 332);
-            this.spectrumPanel.Mark = null;
-            this.spectrumPanel.Markline = null;
             this.spectrumPanel.Name = "spectrumPanel";
             this.spectrumPanel.PaddingX = 30;
             this.spectrumPanel.PaddingY = 20;
@@ -603,12 +598,8 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.Button stftButton;
         private System.Windows.Forms.ToolStripMenuItem noiseToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem playbackToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem playToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem pauseToolStripMenuItem1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripMenuItem recordToolStripMenuItem1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripMenuItem stopToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem onlineToolStripMenuItem;
     }
 }

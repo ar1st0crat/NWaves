@@ -49,9 +49,9 @@ namespace NWaves.Windows
         /// </summary>
         /// <param name="samples"></param>
         /// <param name="window"></param>
-        public static void ApplyWindow(this float[] samples, WindowTypes window)
+        public static void ApplyWindow(this float[] samples, WindowTypes window, params object[] parameters)
         {
-            var windowSamples = Window.OfType(window, samples.Length);
+            var windowSamples = Window.OfType(window, samples.Length, parameters);
             samples.ApplyWindow(windowSamples);
         }
 
@@ -60,9 +60,9 @@ namespace NWaves.Windows
         /// </summary>
         /// <param name="samples"></param>
         /// <param name="window"></param>
-        public static void ApplyWindow(this double[] samples, WindowTypes window)
+        public static void ApplyWindow(this double[] samples, WindowTypes window, params object[] parameters)
         {
-            var windowSamples = Window.OfType(window, samples.Length).ToDoubles();
+            var windowSamples = Window.OfType(window, samples.Length, parameters).ToDoubles();
             samples.ApplyWindow(windowSamples);
         }
 
@@ -71,9 +71,9 @@ namespace NWaves.Windows
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="window"></param>
-        public static void ApplyWindow(this DiscreteSignal signal, WindowTypes window)
+        public static void ApplyWindow(this DiscreteSignal signal, WindowTypes window, params object[] parameters)
         {
-            var windowSamples = Window.OfType(window, signal.Length);
+            var windowSamples = Window.OfType(window, signal.Length, parameters);
             signal.Samples.ApplyWindow(windowSamples);
         }
     }

@@ -353,5 +353,29 @@ namespace NWaves.Utils
 
             return new [] { q, r };
         }
+
+        /// <summary>
+        /// Modified Bessel function of the 1st kind (Taylor series, not very precise method)
+        /// </summary>
+        /// <param name="x">x</param>
+        /// <returns>I0(x)</returns>
+        public static double I0(double x)
+        {
+            double y = 1.0;
+            double prev = 1.0;
+            double summand = 0;
+
+            var i = 1;
+
+            while (Math.Abs(prev) > 1e-20)
+            {
+                summand = prev * x * x / (4 * i * i);
+                y += summand;
+                prev = summand;
+                i++;
+            }
+
+            return y;
+        }
     }
 }

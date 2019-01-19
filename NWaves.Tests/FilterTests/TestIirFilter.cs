@@ -22,12 +22,6 @@ namespace NWaves.Tests.FilterTests
         }
 
         [Test]
-        public void TestFilterImplementedViaCircularBuffer()
-        {
-            AssertFilterOutput(_filter.ApplyFilterCircularBuffer(_signal, _signal.Length - 1));
-        }
-
-        [Test]
         public void TestImpulseResponse()
         {
             AssertFilterOutput(new DiscreteSignal(1, _filter.ImpulseResponse().ToFloats()));

@@ -15,7 +15,7 @@ namespace NWaves.Windows
         /// <param name="type">Window type</param>
         /// <param name="length">Window length</param>
         /// <returns></returns>
-        public static float[] OfType(WindowTypes type, int length)
+        public static float[] OfType(WindowTypes type, int length, params object[] parameters)
         {
             switch (type)
             {
@@ -34,8 +34,14 @@ namespace NWaves.Windows
                 case WindowTypes.Gaussian:
                     return Gaussian(length);
 
+                case WindowTypes.Kaiser:
+                    return parameters.Length > 0 ? Kaiser(length, (double)parameters[0]) : Kaiser(length);
+
+                case WindowTypes.Kbd:
+                    return parameters.Length > 0 ? Kbd(length, (double)parameters[0]) : Kbd(length);
+
                 case WindowTypes.Liftering:
-                    return Liftering(length);
+                    return parameters.Length > 0 ? Liftering(length, (int)parameters[0]) : Liftering(length);
 
                 default:
                     return Rectangular(length);
@@ -115,6 +121,46 @@ namespace NWaves.Windows
             return Enumerable.Range(0, length)
                              .Select(i => Math.Exp(-0.5 * Math.Pow((i - n) / (0.4 * n), 2)))
                              .ToFloats();
+        }
+
+        /// <summary>
+        /// Kaiser window
+        /// </summary>
+        /// <param name="length">Length of the window</param>
+        /// <returns>Kaiser window</returns>
+        public static float[] Kaiser(int length, double alpha = 12.0)
+        {
+            var n = 2.0 / (length - 1);
+            return Enumerable.Range(0, length)
+                             .Select(i => MathUtils.I0(alpha * Math.Sqrt(1 - (i * n - 1) * (i * n - 1))) / MathUtils.I0(alpha))
+                             .ToFloats();
+        }
+
+        /// <summary>
+        /// Kaiser-Bessel Derived window
+        /// </summary>
+        /// <param name="length">Length of the window</param>
+        /// <returns>KBD window</returns>
+        public static float[] Kbd(int length, double alpha = 4.0)
+        {
+            var kbd = new float[length];
+
+            var n = 4.0 / length;
+            var sum = 0.0;
+
+            for (int i = 0; i <= length / 2; i++)
+            {
+                sum += MathUtils.I0(Math.PI * alpha * Math.Sqrt(1 - (i * n - 1) * (i * n - 1)));
+                kbd[i] = (float)sum;
+            }
+
+            for (int i = 0; i < length / 2; i++)
+            {
+                kbd[i] = (float)Math.Sqrt(kbd[i] / sum);
+                kbd[length - 1 - i] = kbd[i];
+            }
+
+            return kbd;
         }
 
         /// <summary>
