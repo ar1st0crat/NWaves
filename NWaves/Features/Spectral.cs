@@ -29,19 +29,14 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Spectral spread (variance)
+        /// Spectral spread
         /// </summary>
         /// <param name="spectrum"></param>
         /// <param name="frequencies"></param>
         /// <returns></returns>
         public static float Spread(float[] spectrum, float[] frequencies)
         {
-            var mean = 0.0f;
-            for (var i = 1; i < spectrum.Length; i++)
-            {
-                mean += spectrum[i];
-            }
-            mean /= spectrum.Length;
+            var centroid = Centroid(spectrum, frequencies);
 
             var sum = 0.0f;
             var weightedSum = 0.0f;
@@ -49,10 +44,10 @@ namespace NWaves.Features
             for (var i = 1; i < spectrum.Length; i++)
             {
                 sum += spectrum[i];
-                weightedSum += spectrum[i] * (frequencies[i] - mean) * (frequencies[i] - mean);
+                weightedSum += spectrum[i] * (frequencies[i] - centroid) * (frequencies[i] - centroid);
             }
 
-            return weightedSum / sum;
+            return (float) Math.Sqrt(weightedSum / sum);
         }
 
         /// <summary>
@@ -112,33 +107,6 @@ namespace NWaves.Features
             }
 
             return frequencies[index];
-        }
-
-        /// <summary>
-        /// Spectral bandwidth:
-        /// 
-        ///  (sum_k { S[k] * (freq[k] - centroid)^p }) ^ (1/p)
-        /// 
-        /// NB. S[k] is normalized (S[k] = s[k] / sum{|s[k]|})
-        ///   
-        /// </summary>
-        /// <param name="spectrum"></param>
-        /// <param name="frequencies">Centre frequencies</param>
-        /// <param name="p"></param>
-        /// <returns></returns>
-        public static float Bandwidth(float[] spectrum, float[] frequencies, float p = 2)
-        {
-            var centroid = Centroid(spectrum, frequencies);
-
-            var norm = spectrum.Sum(s => Math.Abs(s));
-
-            var sum = 0.0;
-            for (var i = 1; i < spectrum.Length; i++)
-            {
-                sum += spectrum[i] / norm * Math.Pow(Math.Abs(frequencies[i] - centroid), p);
-            }
-
-            return (float)Math.Pow(sum, 1/p);
         }
 
         /// <summary>
@@ -247,6 +215,33 @@ namespace NWaves.Features
             avgValleys /= selectedCount;
 
             return (float)Math.Log10(avgPeaks / avgValleys);
+        }
+
+        /// <summary>
+        /// Shannon entropy of a spectrum (spectrum is treated as p.d.f.)
+        /// </summary>
+        public static float Entropy(float[] spectrum)
+        {
+            var entropy = 0.0;
+
+            var sum = spectrum.Sum();
+
+            if (sum < 1e-8)
+            {
+                return 0;
+            }
+
+            for (var i = 0; i < spectrum.Length; i++)
+            {
+                var p = spectrum[i] / sum;
+
+                if (p > 1e-8)
+                {
+                    entropy += p * Math.Log(p, 2);
+                }
+            }
+
+            return (float)(-entropy / Math.Log(spectrum.Length, 2));
         }
     }
 }

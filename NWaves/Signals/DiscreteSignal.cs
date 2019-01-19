@@ -163,6 +163,77 @@ namespace NWaves.Signals
             }
         }
 
+        #region overloaded operators
+
+        /// <summary>
+        /// Overloaded binary plus (superimpose signals)
+        /// </summary>
+        /// <param name="s1">Left signal</param>
+        /// <param name="s2">Right signal</param>
+        /// <returns>Superimposed signal</returns>
+        public static DiscreteSignal operator +(DiscreteSignal s1, DiscreteSignal s2)
+        {
+            return s1.Superimpose(s2);
+        }
+
+        /// <summary>
+        /// Overloaded unary minus (negated signal)
+        /// </summary>
+        /// <param name="s">Signal</param>
+        /// <returns>Negated signal</returns>
+        public static DiscreteSignal operator -(DiscreteSignal s)
+        {
+            return new DiscreteSignal(s.SamplingRate, s.Samples.Select(x => -x));
+        }
+
+        /// <summary>
+        /// Overloaded binary minus (difference signal)
+        /// </summary>
+        /// <param name="s1">Left signal</param>
+        /// <param name="s2">Right signal</param>
+        /// <returns>Difference signal</returns>
+        public static DiscreteSignal operator -(DiscreteSignal s1, DiscreteSignal s2)
+        {
+            return s1.Subtract(s2);
+        }
+
+        /// <summary>
+        /// Overloaded + (add constant)
+        /// </summary>
+        /// <param name="s">Signal</param>
+        /// <param name="constant">Constant to add to each sample</param>
+        /// <returns>Modified signal</returns>
+        public static DiscreteSignal operator +(DiscreteSignal s, float constant)
+        {
+            return new DiscreteSignal(s.SamplingRate, s.Samples.Select(x => x + constant));
+        }
+
+        /// <summary>
+        /// Overloaded - (subtract constant)
+        /// </summary>
+        /// <param name="s">Signal</param>
+        /// <param name="constant">Constant to subtract from each sample</param>
+        /// <returns>Modified signal</returns>
+        public static DiscreteSignal operator -(DiscreteSignal s, float constant)
+        {
+            return new DiscreteSignal(s.SamplingRate, s.Samples.Select(x => x - constant));
+        }
+
+        /// <summary>
+        /// Overloaded * (signal amplification/attenuation)
+        /// </summary>
+        /// <param name="s">Signal</param>
+        /// <param name="coeff">Amplification coefficient</param>
+        /// <returns>Amplified signal</returns>
+        public static DiscreteSignal operator *(DiscreteSignal s, float coeff)
+        {
+            var signal = s.Copy();
+            signal.Amplify(coeff);
+            return signal;
+        }
+
+        #endregion
+
         #region time-domain characteristics
 
         /// <summary>
@@ -249,27 +320,63 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Entropy of a signal fragment
+        /// Shannon entropy of a signal fragment (computed from uniform bins)
         /// </summary>
         /// <param name="startPos">Starting sample</param>
         /// <param name="endPos">Ending sample (exclusive)</param>
-        /// <returns>Entropy</returns>
-        public float Entropy(int startPos, int endPos)
+        /// <returns>Shannon entropy</returns>
+        public float Entropy(int startPos, int endPos, int binCount = 32)
         {
+            var len = endPos - startPos;
+
+            if (len < binCount)
+            {
+                binCount = len;
+            }
+
+            var bins = new int[binCount+1];
+
+            var min = Samples[0];
+            var max = Samples[0];
             var sum = 0.0f;
             for (var i = startPos; i < endPos; i++)
             {
-                sum += Math.Abs(Samples[i]);
+                var sample = Math.Abs(Samples[i]);
+                sum += sample;
+                if (sample < min)
+                {
+                    min = sample;
+                }
+                if (sample > max)
+                {
+                    max = sample;
+                }
+            }
+
+            if (max - min < 1e-8)
+            {
+                return 0;
+            }
+
+            var binLength = (max - min) / binCount;
+
+            for (var i = startPos; i < endPos; i++)
+            {
+                bins[(int)((Math.Abs(Samples[i]) - min) / binLength)]++;
             }
 
             var entropy = 0.0;
-            for (var i = startPos; i < endPos; i++)
+            for (var i = 0; i < binCount; i++)
             {
-                var p = Math.Abs(Samples[i]) / sum;
-                entropy -= p * Math.Log(p + float.Epsilon, 2);
+                var p = (float) bins[i] / (endPos - startPos);
+
+                if (p > 1e-8)
+                {
+                    entropy += p * Math.Log(p, 2);
+                }
             }
 
-            return (float)entropy;
+            return (float)(-entropy / Math.Log(binCount, 2));
         }
 
         /// <summary>
@@ -279,77 +386,6 @@ namespace NWaves.Signals
         public float Entropy()
         {
             return Entropy(0, Length);
-        }
-
-        #endregion
-
-        #region overloaded operators
-
-        /// <summary>
-        /// Overloaded binary plus (superimpose signals)
-        /// </summary>
-        /// <param name="s1">Left signal</param>
-        /// <param name="s2">Right signal</param>
-        /// <returns>Superimposed signal</returns>
-        public static DiscreteSignal operator +(DiscreteSignal s1, DiscreteSignal s2)
-        {
-            return s1.Superimpose(s2);
-        }
-
-        /// <summary>
-        /// Overloaded unary minus (negated signal)
-        /// </summary>
-        /// <param name="s">Signal</param>
-        /// <returns>Negated signal</returns>
-        public static DiscreteSignal operator -(DiscreteSignal s)
-        {
-            return new DiscreteSignal(s.SamplingRate, s.Samples.Select(x => -x));
-        }
-
-        /// <summary>
-        /// Overloaded binary minus (difference signal)
-        /// </summary>
-        /// <param name="s1">Left signal</param>
-        /// <param name="s2">Right signal</param>
-        /// <returns>Difference signal</returns>
-        public static DiscreteSignal operator -(DiscreteSignal s1, DiscreteSignal s2)
-        {
-            return s1.Subtract(s2);
-        }
-
-        /// <summary>
-        /// Overloaded + (add constant)
-        /// </summary>
-        /// <param name="s">Signal</param>
-        /// <param name="constant">Constant to add to each sample</param>
-        /// <returns>Modified signal</returns>
-        public static DiscreteSignal operator +(DiscreteSignal s, float constant)
-        {
-            return new DiscreteSignal(s.SamplingRate, s.Samples.Select(x => x + constant));
-        }
-
-        /// <summary>
-        /// Overloaded - (subtract constant)
-        /// </summary>
-        /// <param name="s">Signal</param>
-        /// <param name="constant">Constant to subtract from each sample</param>
-        /// <returns>Modified signal</returns>
-        public static DiscreteSignal operator -(DiscreteSignal s, float constant)
-        {
-            return new DiscreteSignal(s.SamplingRate, s.Samples.Select(x => x - constant));
-        }
-
-        /// <summary>
-        /// Overloaded * (signal amplification/attenuation)
-        /// </summary>
-        /// <param name="s">Signal</param>
-        /// <param name="coeff">Amplification coefficient</param>
-        /// <returns>Amplified signal</returns>
-        public static DiscreteSignal operator *(DiscreteSignal s, float coeff)
-        {
-            var signal = s.Copy();
-            signal.Amplify(coeff);
-            return signal;
         }
 
         #endregion

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using NWaves.Filters.Base;
 using NWaves.Filters.Fda;
 using NWaves.Signals;
 using NWaves.Utils;
@@ -19,8 +20,9 @@ namespace NWaves.Operations
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="factor"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        public static DiscreteSignal Interpolate(DiscreteSignal signal, int factor)
+        public static DiscreteSignal Interpolate(DiscreteSignal signal, int factor, FirFilter filter = null)
         {
             if (factor == 1)
             {
@@ -36,11 +38,16 @@ namespace NWaves.Operations
                 pos += factor;
             }
 
-            var filterSize = factor > MinResamplingFilterOrder / 2 ? 
-                             2 * factor + 1 : 
-                             MinResamplingFilterOrder;
+            var lpFilter = filter;
 
-            var lpFilter = DesignFilter.FirLp(filterSize, 0.5f / factor);
+            if (filter == null)
+            {
+                var filterSize = factor > MinResamplingFilterOrder / 2 ?
+                                 2 * factor + 1 :
+                                 MinResamplingFilterOrder;
+
+                lpFilter = DesignFilter.FirLp(filterSize, 0.5f / factor);
+            }
 
             return lpFilter.ApplyTo(new DiscreteSignal(signal.SamplingRate * factor, output));
         }
@@ -50,8 +57,9 @@ namespace NWaves.Operations
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="factor"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        public static DiscreteSignal Decimate(DiscreteSignal signal, int factor)
+        public static DiscreteSignal Decimate(DiscreteSignal signal, int factor, FirFilter filter = null)
         {
             if (factor == 1)
             {
@@ -62,9 +70,14 @@ namespace NWaves.Operations
                              2 * factor + 1 :
                              MinResamplingFilterOrder;
 
-            var lpFilter = DesignFilter.FirLp(filterSize, 0.5f / factor);
+            var lpFilter = filter;
 
-            signal = lpFilter.ApplyTo(signal);
+            if (filter == null)
+            {
+                lpFilter = DesignFilter.FirLp(filterSize, 0.5f / factor);
+
+                signal = lpFilter.ApplyTo(signal);
+            }
 
             var output = new float[signal.Length / factor];
 
@@ -83,8 +96,9 @@ namespace NWaves.Operations
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="newSamplingRate"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        public static DiscreteSignal Resample(DiscreteSignal signal, int newSamplingRate)
+        public static DiscreteSignal Resample(DiscreteSignal signal, int newSamplingRate, FirFilter filter = null)
         {
             if (newSamplingRate == signal.SamplingRate)
             {
@@ -110,12 +124,17 @@ namespace NWaves.Operations
                 pos += up;
             }
 
-            var factor = Math.Max(up, down);
-            var filterSize = factor > MinResamplingFilterOrder / 2 ?
-                             8 * factor + 1 :
-                             MinResamplingFilterOrder;
+            var lpFilter = filter;
 
-            var lpFilter = DesignFilter.FirLp(filterSize, 0.5f / factor);
+            if (filter == null)
+            {
+                var factor = Math.Max(up, down);
+                var filterSize = factor > MinResamplingFilterOrder / 2 ?
+                                 8 * factor + 1 :
+                                 MinResamplingFilterOrder;
+
+                lpFilter = DesignFilter.FirLp(filterSize, 0.5f / factor);
+            }
 
             var upsampled = lpFilter.ApplyTo(new DiscreteSignal(signal.SamplingRate * up, output));
 

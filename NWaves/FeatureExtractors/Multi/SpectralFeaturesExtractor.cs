@@ -14,7 +14,7 @@ namespace NWaves.FeatureExtractors.Multi
     /// </summary>
     public class SpectralFeaturesExtractor : FeatureExtractor
     {
-        public const string FeatureSet = "centroid, spread, flatness, rolloff, crest, bandwidth, c1+c2+c3+c4+c5+c6";
+        public const string FeatureSet = "centroid, spread, flatness, rolloff, crest, entropy, c1+c2+c3+c4+c5+c6";
 
         /// <summary>
         /// String annotations (or simply names) of features
@@ -95,9 +95,9 @@ namespace NWaves.FeatureExtractors.Multi
                     case "crest":
                         return (spectrum, freqs) => Spectral.Crest(spectrum);
 
-                    case "sbw":
-                    case "bandwidth":
-                        return (spectrum, freqs) => Spectral.Bandwidth(spectrum, freqs);
+                    case "entropy":
+                    case "ent":
+                        return (spectrum, freqs) => Spectral.Entropy(spectrum);
 
                     case "c1":
                     case "c2":
