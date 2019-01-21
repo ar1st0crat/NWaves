@@ -13,20 +13,35 @@ namespace NWaves.DemoForms
     public partial class OnlineDemoForm : Form
     {
         DiscreteSignal _signal;
+        DiscreteSignal _filtered;
+
         BlockConvolver _blockConvolver;
 
-        int _chunkPos = 0;
-        int _chunkNo = 0;
-
+        /// <summary>
+        /// Buffer for input chunk
+        /// </summary>
         float[] _input;
+
+        /// <summary>
+        /// Buffer for output chunk
+        /// </summary>
         float[] _output;
 
+        Random _randomizer = new Random();
+
+        int _offset = 0;
+        int _filteredOffset = 0;
+        int _chunkNo = 0;
         int _fftSize;
 
         public OnlineDemoForm()
         {
             InitializeComponent();
             ApplySettings();
+
+            signalPlot.Stride = 100;
+            filteredSignalPlot.Stride = 100;
+            filteredFullSignalPlot.Stride = 1000;
         }
 
         private void ApplySettings()
@@ -37,8 +52,7 @@ namespace NWaves.DemoForms
             var filter = DesignFilter.FirLp(int.Parse(kernelSizeTextBox.Text), 0.2);
             _blockConvolver = BlockConvolver.FromFilter(filter, _fftSize);
 
-            _input = new float[_fftSize];
-            _output = new float[_fftSize];
+            _output = new float[_blockConvolver.HopSize * 5];
         }
 
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
@@ -54,6 +68,9 @@ namespace NWaves.DemoForms
                 IAudioContainer waveFile = new WaveFile(stream);
                 _signal = waveFile[Channels.Left];
             }
+
+            // this signal will accumulate the output chunks in lower panel and it's just for visualization
+            _filtered = new DiscreteSignal(_signal.SamplingRate, Math.Min(_signal.Length + _fftSize, 60 * 16000));
 
             signalPlot.Signal = _signal;
 
@@ -73,8 +90,11 @@ namespace NWaves.DemoForms
         private void stopButton_Click(object sender, EventArgs e)
         {
             chunkTimer.Stop();
-            _chunkPos = 0;
+            _offset = 0;
+            _filteredOffset = 0;
             _chunkNo = 0;
+
+            _filtered = new DiscreteSignal(_signal.SamplingRate, Math.Min(_signal.Length + _fftSize, 60 * 16000));
         }
 
         private void applyButton_Click(object sender, EventArgs e)
@@ -82,30 +102,71 @@ namespace NWaves.DemoForms
             ApplySettings();
         }
 
+        /// <summary>
+        /// Here is the main function for online processing of chunks:
+        /// </summary>
         private void ProcessNewChunk(object sender, EventArgs e)
         {
-            // take next chunk
+            // =============================== take next random chunk ====================================
 
-            var length = Math.Min(_input.Length, _signal.Length - _chunkPos);
-            _signal.Samples.FastCopyTo(_input, length, _chunkPos);
-            _chunkPos += _blockConvolver.HopSize;
-            _chunkNo++;
+            var randomSize = _randomizer.Next(_blockConvolver.HopSize / 5 + 1, _blockConvolver.HopSize * 4);
 
-            // process it
+            var currentChunkSize = Math.Min(randomSize,
+                                            Math.Min(_filtered.Length - _filteredOffset - _fftSize,
+                                                     _signal.Length - _offset));
 
-            _blockConvolver.Process(_input, _output, method: FilteringMethod.OverlapSave);
+            _input = _signal[_offset, _offset + currentChunkSize].Samples;
+
+            // ===========================================================================================
+
+
+
+            // ===================================== process it ==========================================
+
+            int readyCount = _blockConvolver.ProcessChunks(_input, _output);  // process everything that's available
+
+            if (readyCount > 0)                                               // if new output is ready
+            {
+                // do what we need with the output block, e.g. :
+                _output.FastCopyTo(_filtered.Samples, readyCount, 0, _filteredOffset);
+
+                // track the offset
+                _offset += readyCount;
+                _filteredOffset += readyCount;
+            }
+
+
+
+            // ================================= visualize signals =======================================
 
             signalPlot.Signal = new DiscreteSignal(_signal.SamplingRate, _input);
-            filteredSignalPlot.Signal = new DiscreteSignal(_signal.SamplingRate, _output);
-
-            if (_chunkPos > _signal.Length)
+            if (readyCount > 0)
             {
-                _chunkPos = 0;              // start all over again
+                filteredSignalPlot.Signal = new DiscreteSignal(_signal.SamplingRate, _output).First(readyCount);
+            }
+
+            if (_filteredOffset >= _filtered.Length - readyCount)
+            {
+                _filteredOffset = 0;
+                _filtered = new DiscreteSignal(_signal.SamplingRate, Math.Min(_signal.Length + _fftSize, 60 * 16000));
+            }
+            filteredFullSignalPlot.Signal = _filtered;
+
+
+
+            // ================================== not important stuff =====================================
+
+            if (_offset > _signal.Length)
+            {
+                _offset = 0;              // start all over again
+                _filteredOffset = 0;
                 _chunkNo = 0;
                 _blockConvolver.Reset();
             }
 
-            labelInfo.Text = $"Chunk #{_chunkNo + 1} / Processed {(float)_chunkNo*_fftSize/_signal.SamplingRate} seconds";
+            _chunkNo++;
+
+            labelInfo.Text = $"Chunk #{_chunkNo + 1} / Processed {(float)_offset/_signal.SamplingRate} seconds";
         }
     }
 }

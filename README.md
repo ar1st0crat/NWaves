@@ -14,22 +14,24 @@ Already available:
 - [x] basic LTI digital filters (FIR, IIR, comb, moving average, pre/de-emphasis, DC removal, RASTA)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
-- [x] basic operations (convolution, cross-correlation, rectification, resampling, spectral subtraction)
+- [x] basic operations (convolution, cross-correlation, rectification, amplification)
 - [x] block convolution (overlap-add / overlap-save offline and online)
 - [x] FIR/IIR filtering (offline and online)
-- [x] modulation (AM, ring, FM, PM)
 - [x] basic filter design & analysis (group delay, zeros/poles, window-sinc, HP from/to LP, combining filters)
 - [x] non-linear filters (median filter, overdrive and distortion effects)
-- [x] windowing functions (Hamming, Blackman, Hann, Gaussian, triangular, cepstral liftering)
+- [x] windowing functions (Hamming, Blackman, Hann, Gaussian, Kaiser, triangular, cepstral liftering)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and perceptual weighting (A, B, C)
-- [x] feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, AMS) and CSV serialization
+- [x] customizable feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, AMS) and CSV serialization
 - [x] feature post-processing (mean and variance normalization, deltas)
-- [x] spectral features (centroid, spread, flatness, bandwidth, rolloff, contrast, crest)
+- [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest)
 - [x] signal builders (sinusoid, white/pink/red noise, Perlin noise, awgn, triangle, sawtooth, square, periodic pulse)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking
 - [x] time scale modification (phase vocoder, WSOLA)
+- [x] simple resampling, interpolation, decimation
+- [x] spectral subtraction
 - [x] sound effects (delay, echo, tremolo, wahwah, phaser, distortion, pitch shift)
+- [x] modulation (AM, ring, FM, PM)
 - [x] simple audio playback and recording
 
 Planned:
@@ -416,39 +418,25 @@ var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
 
 ### Online processing
 
+Filters and BlockConvolvers contain the ```Process()``` method responsible for online processing.
+For filters simply prepare necessary buffers or just use them if they come from another part of your system:
+
 ```C#
 
-// OLA/OLS:
+float[] output;
 
-FirFilter filter = new FirFilter(kernel);
+...
 
-var blockConvolver = BlockConvolver.FromFilter(filter, 16384);
-
-var output = new float[16384];	// or bigger
-
-
-// processing loop:
-// while new input is available
+void NewChunkAvailable(float[] chunk)
 {
-	blockConvolver.Process(input, output, method: FilteringMethod.OverlapSave);
-}
-// input and output arrays must be at least 16384-size arrays of floats (FFT size)
-// but chunks, fed to the block convolver, MUST have length <FFTsize> and be fed one after another.
-
-
-// =====================================================================================
-
-// filters act the same way essentially
-// however input and output arrays can have any length at any given processing step
-// (so the code above will also work for filters);
-
-// while new input is available
-{
-	filter.Process(input, output, input.Length);
+	filter.Process(chunk, output, chunk.Length);
 }
 
+```
 
-// yet for demo let's also emulate the frame-by-frame loop:
+For another demo let's emulate the frame-by-frame online processing in a loop:
+
+```C#
 
 var frameSize = 128;
 
@@ -465,7 +453,54 @@ for (int i = 0; i + frameSize < input.Length; i += frameSize)
 
 ```
 
+With BlockConvolvers things are a little bit tricker, since the chunk size is greater than the hop size and the output will be "late" by <KernelSize-1> samples. If the entire input signal is available the offset is tracked easily: 
+
+```C#
+
+// OLA/OLS:
+
+FirFilter filter = new FirFilter(kernel);
+
+var blockConvolver = BlockConvolver.FromFilter(filter, 16384);
+
+// processing loop:
+// while new input is available
+{
+	blockConvolver.Process(input, output, fftSize, offset, method: FilteringMethod.OverlapSave);
+	offset += blockConvolver.HopSize;
+}
+
+```
+
+If only chunks of input data (i.e., the real online processing) are available, then you'll need to take care about prepending each new chunk with <KernelSize-1> samples from the previous chunk. Or just use ```BlockConvolver.ProcessChunks()``` function designed specifically for this:
+
+```C#
+
+// take next random chunk 
+
+input = signal[offset, offset + someRandomSize].Samples;
+
+
+// process it
+
+int readyCount = blockConvolver.ProcessChunks(input, output);  // process everything that's available
+
+if (readyCount > 0)                                            // if new output is ready
+{
+	// do what we need with the output block, e.g. :
+    output.FastCopyTo(_filtered.Samples, readyCount, 0, offset);
+
+    // track the offset
+    offset += readyCount;
+}
+
+```
+
+Just feed data to this function chunk after chunk (of arbitrary length), and it will handle everything. Everytime it returns the number of already filtered samples placed in the output array.
+
 See also OnlineDemoForm code.
+
+![onlinedemo](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/onlinedemo.gif)
 
 
 ### Feature extractors

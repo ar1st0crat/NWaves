@@ -138,5 +138,39 @@ namespace NWaves.Filters.Fda
         {
             return LpToHp(filter);
         }
+
+        /// <summary>
+        /// Simple BandPass FIR filter design
+        /// </summary>
+        /// <param name="order"></param>
+        /// <param name="freq1"></param>
+        /// <param name="freq2"></param>
+        /// <param name="window"></param>
+        /// <returns></returns>
+        public static FirFilter FirBp(int order, double freq1, double freq2, WindowTypes window = WindowTypes.Blackman)
+        {
+            Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
+
+            var filter1 = LpToHp(FirLp(order, freq1, true, window));
+            var filter2 = FirLp(order, freq2, true, window);
+            return filter1 * filter2;
+        }
+
+        /// <summary>
+        /// Simple BandReject FIR filter design
+        /// </summary>
+        /// <param name="order"></param>
+        /// <param name="freq1"></param>
+        /// <param name="freq2"></param>
+        /// <param name="window"></param>
+        /// <returns></returns>
+        public static FirFilter FirBr(int order, double freq1, double freq2, WindowTypes window = WindowTypes.Blackman)
+        {
+            Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
+
+            var filter1 = FirLp(order, freq1, true, window);
+            var filter2 = LpToHp(FirLp(order, freq2, true, window));
+            return filter1 + filter2;
+        }
     }
 }

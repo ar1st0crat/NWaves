@@ -320,7 +320,8 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Shannon entropy of a signal fragment (computed from uniform bins)
+        /// Shannon entropy of a signal fragment
+        /// (computed from bins distributed uniformly between the minimum and maximum values of samples)
         /// </summary>
         /// <param name="startPos">Starting sample</param>
         /// <param name="endPos">Ending sample (exclusive)</param>
@@ -338,11 +339,10 @@ namespace NWaves.Signals
 
             var min = Samples[0];
             var max = Samples[0];
-            var sum = 0.0f;
             for (var i = startPos; i < endPos; i++)
             {
                 var sample = Math.Abs(Samples[i]);
-                sum += sample;
+
                 if (sample < min)
                 {
                     min = sample;
@@ -376,7 +376,7 @@ namespace NWaves.Signals
                 }
             }
 
-            return (float)(-entropy / Math.Log(binCount, 2));
+            return (float) (-entropy / Math.Log(binCount, 2));
         }
 
         /// <summary>

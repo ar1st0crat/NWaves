@@ -105,6 +105,9 @@ namespace NWaves.DemoForms
                 case "Custom LP/HP":
                     AnalyzeCustomLpFilter();
                     break;
+                case "Custom BP/BR":
+                    AnalyzeCustomBandpassFilter();
+                    break;
             }
             
             magnitudeResponsePanel.Line = _filter.FrequencyResponse().Magnitude.ToFloats();
@@ -451,6 +454,33 @@ namespace NWaves.DemoForms
             filterParamsDataGrid.Rows[0].Cells[1].Value = order;
             filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
             filterParamsDataGrid.Rows[1].Cells[1].Value = freq;
+        }
+
+        private void AnalyzeCustomBandpassFilter()
+        {
+            var order = 115;
+            var freq1 = 0.1;
+            var freq2 = 0.2;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                freq1 = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+                freq2 = Convert.ToDouble(filterParamsDataGrid.Rows[2].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            _filter = DesignFilter.FirBp(order, freq1, freq2);
+
+            filterParamsDataGrid.RowCount = 3;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "freq1";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = freq1;
+            filterParamsDataGrid.Rows[2].Cells[0].Value = "freq2";
+            filterParamsDataGrid.Rows[2].Cells[1].Value = freq2;
         }
 
         #endregion

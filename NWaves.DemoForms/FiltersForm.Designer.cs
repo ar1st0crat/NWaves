@@ -145,35 +145,38 @@ namespace NWaves.DemoForms
             // autoToolStripMenuItem
             // 
             this.autoToolStripMenuItem.Name = "autoToolStripMenuItem";
-            this.autoToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.autoToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
             this.autoToolStripMenuItem.Text = "Auto";
             this.autoToolStripMenuItem.Click += new System.EventHandler(this.autoToolStripMenuItem_Click);
             // 
             // overlapAddToolStripMenuItem
             // 
             this.overlapAddToolStripMenuItem.Name = "overlapAddToolStripMenuItem";
-            this.overlapAddToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.overlapAddToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.A)));
+            this.overlapAddToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
             this.overlapAddToolStripMenuItem.Text = "Overlap-&Add";
             this.overlapAddToolStripMenuItem.Click += new System.EventHandler(this.overlapAddToolStripMenuItem_Click);
             // 
             // overlapSaveToolStripMenuItem
             // 
             this.overlapSaveToolStripMenuItem.Name = "overlapSaveToolStripMenuItem";
-            this.overlapSaveToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.overlapSaveToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.S)));
+            this.overlapSaveToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
             this.overlapSaveToolStripMenuItem.Text = "Overlap-&Save";
             this.overlapSaveToolStripMenuItem.Click += new System.EventHandler(this.overlapSaveToolStripMenuItem_Click);
             // 
             // differenceEquationToolStripMenuItem
             // 
             this.differenceEquationToolStripMenuItem.Name = "differenceEquationToolStripMenuItem";
-            this.differenceEquationToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.differenceEquationToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.D)));
+            this.differenceEquationToolStripMenuItem.Size = new System.Drawing.Size(265, 26);
             this.differenceEquationToolStripMenuItem.Text = "Difference &Equation";
             this.differenceEquationToolStripMenuItem.Click += new System.EventHandler(this.differenceEquationToolStripMenuItem_Click);
             // 
             // framebyFrameToolStripMenuItem
             // 
             this.framebyFrameToolStripMenuItem.Name = "framebyFrameToolStripMenuItem";
-            this.framebyFrameToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.framebyFrameToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
             this.framebyFrameToolStripMenuItem.Text = "Frame-by-Frame";
             this.framebyFrameToolStripMenuItem.Click += new System.EventHandler(this.framebyFrameToolStripMenuItem_Click);
             // 
@@ -250,7 +253,8 @@ namespace NWaves.DemoForms
             "DC removal",
             "RASTA",
             "Butterworth",
-            "Custom LP/HP"});
+            "Custom LP/HP",
+            "Custom BP/BR"});
             this.filterTypesComboBox.Location = new System.Drawing.Point(12, 50);
             this.filterTypesComboBox.Name = "filterTypesComboBox";
             this.filterTypesComboBox.Size = new System.Drawing.Size(190, 24);
@@ -506,7 +510,7 @@ namespace NWaves.DemoForms
             this.phaseResponsePanel.AutoScroll = true;
             this.phaseResponsePanel.BackColor = System.Drawing.SystemColors.Window;
             this.phaseResponsePanel.ForeColor = System.Drawing.Color.Blue;
-            this.phaseResponsePanel.Location = new System.Drawing.Point(219, 231);
+           this.phaseResponsePanel.Location = new System.Drawing.Point(219, 231);
             this.phaseResponsePanel.Name = "phaseResponsePanel";
             this.phaseResponsePanel.PaddingX = 30;
             this.phaseResponsePanel.PaddingY = 20;
