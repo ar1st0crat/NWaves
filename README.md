@@ -17,11 +17,11 @@ Already available:
 - [x] basic operations (convolution, cross-correlation, rectification, amplification)
 - [x] block convolution (overlap-add / overlap-save offline and online)
 - [x] FIR/IIR filtering (offline and online)
-- [x] basic filter design & analysis (group delay, zeros/poles, window-sinc, HP from/to LP, combining filters)
+- [x] basic filter design & analysis (group delay, zeros/poles, window-sinc, BP, BR, HP from/to LP, combining filters)
 - [x] non-linear filters (median filter, overdrive and distortion effects)
 - [x] windowing functions (Hamming, Blackman, Hann, Gaussian, Kaiser, triangular, cepstral liftering)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and perceptual weighting (A, B, C)
-- [x] customizable feature extraction (MFCC, PNCC and SPNCC, LPC, LPCC, AMS) and CSV serialization
+- [x] customizable feature extraction (MFCC, PNCC/SPNCC, LPC, LPCC, AMS) and CSV serialization
 - [x] feature post-processing (mean and variance normalization, deltas)
 - [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest)
 - [x] signal builders (sinusoid, white/pink/red noise, Perlin noise, awgn, triangle, sawtooth, square, periodic pulse)
@@ -47,7 +47,6 @@ Planned:
 
 NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and were first designed mostly for offline processing (now some online methods are also available). It doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C++ or Asm, but it's not that *very* slow for many purposes either.
 
-In the beginning... there were interfaces and factories here and there, and NWaves was modern-OOD-fashioned library. Now NWaves is more like a bunch of DSP models and methods gathered in separate classes, so that one wouldn't get lost in object-oriented labyrinths.
 
 ## Quickstart
 
@@ -453,11 +452,11 @@ for (int i = 0; i + frameSize < input.Length; i += frameSize)
 
 ```
 
-With BlockConvolvers things are a little bit tricker, since the chunk size is greater than the hop size and the output will be "late" by <KernelSize-1> samples. If the entire input signal is available the offset is tracked easily: 
+With BlockConvolvers things are a little bit tricker, since the chunk size is greater than the hop size and the output will always be "late" by ```KernelSize-1``` samples. If the entire input signal is available the offset is tracked easily: 
 
 ```C#
 
-// OLA/OLS:
+// OLA/OLS (OLS is used by default):
 
 FirFilter filter = new FirFilter(kernel);
 
@@ -466,13 +465,13 @@ var blockConvolver = BlockConvolver.FromFilter(filter, 16384);
 // processing loop:
 // while new input is available
 {
-	blockConvolver.Process(input, output, fftSize, offset, method: FilteringMethod.OverlapSave);
+	blockConvolver.Process(input, output, inputPos: offset, method: FilteringMethod.OverlapAdd);
 	offset += blockConvolver.HopSize;
 }
 
 ```
 
-If only chunks of input data (i.e., the real online processing) are available, then you'll need to take care about prepending each new chunk with <KernelSize-1> samples from the previous chunk. Or just use ```BlockConvolver.ProcessChunks()``` function designed specifically for this:
+If only chunks of input data (i.e., the *real* online processing) are available, then you'll need to take care about prepending each new chunk with last ```KernelSize-1``` samples from the previous chunk. Or just use ```BlockConvolver.ProcessChunks()``` function designed specifically for this:
 
 ```C#
 
@@ -496,7 +495,7 @@ if (readyCount > 0)                                            // if new output 
 
 ```
 
-Just feed data to this function chunk after chunk (of arbitrary length), and it will handle everything. Everytime it returns the number of already filtered samples placed in the output array.
+Just feed data to this function - chunk after chunk (of arbitrary length), and it will handle everything. It returns the number of already filtered samples placed in the output array.
 
 See also OnlineDemoForm code.
 
@@ -505,36 +504,40 @@ See also OnlineDemoForm code.
 
 ### Feature extractors
 
+Highly customizable feature extractors are available for offline and online processing.
+
 ```C#
 
-var lpcExtractor = new LpcExtractor(16, frameSize: 0.032/*sec*/, hopSize: 0.015/*sec*/);
+var sr = signal.SamplingRate;
+
+var lpcExtractor = new LpcExtractor(sr, 16, frameSize: 0.032/*sec*/, hopSize: 0.015/*sec*/);
 var lpcVectors = lpcExtractor.ComputeFrom(signal).Take(15);
 
 
-var mfccExtractor = new MfccExtractor(13, melFilterbanks: 24, preEmphasis: 0.95);
+var mfccExtractor = new MfccExtractor(sr, 13, filterbankSize: 24, preEmphasis: 0.95);
 var mfccVectors = mfccExtractor.ParallelComputeFrom(signal);
 
 /* equivalent to:
 
-var mfccExtractor = new MfccExtractor(13, melFilterbanks: 24);
+var mfccExtractor = new MfccExtractor(sr, 13, filterbankSize: 24);
 var preEmphasis = new PreEmphasisFilter(0.95);
 var mfccVectors = mfccExtractor.ParallelComputeFrom(preEmphasis.ApplyTo(signal));
 
 */
 
-var tdExtractor = new TimeDomainFeaturesExtractor("all", frameSize, hopSize);
-var spectralExtractor = new SpectralFeaturesExtractor("centroid, flatness, c1+c2+c3", frameSize, hopSize);
+var tdExtractor = new TimeDomainFeaturesExtractor(sr, "all", frameDuration, hopDuration);
+var spectralExtractor = new SpectralFeaturesExtractor(sr, "centroid, flatness, c1+c2+c3", 0.032, 0.015);
 
 var vectors = FeaturePostProcessing.Join(
-					tdExtractor.ParallelComputeFrom(_signal), 
-					spectralExtractor.ParallelComputeFrom(_signal));
+				tdExtractor.ParallelComputeFrom(signal), 
+				spectralExtractor.ParallelComputeFrom(signal));
 
 // each vector will contain 1) all time-domain features (energy, rms, entropy, zcr)
 //                          2) specified spectral features
 
 
-var pnccExtractor = new PnccExtractor(13);
-var pnccVectors = pnccExtractor.ComputeFrom(signal.First(10000));
+var pnccExtractor = new PnccExtractor(sr, 13);
+var pnccVectors = pnccExtractor.ComputeFrom(signal, /*from*/1000, /*to*/10000 /*sample*/);
 FeaturePostProcessing.NormalizeMean(pnccVectors);
 
 using (var csvFile = new FileStream("mfccs.csv", FileMode.Create))

@@ -21,19 +21,19 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Descriptions ("error", "lpc1", "lpc2", etc.)
         /// </summary>
-        public override string[] FeatureDescriptions
-        {
-            get
-            {
-                return new [] { "error" }.Concat(
-                    Enumerable.Range(1, FeatureCount).Select(i => "lpc" + i)).ToArray();
-            }
-        }
-            
+        public override List<string> FeatureDescriptions => 
+            new[] { "error" }.Concat(
+                    Enumerable.Range(1, FeatureCount).Select(i => "lpc" + i)).ToList();
+
         /// <summary>
         /// Order of an LPC-filter
         /// </summary>
         private readonly int _order;
+
+        /// <summary>
+        /// FFT size
+        /// </summary>
+        private readonly int _fftSize;
 
         /// <summary>
         /// Type of the window function
@@ -41,26 +41,82 @@ namespace NWaves.FeatureExtractors
         private readonly WindowTypes _window;
 
         /// <summary>
+        /// Window samples
+        /// </summary>
+        private readonly float[] _windowSamples;
+
+        /// <summary>
         /// Pre-emphasis coefficient
         /// </summary>
         private readonly float _preEmphasis;
 
         /// <summary>
+        /// Internal buffer for real parts of the currently processed block
+        /// </summary>
+        private float[] _blockReal;
+
+        /// <summary>
+        /// Internal buffer for imaginary parts of the currently processed block
+        /// </summary>
+        private float[] _blockImag;
+
+        /// <summary>
+        /// Internal buffer for real parts of currently processed reversed block
+        /// </summary>
+        private float[] _reversedReal;
+
+        /// <summary>
+        /// Internal buffer for imaginary parts of currently processed reversed block
+        /// </summary>
+        private float[] _reversedImag;
+
+        /// <summary>
+        /// Internal buffer of zeros for quick memset
+        /// </summary>
+        private readonly float[] _zeroblock;
+
+        /// <summary>
+        /// Internal buffer for (truncated) cross-correlation signal
+        /// </summary>
+        private float[] _cc;
+
+
+        /// <summary>
         /// Main constructor
         /// </summary>
+        /// <param name="samplingRate"></param>
         /// <param name="order"></param>
-        /// <param name="frameSize"></param>
-        /// <param name="hopSize"></param>
+        /// <param name="frameDuration"></param>
+        /// <param name="hopDuration"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
-        public LpcExtractor(int order, 
-                            double frameSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/,
-                            double preEmphasis = 0.0, WindowTypes window = WindowTypes.Rectangular)
-            : base(frameSize, hopSize)
+        public LpcExtractor(int samplingRate, 
+                            int order, 
+                            double frameDuration = 0.0256/*sec*/,
+                            double hopDuration = 0.010/*sec*/,
+                            double preEmphasis = 0.0,
+                            WindowTypes window = WindowTypes.Rectangular)
+
+            : base(samplingRate, frameDuration, hopDuration)
         {
             _order = order;
+
+            _fftSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
+
             _window = window;
-            _preEmphasis = (float)(preEmphasis);
+            if (_window != WindowTypes.Rectangular)
+            {
+                _windowSamples = Window.OfType(_window, FrameSize);
+            }
+
+            _preEmphasis = (float) preEmphasis;
+
+            _blockReal = new float[_fftSize];
+            _blockImag = new float[_fftSize];
+            _reversedReal = new float[_fftSize];
+            _reversedImag = new float[_fftSize];
+            _zeroblock = new float[_fftSize];
+            _cc = new float[FrameSize];
         }
 
         /// <summary>
@@ -77,23 +133,10 @@ namespace NWaves.FeatureExtractors
         /// <returns>List of LPC vectors</returns>
         public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
-            // ====================================== PREPARE =======================================
+            Guard.AgainstInequality(SamplingRate, signal.SamplingRate, "Feature extractor sampling rate", "signal sampling rate");
 
-            var hopSize = (int)(signal.SamplingRate * HopSize);
-            var frameSize = (int)(signal.SamplingRate * FrameSize);
-            var windowSamples = Window.OfType(_window, frameSize);
-            var fftSize = MathUtils.NextPowerOfTwo(2 * frameSize - 1);
-
-            var blockReal = new float[fftSize];       // buffer for real parts of the currently processed block
-            var blockImag = new float[fftSize];       // buffer for imaginary parts of the currently processed block
-            var reversedReal = new float[fftSize];    // buffer for real parts of currently processed reversed block
-            var reversedImag = new float[fftSize];    // buffer for imaginary parts of currently processed reversed block
-            var zeroblock = new float[fftSize];       // just a buffer of zeros for quick memset
-
-            var cc = new float[frameSize];           // buffer for (truncated) cross-correlation signal
-
-
-            // ================================= MAIN PROCESSING ==================================
+            var frameSize = FrameSize;
+            var hopSize = HopSize;
 
             var featureVectors = new List<FeatureVector>();
 
@@ -104,23 +147,23 @@ namespace NWaves.FeatureExtractors
             {
                 // prepare all blocks in memory for the current step:
 
-                zeroblock.FastCopyTo(blockReal, fftSize);
-                zeroblock.FastCopyTo(blockImag, fftSize);
-                zeroblock.FastCopyTo(reversedReal, fftSize);
-                zeroblock.FastCopyTo(reversedImag, fftSize);
+                _zeroblock.FastCopyTo(_blockReal, _fftSize);
+                _zeroblock.FastCopyTo(_blockImag, _fftSize);
+                _zeroblock.FastCopyTo(_reversedReal, _fftSize);
+                _zeroblock.FastCopyTo(_reversedImag, _fftSize);
 
-                signal.Samples.FastCopyTo(blockReal, frameSize, i);
+                signal.Samples.FastCopyTo(_blockReal, frameSize, i);
 
 
                 // 0) pre-emphasis (if needed)
 
-                if (_preEmphasis > 0.0)
+                if (_preEmphasis > 1e-10)
                 {
                     for (var k = 0; k < frameSize; k++)
                     {
-                        var y = blockReal[k] - prevSample * _preEmphasis;
-                        prevSample = blockReal[k];
-                        blockReal[k] = y;
+                        var y = _blockReal[k] - prevSample * _preEmphasis;
+                        prevSample = _blockReal[k];
+                        _blockReal[k] = y;
                     }
                     prevSample = signal[i + hopSize - 1];
                 }
@@ -130,17 +173,17 @@ namespace NWaves.FeatureExtractors
 
                 if (_window != WindowTypes.Rectangular)
                 {
-                    blockReal.ApplyWindow(windowSamples);
+                    _blockReal.ApplyWindow(_windowSamples);
                 }
 
                 // 2) autocorrelation
 
-                Operation.CrossCorrelate(blockReal, blockImag, reversedReal, reversedImag, cc, frameSize);
+                Operation.CrossCorrelate(_blockReal, _blockImag, _reversedReal, _reversedImag, _cc, frameSize);
 
                 // 3) levinson-durbin
 
                 var a = new float[_order + 1];
-                var err = MathUtils.LevinsonDurbin(cc, a, _order);
+                var err = MathUtils.LevinsonDurbin(_cc, a, _order);
                 a[0] = err;
 
                 // add LPC vector to output sequence
@@ -148,7 +191,7 @@ namespace NWaves.FeatureExtractors
                 featureVectors.Add(new FeatureVector
                 {
                     Features = a,
-                    TimePosition = (double)i / signal.SamplingRate
+                    TimePosition = (double) i / SamplingRate
                 });
 
                 i += hopSize;
@@ -167,5 +210,18 @@ namespace NWaves.FeatureExtractors
         {
             return 2 + samplingRate / 1000;
         }
+
+        /// <summary>
+        /// True if computations can be done in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override bool IsParallelizable() => true;
+
+        /// <summary>
+        /// Copy of current extractor that can work in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override FeatureExtractor ParallelCopy() => 
+            new LpcExtractor(SamplingRate, _order, FrameDuration, HopDuration, _preEmphasis, _window);
     }
 }

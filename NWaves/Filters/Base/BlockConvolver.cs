@@ -173,13 +173,12 @@ namespace NWaves.Filters.Base
                 return signal.Copy();
             }
 
-            var blockConvolver = new BlockConvolver(_kernel, _fftSize);
             var filtered = new float[signal.Length + _kernel.Length - 1];
 
             var i = 0;
             for (; i < signal.Length; i += HopSize)
             {
-                blockConvolver.Process(signal.Samples, filtered, _fftSize, i, i, method);
+                Process(signal.Samples, filtered, _fftSize, i, i, method);
             }
 
             // FOR TESTS; soon will be removed:
@@ -197,7 +196,7 @@ namespace NWaves.Filters.Base
 
             //    // ============================= main part here: ====================================================
 
-            //    int readyCount = blockConvolver.ProcessChunks(input, output, method);  // process everything that's available
+            //    int readyCount = ProcessChunks(input, output, method);  // process everything that's available
 
             //    if (readyCount > 0)                                         // if new output is ready
             //    {
@@ -230,25 +229,29 @@ namespace NWaves.Filters.Base
 
 
         /// <summary>
-        /// 
+        /// Internal buffer for a delay line
         /// </summary>
         private float[] _buffer;
 
         /// <summary>
-        /// 
+        /// Offset in the delay line
         /// </summary>
         private int _bufferOffset;
 
         /// <summary>
-        /// 
+        /// Process new chunks of arbitrary length
         /// </summary>
-        /// <param name="data"></param>
-        public virtual int ProcessChunks(float[] data,
+        /// <param name="input">Input array of samples</param>
+        /// <param name="output">Output array of samples</param>
+        /// <param name="method">Filtering method</param>
+        /// <param name="last">True if chunks are last in a sequence</param>
+        /// <returns>Number of already available filtered samples</returns>
+        public virtual int ProcessChunks(float[] input,
                                          float[] output,
                                          FilteringMethod method = FilteringMethod.OverlapSave,
                                          bool last = false)
         {
-            var length = data.Length;
+            var length = input.Length;
 
             // append new data...
 
@@ -256,7 +259,7 @@ namespace NWaves.Filters.Base
 
             if (_bufferOffset + length < _fftSize)  
             {
-                data.FastCopyTo(_buffer, length, 0, _bufferOffset);     // then just add to buffer
+                input.FastCopyTo(_buffer, length, 0, _bufferOffset);     // then just add to buffer
                 _bufferOffset += length;
 
                 if (last)   // but if it's the last chunk, then process it anyway
@@ -273,7 +276,7 @@ namespace NWaves.Filters.Base
             var inputOffset = _fftSize - _bufferOffset;
             var outputOffset = HopSize;
 
-            data.FastCopyTo(_buffer, inputOffset, 0, _bufferOffset);
+            input.FastCopyTo(_buffer, inputOffset, 0, _bufferOffset);
             Process(_buffer, output, method: method);
 
             // save last M - 1 samples
@@ -291,12 +294,12 @@ namespace NWaves.Filters.Base
                 // if we have all previous M-1 samples right in data array, then don't copy anything
                 if (i >= M)
                 {
-                    Process(data, output, _fftSize, i - M, outputOffset, method);
+                    Process(input, output, _fftSize, i - M, outputOffset, method);
                 }
                 // otherwise, copy samples, process them and copy last M-1 samples to buffer
                 else
                 {
-                    data.FastCopyTo(_buffer, HopSize, i, _bufferOffset);
+                    input.FastCopyTo(_buffer, HopSize, i, _bufferOffset);
                     Process(_buffer, output, _fftSize, 0, outputOffset, method);
                     _buffer.FastCopyTo(_buffer, _bufferOffset, HopSize);
                 }
@@ -306,14 +309,14 @@ namespace NWaves.Filters.Base
             var lastPos = i - HopSize;
             if (lastPos >= M)
             {
-                data.FastCopyTo(_buffer, _bufferOffset, i - M);
+                input.FastCopyTo(_buffer, _bufferOffset, i - M);
             }
 
             // last part
 
             if (i < length)
             {
-                data.FastCopyTo(_buffer, length - i, i, _bufferOffset);
+                input.FastCopyTo(_buffer, length - i, i, _bufferOffset);
                 _bufferOffset += length - i;
             }
 

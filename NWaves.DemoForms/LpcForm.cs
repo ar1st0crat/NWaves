@@ -16,8 +16,8 @@ namespace NWaves.DemoForms
 {
     public partial class LpcForm : Form
     {
-        private const double FrameSize = 0.032;
-        private const double HopSize = 0.010;
+        private const double FrameDuration = 0.032;
+        private const double HopDuration = 0.010;
 
         private DiscreteSignal _signal;
         private List<FeatureVector> _lpcVectors;
@@ -50,7 +50,7 @@ namespace NWaves.DemoForms
 
             _fft = new Fft(512);
 
-            var lpcExtractor = new LpcExtractor(16, FrameSize, HopSize);
+            var lpcExtractor = new LpcExtractor(_signal.SamplingRate, 16, FrameDuration, HopDuration);
 
             _lpcVectors = lpcExtractor.ParallelComputeFrom(_signal);
 
@@ -66,7 +66,7 @@ namespace NWaves.DemoForms
 
         float[] ComputeSpectrum(int idx)
         {
-            var pos = (int)(_signal.SamplingRate * HopSize * idx);
+            var pos = (int)(_signal.SamplingRate * HopDuration * idx);
 
             return _fft.PowerSpectrum(_signal[pos, pos + 512], normalize: false)
                        .Samples;

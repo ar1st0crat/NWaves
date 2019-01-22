@@ -240,12 +240,23 @@ namespace NWaves.Operations
         {
             // reverse second signal
 
-            int last = real2.Length - 1;
-
-            for (var i = 0; i < real2.Length; i++)
+            if (center == 0)
             {
-                real2[i] = real2[last - i];
-                imag2[i] = imag2[last - i];
+                int last = real2.Length - 1;
+
+                for (var i = 0; i < real2.Length; i++)
+                {
+                    real2[i] = real2[last - i];
+                    imag2[i] = imag2[last - i];
+                }
+            }
+            else
+            {
+                for (var i = 0; i < center; i++)
+                {
+                    real2[i] = real1[center - 1 - i];
+                    imag2[i] = imag1[center - 1 - i];
+                }
             }
 
             Convolve(real1, imag1, real2, imag2, res, center);

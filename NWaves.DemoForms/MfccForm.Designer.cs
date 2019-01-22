@@ -33,8 +33,8 @@ namespace NWaves.DemoForms
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.melFilterBankPanel = new GroupPlot();
-            this.mfccPanel = new LinePlot();
+            this.melFilterBankPanel = new NWaves.DemoForms.UserControls.GroupPlot();
+            this.mfccPanel = new NWaves.DemoForms.UserControls.LinePlot();
             this.mfccListView = new System.Windows.Forms.ListView();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -46,7 +46,7 @@ namespace NWaves.DemoForms
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1029, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(937, 28);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -67,19 +67,29 @@ namespace NWaves.DemoForms
             // 
             // melFilterBankPanel
             // 
+            this.melFilterBankPanel.AutoScroll = true;
             this.melFilterBankPanel.BackColor = System.Drawing.Color.White;
+            this.melFilterBankPanel.Gain = 100;
+            this.melFilterBankPanel.Groups = null;
             this.melFilterBankPanel.Location = new System.Drawing.Point(12, 404);
             this.melFilterBankPanel.Name = "melFilterBankPanel";
             this.melFilterBankPanel.Size = new System.Drawing.Size(588, 160);
+            this.melFilterBankPanel.Stride = 2;
             this.melFilterBankPanel.TabIndex = 1;
             // 
             // mfccPanel
             // 
+            this.mfccPanel.AutoScroll = true;
             this.mfccPanel.BackColor = System.Drawing.Color.White;
+            this.mfccPanel.ForeColor = System.Drawing.Color.Blue;
             this.mfccPanel.Location = new System.Drawing.Point(606, 404);
             this.mfccPanel.Name = "mfccPanel";
-            this.mfccPanel.Size = new System.Drawing.Size(411, 160);
+            this.mfccPanel.PaddingX = 30;
+            this.mfccPanel.PaddingY = 20;
+            this.mfccPanel.Size = new System.Drawing.Size(322, 160);
+            this.mfccPanel.Stride = 1;
             this.mfccPanel.TabIndex = 2;
+            this.mfccPanel.Thickness = 1;
             // 
             // mfccListView
             // 
@@ -87,7 +97,7 @@ namespace NWaves.DemoForms
             this.mfccListView.GridLines = true;
             this.mfccListView.Location = new System.Drawing.Point(13, 32);
             this.mfccListView.Name = "mfccListView";
-            this.mfccListView.Size = new System.Drawing.Size(1004, 366);
+            this.mfccListView.Size = new System.Drawing.Size(915, 366);
             this.mfccListView.TabIndex = 3;
             this.mfccListView.UseCompatibleStateImageBehavior = false;
             this.mfccListView.View = System.Windows.Forms.View.Details;
@@ -97,7 +107,7 @@ namespace NWaves.DemoForms
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1029, 576);
+            this.ClientSize = new System.Drawing.Size(937, 576);
             this.Controls.Add(this.mfccListView);
             this.Controls.Add(this.mfccPanel);
             this.Controls.Add(this.melFilterBankPanel);

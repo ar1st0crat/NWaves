@@ -145,20 +145,26 @@ namespace NWaves.DemoForms
 
             // ===== test modulation spectrum for Mfcc features =====
             //
-            //var mfccExtractor = new MfccExtractor(13, _signal.SamplingRate,
-            //                                          frameSize: frameSize,
-            //                                          hopSize: hopSize);
+            //var mfccExtractor = new MfccExtractor(_signal.SamplingRate, 13,
+            //                                      frameSize,
+            //                                      hopSize);
             //var vectors = mfccExtractor.ComputeFrom(_signal);
             //FeaturePostProcessing.NormalizeMean(vectors);
 
             //_extractor = new AmsExtractor(_signal.SamplingRate,
-            //                             frameSize, hopSize,
-            //                             modulationFftSize, modulationHopSize,
+            //                             frameSize,
+            //                             hopSize,
+            //                             modulationFftSize,
+            //                             modulationHopSize,
             //                             featuregram: vectors.Select(v => v.Features));
 
-            _extractor = new AmsExtractor(frameSize, hopSize,
-                                          modulationFftSize, modulationHopSize,
-                                          filterbank: _filterbank, window: WindowTypes.Hamming);
+            _extractor = new AmsExtractor(_signal.SamplingRate,
+                                          frameSize,
+                                          hopSize,
+                                          modulationFftSize,
+                                          modulationHopSize,
+                                          filterbank: _filterbank,
+                                          window: WindowTypes.Hamming);
             _features = _extractor.ComputeFrom(_signal);
             _featIndex = 0;
 
@@ -180,7 +186,7 @@ namespace NWaves.DemoForms
             {
                 DrawModulationSpectraHerz(
                     _extractor.VectorsAtHerz(
-                        _features, _signal.SamplingRate, float.Parse(herzTextBox.Text)));
+                        _features, float.Parse(herzTextBox.Text)));
             }
             else
             {

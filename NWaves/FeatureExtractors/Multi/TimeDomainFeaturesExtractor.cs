@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Signals;
+using NWaves.Utils;
 
 namespace NWaves.FeatureExtractors.Multi
 {
@@ -16,29 +17,38 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// String annotations (or simply names) of features
         /// </summary>
-        public override string[] FeatureDescriptions { get; }
+        public override List<string> FeatureDescriptions { get; }
 
         /// <summary>
         /// Number of features to extract
         /// </summary>
-        public override int FeatureCount => FeatureDescriptions.Length;
+        public override int FeatureCount => FeatureDescriptions.Count;
 
         /// <summary>
         /// Extractor functions
         /// </summary>
-        private readonly Func<DiscreteSignal, int, int, float>[] _extractors;
+        private List<Func<DiscreteSignal, int, int, float>> _extractors;
+
+        /// <summary>
+        /// Parameters
+        /// </summary>
+        private IReadOnlyDictionary<string, object> _parameters;
 
         /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="samplingRate"></param>
         /// <param name="featureList"></param>
+        /// <param name="frameDuration"></param>
+        /// <param name="hopDuration"></param>
         /// <param name="parameters"></param>
-        /// <param name="frameSize"></param>
-        /// <param name="hopSize"></param>
-        public TimeDomainFeaturesExtractor(string featureList,
-                                           double frameSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/,
+        public TimeDomainFeaturesExtractor(int samplingRate,
+                                           string featureList,
+                                           double frameDuration = 0.0256/*sec*/,
+                                           double hopDuration = 0.010/*sec*/,
                                            IReadOnlyDictionary<string, object> parameters = null)
-            : base(frameSize, hopSize)
+
+            : base(samplingRate, frameDuration, hopDuration)
         {
             if (featureList == "all" || featureList == "full")
             {
@@ -49,8 +59,8 @@ namespace NWaves.FeatureExtractors.Multi
 
             _extractors = features.Select<string, Func<DiscreteSignal, int, int, float>>(f =>
             {
-                var parameter = f.Trim().ToLower();
-                switch (parameter)
+                var feature = f.Trim().ToLower();
+                switch (feature)
                 {
                     case "e":
                     case "en":
@@ -68,11 +78,22 @@ namespace NWaves.FeatureExtractors.Multi
                         return (signal, start, end) => signal.Entropy(start, end);
 
                     default:
-                        throw new ArgumentException($"Unknown parameter: {parameter}");
+                        return null;
                 }
-            }).ToArray();
+            }).ToList();
 
-            FeatureDescriptions = features;
+            FeatureDescriptions = features.ToList();
+        }
+
+        /// <summary>
+        /// Add one more feature with routine for its calculation
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="algorithm"></param>
+        public void AddFeature(string name, Func<DiscreteSignal, int, int, float> algorithm)
+        {
+            FeatureDescriptions.Add(name);
+            _extractors.Add(algorithm);
         }
 
         /// <summary>
@@ -84,32 +105,57 @@ namespace NWaves.FeatureExtractors.Multi
         /// <returns>Sequence of feature vectors</returns>
         public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
-            var frameSize = (int)(signal.SamplingRate * FrameSize);
-            var hopSize = (int)(signal.SamplingRate * HopSize);
+            var nullExtractorPos = _extractors.IndexOf(null);
+            if (nullExtractorPos >= 0)
+            {
+                throw new ArgumentException($"Unknown feature: {FeatureDescriptions[nullExtractorPos]}");
+            }
+
+            Guard.AgainstInequality(SamplingRate, signal.SamplingRate, "Feature extractor sampling rate", "signal sampling rate");
 
             var featureVectors = new List<FeatureVector>();
             var featureCount = FeatureCount;
             
             var i = startSample;
-            while (i + frameSize < endSample)
+            while (i + FrameSize < endSample)
             {
                 var featureVector = new float[featureCount];
 
                 for (var j = 0; j < featureCount; j++)
                 {
-                    featureVector[j] = _extractors[j](signal, i, i + frameSize);
+                    featureVector[j] = _extractors[j](signal, i, i + FrameSize);
                 }
 
                 featureVectors.Add(new FeatureVector
                 {
                     Features = featureVector,
-                    TimePosition = (double)i / signal.SamplingRate
+                    TimePosition = (double) i / SamplingRate
                 });
 
-                i += hopSize;
+                i += HopSize;
             }
 
             return featureVectors;
+        }
+
+        /// <summary>
+        /// True if computations can be done in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override bool IsParallelizable() => true;
+
+        /// <summary>
+        /// Copy of current extractor that can work in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override FeatureExtractor ParallelCopy()
+        {
+            var featureset = string.Join(",", FeatureDescriptions);
+            var copy = new TimeDomainFeaturesExtractor(SamplingRate, featureset, FrameDuration, HopDuration, _parameters)
+            {
+                _extractors = _extractors,
+            };
+            return copy;
         }
     }
 }

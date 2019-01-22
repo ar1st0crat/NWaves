@@ -23,8 +23,8 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Descriptions (simply "spncc0", "spncc1", "spncc2", etc.)
         /// </summary>
-        public override string[] FeatureDescriptions =>
-            Enumerable.Range(0, FeatureCount).Select(i => "spncc" + i).ToArray();
+        public override List<string> FeatureDescriptions =>
+            Enumerable.Range(0, FeatureCount).Select(i => "spncc" + i).ToList();
 
         /// <summary>
         /// Forgetting factor in formula (15) in [Kim & Stern, 2016]
@@ -32,10 +32,9 @@ namespace NWaves.FeatureExtractors
         public float LambdaMu { get; set; } = 0.999f;
 
         /// <summary>
-        /// Gammatone Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)]
+        /// Filterbank (gammatone by default)
         /// </summary>
-        private float[][] _gammatoneFilterBank;
-        public float[][] FilterBank => _gammatoneFilterBank;
+        public float[][] FilterBank { get; }
 
         /// <summary>
         /// Number of gammatone filters
@@ -63,46 +62,126 @@ namespace NWaves.FeatureExtractors
         private readonly int _fftSize;
 
         /// <summary>
+        /// FFT transformer
+        /// </summary>
+        private readonly Fft _fft;
+
+        /// <summary>
+        /// DCT-II transformer
+        /// </summary>
+        private readonly Dct2 _dct;
+
+        /// <summary>
         /// Type of the window function
         /// </summary>
         private readonly WindowTypes _window;
+
+        /// <summary>
+        /// Window samples
+        /// </summary>
+        private readonly float[] _windowSamples;
 
         /// <summary>
         /// Pre-emphasis coefficient
         /// </summary>
         private readonly float _preEmphasis;
 
+        /// <summary>
+        /// Internal buffer for a signal block at each step
+        /// </summary>
+        private float[] _block;
+
+        /// <summary>
+        /// Internal buffer for a signal spectrum at each step
+        /// </summary>
+        private float[] _spectrum;
+
+        /// <summary>
+        /// Internal buffer for gammatone spectrum
+        /// </summary>
+        private float[] _filteredSpectrum;
+
+        /// <summary>
+        /// Internal buffer of zeros for quick memset
+        /// </summary>
+        private readonly float[] _zeroblock;
 
         /// <summary>
         /// Main constructor
         /// </summary>
+        /// <param name="samplingRate"></param>
         /// <param name="featureCount"></param>
+        /// <param name="frameDuration">Length of analysis window (in seconds)</param>
+        /// <param name="hopDuration">Length of overlap (in seconds)</param>
         /// <param name="power"></param>
-        /// <param name="filterbankSize"></param>
         /// <param name="lowFreq"></param>
         /// <param name="highFreq"></param>
-        /// <param name="frameSize">Length of analysis window (in seconds)</param>
-        /// <param name="hopSize">Length of overlap (in seconds)</param>
+        /// <param name="filterbankSize"></param>
+        /// <param name="filterbank"></param>
         /// <param name="fftSize">Size of FFT (in samples)</param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
-        public SpnccExtractor(int featureCount, int power = 15,
-                             int filterbankSize = 40, double lowFreq = 100, double highFreq = 6800,
-                             double frameSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/, int fftSize = 1024,
-                             double preEmphasis = 0.0, WindowTypes window = WindowTypes.Hamming)
-            : base(frameSize, hopSize)
+        public SpnccExtractor(int samplingRate, 
+                              int featureCount,
+                              double frameDuration = 0.0256/*sec*/,
+                              double hopDuration = 0.010/*sec*/,
+                              int power = 15,
+                              double lowFreq = 100,
+                              double highFreq = 6800,
+                              int filterbankSize = 40,
+                              float[][] filterbank = null,
+                              int fftSize = 1024,
+                              double preEmphasis = 0.0,
+                              WindowTypes window = WindowTypes.Hamming)
+
+            : base(samplingRate, frameDuration, hopDuration)
         {
             FeatureCount = featureCount;
             _power = power;
 
+            if (filterbank == null)
+            {
+                _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
+                _filterbankSize = filterbankSize;
+
+                _lowFreq = lowFreq;
+                _highFreq = highFreq;
+
+                FilterBank = FilterBanks.Erb(_filterbankSize, _fftSize, samplingRate, _lowFreq, _highFreq);
+
+                // use power spectrum:
+
+                foreach (var filter in FilterBank)
+                {
+                    for (var j = 0; j < filter.Length; j++)
+                    {
+                        var ps = filter[j] * filter[j];
+                        filter[j] = ps;
+                    }
+                }
+            }
+            else
+            {
+                FilterBank = filterbank;
+                _filterbankSize = filterbank.Length;
+                _fftSize = 2 * (filterbank[0].Length - 1);
+            }
+
+            _fft = new Fft(fftSize);
+            _dct = new Dct2(_filterbankSize, FeatureCount);
+
+            _preEmphasis = (float) preEmphasis;
+            
             _window = window;
-            _fftSize = fftSize;
+            if (_window != WindowTypes.Rectangular)
+            {
+                _windowSamples = Window.OfType(_window, FrameSize);
+            }
 
-            _filterbankSize = filterbankSize;
-            _lowFreq = lowFreq;
-            _highFreq = highFreq;
-
-            _preEmphasis = (float)preEmphasis;
+            _block = new float[_fftSize];
+            _spectrum = new float[_fftSize / 2 + 1];
+            _filteredSpectrum = new float[_filterbankSize];
+            _zeroblock = new float[_fftSize];
         }
 
         /// <summary>
@@ -125,58 +204,27 @@ namespace NWaves.FeatureExtractors
         /// <returns>List of pncc vectors</returns>
         public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
-            // ====================================== PREPARE =======================================
+            Guard.AgainstInequality(SamplingRate, signal.SamplingRate, "Feature extractor sampling rate", "signal sampling rate");
 
-            var hopSize = (int)(signal.SamplingRate * HopSize);
-            var frameSize = (int)(signal.SamplingRate * FrameSize);
-            var windowSamples = Window.OfType(_window, frameSize);
+            var frameSize = FrameSize;
+            var hopSize = HopSize;
 
-            var fftSize = _fftSize >= frameSize ? _fftSize : MathUtils.NextPowerOfTwo(frameSize);
-
-            _gammatoneFilterBank = FilterBanks.Erb(_filterbankSize, _fftSize, signal.SamplingRate, _lowFreq, _highFreq);
-
-            // use power spectrum:
-
-            foreach (var filter in _gammatoneFilterBank)
-            {
-                for (var j = 0; j < filter.Length; j++)
-                {
-                    var ps = filter[j] * filter[j];
-                    filter[j] = ps;
-                }
-            }
-
-
-            var fft = new Fft (fftSize);
-            var dct = new Dct2(_filterbankSize, FeatureCount);
-
-
-            var gammatoneSpectrum = new float[_filterbankSize];
-            
             const float meanPower = 1e10f;
             var mean = 4e07f;
 
             var d = _power != 0 ? 1.0 / _power : 0.0;
-
-            var block = new float[fftSize];           // buffer for a signal block at each step
-            var zeroblock = new float[fftSize];       // buffer of zeros for quick memset
-
-            var spectrum = new float[fftSize / 2 + 1];
-
-
-            // ================================= MAIN PROCESSING ==================================
 
             var featureVectors = new List<FeatureVector>();
 
             var prevSample = startSample > 0 ? signal[startSample - 1] : 0.0f;
 
             var i = startSample;
-            while (i + frameSize < endSample)
+            while (i + FrameSize < endSample)
             {
                 // prepare next block for processing
 
-                zeroblock.FastCopyTo(block, zeroblock.Length);
-                signal.Samples.FastCopyTo(block, frameSize, i);
+                _zeroblock.FastCopyTo(_block, _zeroblock.Length);
+                signal.Samples.FastCopyTo(_block, frameSize, i);
 
 
                 // 0) pre-emphasis (if needed)
@@ -185,9 +233,9 @@ namespace NWaves.FeatureExtractors
                 {
                     for (var k = 0; k < frameSize; k++)
                     {
-                        var y = block[k] - prevSample * _preEmphasis;
-                        prevSample = block[k];
-                        block[k] = y;
+                        var y = _block[k] - prevSample * _preEmphasis;
+                        prevSample = _block[k];
+                        _block[k] = y;
                     }
                     prevSample = signal[i + hopSize - 1];
                 }
@@ -197,33 +245,33 @@ namespace NWaves.FeatureExtractors
 
                 if (_window != WindowTypes.Rectangular)
                 {
-                    block.ApplyWindow(windowSamples);
+                    _block.ApplyWindow(_windowSamples);
                 }
 
 
                 // 2) calculate power spectrum
 
-                fft.PowerSpectrum(block, spectrum);
+                _fft.PowerSpectrum(_block, _spectrum);
 
 
                 // 3) apply gammatone filterbank
 
-                FilterBanks.Apply(_gammatoneFilterBank, spectrum, gammatoneSpectrum);
+                FilterBanks.Apply(FilterBank, _spectrum, _filteredSpectrum);
 
 
                 // 4) mean power normalization:
 
                 var sumPower = 0.0f;
-                for (var j = 0; j < gammatoneSpectrum.Length; j++)
+                for (var j = 0; j < _filteredSpectrum.Length; j++)
                 {
-                    sumPower += gammatoneSpectrum[j];
+                    sumPower += _filteredSpectrum[j];
                 }
 
                 mean = LambdaMu * mean + (1 - LambdaMu) * sumPower;
 
-                for (var j = 0; j < gammatoneSpectrum.Length; j++)
+                for (var j = 0; j < _filteredSpectrum.Length; j++)
                 {
-                    gammatoneSpectrum[j] *= meanPower / mean;
+                    _filteredSpectrum[j] *= meanPower / mean;
                 }
                 
 
@@ -231,16 +279,16 @@ namespace NWaves.FeatureExtractors
 
                 if (_power != 0)
                 {
-                    for (var j = 0; j < gammatoneSpectrum.Length; j++)
+                    for (var j = 0; j < _filteredSpectrum.Length; j++)
                     {
-                        gammatoneSpectrum[j] = (float)Math.Pow(gammatoneSpectrum[j], d);
+                        _filteredSpectrum[j] = (float) Math.Pow(_filteredSpectrum[j], d);
                     }
                 }
                 else
                 {
-                    for (var j = 0; j < gammatoneSpectrum.Length; j++)
+                    for (var j = 0; j < _filteredSpectrum.Length; j++)
                     {
-                        gammatoneSpectrum[j] = (float)Math.Log10(gammatoneSpectrum[j] + float.Epsilon);
+                        _filteredSpectrum[j] = (float) Math.Log10(_filteredSpectrum[j] + float.Epsilon);
                     }
                 }
 
@@ -248,7 +296,7 @@ namespace NWaves.FeatureExtractors
                 // 6) dct-II (normalized)
 
                 var spnccs = new float[FeatureCount];
-                dct.DirectN(gammatoneSpectrum, spnccs);
+                _dct.DirectN(_filteredSpectrum, spnccs);
 
 
                 // add pncc vector to output sequence
@@ -256,7 +304,7 @@ namespace NWaves.FeatureExtractors
                 featureVectors.Add(new FeatureVector
                 {
                     Features = spnccs,
-                    TimePosition = (double)i / signal.SamplingRate
+                    TimePosition = (double) i / SamplingRate
                 });
 
                 i += hopSize;
@@ -264,5 +312,29 @@ namespace NWaves.FeatureExtractors
 
             return featureVectors;
         }
+
+        /// <summary>
+        /// True if computations can be done in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override bool IsParallelizable() => true;
+
+        /// <summary>
+        /// Copy of current extractor that can work in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override FeatureExtractor ParallelCopy() => 
+            new SpnccExtractor(SamplingRate,
+                               FeatureCount, 
+                               FrameDuration, 
+                               HopDuration, 
+                               _power, 
+                               _lowFreq, 
+                               _highFreq, 
+                               _filterbankSize, 
+                               FilterBank, 
+                               _fftSize, 
+                               _preEmphasis, 
+                               _window);
     }
 }

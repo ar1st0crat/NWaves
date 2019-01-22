@@ -8,6 +8,7 @@ using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
 using NWaves.FeatureExtractors.Serializers;
+using NWaves.Filters.Fda;
 using NWaves.Signals;
 using NWaves.Windows;
 
@@ -41,19 +42,22 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            var mfccExtractor = new MfccExtractor(13,
-                                                      //frameSize: 0.03125,
-                                                      //hopSize: 0.015625,
-                                                      melFilterbankSize: 20,
-                                                      //lowFreq: 100,
-                                                      //highFreq: 4200,
-                                                      //lifterSize: 22,
-                                                      preEmphasis: 0.95,
-                                                      window: WindowTypes.Hamming);
+            var sr = _signal.SamplingRate;
+            var barkbands = FilterBanks.BarkBands(16, 512, sr, 100/*Hz*/, 6500/*Hz*/, overlap: false);
+            var barkbank = FilterBanks.Triangular(512, sr, barkbands);
+
+            var mfccExtractor = new MfccExtractor(_signal.SamplingRate, 13,
+                                                  //filterbankSize: 40,
+                                                  //lowFreq: 100,
+                                                  //highFreq: 4200,
+                                                  //lifterSize: 22,
+                                                  preEmphasis: 0.97,
+                                                  //filterbank: barkbank,
+                                                  window: WindowTypes.Hamming);
 
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);
 
-            //FeaturePostProcessing.NormalizeMean(_mfccVectors);
+            //FeaturePostProcessing.NormalizeMean(_mfccVectors);        // optional
             //FeaturePostProcessing.AddDeltas(_mfccVectors);
 
             FillFeaturesList(_mfccVectors, mfccExtractor.FeatureDescriptions);

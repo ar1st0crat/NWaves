@@ -20,43 +20,77 @@ namespace NWaves.FeatureExtractors.Base
         /// <summary>
         /// String annotations (or simply names) of features
         /// </summary>
-        public abstract string[] FeatureDescriptions { get; }
+        public abstract List<string> FeatureDescriptions { get; }
 
         /// <summary>
         /// String annotations (or simply names) of delta features (1st order derivatives)
         /// </summary>
-        public virtual string[] DeltaFeatureDescriptions
+        public virtual List<string> DeltaFeatureDescriptions
         {
-            get { return FeatureDescriptions.Select(d => "delta_" + d).ToArray(); }
+            get { return FeatureDescriptions.Select(d => "delta_" + d).ToList(); }
         }
 
         /// <summary>
         /// String annotations (or simply names) of delta-delta features (2nd order derivatives)
         /// </summary>
-        public virtual string[] DeltaDeltaFeatureDescriptions
+        public virtual List<string> DeltaDeltaFeatureDescriptions
         {
-            get { return FeatureDescriptions.Select(d => "delta_delta_" + d).ToArray(); }
+            get { return FeatureDescriptions.Select(d => "delta_delta_" + d).ToList(); }
         }
 
         /// <summary>
         /// Length of analysis frame (in seconds)
         /// </summary>
-        public double FrameSize { get; set; }
+        public double FrameDuration { get; protected set; }
 
         /// <summary>
         /// Hop length (in seconds)
         /// </summary>
-        public double HopSize { get; set; }
+        public double HopDuration { get; protected set; }
+
+        /// <summary>
+        /// Size of analysis frame (in samples)
+        /// </summary>
+        public int FrameSize { get; protected set; }
+
+        /// <summary>
+        /// Hop size (in samples)
+        /// </summary>
+        public int HopSize { get; protected set; }
+
+        /// <summary>
+        /// Sampling rate that the processed signals are expected to have
+        /// </summary>
+        public int SamplingRate { get; protected set; }
 
         /// <summary>
         /// Constructor requires FrameSize and HopSize to be set
         /// </summary>
+        /// <param name="samplingRate"></param>
         /// <param name="frameSize"></param>
         /// <param name="hopSize"></param>
-        protected FeatureExtractor(double frameSize, double hopSize)
+        protected FeatureExtractor(int samplingRate, int frameSize, int hopSize)
         {
+            FrameDuration = (double) frameSize / samplingRate;
+            HopDuration = (double) hopSize / samplingRate;
             FrameSize = frameSize;
             HopSize = hopSize;
+            SamplingRate = samplingRate;
+        }
+
+        /// <summary>
+        /// Constructor requires FrameSize and HopSize to be set
+        /// </summary>
+        /// <param name="samplingRate"></param>
+        /// <param name="frameSize"></param>
+        /// <param name="hopSize"></param>
+        protected FeatureExtractor(int samplingRate, double frameDuration, double hopDuration)
+        {
+            FrameSize = (int) (samplingRate * frameDuration);
+            HopSize = (int) (samplingRate * hopDuration);
+            FrameDuration = frameDuration;
+            HopDuration = hopDuration;
+            SamplingRate = samplingRate;
         }
 
         /// <summary>
@@ -82,13 +116,14 @@ namespace NWaves.FeatureExtractors.Base
         /// Compute the sequence of feature vectors from custom sequence of samples
         /// </summary>
         /// <param name="samples">Sequence of real-valued samples</param>
-        /// <param name="samplingRate">The sampling rate of the sequence</param>
+        /// <param name="startSample"></param>
+        /// <param name="endSample"></param>
         /// <returns>Sequence of feature vectors</returns>
-        public List<FeatureVector> ComputeFrom(float[] samples, int samplingRate, int startSample, int endSample)
+        public List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
         {
             Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
 
-            return ComputeFrom(new DiscreteSignal(samplingRate,
+            return ComputeFrom(new DiscreteSignal(SamplingRate,
                                                   samples.FastCopyFragment(endSample - startSample, startSample)));
         }
 
@@ -96,12 +131,25 @@ namespace NWaves.FeatureExtractors.Base
         /// Compute the sequence of feature vectors from custom sequence of samples
         /// </summary>
         /// <param name="samples">Sequence of real-valued samples</param>
-        /// <param name="samplingRate">The sampling rate of the sequence</param>
         /// <returns>Sequence of feature vectors</returns>
         public List<FeatureVector> ComputeFrom(IEnumerable<float> samples, int samplingRate)
         {
-            return ComputeFrom(new DiscreteSignal(samplingRate, samples));
+            return ComputeFrom(new DiscreteSignal(SamplingRate, samples));
         }
+
+        #region parallelization
+
+        /// <summary>
+        /// True if computations can be done in parallel
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsParallelizable() => false;
+
+        /// <summary>
+        /// Copy of current extractor that can work in parallel
+        /// </summary>
+        /// <returns></returns>
+        public virtual FeatureExtractor ParallelCopy() => null;
 
         /// <summary>
         /// Parallel computation (returns chunks of fecture vector lists)
@@ -111,24 +159,34 @@ namespace NWaves.FeatureExtractors.Base
         /// <returns></returns>
         public virtual List<FeatureVector>[] ParallelChunksComputeFrom(DiscreteSignal signal, int parallelThreads = 0)
         {
+            if (!IsParallelizable())
+            {
+                throw new NotImplementedException();
+            }
+
             var threadCount = parallelThreads > 0 ? parallelThreads : Environment.ProcessorCount;
             var chunkSize = signal.Length / threadCount;
-            
+
+            var extractors = new FeatureExtractor[threadCount];
+            extractors[0] = this;
+            for (var i = 1; i < threadCount; i++)
+            {
+                extractors[i] = ParallelCopy();
+            }
+
             // ============== carefully define the sample positions for merging ===============
 
             var startPositions = new int[threadCount];
             var endPositions = new int[threadCount];
 
-            var frameSize = (int)(FrameSize * signal.SamplingRate);
-            var hopSize = (int)(HopSize * signal.SamplingRate);
-            var hopCount = (chunkSize - frameSize) / hopSize;
+            var hopCount = (chunkSize - FrameSize) / HopSize;
 
             var lastPosition = 0;
             for (var i = 0; i < threadCount; i++)
             {
                 startPositions[i] = lastPosition;
-                endPositions[i] = lastPosition + hopCount * hopSize + frameSize;
-                lastPosition = endPositions[i] - frameSize;
+                endPositions[i] = lastPosition + hopCount * HopSize + FrameSize;
+                lastPosition = endPositions[i] - FrameSize;
             }
 
             endPositions[threadCount - 1] = signal.Length;
@@ -139,7 +197,7 @@ namespace NWaves.FeatureExtractors.Base
 
             Parallel.For(0, threadCount, i =>
             {
-                featureVectors[i] = ComputeFrom(signal, startPositions[i], endPositions[i]);
+                featureVectors[i] = extractors[i].ComputeFrom(signal, startPositions[i], endPositions[i]);
             });
 
             return featureVectors;
@@ -162,5 +220,7 @@ namespace NWaves.FeatureExtractors.Base
 
             return featureVectors;
         }
+
+        #endregion
     }
 }

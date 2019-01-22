@@ -19,12 +19,12 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// String annotations (or simply names) of features
         /// </summary>
-        public override string[] FeatureDescriptions { get; }
+        public override List<string> FeatureDescriptions { get; }
 
         /// <summary>
         /// Number of features to extract
         /// </summary>
-        public override int FeatureCount => FeatureDescriptions.Length;
+        public override int FeatureCount => FeatureDescriptions.Count;
 
         /// <summary>
         /// Size of used FFT
@@ -32,22 +32,58 @@ namespace NWaves.FeatureExtractors.Multi
         private readonly int _fftSize;
 
         /// <summary>
+        /// FFT transformer
+        /// </summary>
+        private readonly Fft _fft;
+
+        /// <summary>
+        /// Center frequencies (uniform in Herz scale by default; could be uniform in mel-scale or octave-scale, for example)
+        /// </summary>
+        private readonly float[] _frequencies;
+
+        /// <summary>
+        /// Parameters
+        /// </summary>
+        private IReadOnlyDictionary<string, object> _parameters;
+
+        /// <summary>
+        /// Internal buffer for magnitude spectrum
+        /// </summary>
+        float[] _spectrum;
+
+        /// <summary>
+        /// Internal buffer for currently processed block
+        /// </summary>
+        float[] _block;
+
+        /// <summary>
+        /// Internal block of zeros for a quick memset
+        /// </summary>
+        float[] _zeroblock;
+
+        /// <summary>
         /// Extractor functions
         /// </summary>
-        private readonly Func<float[], float[], float>[] _extractors;
+        private List<Func<float[], float[], float>> _extractors;
 
         /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="samplingRate"></param>
         /// <param name="featureList"></param>
-        /// <param name="parameters"></param>
-        /// <param name="frameSize"></param>
-        /// <param name="hopSize"></param>
+        /// <param name="frameDuration"></param>
+        /// <param name="hopDuration"></param>
         /// <param name="fftSize"></param>
-        public SpectralFeaturesExtractor(string featureList,
-                                         double frameSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/, int fftSize = 0,
+        /// <param name="parameters"></param>
+        public SpectralFeaturesExtractor(int samplingRate,
+                                         string featureList,
+                                         double frameDuration = 0.0256/*sec*/,
+                                         double hopDuration = 0.010/*sec*/,
+                                         int fftSize = 0,
+                                         float[] frequencies = null,
                                          IReadOnlyDictionary<string, object> parameters = null)
-            : base(frameSize, hopSize)
+
+            : base(samplingRate, frameDuration, hopDuration)
         {
             if (featureList == "all" || featureList == "full")
             {
@@ -58,8 +94,8 @@ namespace NWaves.FeatureExtractors.Multi
 
             _extractors = features.Select<string, Func<float[], float[], float>>(f =>
             {
-                var parameter = f.Trim().ToLower();
-                switch (parameter)
+                var feature = f.Trim().ToLower();
+                switch (feature)
                 {
                     case "sc":
                     case "centroid":
@@ -105,16 +141,41 @@ namespace NWaves.FeatureExtractors.Multi
                     case "c4":
                     case "c5":
                     case "c6":
-                        return (spectrum, freqs) => Spectral.Contrast(spectrum, freqs, int.Parse(parameter.Substring(1)));
+                        return (spectrum, freqs) => Spectral.Contrast(spectrum, freqs, int.Parse(feature.Substring(1)));
 
                     default:
-                        throw new ArgumentException($"Unknown parameter: {parameter}");
+                        return null;
                 }
-            }).ToArray();
+            }).ToList();
 
-            FeatureDescriptions = features;
+            FeatureDescriptions = features.ToList();
 
-            _fftSize = fftSize;
+            _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
+            _fft = new Fft(_fftSize);
+
+            var resolution = (float) samplingRate / _fftSize;
+
+            _frequencies = frequencies ?? Enumerable.Range(0, _fftSize + 1)
+                                                    .Select(f => f * resolution)
+                                                    .ToArray();
+            _parameters = parameters;
+
+            // reserve memory for reusable blocks
+
+            _spectrum = new float[_fftSize / 2 + 1];  // buffer for magnitude spectrum
+            _block = new float[_fftSize];             // buffer for currently processed block
+            _zeroblock = new float[_fftSize];         // just a buffer of zeros for quick memset
+        }
+
+        /// <summary>
+        /// Add one more feature with routine for its calculation
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="algorithm"></param>
+        public void AddFeature(string name, Func<float[], float[], float> algorithm)
+        {
+            FeatureDescriptions.Add(name);
+            _extractors.Add(algorithm);
         }
 
         /// <summary>
@@ -126,54 +187,64 @@ namespace NWaves.FeatureExtractors.Multi
         /// <returns>Sequence of feature vectors</returns>
         public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
-            var frameSize = (int)(signal.SamplingRate * FrameSize);
-            var hopSize = (int)(signal.SamplingRate * HopSize);
-            var fftSize = _fftSize >= frameSize ? _fftSize : MathUtils.NextPowerOfTwo(frameSize);
+            var nullExtractorPos = _extractors.IndexOf(null);
+            if (nullExtractorPos >= 0)
+            {
+                throw new ArgumentException($"Unknown feature: {FeatureDescriptions[nullExtractorPos]}");
+            }
 
-            var resolution = (float)signal.SamplingRate / fftSize;
-
-            var frequencies = Enumerable.Range(0, fftSize + 1)
-                                        .Select(f => f * resolution)
-                                        .ToArray();
+            Guard.AgainstInequality(SamplingRate, signal.SamplingRate, "Feature extractor sampling rate", "signal sampling rate");
 
             var featureVectors = new List<FeatureVector>();
             var featureCount = FeatureCount;
-
-            var fft = new Fft(fftSize);
-
-            // reserve memory for reusable blocks
-
-            var spectrum = new float[fftSize / 2 + 1];  // buffer for magnitude spectrum
-            var block = new float[fftSize];             // buffer for currently processed block
-            var zeroblock = new float[fftSize];         // just a buffer of zeros for quick memset
-
+            
             var i = startSample;
-            while (i + frameSize < endSample)
+            while (i + FrameSize < endSample)
             {
                 // prepare all blocks in memory for the current step:
 
-                zeroblock.FastCopyTo(block, fftSize);
-                signal.Samples.FastCopyTo(block, frameSize, i);
+                _zeroblock.FastCopyTo(_block, _fftSize);
+                signal.Samples.FastCopyTo(_block, FrameSize, i);
 
-                fft.MagnitudeSpectrum(block, spectrum);
+                _fft.MagnitudeSpectrum(_block, _spectrum);
 
                 var featureVector = new float[featureCount];
 
                 for (var j = 0; j < featureCount; j++)
                 {
-                    featureVector[j] = _extractors[j](spectrum, frequencies);
+                    featureVector[j] = _extractors[j](_spectrum, _frequencies);
                 }
 
                 featureVectors.Add(new FeatureVector
                 {
                     Features = featureVector,
-                    TimePosition = (double)i / signal.SamplingRate
+                    TimePosition = (double)i / SamplingRate
                 });
 
-                i += hopSize;
+                i += HopSize;
             }
 
             return featureVectors;
+        }
+
+        /// <summary>
+        /// True if computations can be done in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override bool IsParallelizable() => true;
+
+        /// <summary>
+        /// Copy of current extractor that can work in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override FeatureExtractor ParallelCopy()
+        {
+            var featureset = string.Join(",", FeatureDescriptions);
+            var copy = new SpectralFeaturesExtractor(SamplingRate, featureset, FrameDuration, HopDuration, _fftSize, _frequencies, _parameters)
+            {
+                _extractors = _extractors,
+            };
+            return copy;
         }
     }
 }

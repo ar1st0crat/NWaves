@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NWaves.Signals;
 using NWaves.FeatureExtractors.Base;
-using NWaves.Filters;
 using NWaves.Filters.Fda;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -24,8 +23,8 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Descriptions (simply "pncc0", "pncc1", "pncc2", etc.)
         /// </summary>
-        public override string[] FeatureDescriptions =>
-            Enumerable.Range(0, FeatureCount).Select(i => "pncc" + i).ToArray();
+        public override List<string> FeatureDescriptions =>
+            Enumerable.Range(0, FeatureCount).Select(i => "pncc" + i).ToList();
 
         /// <summary>
         /// Window length for median-time power (2 * M + 1)
@@ -64,10 +63,10 @@ namespace NWaves.FeatureExtractors
         public float MuT { get; set; } = 0.2f;
 
         /// <summary>
-        /// Gammatone Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)]
+        /// Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)].
+        /// By default it's gammatone filterbank.
         /// </summary>
-        private float[][] _gammatoneFilterBank;
-        public float[][] FilterBank => _gammatoneFilterBank;
+        public float[][] FilterBank { get; }
 
         /// <summary>
         /// Number of gammatone filters
@@ -95,14 +94,56 @@ namespace NWaves.FeatureExtractors
         private readonly int _fftSize;
 
         /// <summary>
+        /// FFT transformer
+        /// </summary>
+        private readonly Fft _fft;
+
+        /// <summary>
+        /// DCT-II transformer
+        /// </summary>
+        private readonly Dct2 _dct;
+
+        /// <summary>
         /// Type of the window function
         /// </summary>
         private readonly WindowTypes _window;
 
         /// <summary>
+        /// Window samples
+        /// </summary>
+        private readonly float[] _windowSamples;
+
+        /// <summary>
         /// Pre-emphasis coefficient
         /// </summary>
-        private readonly double _preEmphasis;
+        private readonly float _preEmphasis;
+
+        /// <summary>
+        /// Internal buffer for a signal block at each step
+        /// </summary>
+        private float[] _block;
+
+        /// <summary>
+        /// Internal buffer for a signal spectrum at each step
+        /// </summary>
+        private float[] _spectrum;
+
+        /// <summary>
+        /// Internal buffers for gammatone spectrum and its derivatives
+        /// </summary>
+        private float[] _gammatoneSpectrum;
+        private float[] _spectrumQOut;
+        private float[] _filteredSpectrumQ;
+        private float[] _spectrumS;
+        private float[] _smoothedSpectrumS;
+        private float[] _avgSpectrumQ1;
+        private float[] _avgSpectrumQ2;
+        private float[] _smoothedSpectrum;
+
+        /// <summary>
+        /// Internal buffer of zeros for quick memset
+        /// </summary>
+        private readonly float[] _zeroblock;
 
         /// <summary>
         /// Ring buffer for efficient processing of consecutive spectra
@@ -113,33 +154,89 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Main constructor
         /// </summary>
+        /// <param name="samplingRate"></param>
         /// <param name="featureCount"></param>
+        /// <param name="frameDuration">Length of analysis window (in seconds)</param>
+        /// <param name="hopDuration">Length of overlap (in seconds)</param>
         /// <param name="power"></param>
-        /// <param name="filterbankSize"></param>
         /// <param name="lowFreq"></param>
         /// <param name="highFreq"></param>
-        /// <param name="frameSize">Length of analysis window (in seconds)</param>
-        /// <param name="hopSize">Length of overlap (in seconds)</param>
+        /// <param name="filterbankSize"></param>
+        /// <param name="filterbank"></param>
         /// <param name="fftSize">Size of FFT (in samples)</param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
-        public PnccExtractor(int featureCount, int power = 15,
-                             int filterbankSize = 40, double lowFreq = 100, double highFreq = 6800,
-                             double frameSize = 0.0256/*sec*/, double hopSize = 0.010/*sec*/, int fftSize = 1024,
-                             double preEmphasis = 0.0, WindowTypes window = WindowTypes.Hamming)
-            : base(frameSize, hopSize)
+        public PnccExtractor(int samplingRate,
+                             int featureCount,
+                             double frameDuration = 0.0256/*sec*/,
+                             double hopDuration = 0.010/*sec*/,
+                             int power = 15,
+                             double lowFreq = 100,
+                             double highFreq = 6800,
+                             int filterbankSize = 40,
+                             float[][] filterbank = null,
+                             int fftSize = 1024,
+                             double preEmphasis = 0.0,
+                             WindowTypes window = WindowTypes.Hamming)
+
+            : base(samplingRate, frameDuration, hopDuration)
         {
+            FeatureCount = featureCount;
             FeatureCount = featureCount;
             _power = power;
 
+            if (filterbank == null)
+            {
+                _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
+                _filterbankSize = filterbankSize;
+
+                _lowFreq = lowFreq;
+                _highFreq = highFreq;
+
+                FilterBank = FilterBanks.Erb(_filterbankSize, _fftSize, samplingRate, _lowFreq, _highFreq);
+
+                // use power spectrum:
+
+                foreach (var filter in FilterBank)
+                {
+                    for (var j = 0; j < filter.Length; j++)
+                    {
+                        var ps = filter[j] * filter[j];
+                        filter[j] = ps;
+                    }
+                }
+            }
+            else
+            {
+                FilterBank = filterbank;
+                _filterbankSize = filterbank.Length;
+                _fftSize = 2 * (filterbank[0].Length - 1);
+            }
+
+            _fft = new Fft(fftSize);
+            _dct = new Dct2(_filterbankSize, FeatureCount);
+
+            _preEmphasis = (float)preEmphasis;
+
             _window = window;
-            _fftSize = fftSize;
+            if (_window != WindowTypes.Rectangular)
+            {
+                _windowSamples = Window.OfType(_window, FrameSize);
+            }
 
-            _filterbankSize = filterbankSize;
-            _lowFreq = lowFreq;
-            _highFreq = highFreq;
+            _block = new float[_fftSize];
+            _spectrum = new float[_fftSize / 2 + 1];
+            _spectrumQOut = new float[_filterbankSize];
+            _gammatoneSpectrum = new float[_filterbankSize];
+            _filteredSpectrumQ = new float[_filterbankSize];
+            _spectrumS = new float[_filterbankSize];
+            _smoothedSpectrumS = new float[_filterbankSize];
+            _avgSpectrumQ1 = new float[_filterbankSize];
+            _avgSpectrumQ2 = new float[_filterbankSize];
+            _smoothedSpectrum = new float[_filterbankSize];
+            _zeroblock = new float[_fftSize];
 
-            _preEmphasis = preEmphasis;
+            _ringBuffer = new SpectraRingBuffer(2 * M + 1, _filterbankSize);
         }
 
         /// <summary>
@@ -162,66 +259,18 @@ namespace NWaves.FeatureExtractors
         /// <returns>List of pncc vectors</returns>
         public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
-            // ====================================== PREPARE =======================================
+            Guard.AgainstInequality(SamplingRate, signal.SamplingRate, "Feature extractor sampling rate", "signal sampling rate");
 
-            var hopSize = (int)(signal.SamplingRate * HopSize);
-            var frameSize = (int)(signal.SamplingRate * FrameSize);
-            var windowSamples = Window.OfType(_window, frameSize);
+            var hopSize = HopSize;
+            var frameSize = FrameSize;
 
-            var fftSize = _fftSize >= frameSize ? _fftSize : MathUtils.NextPowerOfTwo(frameSize);
-
-            _gammatoneFilterBank = FilterBanks.Erb(_filterbankSize, _fftSize, signal.SamplingRate, _lowFreq, _highFreq);
-
-            // use power spectrum:
-
-            foreach (var filter in _gammatoneFilterBank)
-            {
-                for (var j = 0; j < filter.Length; j++)
-                {
-                    var ps = filter[j] * filter[j];
-                    filter[j] = ps;
-                }
-            }
-
-
-            var fft = new Fft (fftSize);
-            var dct = new Dct2(_filterbankSize, FeatureCount);
-            
-
-            var gammatoneSpectrum = new float[_filterbankSize];
-
-            var spectrumQOut = new float[_filterbankSize];
-            var filteredSpectrumQ = new float[_filterbankSize];
-            var spectrumS = new float[_filterbankSize];
-            var smoothedSpectrumS = new float[_filterbankSize];
-            var avgSpectrumQ1 = new float[_filterbankSize];
-            var avgSpectrumQ2 = new float[_filterbankSize];
-            var smoothedSpectrum = new float[_filterbankSize];
-            
             const float meanPower = 1e10f;
             var mean = 4e07f;
 
             var d = _power != 0 ? 1.0 / _power : 0.0;
+
+            var prevSample = startSample > 0 ? signal[startSample - 1] : 0.0f;
             
-            var block = new float[fftSize];           // buffer for currently processed signal block at each step
-            var zeroblock = new float[fftSize];       // buffer of zeros for quick memset
-
-            _ringBuffer = new SpectraRingBuffer(2 * M + 1, _filterbankSize);
-
-            var spectrum = new float[fftSize / 2 + 1];
-
-
-            // 0) pre-emphasis (if needed)
-
-            if (_preEmphasis > 0.0)
-            {
-                var preemphasisFilter = new PreEmphasisFilter(_preEmphasis);
-                signal = preemphasisFilter.ApplyTo(signal);
-            }
-
-
-            // ================================= MAIN PROCESSING ==================================
-
             var featureVectors = new List<FeatureVector>();
 
             var i = 0;
@@ -230,26 +279,38 @@ namespace NWaves.FeatureExtractors
             {
                 // prepare next block for processing
 
-                zeroblock.FastCopyTo(block, zeroblock.Length);
-                signal.Samples.FastCopyTo(block, frameSize, timePos);
-                
+                _zeroblock.FastCopyTo(_block, _fftSize);
+                signal.Samples.FastCopyTo(_block, frameSize, timePos);
+
+                // 0) pre-emphasis (if needed)
+
+                if (_preEmphasis > 0.0)
+                {
+                    for (var k = 0; k < frameSize; k++)
+                    {
+                        var y = _block[k] - prevSample * _preEmphasis;
+                        prevSample = _block[k];
+                        _block[k] = y;
+                    }
+                    prevSample = signal[i + hopSize - 1];
+                }
 
                 // 1) apply window
 
                 if (_window != WindowTypes.Rectangular)
                 {
-                    block.ApplyWindow(windowSamples);
+                    _block.ApplyWindow(_windowSamples);
                 }
 
 
                 // 2) calculate power spectrum
 
-                fft.PowerSpectrum(block, spectrum);
+                _fft.PowerSpectrum(_block, _spectrum);
 
 
                 // 3) apply gammatone filterbank
 
-                FilterBanks.Apply(_gammatoneFilterBank, spectrum, gammatoneSpectrum);
+                FilterBanks.Apply(FilterBank, _spectrum, _gammatoneSpectrum);
 
 
 
@@ -258,93 +319,93 @@ namespace NWaves.FeatureExtractors
                 
                 // 4.1) temporal integration (zero-phase moving average filter)
 
-                _ringBuffer.Add(gammatoneSpectrum);
+                _ringBuffer.Add(_gammatoneSpectrum);
                 var spectrumQ = _ringBuffer.AverageSpectrum;
 
                 // 4.2) asymmetric noise suppression
 
                 if (i == 2 * M)
                 {
-                    for (var j = 0; j < spectrumQOut.Length; j++)
+                    for (var j = 0; j < _spectrumQOut.Length; j++)
                     {
-                        spectrumQOut[j] = spectrumQ[j] * 0.9f;
+                        _spectrumQOut[j] = spectrumQ[j] * 0.9f;
                     }
                 }
                 
                 if (i >= 2 * M)
                 {
-                    for (var j = 0; j < spectrumQOut.Length; j++)
+                    for (var j = 0; j < _spectrumQOut.Length; j++)
                     {
-                        if (spectrumQ[j] > spectrumQOut[j])
+                        if (spectrumQ[j] > _spectrumQOut[j])
                         {
-                            spectrumQOut[j] = LambdaA * spectrumQOut[j] + (1 - LambdaA) * spectrumQ[j];
+                            _spectrumQOut[j] = LambdaA * _spectrumQOut[j] + (1 - LambdaA) * spectrumQ[j];
                         }
                         else
                         {
-                            spectrumQOut[j] = LambdaB * spectrumQOut[j] + (1 - LambdaB) * spectrumQ[j];
+                            _spectrumQOut[j] = LambdaB * _spectrumQOut[j] + (1 - LambdaB) * spectrumQ[j];
                         }
                     }
                     
-                    for (var j = 0; j < filteredSpectrumQ.Length; j++)
+                    for (var j = 0; j < _filteredSpectrumQ.Length; j++)
                     {
-                        filteredSpectrumQ[j] = Math.Max(spectrumQ[j] - spectrumQOut[j], 0.0f);
+                        _filteredSpectrumQ[j] = Math.Max(spectrumQ[j] - _spectrumQOut[j], 0.0f);
 
                         if (i == 2 * M)
                         {
-                            avgSpectrumQ1[j] = 0.9f * filteredSpectrumQ[j];
-                            avgSpectrumQ2[j] = filteredSpectrumQ[j];
+                            _avgSpectrumQ1[j] = 0.9f * _filteredSpectrumQ[j];
+                            _avgSpectrumQ2[j] = _filteredSpectrumQ[j];
                         }
 
-                        if (filteredSpectrumQ[j] > avgSpectrumQ1[j])
+                        if (_filteredSpectrumQ[j] > _avgSpectrumQ1[j])
                         {
-                            avgSpectrumQ1[j] = LambdaA * avgSpectrumQ1[j] + (1 - LambdaA) * filteredSpectrumQ[j];
+                            _avgSpectrumQ1[j] = LambdaA * _avgSpectrumQ1[j] + (1 - LambdaA) * _filteredSpectrumQ[j];
                         }
                         else
                         {
-                            avgSpectrumQ1[j] = LambdaB * avgSpectrumQ1[j] + (1 - LambdaB) * filteredSpectrumQ[j];
+                            _avgSpectrumQ1[j] = LambdaB * _avgSpectrumQ1[j] + (1 - LambdaB) * _filteredSpectrumQ[j];
                         }
 
                         // 4.3) temporal masking
 
-                        var threshold = filteredSpectrumQ[j];
+                        var threshold = _filteredSpectrumQ[j];
 
-                        avgSpectrumQ2[j] *= LambdaT;
-                        if (spectrumQ[j] < C * spectrumQOut[j])
+                        _avgSpectrumQ2[j] *= LambdaT;
+                        if (spectrumQ[j] < C * _spectrumQOut[j])
                         {
-                            filteredSpectrumQ[j] = avgSpectrumQ1[j];
+                            _filteredSpectrumQ[j] = _avgSpectrumQ1[j];
                         }
                         else
                         {
-                            if (filteredSpectrumQ[j] <= avgSpectrumQ2[j])
+                            if (_filteredSpectrumQ[j] <= _avgSpectrumQ2[j])
                             {
-                                filteredSpectrumQ[j] = MuT * avgSpectrumQ2[j];
+                                _filteredSpectrumQ[j] = MuT * _avgSpectrumQ2[j];
                             }
                         }
-                        avgSpectrumQ2[j] = Math.Max(avgSpectrumQ2[j], threshold);
+                        _avgSpectrumQ2[j] = Math.Max(_avgSpectrumQ2[j], threshold);
 
-                        filteredSpectrumQ[j] = Math.Max(filteredSpectrumQ[j], avgSpectrumQ1[j]);
+                        _filteredSpectrumQ[j] = Math.Max(_filteredSpectrumQ[j], _avgSpectrumQ1[j]);
                     }
 
 
                     // 4.4) spectral smoothing 
 
-                    for (var j = 0; j < spectrumS.Length; j++)
+                    for (var j = 0; j < _spectrumS.Length; j++)
                     {
-                        spectrumS[j] = filteredSpectrumQ[j] / Math.Max(spectrumQ[j], float.Epsilon);
+                        _spectrumS[j] = _filteredSpectrumQ[j] / Math.Max(spectrumQ[j], float.Epsilon);
                     }
 
-                    for (var j = 0; j < smoothedSpectrumS.Length; j++)
+                    for (var j = 0; j < _smoothedSpectrumS.Length; j++)
                     {
-                        smoothedSpectrumS[j] = 0.0f;
+                        _smoothedSpectrumS[j] = 0.0f;
 
                         var total = 0;
                         for (var k = Math.Max(j - N, 0);
                                  k < Math.Min(j + N + 1, _filterbankSize);
                                  k++, total++)
                         {
-                            smoothedSpectrumS[j] += spectrumS[k];
+                            _smoothedSpectrumS[j] += _spectrumS[k];
                         }
-                        smoothedSpectrumS[j] /= total;
+                        _smoothedSpectrumS[j] /= total;
                     }
 
                     // 4.5) mean power normalization
@@ -352,43 +413,43 @@ namespace NWaves.FeatureExtractors
                     var centralSpectrum = _ringBuffer.CentralSpectrum;
 
                     var sumPower = 0.0f;
-                    for (var j = 0; j < smoothedSpectrum.Length; j++)
+                    for (var j = 0; j < _smoothedSpectrum.Length; j++)
                     {
-                        smoothedSpectrum[j] = smoothedSpectrumS[j] * centralSpectrum[j];
-                        sumPower += smoothedSpectrum[j];
+                        _smoothedSpectrum[j] = _smoothedSpectrumS[j] * centralSpectrum[j];
+                        sumPower += _smoothedSpectrum[j];
                     }
 
                     mean = LambdaMu * mean + (1 - LambdaMu) * sumPower;
                     
-                    for (var j = 0; j < smoothedSpectrum.Length; j++)
+                    for (var j = 0; j < _smoothedSpectrum.Length; j++)
                     {
-                        smoothedSpectrum[j] *= meanPower / mean;
+                        _smoothedSpectrum[j] *= meanPower / mean;
                     }
                     
                     // =============================================================
 
 
-                    // 5) nonlinearity (power ^ d    or    Log10)
+                    // 5) nonlinearity (power ^ d     or    Log10)
 
                     if (_power != 0)
                     {
-                        for (var j = 0; j < smoothedSpectrum.Length; j++)
+                        for (var j = 0; j < _smoothedSpectrum.Length; j++)
                         {
-                            smoothedSpectrum[j] = (float)Math.Pow(smoothedSpectrum[j], d);
+                            _smoothedSpectrum[j] = (float) Math.Pow(_smoothedSpectrum[j], d);
                         }
                     }
                     else
                     {
-                        for (var j = 0; j < smoothedSpectrum.Length; j++)
+                        for (var j = 0; j < _smoothedSpectrum.Length; j++)
                         {
-                            smoothedSpectrum[j] = (float)Math.Log10(smoothedSpectrum[j] + float.Epsilon);
+                            _smoothedSpectrum[j] = (float) Math.Log10(_smoothedSpectrum[j] + float.Epsilon);
                         }
                     }
 
                     // 6) dct-II (normalized)
 
                     var pnccs = new float[FeatureCount];
-                    dct.DirectN(smoothedSpectrum, pnccs);
+                    _dct.DirectN(_smoothedSpectrum, pnccs);
                     
 
                     // add pncc vector to output sequence
@@ -396,7 +457,7 @@ namespace NWaves.FeatureExtractors
                     featureVectors.Add(new FeatureVector
                     {
                         Features = pnccs,
-                        TimePosition = (double)timePos / signal.SamplingRate
+                        TimePosition = (double) timePos / SamplingRate
                     });
                 }
 
@@ -406,17 +467,6 @@ namespace NWaves.FeatureExtractors
             }
 
             return featureVectors;
-        }
-
-        /// <summary>
-        /// Parallel computation of PNCC is not currently implemented
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="parallelThreads"></param>
-        /// <returns></returns>
-        public override List<FeatureVector>[] ParallelChunksComputeFrom(DiscreteSignal signal, int parallelThreads = 0)
-        {
-            throw new NotImplementedException();
         }
 
 
