@@ -80,9 +80,13 @@ namespace NWaves.DemoForms
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.signalAfterFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
             this.signalBeforeFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
-            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.winSizeTextBox = new System.Windows.Forms.TextBox();
+            this.hopSizeTextBox = new System.Windows.Forms.TextBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -181,6 +185,10 @@ namespace NWaves.DemoForms
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label17);
+            this.groupBox1.Controls.Add(this.label16);
+            this.groupBox1.Controls.Add(this.hopSizeTextBox);
+            this.groupBox1.Controls.Add(this.winSizeTextBox);
             this.groupBox1.Controls.Add(this.tsmComboBox);
             this.groupBox1.Controls.Add(this.pitchShiftCheckBox);
             this.groupBox1.Controls.Add(this.delayRadioButton);
@@ -231,18 +239,17 @@ namespace NWaves.DemoForms
             this.tsmComboBox.Items.AddRange(new object[] {
             "Phase Vocoder",
             "Phase Vocoder (Phase Locking)",
-            "WSOLA",
-            "PSOLA"});
-            this.tsmComboBox.Location = new System.Drawing.Point(778, 159);
+            "WSOLA"});
+            this.tsmComboBox.Location = new System.Drawing.Point(767, 142);
             this.tsmComboBox.Name = "tsmComboBox";
-            this.tsmComboBox.Size = new System.Drawing.Size(148, 24);
+            this.tsmComboBox.Size = new System.Drawing.Size(169, 24);
             this.tsmComboBox.TabIndex = 36;
             this.tsmComboBox.Text = "Phase Vocoder";
             // 
             // pitchShiftCheckBox
             // 
             this.pitchShiftCheckBox.AutoSize = true;
-            this.pitchShiftCheckBox.Location = new System.Drawing.Point(670, 159);
+            this.pitchShiftCheckBox.Location = new System.Drawing.Point(663, 159);
             this.pitchShiftCheckBox.Name = "pitchShiftCheckBox";
             this.pitchShiftCheckBox.Size = new System.Drawing.Size(91, 21);
             this.pitchShiftCheckBox.TabIndex = 35;
@@ -585,9 +592,16 @@ namespace NWaves.DemoForms
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(144, 26);
             this.openToolStripMenuItem.Text = "&Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
+            // 
+            // saveAsToolStripMenuItem
+            // 
+            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(144, 26);
+            this.saveAsToolStripMenuItem.Text = "&Save As...";
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
             // signalAfterFilteringPanel
             // 
@@ -619,12 +633,39 @@ namespace NWaves.DemoForms
             this.signalBeforeFilteringPanel.Stride = 256;
             this.signalBeforeFilteringPanel.TabIndex = 20;
             // 
-            // saveAsToolStripMenuItem
+            // winSizeTextBox
             // 
-            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
-            this.saveAsToolStripMenuItem.Text = "&Save As...";
-            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
+            this.winSizeTextBox.Location = new System.Drawing.Point(808, 172);
+            this.winSizeTextBox.Name = "winSizeTextBox";
+            this.winSizeTextBox.Size = new System.Drawing.Size(41, 22);
+            this.winSizeTextBox.TabIndex = 37;
+            this.winSizeTextBox.Text = "512";
+            // 
+            // hopSizeTextBox
+            // 
+            this.hopSizeTextBox.Location = new System.Drawing.Point(895, 172);
+            this.hopSizeTextBox.Name = "hopSizeTextBox";
+            this.hopSizeTextBox.Size = new System.Drawing.Size(41, 22);
+            this.hopSizeTextBox.TabIndex = 38;
+            this.hopSizeTextBox.Text = "128";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(772, 174);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(32, 17);
+            this.label16.TabIndex = 39;
+            this.label16.Text = "Win";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(859, 176);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(34, 17);
+            this.label17.TabIndex = 40;
+            this.label17.Text = "Hop";
             // 
             // EffectsForm
             // 
@@ -711,5 +752,9 @@ namespace NWaves.DemoForms
         private SignalPlot signalBeforeFilteringPanel;
         private System.Windows.Forms.ComboBox tsmComboBox;
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.TextBox hopSizeTextBox;
+        private System.Windows.Forms.TextBox winSizeTextBox;
     }
 }

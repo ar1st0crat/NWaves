@@ -5,6 +5,7 @@ using NWaves.Audio;
 using NWaves.Effects;
 using NWaves.Filters.Base;
 using NWaves.Operations;
+using NWaves.Operations.Tsm;
 using NWaves.Signals;
 using NWaves.Transforms;
 
@@ -71,6 +72,12 @@ namespace NWaves.DemoForms
         {
             IFilter effect;
 
+            var winSize = int.Parse(winSizeTextBox.Text);
+            var hopSize = int.Parse(hopSizeTextBox.Text);
+            var tsm = (TsmAlgorithm)tsmComboBox.SelectedIndex;
+
+            var shift = float.Parse(pitchShiftTextBox.Text);
+
             if (tremoloRadioButton.Checked)
             {
                 var freq = float.Parse(tremoloFrequencyTextBox.Text);
@@ -117,8 +124,7 @@ namespace NWaves.DemoForms
             }
             else if (pitchShiftRadioButton.Checked)
             {
-                var shift = float.Parse(pitchShiftTextBox.Text);
-                effect = pitchShiftCheckBox.Checked ? new PitchShiftEffect(shift) : null;
+                effect = pitchShiftCheckBox.Checked ? new PitchShiftEffect(shift, winSize, hopSize, tsm) : null;
             }
             else
             {
@@ -129,9 +135,10 @@ namespace NWaves.DemoForms
                 effect = new PhaserEffect(lfoFrequency, minFrequency, maxFrequency, q);
             }
 
-            _filteredSignal = effect != null ? 
-                              effect.ApplyTo(_signal, FilteringMethod.Auto) : 
-                              Operation.TimeStretch(_signal, float.Parse(pitchShiftTextBox.Text));
+            _filteredSignal = effect != null ?
+                              effect.ApplyTo(_signal, FilteringMethod.Auto) :
+                              Operation.TimeStretch(_signal, shift, tsm);
+                              //Operation.TimeStretch(_signal, shift, winSize, hopSize, tsm);
 
             signalAfterFilteringPanel.Signal = _filteredSignal;
             spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal.Samples);

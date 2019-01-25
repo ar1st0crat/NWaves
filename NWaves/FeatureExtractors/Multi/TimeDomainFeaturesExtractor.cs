@@ -32,7 +32,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Parameters
         /// </summary>
-        private IReadOnlyDictionary<string, object> _parameters;
+        private readonly IReadOnlyDictionary<string, object> _parameters;
 
         /// <summary>
         /// Constructor
@@ -78,11 +78,13 @@ namespace NWaves.FeatureExtractors.Multi
                         return (signal, start, end) => signal.Entropy(start, end);
 
                     default:
-                        return null;
+                        return (signal, start, end) => 0;
                 }
             }).ToList();
 
             FeatureDescriptions = features.ToList();
+
+            _parameters = parameters;
         }
 
         /// <summary>

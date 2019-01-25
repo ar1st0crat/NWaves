@@ -71,7 +71,7 @@ namespace NWaves.Operations.Tsm
             _stretch = stretch;
             _hopAnalysis = hopAnalysis;
             _hopSynthesis = (int)(hopAnalysis * stretch);
-            _fftSize = (fftSize > 0) ? fftSize : 4 * Math.Max(_hopAnalysis, _hopSynthesis);
+            _fftSize = (fftSize > 0) ? fftSize : 8 * Math.Max(_hopAnalysis, _hopSynthesis);
             _phaseLocking = phaseLocking;
             
             _fft = new Fft(_fftSize);

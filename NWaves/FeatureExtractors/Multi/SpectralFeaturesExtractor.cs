@@ -44,7 +44,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Parameters
         /// </summary>
-        private IReadOnlyDictionary<string, object> _parameters;
+        private readonly IReadOnlyDictionary<string, object> _parameters;
 
         /// <summary>
         /// Internal buffer for magnitude spectrum
@@ -144,7 +144,7 @@ namespace NWaves.FeatureExtractors.Multi
                         return (spectrum, freqs) => Spectral.Contrast(spectrum, freqs, int.Parse(feature.Substring(1)));
 
                     default:
-                        return null;
+                        return (spectrum, freqs) => 0;
                 }
             }).ToList();
 

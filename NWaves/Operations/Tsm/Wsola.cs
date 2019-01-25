@@ -1,6 +1,8 @@
 ﻿using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Utils;
+using NWaves.Windows;
+using System;
 
 namespace NWaves.Operations.Tsm
 {
@@ -10,25 +12,77 @@ namespace NWaves.Operations.Tsm
     public class Wsola : IFilter
     {
         /// <summary>
-        /// Size of FFT for analysis and synthesis
-        /// </summary>
-        private int _windowSize;
-
-        /// <summary>
         /// Stretch ratio
         /// </summary>
         private readonly double _stretch;
 
+        /// <summary>
+        /// Window size
+        /// </summary>
+        private int _windowSize;
 
         /// <summary>
-        /// Constructor
+        /// Hop size at analysis stage (STFT decomposition)
+        /// </summary>
+        private int _hopAnalysis;
+
+        /// <summary>
+        /// Hop size at synthesis stage (STFT merging)
+        /// </summary>
+        private int _hopSynthesis;
+
+        /// <summary>
+        /// Maximum length of the fragment for search of the most similar waveform
+        /// </summary>
+        private int _maxDelta;
+
+        /// <summary>
+        /// Constructor with detailed WSOLA settings
         /// </summary>
         /// <param name="stretch">Stretch ratio</param>
         /// <param name="windowSize"></param>
-        public Wsola(double stretch, int windowSize = 0)
+        public Wsola(double stretch, int windowSize, int hopAnalysis, int maxDelta = 0)
         {
             _stretch = stretch;
-            _windowSize = windowSize;
+            _windowSize = Math.Max(windowSize, 32);
+            _hopAnalysis = Math.Max(hopAnalysis, 10);
+            _hopSynthesis = (int)(_hopAnalysis * stretch);
+            _maxDelta = maxDelta > 2 ? maxDelta : _hopSynthesis + _hopSynthesis % 1;
+        }
+
+        /// <summary>
+        /// Constructor with smart parameter autoderivation 
+        /// </summary>
+        /// <param name="stretch"></param>
+        public Wsola(double stretch)
+        {
+            _stretch = stretch;
+            
+            // IMO these are good parameters for different stretch ratios
+
+            if (_stretch > 1.5)         // parameters are for 22.05 kHz sampling rate, so they will be adjusted for an input signal
+            {
+                _windowSize = 1024;     // 46,4 ms
+                _hopAnalysis = 128;     //  5,8 ms
+            }
+            else if (_stretch > 1.1)   
+            {
+                _windowSize = 1536;     // 69,7 ms
+                _hopAnalysis = 256;     // 10,6 ms
+            }
+            else if (_stretch > 0.6)
+            {
+                _windowSize = 1536;     // 69,7 ms
+                _hopAnalysis = 690;     // 31,3 ms
+            }
+            else
+            {
+                _windowSize = 1024;     // 46,4 ms
+                _hopAnalysis = 896;     // 40,6 ms
+            }
+
+            _hopSynthesis = (int)(_hopAnalysis * stretch);
+            _maxDelta = _hopSynthesis + _hopSynthesis % 1;
         }
 
         /// <summary>
@@ -40,88 +94,118 @@ namespace NWaves.Operations.Tsm
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
                                       FilteringMethod method = FilteringMethod.Auto)
         {
-            _windowSize = (int)(signal.SamplingRate * 0.08);      // 80 msec
-            var overlapSize = (int)(signal.SamplingRate * 0.03);  // 30 msec
-            var deltaSize = (int)(signal.SamplingRate * 0.02);    // 20 msec (interval to look for optimal shift)
-            var middleSize = _windowSize - 2 * overlapSize;
-            var hopSize = (int)((_windowSize - overlapSize) / _stretch);
+            // adjust parameters for a new sampling rate
+
+            if (signal.SamplingRate != 22050)
+            {
+                var factor = (float) signal.SamplingRate / 22050;
+
+                _windowSize = (int)(_windowSize * factor);
+                _hopAnalysis = (int)(_hopAnalysis * factor);
+                _hopSynthesis = (int)(_hopAnalysis * _stretch);
+                _maxDelta = (int)(_maxDelta * factor);
+            }
+
+            // and now WSOLA:
 
             var input = signal.Samples;
             var output = new float[(int)(_stretch * (input.Length + _windowSize))];
 
-            var offset = 0;
-            var inputOffset = 0;
-            var outputOffset = 0;
+            var window = Window.OfType(WindowTypes.Hann, _windowSize);
+            var windowSum = new float[output.Length];
 
-            var pos = 0;
-            while (pos + hopSize + deltaSize < input.Length)
+            var current = new float[_windowSize + _maxDelta];
+            var prev = new float[_windowSize];
+
+            for (int posAnalysis = 0,
+                     posSynthesis = 0;
+                     posAnalysis + _windowSize + _maxDelta + _hopSynthesis < input.Length;
+                     posAnalysis += _hopAnalysis,
+                     posSynthesis += _hopSynthesis)
             {
-                input.FastCopyTo(output, middleSize, offset, outputOffset);
-                inputOffset += hopSize - overlapSize;
+                int delta = 0;
 
-                // optimal overlap offset is the argmax of cross-correlation signal
-
-                var endOffset = offset + middleSize;
-
-                var optimalShift = 0;
-                var maxCorrelation = 0.0f;
-                
-                for (var i = 0; i < deltaSize; i++)
+                if (posAnalysis > _maxDelta / 2)
                 {
-                    var xcorr = 0.0f;
+                    input.FastCopyTo(current, _windowSize + _maxDelta, posAnalysis - _maxDelta / 2);
 
-                    for (var j = 0; j < overlapSize; j++)
-                    {
-                        xcorr += input[inputOffset + i + j] * input[endOffset + j];
-                    }
-
-                    if (xcorr > maxCorrelation)
-                    {
-                        maxCorrelation = xcorr;
-                        optimalShift = i;
-                    }
+                    delta = WaveformSimilarityPos(current, prev, _maxDelta);
+                }
+                else
+                {
+                    input.FastCopyTo(current, _windowSize + _maxDelta, posAnalysis);
                 }
 
-                // =================================================================
+                int size = Math.Min(_windowSize, output.Length - posSynthesis);
 
-                offset = inputOffset + optimalShift;
-
-                for (var i = 0; i < overlapSize; i++)
+                for (var j = 0; j < size; j++)
                 {
-                    output[outputOffset + middleSize + i] =
-                        (input[endOffset + i] * (overlapSize - i) + input[offset + i] * i) / overlapSize;
+                    current[delta + j] *= window[j];
+                    output[posSynthesis + j] += current[delta + j];
+                    windowSum[posSynthesis + j] += window[j];
                 }
 
-                offset += overlapSize;
-                inputOffset += overlapSize;
-                outputOffset += _windowSize - overlapSize;
+                input.FastCopyTo(prev, _windowSize, posAnalysis + delta - _maxDelta / 2 + _hopSynthesis);
+            }
 
-                pos += hopSize;
+            for (var j = 0; j < output.Length; j++)
+            {
+                if (windowSum[j] < 5e-3) continue;
+                output[j] /= windowSum[j];
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
         }
+
+        /// <summary>
+        /// Position of the best found waveform similarity
+        /// </summary>
+        /// <param name="current"></param>
+        /// <param name="prev"></param>
+        /// <param name="maxDelta"></param>
+        /// <returns></returns>
+        public int WaveformSimilarityPos(float[] current, float[] prev, int maxDelta)
+        {
+            var optimalShift = 0;
+            var maxCorrelation = 0.0f;
+
+            for (var i = 0; i < maxDelta; i++)
+            {
+                var xcorr = 0.0f;
+
+                for (var j = 0; j < prev.Length; j++)
+                {
+                    xcorr += current[i + j] * prev[j];
+                }
+
+                if (xcorr > maxCorrelation)
+                {
+                    maxCorrelation = xcorr;
+                    optimalShift = i;
+                }
+            }
+
+            return optimalShift;
+
+            // for larger window sizes better use FFT convolution:
+
+            //var cc = Operation.CrossCorrelate(new DiscreteSignal(1, current),
+            //                                  new DiscreteSignal(1, prev));
+            //                                  //.Last(re.Length);
+            //int start = prev.Length;
+
+            //var max = cc[start];
+            //var maxIndex = start;
+            //for (var k = start + 1; k < start + maxDelta; k++)
+            //{
+            //    if (cc[k] > max)
+            //    {
+            //        max = cc[k];
+            //        maxIndex = k;
+            //    }
+            //}
+
+            //return maxIndex - start;
+        }
     }
 }
-
-
-//var re = new float[_fftSize];
-//var im = new float[_fftSize];
-//var cc = new float[_fftSize];
-
-//var posSynthesis = 0;
-//for (var posAnalysis = 0; posAnalysis + _fftSize < input.Length; posAnalysis += _hopAnalysis)
-//{
-//    input.FastCopyTo(re, _fftSize, posAnalysis);
-
-//    re.ApplyWindow(_window);
-
-//    Operation.CrossCorrelate(re, im, re, im, cc);
-
-//    for (var j = 0; j < re.Length; j++)
-//    {
-//        output[posSynthesis + j] += re[j] * _window[j] * _norm;
-//    }
-
-//    posSynthesis += _hopSynthesis;
-//}

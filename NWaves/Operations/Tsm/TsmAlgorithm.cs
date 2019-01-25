@@ -8,26 +8,31 @@
         /// <summary>
         /// Phase vocoder
         /// </summary>
-        PhaseVocoder,
+        PhaseVocoder = 0,
+
+        /// <summary>
+        /// Phase vocoder with phase-locking
+        /// </summary>
+        PhaseVocoderPhaseLocking = 1,
 
         /// <summary>
         /// Waveform similarity-based Synchrnoized Overlap-Add
         /// </summary>
-        Wsola,
+        Wsola = 2,
 
         /// <summary>
         /// Pitch-Synchronous Overlap-Add
         /// </summary>
-        Psola,
+        Psola = 3,
 
         /// <summary>
         /// Phase Vocoder with Synchronized Overlap-Add
         /// </summary>
-        Pvsola,
+        Pvsola = 4,
 
         /// <summary>
         /// Synchronized Overlap-Add, Fixed Synthesis
         /// </summary>
-        Solafs
+        Solafs = 5
     }
 }

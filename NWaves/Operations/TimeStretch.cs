@@ -8,18 +8,52 @@ namespace NWaves.Operations
     public static partial class Operation
     {
         /// <summary>
-        /// Time stretching
+        /// Time stretching with parameters set by user
         /// </summary>
         /// <param name="signal">Signal</param>
-        /// <param name="stretch">Stretch factor (scale)</param>
-        /// <param name="fftSize">Size of FFT</param>
+        /// <param name="stretch">Stretch factor (ratio)</param>
+        /// <param name="windowSize">Window size (for vocoders - FFT size)</param>
         /// <param name="hopSize">Hop size</param>
-        /// <param name="algorithm">Algorithm for TSM</param>
-        /// <returns></returns>
+        /// <param name="algorithm">Algorithm for TSM (optional)</param>
+        /// <returns>Time stretched signal</returns>
         public static DiscreteSignal TimeStretch(DiscreteSignal signal,
                                                  double stretch,
-                                                 int fftSize = 1024,
-                                                 int hopSize = -1,
+                                                 int windowSize,
+                                                 int hopSize,
+                                                 TsmAlgorithm algorithm = TsmAlgorithm.Wsola)
+        {
+            if (Math.Abs(stretch - 1.0) < 1e-10)
+            {
+                return signal.Copy();
+            }
+            
+            IFilter stretchFilter;
+
+            switch (algorithm)
+            {
+                case TsmAlgorithm.PhaseVocoder:
+                    stretchFilter = new PhaseVocoder(stretch, hopSize, windowSize, false);
+                    break;
+                case TsmAlgorithm.PhaseVocoderPhaseLocking:
+                    stretchFilter = new PhaseVocoder(stretch, hopSize, windowSize);
+                    break;
+                default:
+                    stretchFilter = new Wsola(stretch, windowSize, hopSize);
+                    break;
+            }
+
+            return stretchFilter.ApplyTo(signal, FilteringMethod.Auto);
+        }
+
+        /// <summary>
+        /// Time stretching with auto-derived parameters
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="stretch">Stretch factor (ratio)</param>
+        /// <param name="algorithm">Algorithm for TSM (optional)</param>
+        /// <returns>Time stretched signal</returns>
+        public static DiscreteSignal TimeStretch(DiscreteSignal signal,
+                                                 double stretch,
                                                  TsmAlgorithm algorithm = TsmAlgorithm.Wsola)
         {
             if (Math.Abs(stretch - 1.0) < 1e-10)
@@ -27,17 +61,18 @@ namespace NWaves.Operations
                 return signal.Copy();
             }
 
-            var hopAnalysis = hopSize > 0 ? hopSize : fftSize / 4;
-            
             IFilter stretchFilter;
 
             switch (algorithm)
             {
                 case TsmAlgorithm.PhaseVocoder:
-                    stretchFilter = new PhaseVocoder(stretch, hopAnalysis, fftSize);
+                    stretchFilter = new PhaseVocoder(stretch, 50, 512, false);
+                    break;
+                case TsmAlgorithm.PhaseVocoderPhaseLocking:
+                    stretchFilter = new PhaseVocoder(stretch, 50, 512);
                     break;
                 default:
-                    stretchFilter = new Wsola(stretch, fftSize);
+                    stretchFilter = new Wsola(stretch);
                     break;
             }
 

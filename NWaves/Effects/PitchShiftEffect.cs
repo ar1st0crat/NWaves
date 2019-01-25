@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using NWaves.Filters.Base;
 using NWaves.Operations;
 using NWaves.Operations.Tsm;
@@ -24,6 +23,11 @@ namespace NWaves.Effects
         private readonly int _fftSize;
 
         /// <summary>
+        /// Hop size
+        /// </summary>
+        private readonly int _hopSize;
+
+        /// <summary>
         /// Algorithm of time-scale modification
         /// </summary>
         private readonly TsmAlgorithm _tsm;
@@ -34,10 +38,11 @@ namespace NWaves.Effects
         /// <param name="shift"></param>
         /// <param name="fftSize"></param>
         /// <param name="tsm"></param>
-        public PitchShiftEffect(double shift, int fftSize = 4096, TsmAlgorithm tsm = TsmAlgorithm.Wsola)
+        public PitchShiftEffect(double shift, int fftSize = 512, int hopSize = 128, TsmAlgorithm tsm = TsmAlgorithm.Wsola)
         {
             _shift = shift;
             _fftSize = fftSize;
+            _hopSize = hopSize;
             _tsm = tsm;
         }
 
@@ -51,7 +56,7 @@ namespace NWaves.Effects
                                       FilteringMethod method = FilteringMethod.Auto)
         {
             // 1) just stretch
-            var stretched = Operation.TimeStretch(signal, _shift, _fftSize, algorithm: _tsm);
+            var stretched = Operation.TimeStretch(signal, _shift, _fftSize, _hopSize, algorithm: _tsm);
             
             // 2) and interpolate
             var resampled = MathUtils.InterpolateLinear(
