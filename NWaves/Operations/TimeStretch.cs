@@ -66,10 +66,10 @@ namespace NWaves.Operations
             switch (algorithm)
             {
                 case TsmAlgorithm.PhaseVocoder:
-                    stretchFilter = new PhaseVocoder(stretch, 50, 512, false);
+                    stretchFilter = new PhaseVocoder(stretch, 100, 1024, false);
                     break;
                 case TsmAlgorithm.PhaseVocoderPhaseLocking:
-                    stretchFilter = new PhaseVocoder(stretch, 50, 512);
+                    stretchFilter = new PhaseVocoder(stretch, 256, 1024);
                     break;
                 default:
                     stretchFilter = new Wsola(stretch);

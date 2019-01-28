@@ -156,8 +156,8 @@ namespace NWaves.Operations.Tsm
 
             for (var j = 0; j < output.Length; j++)
             {
-                if (windowSum[j] < 1e-3) continue;
-                output[j] /= (windowSum[j] * _fftSize / 2);
+                if (windowSum[j] < 1e-2) continue;
+                output[j] /= windowSum[j] * _fftSize/2;
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
@@ -186,6 +186,9 @@ namespace NWaves.Operations.Tsm
             var phaseTotal = new double[_fftSize / 2 + 1];
             var delta = new double[_fftSize / 2 + 1];
 
+            var peaks = new int[_fftSize / 4];
+            var peakCount = 0;
+
             var posSynthesis = 0;
             for (var posAnalysis = 0; posAnalysis + _fftSize < input.Length; posAnalysis += _hopAnalysis)
             {
@@ -196,25 +199,17 @@ namespace NWaves.Operations.Tsm
 
                 _fft.Direct(re, im);
 
-
-                // spectral peaks in magnitude spectrum
-
                 for (var j = 0; j < mag.Length; j++)
                 {
                     mag[j] = Math.Sqrt(re[j] * re[j] + im[j] * im[j]);
                     phase[j] = Math.Atan2(im[j], re[j]);
-
-                    delta[j] = phase[j] - prevPhase[j];
-
-                    prevPhase[j] = phase[j];
                 }
 
-                // assign phases at peaks to all neighboring frequency bins
-
-                var prevIndex = 0;
-                var prevPhi = 0.0;
+                // spectral peaks in magnitude spectrum
                 
-                for (var j = 2; j < mag.Length - 2; j++)
+                peakCount = 0;
+                
+                for (var j = 2; j < mag.Length - 3; j++)
                 {
                     if (mag[j] <= mag[j - 1] || mag[j] <= mag[j - 2] ||
                         mag[j] <= mag[j + 1] || mag[j] <= mag[j + 2])
@@ -222,41 +217,42 @@ namespace NWaves.Operations.Tsm
                         continue;   // if not a peak
                     }
 
-                    var mid = prevIndex == 0 ? 0 : (prevIndex + j) / 2;
-
-                    for (var k = prevIndex; k < mid; k++)
-                    {
-                        phase[k] = prevPhi;
-                    }
-
-                    for (var k = mid; k < j; k++)
-                    {
-                        phase[k] = phase[j];
-                    }
-
-                    prevIndex = j;
-                    prevPhi = phase[j];
+                    peaks[peakCount++] = j;
                 }
 
-                for (var j = prevIndex; j < mag.Length; j++)
+                peaks[peakCount++] = mag.Length - 1;
+
+                // assign phases at peaks to all neighboring frequency bins
+
+                var leftPos = 0;
+
+                for (var j = 0; j < peakCount - 1; j++)
                 {
-                    phase[j] = prevPhi;
-                }
+                    var peakPos = peaks[j];
+                    var peakPhase = phase[peakPos];
 
+                    delta[peakPos] = peakPhase - prevPhase[peakPos];
 
-                // phase adaptation
-
-                for (var j = 0; j < mag.Length; j++)
-                {
-                    var deltaUnwrapped = delta[j] - _hopAnalysis * _omega[j];
+                    var deltaUnwrapped = delta[peakPos] - _hopAnalysis * _omega[peakPos];
                     var deltaWrapped = MathUtils.Mod(deltaUnwrapped + Math.PI, 2 * Math.PI) - Math.PI;
 
-                    var freq = _omega[j] + deltaWrapped / _hopAnalysis;
+                    var freq = _omega[peakPos] + deltaWrapped / _hopAnalysis;
 
-                    phaseTotal[j] += _hopSynthesis * freq;
+                    phaseTotal[peakPos] = phaseTotal[peakPos] + _hopSynthesis * freq;
+                    
+                    var rightPos = (peaks[j] + peaks[j + 1]) / 2;
 
-                    re[j] = (float)(mag[j] * Math.Cos(phaseTotal[j]));
-                    im[j] = (float)(mag[j] * Math.Sin(phaseTotal[j]));
+                    for (var k = leftPos; k < rightPos; k++)
+                    {
+                        phaseTotal[k] = phaseTotal[peakPos] + phase[k] - phase[peakPos];
+
+                        prevPhase[k] = phase[k];
+
+                        re[k] = (float)(mag[k] * Math.Cos(phaseTotal[k]));
+                        im[k] = (float)(mag[k] * Math.Sin(phaseTotal[k]));
+                    }
+
+                    leftPos = rightPos;
                 }
 
                 for (var j = _fftSize / 2 + 1; j < _fftSize; j++)
@@ -277,8 +273,8 @@ namespace NWaves.Operations.Tsm
 
             for (var j = 0; j < output.Length; j++)
             {
-                if (windowSum[j] < 1e-3) continue;
-                output[j] /= (windowSum[j] * _fftSize / 2);
+                if (windowSum[j] < 1e-2) continue;
+                output[j] /= windowSum[j] * (_fftSize/2 + 1);
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
