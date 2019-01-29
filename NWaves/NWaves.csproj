@@ -45,6 +45,7 @@
     <Compile Include="Filters\OnePole\OnePoleFilter.cs" />
     <Compile Include="Filters\RastaFilter.cs" />
     <Compile Include="Filters\Base\BlockConvolver.cs" />
+    <Compile Include="Operations\Resampler.cs" />
     <Compile Include="Operations\Tsm\TsmAlgorithm.cs" />
     <Compile Include="Signals\Builders\ChirpBuilder.cs" />
     <Compile Include="Signals\Builders\PerlinNoiseBuilder.cs" />
