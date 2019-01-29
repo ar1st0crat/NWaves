@@ -1,4 +1,5 @@
 ﻿using NWaves.Filters.Base;
+using NWaves.Operations.Convolution;
 using NWaves.Signals;
 using NWaves.Utils;
 using NWaves.Windows;
@@ -14,12 +15,12 @@ namespace NWaves.Operations.Tsm
         /// <summary>
         /// Stretch ratio
         /// </summary>
-        private readonly double _stretch;
+        protected readonly double _stretch;
 
         /// <summary>
         /// Window size
         /// </summary>
-        private int _windowSize;
+        protected int _windowSize;
 
         /// <summary>
         /// Hop size at analysis stage (STFT decomposition)
@@ -29,12 +30,29 @@ namespace NWaves.Operations.Tsm
         /// <summary>
         /// Hop size at synthesis stage (STFT merging)
         /// </summary>
-        private int _hopSynthesis;
+        protected int _hopSynthesis;
 
         /// <summary>
         /// Maximum length of the fragment for search of the most similar waveform
         /// </summary>
-        private int _maxDelta;
+        protected int _maxDelta;
+
+        /// <summary>
+        /// True if parameters were set by user (not by default)
+        /// </summary>
+        private bool _userParameters;
+
+        /// <summary>
+        /// Internal convolver
+        /// (will be used for evaluating auto-correlation if the window size is too big)
+        /// </summary>
+        private Convolver _convolver;
+
+        /// <summary>
+        /// Cross-correlation signal
+        /// </summary>
+        private float[] _cc;
+
 
         /// <summary>
         /// Constructor with detailed WSOLA settings
@@ -48,6 +66,10 @@ namespace NWaves.Operations.Tsm
             _hopAnalysis = Math.Max(hopAnalysis, 10);
             _hopSynthesis = (int)(_hopAnalysis * stretch);
             _maxDelta = maxDelta > 2 ? maxDelta : _hopSynthesis + _hopSynthesis % 1;
+
+            _userParameters = true;
+
+            PrepareConvolver();
         }
 
         /// <summary>
@@ -57,10 +79,10 @@ namespace NWaves.Operations.Tsm
         public Wsola(double stretch)
         {
             _stretch = stretch;
-            
+
             // IMO these are good parameters for different stretch ratios
 
-            if (_stretch > 1.5)         // parameters are for 22.05 kHz sampling rate, so they will be adjusted for an input signal
+            if (_stretch > 1.5)        // parameters are for 22.05 kHz sampling rate, so they will be adjusted for an input signal
             {
                 _windowSize = 1024;     // 46,4 ms
                 _hopAnalysis = 128;     //  5,8 ms
@@ -83,6 +105,22 @@ namespace NWaves.Operations.Tsm
 
             _hopSynthesis = (int)(_hopAnalysis * stretch);
             _maxDelta = _hopSynthesis + _hopSynthesis % 1;
+
+            PrepareConvolver();
+        }
+
+        /// <summary>
+        /// For large window sizes prepare the internal convolver
+        /// </summary>
+        private void PrepareConvolver()
+        {
+            var fftSize = MathUtils.NextPowerOfTwo(2 * _windowSize + _maxDelta - 1);
+
+            if (fftSize >= 4096)
+            {
+                _convolver = new Convolver(fftSize);
+                _cc = new float[fftSize];
+            }
         }
 
         /// <summary>
@@ -94,9 +132,9 @@ namespace NWaves.Operations.Tsm
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
                                       FilteringMethod method = FilteringMethod.Auto)
         {
-            // adjust parameters for a new sampling rate
+            // adjust default parameters for a new sampling rate
 
-            if (signal.SamplingRate != 22050)
+            if (signal.SamplingRate != 22050 && !_userParameters)
             {
                 var factor = (float) signal.SamplingRate / 22050;
 
@@ -104,6 +142,8 @@ namespace NWaves.Operations.Tsm
                 _hopAnalysis = (int)(_hopAnalysis * factor);
                 _hopSynthesis = (int)(_hopAnalysis * _stretch);
                 _maxDelta = (int)(_maxDelta * factor);
+
+                PrepareConvolver();
             }
 
             // and now WSOLA:
@@ -169,43 +209,42 @@ namespace NWaves.Operations.Tsm
             var optimalShift = 0;
             var maxCorrelation = 0.0f;
 
-            for (var i = 0; i < maxDelta; i++)
+            // for small window sizes cross-correlate directly:
+
+            if (_convolver == null)
             {
-                var xcorr = 0.0f;
-
-                for (var j = 0; j < prev.Length; j++)
+                for (var i = 0; i < maxDelta; i++)
                 {
-                    xcorr += current[i + j] * prev[j];
+                    var xcorr = 0.0f;
+
+                    for (var j = 0; j < prev.Length; j++)
+                    {
+                        xcorr += current[i + j] * prev[j];
+                    }
+
+                    if (xcorr > maxCorrelation)
+                    {
+                        maxCorrelation = xcorr;
+                        optimalShift = i;
+                    }
                 }
+            }
+            // for very large window sizes better use FFT convolution:
+            else
+            {
+                _convolver.CrossCorrelate(current, prev, _cc);
 
-                if (xcorr > maxCorrelation)
+                for (var i = prev.Length - 1; i < prev.Length + _maxDelta; i++)
                 {
-                    maxCorrelation = xcorr;
-                    optimalShift = i;
+                    if (_cc[i] > maxCorrelation)
+                    {
+                        maxCorrelation = _cc[i];
+                        optimalShift = i - prev.Length + 1;
+                    }
                 }
             }
 
             return optimalShift;
-
-            // for larger window sizes better use FFT convolution:
-
-            //var cc = Operation.CrossCorrelate(new DiscreteSignal(1, current),
-            //                                  new DiscreteSignal(1, prev));
-            //                                  //.Last(re.Length);
-            //int start = prev.Length;
-
-            //var max = cc[start];
-            //var maxIndex = start;
-            //for (var k = start + 1; k < start + maxDelta; k++)
-            //{
-            //    if (cc[k] > max)
-            //    {
-            //        max = cc[k];
-            //        maxIndex = k;
-            //    }
-            //}
-
-            //return maxIndex - start;
         }
     }
 }

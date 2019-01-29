@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NWaves.Operations.Convolution;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;

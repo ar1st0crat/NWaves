@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using NWaves.Operations;
+using NWaves.Operations.Convolution;
 using NWaves.Signals;
 
 namespace NWaves.Tests.OperationTests
@@ -36,11 +37,13 @@ namespace NWaves.Tests.OperationTests
         }
 
         [Test]
-        public void TestDirectCrossCorrelation()
+        public void TestInPlaceCrossCorrelation()
         {
-            var conv = Operation.CrossCorrelateDirect(_input, _kernel);
+            float[] res = new float[16];
 
-            Assert.That(conv.Samples, Is.EqualTo(new[] { 1, 8, 20, 21, 18, 24, 19, 7, 2.0f }).Within(1e-7));
+            new Convolver(16).CrossCorrelate(_input.Samples, _kernel.Samples, res);
+
+            Assert.That(res, Is.EqualTo(new[] { 1, 8, 20, 21, 18, 24, 19, 7, 2.0f, 0, 0, 0, 0, 0, 0, 0 }).Within(1e-5));
         }
 
         [Test]

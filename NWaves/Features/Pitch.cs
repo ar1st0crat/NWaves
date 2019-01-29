@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using NWaves.Operations;
+using NWaves.Operations.Convolution;
 using NWaves.Signals;
 using NWaves.Utils;
 
@@ -29,6 +30,11 @@ namespace NWaves.Features
         /// Lower pitch frequency
         /// </summary>
         private readonly double _low;
+
+        /// <summary>
+        /// Internal convolver
+        /// </summary>
+        private Convolver _convolver;
 
 
         /// <summary>
@@ -60,35 +66,31 @@ namespace NWaves.Features
             var hopSize = (int)(samplingRate * _hopSize);
             var windowSize = (int)(samplingRate * _windowSize);
             var fftSize = MathUtils.NextPowerOfTwo(2 * windowSize - 1);
+            _convolver = new Convolver(fftSize);
             
             var pitches = new List<float>();
 
             var pitch1 = (int)(1.0 * samplingRate / _high);    // 2,5 ms = 400Hz
             var pitch2 = (int)(1.0 * samplingRate / _low);     // 12,5 ms = 80Hz
 
-            var blockReal = new float[fftSize];       // buffer for real parts of the currently processed block
-            var blockImag = new float[fftSize];       // buffer for imaginary parts of the currently processed block
-            var reversedReal = new float[fftSize];    // buffer for real parts of currently processed reversed block
-            var reversedImag = new float[fftSize];    // buffer for imaginary parts of currently processed reversed block
-            var zeroblock = new float[fftSize];       // just a buffer of zeros for quick memset
+            var block = new float[windowSize];    // buffer for the currently processed block
+            var reversed = new float[windowSize]; // buffer for the currently processed block
 
-            var cc = new float[windowSize];           // buffer for (truncated) cross-correlation signal
+            var cc = new float[fftSize];          // buffer for cross-correlation signal
 
             var pos = 0;
             while (pos + windowSize < signal.Length)
             {
-                zeroblock.FastCopyTo(blockReal, fftSize);
-                zeroblock.FastCopyTo(blockImag, fftSize);
-                zeroblock.FastCopyTo(reversedReal, fftSize);
-                zeroblock.FastCopyTo(reversedImag, fftSize);
+                signal.Samples.FastCopyTo(block, windowSize, pos);
+                signal.Samples.FastCopyTo(reversed, windowSize, pos);
 
-                signal.Samples.FastCopyTo(blockReal, windowSize, pos);
+                _convolver.CrossCorrelate(block, reversed, cc);
 
-                Operation.CrossCorrelate(blockReal, blockImag, reversedReal, reversedImag, cc, windowSize);
+                var startPos = pitch1 + windowSize - 1;
 
-                var max = cc[pitch1];
-                var peakIndex = pitch1;
-                for (var k = pitch1 + 1; k <= pitch2; k++)
+                var max = cc[startPos];
+                var peakIndex = startPos;
+                for (var k = startPos + 1; k <= pitch2 + startPos; k++)
                 {
                     if (cc[k] > max)
                     {
@@ -96,6 +98,8 @@ namespace NWaves.Features
                         peakIndex = k;
                     }
                 }
+
+                peakIndex -= (windowSize - 1);
 
                 pitches.Add((float)samplingRate / peakIndex);
 
@@ -113,16 +117,15 @@ namespace NWaves.Features
         /// <param name="high"></param>
         /// <returns></returns>
         public static float AutoCorrelation(DiscreteSignal signal,
-                                             float low = 80,
-                                             float high = 400)
+                                            float low = 80,
+                                            float high = 400)
         {
-            var fftSize = signal.Length;
             var samplingRate = signal.SamplingRate;
 
             var pitch1 = (int)(1.0 * samplingRate / high);    // 2,5 ms = 400Hz
             var pitch2 = (int)(1.0 * samplingRate / low);     // 12,5 ms = 80Hz
 
-            var cc = Operation.CrossCorrelate(signal, signal).Last(fftSize);
+            var cc = Operation.CrossCorrelate(signal, signal).Last(signal.Length);
 
             //block.ApplyWindow(WindowTypes.Hamming);
             //func = new CepstralTransform(256).Direct(signal);
@@ -149,9 +152,10 @@ namespace NWaves.Features
         /// <param name="low"></param>
         /// <param name="high"></param>
         /// <returns></returns>
-        public static float AutoCorrelation(float[] samples, int samplingRate,
-                                             float low = 80,
-                                             float high = 400)
+        public static float AutoCorrelation(float[] samples,
+                                            int samplingRate,
+                                            float low = 80,
+                                            float high = 400)
         {
             return AutoCorrelation(new DiscreteSignal(samplingRate, samples), low, high);
         }

@@ -5,6 +5,7 @@ using NWaves.Audio;
 using NWaves.Audio.Interfaces;
 using NWaves.Filters.Base;
 using NWaves.Filters.Fda;
+using NWaves.Operations.Convolution;
 using NWaves.Signals;
 using NWaves.Utils;
 

@@ -44,7 +44,9 @@
     <Compile Include="Filters\BiQuad\BiQuadFilter.cs" />
     <Compile Include="Filters\OnePole\OnePoleFilter.cs" />
     <Compile Include="Filters\RastaFilter.cs" />
-    <Compile Include="Filters\Base\BlockConvolver.cs" />
+    <Compile Include="Operations\Convolution\BlockConvolver.cs" />
+    <Compile Include="Operations\Convolution\ComplexConvolver.cs" />
+    <Compile Include="Operations\Convolution\Convolver.cs" />
     <Compile Include="Operations\Resampler.cs" />
     <Compile Include="Operations\Tsm\TsmAlgorithm.cs" />
     <Compile Include="Signals\Builders\ChirpBuilder.cs" />
@@ -119,13 +121,11 @@
     <Compile Include="Filters\OnePole\HighPassFilter.cs" />
     <Compile Include="Filters\OnePole\LowPassFilter.cs" />
     <Compile Include="Filters\PreEmphasisFilter.cs" />
-    <Compile Include="Operations\Convolution.cs" />
+    <Compile Include="Operations\Operation.cs" />
     <Compile Include="Operations\Envelope.cs" />
     <Compile Include="Operations\Modulate.cs" />
     <Compile Include="Operations\Tsm\PhaseVocoder.cs" />
-    <Compile Include="Operations\Resampling.cs" />
     <Compile Include="Operations\SpectralSubtraction.cs" />
-    <Compile Include="Operations\TimeStretch.cs" />
     <Compile Include="Operations\Tsm\Psola.cs" />
     <Compile Include="Operations\Tsm\Wsola.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

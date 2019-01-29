@@ -146,9 +146,9 @@ namespace NWaves.Utils
         /// <param name="a">LP coefficients</param>
         /// <param name="order">Order of LPC</param>
         /// <returns>Prediction error</returns>
-        public static float LevinsonDurbin(float[] input, float[] a, int order)
+        public static float LevinsonDurbin(float[] input, float[] a, int order, int offset = 0)
         {
-            var err = input[0];
+            var err = input[offset];
 
             a[0] = 1.0f;
 
@@ -157,7 +157,7 @@ namespace NWaves.Utils
                 var lambda = 0.0f;
                 for (var j = 0; j < i; j++)
                 {
-                    lambda -= a[j] * input[i - j];
+                    lambda -= a[j] * input[offset + i - j];
                 }
 
                 lambda /= err;

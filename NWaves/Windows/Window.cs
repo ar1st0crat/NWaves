@@ -40,6 +40,18 @@ namespace NWaves.Windows
                 case WindowTypes.Kbd:
                     return parameters.Length > 0 ? Kbd(length, (double)parameters[0]) : Kbd(length);
 
+                case WindowTypes.BartlettHann:
+                    return BartlettHann(length);
+
+                case WindowTypes.Lanczos:
+                    return Lanczos(length);
+
+                case WindowTypes.PowerOfSine:
+                    return parameters.Length > 0 ? PowerOfSine(length, (double)parameters[0]) : PowerOfSine(length);
+
+                case WindowTypes.Flattop:
+                    return Flattop(length);
+
                 case WindowTypes.Liftering:
                     return parameters.Length > 0 ? Liftering(length, (int)parameters[0]) : Liftering(length);
 
@@ -78,9 +90,9 @@ namespace NWaves.Windows
         /// <returns>Hamming window</returns>
         public static float[] Hamming(int length)
         {
-            var n = length - 1;
+            var n = 2 * Math.PI / (length - 1);
             return Enumerable.Range(0, length)
-                             .Select(i => 0.54 - 0.46 * Math.Cos(2 * Math.PI * i / n))
+                             .Select(i => 0.54 - 0.46 * Math.Cos(i * n))
                              .ToFloats();
         }
 
@@ -91,9 +103,9 @@ namespace NWaves.Windows
         /// <returns>Blackman window</returns>
         public static float[] Blackman(int length)
         {
-            var n = length - 1;
+            var n = 2 * Math.PI / (length - 1);
             return Enumerable.Range(0, length)
-                             .Select(i => 0.42 - 0.5 * Math.Cos(2 * Math.PI * i / n) + 0.08 * Math.Cos(4 * Math.PI * i / n))
+                             .Select(i => 0.42 - 0.5 * Math.Cos(i * n) + 0.08 * Math.Cos(2 * i * n))
                              .ToFloats();
         }
 
@@ -104,9 +116,9 @@ namespace NWaves.Windows
         /// <returns>Hann window</returns>
         public static float[] Hann(int length)
         {
-            var n = length - 1;
+            var n = 2 * Math.PI / (length - 1);
             return Enumerable.Range(0, length)
-                             .Select(i => 0.5 * (1 - Math.Cos(2 * Math.PI * i / n)))
+                             .Select(i => 0.5 * (1 - Math.Cos(i * n)))
                              .ToFloats();
         }
 
@@ -161,6 +173,50 @@ namespace NWaves.Windows
             }
 
             return kbd;
+        }
+
+        /// <summary>
+        /// Bartlett-Hann window
+        /// </summary>
+        public static float[] BartlettHann(int length)
+        {
+            var n = 1.0 / (length - 1);
+            return Enumerable.Range(0, length)
+                             .Select(i => 0.62 - 0.48 * Math.Abs(i * n - 0.5) - 0.38 * Math.Cos(2 * Math.PI * i * n))
+                             .ToFloats();
+        }
+
+        /// <summary>
+        /// Lanczos window
+        /// </summary>
+        public static float[] Lanczos(int length)
+        {
+            var n = 2.0 / (length - 1);
+            return Enumerable.Range(0, length)
+                             .Select(i => MathUtils.Sinc(i * n - 1))
+                             .ToFloats();
+        }
+
+        /// <summary>
+        /// Sin-beta window
+        /// </summary>
+        public static float[] PowerOfSine(int length, double alpha = 1.5)
+        {
+            var n = Math.PI / length;
+            return Enumerable.Range(0, length)
+                             .Select(i => Math.Pow(Math.Sin(i * n), alpha))
+                             .ToFloats();
+        }
+
+        /// <summary>
+        /// Flat-top window
+        /// </summary>
+        public static float[] Flattop(int length)
+        {
+            var n = 2 * Math.PI / (length - 1);
+            return Enumerable.Range(0, length)
+                             .Select(i => 0.216 - 0.417 * Math.Cos(i * n) + 0.278 * Math.Cos(2 * i * n) - 0.084 * Math.Cos(3 * i * n) + 0.007 * Math.Cos(4 * i * n))
+                             .ToFloats();
         }
 
         /// <summary>

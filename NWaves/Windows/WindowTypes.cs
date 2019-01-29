@@ -44,6 +44,26 @@ namespace NWaves.Windows
         /// Kaiser-Bessel Derived window
         /// </summary>
         Kbd,
+
+        /// <summary>
+        /// Bartlett-Hann window
+        /// </summary>
+        BartlettHann,
+
+        /// <summary>
+        /// Lanczos window
+        /// </summary>
+        Lanczos,
+
+        /// <summary>
+        /// Power-of-sine window
+        /// </summary>
+        PowerOfSine,
+
+        /// <summary>
+        /// Flat-top window
+        /// </summary>
+        Flattop,
         
         /// <summary>
         /// Window for cepstral liftering

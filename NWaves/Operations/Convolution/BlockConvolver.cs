@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
 
-namespace NWaves.Filters.Base
+namespace NWaves.Operations.Convolution
 {
     /// <summary>
     /// Class responsible for OLA/OLS block convolution.

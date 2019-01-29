@@ -19,10 +19,10 @@ Already available:
 - [x] FIR/IIR filtering (offline and online)
 - [x] basic filter design & analysis (group delay, zeros/poles, window-sinc, BP, BR, HP from/to LP, combining filters)
 - [x] non-linear filters (median filter, overdrive and distortion effects)
-- [x] windowing functions (Hamming, Blackman, Hann, Gaussian, Kaiser, triangular, cepstral liftering)
+- [x] windowing functions (Hamming, Blackman, Hann, Gaussian, Kaiser, KBD, triangular, Lanczos, flat-top, Bartlett-Hann)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and perceptual weighting (A, B, C)
 - [x] customizable feature extraction (MFCC, PNCC/SPNCC, LPC, LPCC, AMS) and CSV serialization
-- [x] feature post-processing (mean and variance normalization, deltas)
+- [x] feature post-processing (mean and variance normalization, adding deltas)
 - [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest)
 - [x] signal builders (sinusoid, white/pink/red noise, Perlin noise, awgn, triangle, sawtooth, square, periodic pulse)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
