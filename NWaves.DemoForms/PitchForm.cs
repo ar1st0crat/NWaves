@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using NWaves.Audio;
+using NWaves.FeatureExtractors.Base;
 using NWaves.Features;
 using NWaves.Operations;
 using NWaves.Signals;
@@ -26,7 +27,7 @@ namespace NWaves.DemoForms
         private int _hopSize;
         private int _cepstrumSize;
 
-        private List<float> _pitchTrack;
+        private List<FeatureVector> _pitches;
 
         private int _specNo;
 
@@ -63,12 +64,13 @@ namespace NWaves.DemoForms
             _fft = new Fft(_fftSize);
             _cepstralTransform = new CepstralTransform(_cepstrumSize, _fftSize);
 
-            var pitchTracker = new Pitch((float)_fftSize / _signal.SamplingRate,
-                                         (float)_hopSize / _signal.SamplingRate);
+            var pitchExtractor = new PitchExtractor(_signal.SamplingRate,
+                                                    (float)_fftSize / _signal.SamplingRate,
+                                                    (float)_hopSize / _signal.SamplingRate);
 
-            _pitchTrack = pitchTracker.Track(_signal);
+            _pitches = pitchExtractor.ParallelComputeFrom(_signal);
 
-            UpdateSpectra();
+            UpdateSpectrumAndCepstrum();
             UpdateAutoCorrelation();
             
             // obtain spectrogram
@@ -78,9 +80,9 @@ namespace NWaves.DemoForms
 
             spectrogramPanel.ColorMapName = "viridis";
             spectrogramPanel.Spectrogram = spectrogram.Select(s => s.Take(224).ToArray()).ToList();
-            spectrogramPanel.Markline = _pitchTrack.Select(p => p * _fftSize / _signal.SamplingRate).ToArray();
+            spectrogramPanel.Markline = _pitches.Select(p => p.Features[0] * _fftSize / _signal.SamplingRate).ToArray();
 
-            specNoComboBox.DataSource = Enumerable.Range(1, _pitchTrack.Count).ToArray();
+            specNoComboBox.DataSource = Enumerable.Range(1, _pitches.Count).ToArray();
 
             _specNo = 0;
         }
@@ -89,7 +91,7 @@ namespace NWaves.DemoForms
         {
             _specNo = int.Parse(specNoComboBox.Text) - 1;
             UpdateAutoCorrelation();
-            UpdateSpectra();
+            UpdateSpectrumAndCepstrum();
         }
 
         private void prevButton_Click(object sender, EventArgs e)
@@ -104,7 +106,7 @@ namespace NWaves.DemoForms
             specNoComboBox.Text = (_specNo + 1).ToString();
         }
 
-        private void UpdateSpectra()
+        private void UpdateSpectrumAndCepstrum()
         {
             var fftSize = int.Parse(fftSizeTextBox.Text);
             var cepstrumSize = int.Parse(cepstrumSizeTextBox.Text);
@@ -125,9 +127,16 @@ namespace NWaves.DemoForms
             
             var pos = _hopSize * _specNo;
             var block = _signal[pos, pos + _fftSize];
-            block.ApplyWindow(WindowTypes.Hamming);
+            
+            //block.ApplyWindow(WindowTypes.Hamming);
 
             var cepstrum = _cepstralTransform.Direct(block);
+
+            var pitch = Pitch.FromCepstrum(block);
+
+            // ************************************************************************
+            //      just visualize spectrum estimated from cepstral coefficients:
+            // ************************************************************************
 
             var real = new float[_fftSize];
             var imag = new float[_fftSize];
@@ -150,8 +159,6 @@ namespace NWaves.DemoForms
             spectrumPanel.Markline = spectrumEstimate;
             spectrumPanel.ToDecibel();
 
-            var pitch = Pitch.AutoCorrelation(block);
-
             cepstrumPanel.Line = cepstrum.Samples;
             cepstrumPanel.Mark = (int)(_signal.SamplingRate / pitch);
         }
@@ -160,8 +167,8 @@ namespace NWaves.DemoForms
         {
             var pos = _hopSize * _specNo;
             var block = _signal[pos, pos + _fftSize];
-            
-            var pitch = Pitch.AutoCorrelation(block);
+
+            var pitch = Pitch.FromAutoCorrelation(block);//.FromZeroCrossingsSchmitt(block);
 
             spectrumPanel.Mark = (int)(_fftSize * pitch / _signal.SamplingRate);    // pitch index
             spectrumPanel.Legend = string.Format("{0:F2} Hz", pitch);
@@ -169,7 +176,7 @@ namespace NWaves.DemoForms
             var autoCorrelation = Operation.CrossCorrelate(block, block).Last(_fftSize);
 
             autoCorrPanel.Line = autoCorrelation.Samples;
-            autoCorrPanel.Mark = (int)(_signal.SamplingRate / _pitchTrack[_specNo]);         // pitch index
+            autoCorrPanel.Mark = pitch == 0 ? 0 : (int)(_signal.SamplingRate / pitch);  // _pitches[_specNo].Features[0]);         // pitch index
         }
     }
 }

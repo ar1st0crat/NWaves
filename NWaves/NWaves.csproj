@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effects\AutowahEffect.cs" />
+    <Compile Include="FeatureExtractors\PitchExtractor.cs" />
     <Compile Include="Filters\Base\IFilterExtensions.cs" />
     <Compile Include="Filters\Base\IOnlineFilter.cs" />
     <Compile Include="Filters\Base\TransferFunction.cs" />

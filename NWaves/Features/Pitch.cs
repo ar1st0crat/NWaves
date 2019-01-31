@@ -1,114 +1,17 @@
-﻿using System.Collections.Generic;
-using NWaves.Operations;
-using NWaves.Operations.Convolution;
+﻿using NWaves.Operations;
 using NWaves.Signals;
-using NWaves.Utils;
+using NWaves.Transforms;
+using NWaves.Windows;
+using System;
+using System.Linq;
 
 namespace NWaves.Features
 {
     /// <summary>
     /// Class for pitch estimation and tracking
     /// </summary>
-    public class Pitch
+    public static class Pitch
     {
-        /// <summary>
-        /// Length of analysis window (in seconds)
-        /// </summary>
-        private readonly double _windowSize;
-
-        /// <summary>
-        /// Hop length (in seconds)
-        /// </summary>
-        private readonly double _hopSize;
-
-        /// <summary>
-        /// Upper pitch frequency
-        /// </summary>
-        private readonly double _high;
-
-        /// <summary>
-        /// Lower pitch frequency
-        /// </summary>
-        private readonly double _low;
-
-        /// <summary>
-        /// Internal convolver
-        /// </summary>
-        private Convolver _convolver;
-
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="windowSize"></param>
-        /// <param name="hopSize"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        public Pitch(double windowSize = 0.0256/*sec*/,
-                     double hopSize = 0.010/*sec*/,
-                     double low = 80,
-                     double high = 400)
-        {
-            _windowSize = windowSize;
-            _hopSize = hopSize;
-            _low = low;
-            _high = high;
-        }
-
-        /// <summary>
-        /// Pitch tracking
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public List<float> Track(DiscreteSignal signal)
-        {
-            var samplingRate = signal.SamplingRate;
-            var hopSize = (int)(samplingRate * _hopSize);
-            var windowSize = (int)(samplingRate * _windowSize);
-            var fftSize = MathUtils.NextPowerOfTwo(2 * windowSize - 1);
-            _convolver = new Convolver(fftSize);
-            
-            var pitches = new List<float>();
-
-            var pitch1 = (int)(1.0 * samplingRate / _high);    // 2,5 ms = 400Hz
-            var pitch2 = (int)(1.0 * samplingRate / _low);     // 12,5 ms = 80Hz
-
-            var block = new float[windowSize];    // buffer for the currently processed block
-            var reversed = new float[windowSize]; // buffer for the currently processed block
-
-            var cc = new float[fftSize];          // buffer for cross-correlation signal
-
-            var pos = 0;
-            while (pos + windowSize < signal.Length)
-            {
-                signal.Samples.FastCopyTo(block, windowSize, pos);
-                signal.Samples.FastCopyTo(reversed, windowSize, pos);
-
-                _convolver.CrossCorrelate(block, reversed, cc);
-
-                var startPos = pitch1 + windowSize - 1;
-
-                var max = cc[startPos];
-                var peakIndex = startPos;
-                for (var k = startPos + 1; k <= pitch2 + startPos; k++)
-                {
-                    if (cc[k] > max)
-                    {
-                        max = cc[k];
-                        peakIndex = k;
-                    }
-                }
-
-                peakIndex -= (windowSize - 1);
-
-                pitches.Add((float)samplingRate / peakIndex);
-
-                pos += hopSize;
-            }
-
-            return pitches;
-        }
-
         /// <summary>
         /// Pitch estimation by autocorrelation method
         /// </summary>
@@ -116,19 +19,25 @@ namespace NWaves.Features
         /// <param name="low"></param>
         /// <param name="high"></param>
         /// <returns></returns>
-        public static float AutoCorrelation(DiscreteSignal signal,
-                                            float low = 80,
-                                            float high = 400)
+        public static float FromAutoCorrelation(DiscreteSignal signal,
+                                                int startPos = 0,
+                                                int endPos = -1,
+                                                float low = 80,
+                                                float high = 400)
         {
             var samplingRate = signal.SamplingRate;
+
+            if (endPos == -1)
+            {
+                endPos = signal.Length;
+            }
 
             var pitch1 = (int)(1.0 * samplingRate / high);    // 2,5 ms = 400Hz
             var pitch2 = (int)(1.0 * samplingRate / low);     // 12,5 ms = 80Hz
 
+            signal = signal[startPos, endPos];
+            
             var cc = Operation.CrossCorrelate(signal, signal).Last(signal.Length);
-
-            //block.ApplyWindow(WindowTypes.Hamming);
-            //func = new CepstralTransform(256).Direct(signal);
 
             var max = cc[pitch1];
             var peakIndex = pitch1;
@@ -152,12 +61,140 @@ namespace NWaves.Features
         /// <param name="low"></param>
         /// <param name="high"></param>
         /// <returns></returns>
-        public static float AutoCorrelation(float[] samples,
-                                            int samplingRate,
-                                            float low = 80,
-                                            float high = 400)
+        public static float FromAutoCorrelation(float[] samples,
+                                                int samplingRate,
+                                                int startPos = 0,
+                                                int endPos = -1,
+                                                float low = 80,
+                                                float high = 400)
         {
-            return AutoCorrelation(new DiscreteSignal(samplingRate, samples), low, high);
+            return FromAutoCorrelation(
+                            new DiscreteSignal(samplingRate, samples),
+                            startPos, endPos,
+                            low, high);
+        }
+
+        /// <summary>
+        /// Pitch estimation from zero crossing rate
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="startPos"></param>
+        /// <param name="endPos"></param>
+        /// <returns></returns>
+        public static float FromZeroCrossingsSchmitt(DiscreteSignal signal,
+                                                     int startPos = 0,
+                                                     int endPos = -1,
+                                                     float lowSchmittThreshold = -1e10f,
+                                                     float highSchmittThreshold = 1e10f)
+        {
+            if (endPos == -1)
+            {
+                endPos = signal.Length;
+            }
+                        
+            var f0 = 0.0f;
+
+            float maxPositive = signal.Samples.Where(s => s > 0).Max();
+            float minNegative = signal.Samples.Where(s => s < 0).Min();
+            
+            float highThreshold = highSchmittThreshold < 1e9f ? highSchmittThreshold : 0.15f * maxPositive;
+            float lowThreshold = lowSchmittThreshold > -1e9f ? lowSchmittThreshold : 0.15f * minNegative;
+
+            var zcr = 0;
+            var firstCrossed = startPos;
+            var lastCrossed = endPos - 1;
+
+            // Schmitt trigger:
+
+            var isCurrentHigh = false;
+
+            for (var j = startPos; j < endPos - 1; j++)
+            {
+                if (signal[j] < highThreshold && signal[j + 1] >= highThreshold && !isCurrentHigh)
+                {
+                    zcr++;
+                    isCurrentHigh = true;
+                }
+                if (signal[j] > lowThreshold && signal[j + 1] <= lowThreshold && isCurrentHigh)
+                {
+                    zcr++;
+                    isCurrentHigh = false;
+                }
+            }
+
+            return zcr > 0 ? (float)zcr * signal.SamplingRate / 2 / (endPos - startPos) : f0;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="startPos"></param>
+        /// <param name="endPos"></param>
+        /// <returns></returns>
+        public static float FromYin(DiscreteSignal signal,
+                                    int startPos = 0,
+                                    int endPos = -1)
+        {
+            return 0f;
+        }
+
+        /// <summary>
+        /// Pitch estimation from signal cepstrum
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="low"></param>
+        /// <param name="high"></param>
+        /// <returns></returns>
+        public static float FromCepstrum(DiscreteSignal signal,
+                                         int startPos = 0,
+                                         int endPos = -1,
+                                         float low = 80,
+                                         float high = 400,
+                                         int cepstrumSize = 256,
+                                         int fftSize = 512)
+        {
+            var samplingRate = signal.SamplingRate;
+
+            if (endPos == -1)
+            {
+                endPos = signal.Length;
+            }
+
+            signal = signal[startPos, endPos];
+
+            var pitch1 = (int)(1.0 * samplingRate / high);                              // 2,5 ms = 400Hz
+            var pitch2 = Math.Min(cepstrumSize - 1, (int)(1.0 * samplingRate / low));   // 12,5 ms = 80Hz
+
+            var cepstralTransform = new CepstralTransform(cepstrumSize, fftSize);
+            var cepstrum = cepstralTransform.Direct(signal);
+
+            var max = cepstrum[pitch1];
+            var peakIndex = pitch1;
+            for (var k = pitch1 + 1; k <= pitch2; k++)
+            {
+                if (cepstrum[k] > max)
+                {
+                    max = cepstrum[k];
+                    peakIndex = k;
+                }
+            }
+
+            return (float) samplingRate / peakIndex;
+        }
+
+        /// <summary>
+        /// Pitch estimation: Harmonic Product Spectrum
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="startPos"></param>
+        /// <param name="endPos"></param>
+        /// <returns></returns>
+        public static float FromHps(DiscreteSignal signal,
+                                    int startPos = 0,
+                                    int endPos = -1)
+        {
+            return 0f;
         }
     }
 }

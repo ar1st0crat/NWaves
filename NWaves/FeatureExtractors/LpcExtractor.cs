@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
-using NWaves.Operations;
 using NWaves.Operations.Convolution;
 using NWaves.Signals;
 using NWaves.Utils;
@@ -30,11 +29,6 @@ namespace NWaves.FeatureExtractors
         /// Order of an LPC-filter
         /// </summary>
         private readonly int _order;
-
-        /// <summary>
-        /// FFT size
-        /// </summary>
-        private readonly int _fftSize;
 
         /// <summary>
         /// Internal convolver
@@ -92,8 +86,8 @@ namespace NWaves.FeatureExtractors
         {
             _order = order;
 
-            _fftSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
-            _convolver = new Convolver(_fftSize);
+            var fftSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
+            _convolver = new Convolver(fftSize);
 
             _window = window;
             if (_window != WindowTypes.Rectangular)
@@ -105,7 +99,7 @@ namespace NWaves.FeatureExtractors
 
             _block = new float[FrameSize];
             _reversed = new float[FrameSize];
-            _cc = new float[_fftSize];
+            _cc = new float[fftSize];
         }
 
         /// <summary>
