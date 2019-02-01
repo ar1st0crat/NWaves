@@ -232,13 +232,13 @@ namespace NWaves.FeatureExtractors
         /// Method for computing modulation spectra.
         /// Each vector representing one modulation spectrum is a flattened version of 2D spectrum.
         /// </summary>
-        /// <param name="signal">Signal under analysis</param>
+        /// <param name="samples">Samples for analysis</param>
         /// <param name="startSample">The number (position) of the first sample for processing</param>
         /// <param name="endSample">The number (position) of last sample for processing</param>
         /// <returns>List of flattened modulation spectra</returns>
-        public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
+        public override List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
         {
-            Guard.AgainstInequality(SamplingRate, signal.SamplingRate, "Feature extractor sampling rate", "signal sampling rate");
+            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
 
             var frameSize = FrameSize;
             var hopSize = HopSize;
@@ -253,17 +253,17 @@ namespace NWaves.FeatureExtractors
                 _envelopes = new float[_filterbank.Length][];
                 for (var n = 0; n < _envelopes.Length; n++)
                 {
-                    _envelopes[n] = new float[signal.Length / hopSize];
+                    _envelopes[n] = new float[samples.Length / hopSize];
                 }
 
-                var prevSample = startSample > 0 ? signal[startSample - 1] : 0.0f;
+                var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
 
                 // ===================== compute local FFTs (do STFT) =======================
 
                 while (i + frameSize < endSample)
                 {
                     _zeroblock.FastCopyTo(_block, _zeroblock.Length);
-                    signal.Samples.FastCopyTo(_block, frameSize, i);
+                    samples.FastCopyTo(_block, frameSize, i);
 
                     // 0) pre-emphasis (if needed)
 
@@ -275,7 +275,7 @@ namespace NWaves.FeatureExtractors
                             prevSample = _block[k];
                             _block[k] = y;
                         }
-                        prevSample = signal[i + hopSize - 1];
+                        prevSample = samples[i + hopSize - 1];
                     }
                     
                     // 1) apply window

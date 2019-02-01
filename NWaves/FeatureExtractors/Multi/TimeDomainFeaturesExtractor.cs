@@ -101,19 +101,21 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Compute the sequence of feature vectors from some fragment of a signal
         /// </summary>
-        /// <param name="signal">Signal</param>
+        /// <param name="samples">Signal</param>
         /// <param name="startSample">The number (position) of the first sample for processing</param>
         /// <param name="endSample">The number (position) of last sample for processing</param>
         /// <returns>Sequence of feature vectors</returns>
-        public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
+        public override List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
         {
+            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
+
             var nullExtractorPos = _extractors.IndexOf(null);
             if (nullExtractorPos >= 0)
             {
                 throw new ArgumentException($"Unknown feature: {FeatureDescriptions[nullExtractorPos]}");
             }
 
-            Guard.AgainstInequality(SamplingRate, signal.SamplingRate, "Feature extractor sampling rate", "signal sampling rate");
+            var ds = new DiscreteSignal(SamplingRate, samples);
 
             var featureVectors = new List<FeatureVector>();
             var featureCount = FeatureCount;
@@ -125,7 +127,7 @@ namespace NWaves.FeatureExtractors.Multi
 
                 for (var j = 0; j < featureCount; j++)
                 {
-                    featureVector[j] = _extractors[j](signal, i, i + FrameSize);
+                    featureVector[j] = _extractors[j](ds, i, i + FrameSize);
                 }
 
                 featureVectors.Add(new FeatureVector

@@ -100,7 +100,7 @@ namespace NWaves.FeatureExtractors.Base
         /// <param name="startSample">The number (position) of the first sample for processing</param>
         /// <param name="endSample">The number (position) of last sample for processing</param>
         /// <returns>Sequence of feature vectors</returns>
-        public abstract List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample);
+        public abstract List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample);
 
         /// <summary>
         /// Compute the sequence of feature vectors from the entire DiscreteSignal
@@ -119,22 +119,9 @@ namespace NWaves.FeatureExtractors.Base
         /// <param name="startSample"></param>
         /// <param name="endSample"></param>
         /// <returns>Sequence of feature vectors</returns>
-        public List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
+        public List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
-            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
-
-            return ComputeFrom(new DiscreteSignal(SamplingRate,
-                                                  samples.FastCopyFragment(endSample - startSample, startSample)));
-        }
-
-        /// <summary>
-        /// Compute the sequence of feature vectors from custom sequence of samples
-        /// </summary>
-        /// <param name="samples">Sequence of real-valued samples</param>
-        /// <returns>Sequence of feature vectors</returns>
-        public List<FeatureVector> ComputeFrom(IEnumerable<float> samples, int samplingRate)
-        {
-            return ComputeFrom(new DiscreteSignal(SamplingRate, samples));
+            return ComputeFrom(signal.Samples, startSample, endSample);
         }
 
         #region parallelization

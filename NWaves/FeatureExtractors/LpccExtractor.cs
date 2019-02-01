@@ -130,28 +130,28 @@ namespace NWaves.FeatureExtractors
         /// (for efficient memory usage it doesn't just delegate its work to LpcExtractor)
         /// and then post-processes LPC vectors to obtain LPCC coefficients.
         /// </summary>
-        /// <param name="signal"></param>
+        /// <param name="samples">Samples for analysis</param>
         /// <param name="startSample">The number (position) of the first sample for processing</param>
         /// <param name="endSample">The number (position) of last sample for processing</param>
         /// <returns></returns>
-        public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
+        public override List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
         {
-            Guard.AgainstInequality(SamplingRate, signal.SamplingRate, "Feature extractor sampling rate", "signal sampling rate");
+            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
 
             var hopSize = HopSize;
             var frameSize = FrameSize;
 
             var featureVectors = new List<FeatureVector>();
 
-            var prevSample = startSample > 0 ? signal[startSample - 1] : 0.0f;
+            var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
 
             var i = startSample;
             while (i + frameSize < endSample)
             {
                 // prepare all blocks in memory for the current step:
 
-                signal.Samples.FastCopyTo(_block, frameSize, i);
-                signal.Samples.FastCopyTo(_reversed, frameSize, i);
+                samples.FastCopyTo(_block, frameSize, i);
+                samples.FastCopyTo(_reversed, frameSize, i);
                 
                 // 0) pre-emphasis (if needed)
 
@@ -163,7 +163,7 @@ namespace NWaves.FeatureExtractors
                         prevSample = _block[k];
                         _block[k] = y;
                     }
-                    prevSample = signal[i + hopSize - 1];
+                    prevSample = samples[i + hopSize - 1];
                 }
 
                 // 1) apply window

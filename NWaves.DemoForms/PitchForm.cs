@@ -166,15 +166,16 @@ namespace NWaves.DemoForms
         private void UpdateAutoCorrelation()
         {
             var pos = _hopSize * _specNo;
-            var block = _signal[pos, pos + _fftSize];
 
-            var pitch = //Pitch.FromHss(block);
-                        //Pitch.FromAutoCorrelation(block);
-                        Pitch.FromZeroCrossingsSchmitt(block);
+            var pitch = //Pitch.FromHss(_signal, pos, pos + _fftSize);
+                        Pitch.FromAutoCorrelation(_signal, pos, pos + _fftSize);
+                        //Pitch.FromZeroCrossingsSchmitt(_signal, pos, pos + _fftSize);
+                        //Pitch.FromYin(_signal, pos, pos + _fftSize);
 
             spectrumPanel.Mark = (int)(_fftSize * pitch / _signal.SamplingRate);    // pitch index
             spectrumPanel.Legend = string.Format("{0:F2} Hz", pitch);
 
+            var block = _signal[pos, pos + _fftSize];
             var autoCorrelation = Operation.CrossCorrelate(block, block).Last(_fftSize);
 
             autoCorrPanel.Line = autoCorrelation.Samples;

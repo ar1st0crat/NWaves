@@ -7,8 +7,23 @@ using NWaves.Utils;
 namespace NWaves.Features
 {
     /// <summary>
-    /// Pitch extractor can combine several algorithms for pitch estimation.
-    /// By default YIN is used, hence the feature vector contains 1 component.
+    /// Pitch extractor calls autocorrelation method since it's best in terms of universality and quality.
+    /// The feature vector contains 1 component : pitch.
+    /// 
+    /// If there's a need to create pitch extractor based on other time-domain method (YIN or ZcrSchmitt),
+    /// then TimeDomainFeatureExtractor can be used.
+    /// 
+    /// If there's a need to create pitch extractor based on a certain spectral method (HSS or HPS),
+    /// then SpectralDomainFeatureExtractor can be used.
+    /// 
+    /// Example:
+    /// 
+    /// var extractor = new TimeDomainFeaturesExtractor(sr, "", 0.0256, 0.010);
+    /// 
+    /// extractor.AddFeature("yin", (s, start, end) => { return Pitch.FromYin(s, start, end); });
+    /// 
+    /// var pitches = extractor.ComputeFrom(signal);
+    /// 
     /// </summary>
     public class PitchExtractor : FeatureExtractor
     {
@@ -63,7 +78,7 @@ namespace NWaves.Features
                               double frameDuration = 0.0256/*sec*/,
                               double hopDuration = 0.010/*sec*/,
                               float low = 80,
-                              float high = 400) 
+                              float high = 400)
             : base(samplingRate, frameDuration, hopDuration)
         {
             _low = low;
@@ -76,17 +91,19 @@ namespace NWaves.Features
             _reversed = new float[FrameSize]; // buffer for the currently processed block
             _cc = new float[fftSize];         // buffer for cross-correlation signal
 
-            FeatureDescriptions = new List<string>() { "autocorr" };
+            FeatureDescriptions = new List<string>() { "pitch" };
         }
 
         /// <summary>
         /// Pitch tracking
         /// </summary>
-        /// <param name="signal"></param>
+        /// <param name="samples"></param>
         /// <returns></returns>
-        public override List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
+        public override List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
         {
-            var samplingRate = signal.SamplingRate;
+            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
+
+            var samplingRate = SamplingRate;
             var frameSize = FrameSize;
 
             var pitches = new List<FeatureVector>();
@@ -97,8 +114,8 @@ namespace NWaves.Features
             var i = startSample;
             while (i + frameSize < endSample)
             {
-                signal.Samples.FastCopyTo(_block, frameSize, i);
-                signal.Samples.FastCopyTo(_reversed, frameSize, i);
+                samples.FastCopyTo(_block, frameSize, i);
+                samples.FastCopyTo(_reversed, frameSize, i);
 
                 _convolver.CrossCorrelate(_block, _reversed, _cc);
 
@@ -116,10 +133,11 @@ namespace NWaves.Features
                 }
 
                 peakIndex -= (frameSize - 1);
+                var f0 = max > 1 ? (float)samplingRate / peakIndex : 0;
 
                 pitches.Add(new FeatureVector
                 {
-                    Features = new float[] { (float)samplingRate / peakIndex },
+                    Features = new float[] { f0 },
                     TimePosition = (double)i / SamplingRate
                 });
 

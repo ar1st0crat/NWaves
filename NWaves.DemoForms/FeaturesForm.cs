@@ -7,6 +7,7 @@ using NWaves.Audio;
 using NWaves.FeatureExtractors.Base;
 using NWaves.FeatureExtractors.Multi;
 using NWaves.Signals;
+using NWaves.Features;
 
 namespace NWaves.DemoForms
 {
@@ -40,8 +41,8 @@ namespace NWaves.DemoForms
             var tdExtractor = new TimeDomainFeaturesExtractor(_signal.SamplingRate, "all", frameSize, hopSize);
             var spectralExtractor = new SpectralFeaturesExtractor(_signal.SamplingRate, "all", frameSize, hopSize);
 
-            tdExtractor.AddFeature("td1", (signal, start, end) => { return signal[start]; });
-            spectralExtractor.AddFeature("se1", (spectrum, freqs) => { return spectrum[0]; } );
+            tdExtractor.AddFeature("pitch_zcr", (signal, start, end) => { return Pitch.FromZeroCrossingsSchmitt(signal, start, end); });
+            spectralExtractor.AddFeature("pitch_hss", (spectrum, freqs) => { return Pitch.FromHss(spectrum, _signal.SamplingRate); } );
 
             var tdVectors = tdExtractor.ParallelComputeFrom(_signal);
             var spectralVectors = spectralExtractor.ParallelComputeFrom(_signal);
