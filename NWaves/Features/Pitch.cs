@@ -1,4 +1,4 @@
-﻿using NWaves.Operations;
+﻿using NWaves.Operations.Convolution;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -36,11 +36,15 @@ namespace NWaves.Features
             var pitch1 = (int)(1.0 * samplingRate / high);    // 2,5 ms = 400Hz
             var pitch2 = (int)(1.0 * samplingRate / low);     // 12,5 ms = 80Hz
 
-            var block = new DiscreteSignal(samplingRate, signal)[startPos, endPos];
+            var block = new DiscreteSignal(samplingRate, signal)[startPos, endPos].Samples;
 
-            var cc = Operation.CrossCorrelate(block, block);
+            var fftSize = MathUtils.NextPowerOfTwo(endPos - startPos);
 
-            var start = pitch1 + block.Length - 1;
+            var cc = new float[fftSize];
+
+            new Convolver(fftSize).CrossCorrelate(block, block.FastCopy(), cc);
+
+            var start = pitch1;
 
             var max = cc[start];
             var peakIndex = start;
@@ -49,13 +53,11 @@ namespace NWaves.Features
                 if (cc[k] > max)
                 {
                     max = cc[k];
-                    peakIndex = k;
+                    peakIndex = k + 1;
                 }
             }
 
-            peakIndex -= (block.Length - 1);
-
-            return max > 1 ? (float)samplingRate / peakIndex : 0;
+            return max > 1.0f ? (float)samplingRate / peakIndex : 0;
         }
 
         /// <summary>

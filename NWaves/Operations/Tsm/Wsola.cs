@@ -114,9 +114,9 @@ namespace NWaves.Operations.Tsm
         /// </summary>
         private void PrepareConvolver()
         {
-            var fftSize = MathUtils.NextPowerOfTwo(2 * _windowSize + _maxDelta - 1);
+            var fftSize = MathUtils.NextPowerOfTwo(_windowSize + _maxDelta - 1);
 
-            if (fftSize >= 4096)
+            if (fftSize >= 512)
             {
                 _convolver = new Convolver(fftSize);
                 _cc = new float[fftSize];
@@ -190,7 +190,7 @@ namespace NWaves.Operations.Tsm
 
             for (var j = 0; j < output.Length; j++)
             {
-                if (windowSum[j] < 5e-3) continue;
+                if (windowSum[j] < 1e-2) continue;
                 output[j] /= windowSum[j];
             }
 
@@ -234,12 +234,12 @@ namespace NWaves.Operations.Tsm
             {
                 _convolver.CrossCorrelate(current, prev, _cc);
 
-                for (var i = prev.Length - 1; i < prev.Length + _maxDelta; i++)
+                for (int i = prev.Length - 1, j = 0; i < prev.Length + _maxDelta - 1; i++, j++)
                 {
                     if (_cc[i] > maxCorrelation)
                     {
                         maxCorrelation = _cc[i];
-                        optimalShift = i - prev.Length + 1;
+                        optimalShift = j;
                     }
                 }
             }

@@ -84,7 +84,7 @@ namespace NWaves.Features
             _low = low;
             _high = high;
 
-            var fftSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
+            var fftSize = MathUtils.NextPowerOfTwo(FrameSize);
             _convolver = new Convolver(fftSize);
 
             _block = new float[FrameSize];    // buffer for the currently processed block
@@ -119,7 +119,7 @@ namespace NWaves.Features
 
                 _convolver.CrossCorrelate(_block, _reversed, _cc);
 
-                var startPos = pitch1 + frameSize - 1;
+                var startPos = pitch1;
 
                 var max = _cc[startPos];
                 var peakIndex = startPos;
@@ -128,12 +128,11 @@ namespace NWaves.Features
                     if (_cc[k] > max)
                     {
                         max = _cc[k];
-                        peakIndex = k;
+                        peakIndex = k + 1;
                     }
                 }
 
-                peakIndex -= (frameSize - 1);
-                var f0 = max > 1 ? (float)samplingRate / peakIndex : 0;
+                var f0 = max > 1.0f ? (float)samplingRate / peakIndex : 0;
 
                 pitches.Add(new FeatureVector
                 {

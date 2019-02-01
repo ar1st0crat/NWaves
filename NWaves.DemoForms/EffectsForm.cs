@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.Effects;
@@ -139,7 +138,7 @@ namespace NWaves.DemoForms
             _filteredSignal = effect != null ?
                               effect.ApplyTo(_signal, FilteringMethod.Auto) :
                               Operation.TimeStretch(_signal, shift, tsm);
-            //Operation.TimeStretch(_signal, shift, winSize, hopSize, tsm);
+                              //Operation.TimeStretch(_signal, shift, winSize, hopSize, tsm);
 
             signalAfterFilteringPanel.Signal = _filteredSignal;
             spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal.Samples);
