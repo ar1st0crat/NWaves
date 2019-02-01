@@ -26,7 +26,7 @@ Already available:
 - [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest)
 - [x] signal builders (sinusoid, white/pink/red noise, Perlin noise, awgn, triangle, sawtooth, square, periodic pulse)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
-- [x] pitch tracking
+- [x] pitch tracking (autocorrelation, ZCR + Schmitt trigger, HSS/HPS, cepstrum)
 - [x] time scale modification (phase vocoder, PV with identity phase locking, WSOLA)
 - [x] simple resampling, interpolation, decimation
 - [x] bandlimited resampling

@@ -168,7 +168,9 @@ namespace NWaves.DemoForms
             var pos = _hopSize * _specNo;
             var block = _signal[pos, pos + _fftSize];
 
-            var pitch = Pitch.FromAutoCorrelation(block);//.FromZeroCrossingsSchmitt(block);
+            var pitch = //Pitch.FromHss(block);
+                        //Pitch.FromAutoCorrelation(block);
+                        Pitch.FromZeroCrossingsSchmitt(block);
 
             spectrumPanel.Mark = (int)(_fftSize * pitch / _signal.SamplingRate);    // pitch index
             spectrumPanel.Legend = string.Format("{0:F2} Hz", pitch);
