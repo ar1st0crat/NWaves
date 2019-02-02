@@ -233,6 +233,42 @@ namespace NWaves.Signals
         }
 
         /// <summary>
+        /// Full rectification (in-place)
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <returns>Fully rectified signal</returns>
+        public static void FullRectify(this DiscreteSignal signal)
+        {
+            var s = signal.Samples;
+
+            for (var i = 0; i < s.Length; i++)
+            {
+                if (s[i] < 0)
+                {
+                    s[i] = -s[i];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Half rectification (in-place)
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <returns>Half rectified signal</returns>
+        public static void HalfRectify(this DiscreteSignal signal)
+        {
+            var s = signal.Samples;
+
+            for (var i = 0; i < s.Length; i++)
+            {
+                if (s[i] < 0)
+                {
+                    s[i] = 0;
+                }
+            }
+        }
+
+        /// <summary>
         /// Method copies discrete signal samples into complex signal
         /// </summary>
         /// <param name="signal">Real-valued signal</param>

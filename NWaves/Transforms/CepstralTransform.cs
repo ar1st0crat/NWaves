@@ -12,7 +12,7 @@ namespace NWaves.Transforms
         /// <summary>
         /// Size of cepstrum
         /// </summary>
-        private readonly int _cepstrumSize;
+        public int Size { get; }
 
         /// <summary>
         /// FFT transformer
@@ -38,7 +38,7 @@ namespace NWaves.Transforms
         {
             _fft = new Fft(fftSize);
 
-            _cepstrumSize = cepstrumSize;
+            Size = cepstrumSize;
 
             _realSpectrum = new float[fftSize];
             _imagSpectrum = new float[fftSize];
@@ -76,7 +76,7 @@ namespace NWaves.Transforms
 
             if (power)
             {
-                for (var i = 0; i < _cepstrumSize; i++)
+                for (var i = 0; i < Size; i++)
                 {
                     cepstrum[i] = (_realSpectrum[i] * _realSpectrum[i] + 
                                    _imagSpectrum[i] * _imagSpectrum[i]) / _realSpectrum.Length;
@@ -84,7 +84,7 @@ namespace NWaves.Transforms
             }
             else
             {
-                _realSpectrum.FastCopyTo(cepstrum, _cepstrumSize);
+                _realSpectrum.FastCopyTo(cepstrum, Size);
             }
         }
 
@@ -96,7 +96,7 @@ namespace NWaves.Transforms
         /// <returns>Cepstrum signal</returns>
         public DiscreteSignal Direct(DiscreteSignal signal, bool power = false)
         {
-            var cepstrum = new float[_cepstrumSize];
+            var cepstrum = new float[Size];
             Direct(signal.Samples, cepstrum, power);
             return new DiscreteSignal(signal.SamplingRate, cepstrum);
         }
@@ -125,7 +125,7 @@ namespace NWaves.Transforms
             {
                 for (var i = 0; i < _realSpectrum.Length; i++)
                 {
-                    _realSpectrum[i] = (float) Math.Sqrt(_realSpectrum[i]) * _realSpectrum.Length;
+                    _realSpectrum[i] = (float)Math.Sqrt(_realSpectrum[i]) * _realSpectrum.Length;
                 }
             }
 

@@ -284,5 +284,45 @@ namespace NWaves.Signals
         {
             return MathUtils.Unwrap(phase, tolerance);
         }
+
+        /// <summary>
+        /// Magnitude of complex numbers given in tuple of float arrays (re and im)
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public static float[] Magnitude(this Tuple<float[], float[]> signal)
+        {
+            var real = signal.Item1;
+            var imag = signal.Item2;
+
+            var magnitude = new float[real.Length];
+
+            for (var i = 0; i < magnitude.Length; i++)
+            {
+                magnitude[i] = (float)Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]);
+            }
+
+            return magnitude;
+        }
+
+        /// <summary>
+        /// Phase of complex numbers given in tuple of float arrays (re and im)
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public static float[] Phase(this Tuple<float[], float[]> signal)
+        {
+            var real = signal.Item1;
+            var imag = signal.Item2;
+
+            var magnitude = new float[real.Length];
+
+            for (var i = 0; i < magnitude.Length; i++)
+            {
+                magnitude[i] = (float)Math.Atan2(imag[i], real[i]);
+            }
+
+            return magnitude;
+        }
     }
 }

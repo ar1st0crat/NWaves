@@ -8,7 +8,7 @@ namespace NWaves.Signals.Builders
     /// <summary>
     /// Class for a simple generator of one sinusoid
     /// </summary>
-    public class SinusoidBuilder : SignalBuilder
+    public class SineBuilder : SignalBuilder
     {
         /// <summary>
         /// Amplitude of the sinusoid
@@ -28,7 +28,7 @@ namespace NWaves.Signals.Builders
         /// <summary>
         /// Constructor
         /// </summary>
-        public SinusoidBuilder()
+        public SineBuilder()
         {
             ParameterSetters = new Dictionary<string, Action<double>>
             {

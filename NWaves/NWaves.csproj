@@ -43,6 +43,7 @@
     <Compile Include="Filters\Base\IOnlineFilter.cs" />
     <Compile Include="Filters\Base\TransferFunction.cs" />
     <Compile Include="Filters\BiQuad\BiQuadFilter.cs" />
+    <Compile Include="Filters\HilbertFilter.cs" />
     <Compile Include="Filters\OnePole\OnePoleFilter.cs" />
     <Compile Include="Filters\RastaFilter.cs" />
     <Compile Include="Operations\Convolution\BlockConvolver.cs" />
@@ -51,6 +52,7 @@
     <Compile Include="Operations\Resampler.cs" />
     <Compile Include="Operations\Tsm\TsmAlgorithm.cs" />
     <Compile Include="Signals\Builders\ChirpBuilder.cs" />
+    <Compile Include="Signals\Builders\CosineBuilder.cs" />
     <Compile Include="Signals\Builders\PerlinNoiseBuilder.cs" />
     <Compile Include="Transforms\Fft64.cs" />
     <Compile Include="Audio\Channels.cs" />
@@ -123,8 +125,7 @@
     <Compile Include="Filters\OnePole\LowPassFilter.cs" />
     <Compile Include="Filters\PreEmphasisFilter.cs" />
     <Compile Include="Operations\Operation.cs" />
-    <Compile Include="Operations\Envelope.cs" />
-    <Compile Include="Operations\Modulate.cs" />
+    <Compile Include="Operations\Modulator.cs" />
     <Compile Include="Operations\Tsm\PhaseVocoder.cs" />
     <Compile Include="Operations\SpectralSubtraction.cs" />
     <Compile Include="Operations\Tsm\Psola.cs" />
@@ -138,7 +139,7 @@
     <Compile Include="Signals\Builders\RedNoiseBuilder.cs" />
     <Compile Include="Signals\Builders\SawtoothBuilder.cs" />
     <Compile Include="Signals\Builders\SignalBuilder.cs" />
-    <Compile Include="Signals\Builders\SinusoidBuilder.cs" />
+    <Compile Include="Signals\Builders\SineBuilder.cs" />
     <Compile Include="Signals\Builders\SquareWaveBuilder.cs" />
     <Compile Include="Signals\Builders\TriangleWaveBuilder.cs" />
     <Compile Include="Signals\Builders\WhiteNoiseBuilder.cs" />

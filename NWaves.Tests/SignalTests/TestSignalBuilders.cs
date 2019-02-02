@@ -10,7 +10,7 @@ namespace NWaves.Tests.SignalTests
         [Test]
         public void TestSimpleSinusoidBuilder()
         {
-            var sinusoid = new SinusoidBuilder()
+            var sinusoid = new SineBuilder()
                                     .SetParameter("freq", 0.05f)
                                     .OfLength(20)
                                     .Build();
@@ -30,7 +30,7 @@ namespace NWaves.Tests.SignalTests
         {
             var constants = new DiscreteSignal(1, length: 6, value: 2.0f);
 
-            var sinusoid = new SinusoidBuilder()
+            var sinusoid = new SineBuilder()
                                     .SetParameter("freq", 0.05f)
                                     .SuperimposedWith(constants)
                                     .OfLength(20)
@@ -50,7 +50,7 @@ namespace NWaves.Tests.SignalTests
         [Test]
         public void TestBuilderRepeat()
         {
-            var sinusoid = new SinusoidBuilder()
+            var sinusoid = new SineBuilder()
                                     .SetParameter("freq", 0.05f)
                                     .OfLength(20)
                                     .RepeatedTimes(3)
@@ -68,7 +68,7 @@ namespace NWaves.Tests.SignalTests
         [Test]
         public void TestBuilderDelay()
         {
-            var sinusoid = new SinusoidBuilder()
+            var sinusoid = new SineBuilder()
                                     .SetParameter("freq", 0.05f)
                                     .OfLength(20)
                                     .DelayedBy(1)

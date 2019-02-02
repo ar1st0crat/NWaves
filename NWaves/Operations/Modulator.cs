@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
+using NWaves.Filters;
 using NWaves.Signals;
+using NWaves.Transforms;
 using NWaves.Utils;
 
 namespace NWaves.Operations
@@ -14,7 +16,7 @@ namespace NWaves.Operations
     ///     - phase
     /// 
     /// </summary>
-    public static class Modulate
+    public class Modulator
     {
         /// <summary>
         /// Ring modulation (RM)
@@ -22,8 +24,8 @@ namespace NWaves.Operations
         /// <param name="carrier">Carrier signal</param>
         /// <param name="modulator">Modulator signal</param>
         /// <returns>RM signal</returns>
-        public static DiscreteSignal Ring(DiscreteSignal carrier,
-                                          DiscreteSignal modulator)
+        public DiscreteSignal Ring(DiscreteSignal carrier,
+                                   DiscreteSignal modulator)
         {
             if (carrier.SamplingRate != modulator.SamplingRate)
             {
@@ -41,9 +43,9 @@ namespace NWaves.Operations
         /// <param name="modulatorFrequency">Modulator frequency</param>
         /// <param name="modulationIndex">Modulation index (depth)</param>
         /// <returns>AM signal</returns>
-        public static DiscreteSignal Amplitude(DiscreteSignal carrier, 
-                                               float modulatorFrequency = 20/*Hz*/,
-                                               float modulationIndex = 0.5f)
+        public DiscreteSignal Amplitude(DiscreteSignal carrier, 
+                                        float modulatorFrequency = 20/*Hz*/,
+                                        float modulationIndex = 0.5f)
         {
             var fs = carrier.SamplingRate;
             var mf = modulatorFrequency;          // just short aliases //
@@ -63,10 +65,10 @@ namespace NWaves.Operations
         /// <param name="carrierFrequency">Carrier frequency</param>
         /// <param name="deviation">Frequency deviation</param>
         /// <returns>RM signal</returns>
-        public static DiscreteSignal Frequency(DiscreteSignal baseband,
-                                               float carrierAmplitude,
-                                               float carrierFrequency,
-                                               float deviation = 0.1f/*Hz*/)
+        public DiscreteSignal Frequency(DiscreteSignal baseband,
+                                        float carrierAmplitude,
+                                        float carrierFrequency,
+                                        float deviation = 0.1f/*Hz*/)
         {
             var fs = baseband.SamplingRate;
             var ca = carrierAmplitude;          // just short aliases //
@@ -90,7 +92,7 @@ namespace NWaves.Operations
         /// <param name="length">Length of FM signal</param>
         /// <param name="samplingRate">Sampling rate</param>
         /// <returns>Sinusoidal FM signal</returns>
-        public static DiscreteSignal FrequencySinusoidal(
+        public DiscreteSignal FrequencySinusoidal(
                                         float carrierFrequency,
                                         float carrierAmplitude,
                                         float modulatorFrequency,
@@ -120,7 +122,7 @@ namespace NWaves.Operations
         /// <param name="length">Length of FM signal</param>
         /// <param name="samplingRate">Sampling rate</param>
         /// <returns>Sinusoidal FM signal</returns>
-        public static DiscreteSignal FrequencyLinear(
+        public DiscreteSignal FrequencyLinear(
                                         float carrierFrequency,
                                         float carrierAmplitude,
                                         float modulationIndex,
@@ -146,10 +148,10 @@ namespace NWaves.Operations
         /// <param name="carrierFrequency">Carrier frequency</param>
         /// <param name="deviation">Frequency deviation</param>
         /// <returns>RM signal</returns>
-        public static DiscreteSignal Phase(DiscreteSignal baseband,
-                                           float carrierAmplitude,
-                                           float carrierFrequency,
-                                           float deviation = 0.5f)
+        public DiscreteSignal Phase(DiscreteSignal baseband,
+                                    float carrierAmplitude,
+                                    float carrierFrequency,
+                                    float deviation = 0.8f)
         {
             var fs = baseband.SamplingRate;
             var ca = carrierAmplitude;          // just short aliases //
@@ -159,6 +161,36 @@ namespace NWaves.Operations
                                    .Select(i => ca * Math.Cos(2 * Math.PI * cf / fs * i + deviation * baseband[i]));
 
             return new DiscreteSignal(fs, output.ToFloats());
+        }
+
+        /// <summary>
+        /// Simple amplitude demodulation based on Hilbert transform
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public DiscreteSignal DemodulateAmplitude(DiscreteSignal signal)
+        {
+            var ht = new HilbertTransform(signal.Length, false);
+            var mag = ht.AnalyticSignal(signal.Samples).Magnitude();
+
+            return new DiscreteSignal(signal.SamplingRate, mag) - 1.0f;
+        }
+
+        /// <summary>
+        /// Simple frequency demodulation based on Hilbert transform
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public DiscreteSignal DemodulateFrequency(DiscreteSignal signal)
+        {
+            var diff = new float[signal.Length];
+
+            MathUtils.Diff(signal.Samples, diff);
+
+            var ht = new HilbertTransform(signal.Length, false);
+            var mag = ht.AnalyticSignal(diff).Magnitude();
+
+            return new DiscreteSignal(signal.SamplingRate, mag) - 1.0f;
         }
     }
 }

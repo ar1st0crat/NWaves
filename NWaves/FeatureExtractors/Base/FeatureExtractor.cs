@@ -94,13 +94,35 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Compute the sequence of feature vectors from some fragment of a signal
+        /// Compute the sequence of feature vectors from some part of array of samples
         /// </summary>
-        /// <param name="signal">Signal</param>
-        /// <param name="startSample">The number (position) of the first sample for processing</param>
-        /// <param name="endSample">The number (position) of last sample for processing</param>
+        /// <param name="samples">Array of real-valued samples</param>
+        /// <param name="startSample">The offset (position) of the first sample for processing</param>
+        /// <param name="endSample">The offset (position) of last sample for processing</param>
         /// <returns>Sequence of feature vectors</returns>
         public abstract List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample);
+
+        /// <summary>
+        /// Compute the sequence of feature vectors from the entire array of samples
+        /// </summary>
+        /// <param name="samples">Array of real-valued samples</param>
+        /// <returns>Sequence of feature vectors</returns>
+        public List<FeatureVector> ComputeFrom(float[] samples)
+        {
+            return ComputeFrom(samples, 0, samples.Length);
+        }
+
+        /// <summary>
+        /// Compute the sequence of feature vectors from some fragment of a signal
+        /// </summary>
+        /// <param name="signal">Discrete real-valued signal</param>
+        /// <param name="startSample">The offset (position) of the first sample for processing</param>
+        /// <param name="endSample">The offset (position) of the last sample for processing</param>
+        /// <returns>Sequence of feature vectors</returns>
+        public List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
+        {
+            return ComputeFrom(signal.Samples, startSample, endSample);
+        }
 
         /// <summary>
         /// Compute the sequence of feature vectors from the entire DiscreteSignal
@@ -110,18 +132,6 @@ namespace NWaves.FeatureExtractors.Base
         public List<FeatureVector> ComputeFrom(DiscreteSignal signal)
         {
             return ComputeFrom(signal, 0, signal.Length);
-        }
-
-        /// <summary>
-        /// Compute the sequence of feature vectors from custom sequence of samples
-        /// </summary>
-        /// <param name="samples">Sequence of real-valued samples</param>
-        /// <param name="startSample"></param>
-        /// <param name="endSample"></param>
-        /// <returns>Sequence of feature vectors</returns>
-        public List<FeatureVector> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
-        {
-            return ComputeFrom(signal.Samples, startSample, endSample);
         }
 
         #region parallelization

@@ -58,7 +58,7 @@ namespace NWaves.Signals.Builders
             var f = (float) _f0;
             var amp = (float) _amplitude;
 
-            return Modulate.FrequencyLinear(f, amp, k, Length, SamplingRate);
+            return new Modulator().FrequencyLinear(f, amp, k, Length, SamplingRate);
         }
     }
 }

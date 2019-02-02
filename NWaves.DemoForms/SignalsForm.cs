@@ -74,7 +74,7 @@ namespace NWaves.DemoForms
             switch (builderComboBox.Text)
             {
                 case "Sinusoid":
-                    signalBuilder = new SinusoidBuilder();
+                    signalBuilder = new SineBuilder();
                     _signal2 = signalBuilder
                                     .SetParameter("amp", 0.2f)
                                     .SetParameter("freq", 233/*Hz*/)
@@ -408,6 +408,11 @@ namespace NWaves.DemoForms
         private void noiseToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new NoiseForm().ShowDialog();
+        }
+
+        private void modulationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new ModulationForm().ShowDialog();
         }
 
         private void onlineToolStripMenuItem_Click(object sender, EventArgs e)

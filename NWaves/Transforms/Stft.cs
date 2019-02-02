@@ -15,6 +15,7 @@ namespace NWaves.Transforms
         /// <summary>
         /// Size of FFT (in samples)
         /// </summary>
+        public int Size => _fftSize;
         private readonly int _fftSize;
 
         /// <summary>

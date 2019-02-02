@@ -16,6 +16,7 @@ namespace NWaves.Transforms
         /// <summary>
         /// Size of DCT
         /// </summary>
+        public int Size => _dctSize;
         private readonly int _dctSize;
 
         /// <summary>

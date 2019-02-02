@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using NWaves.Filters.Base;
+using NWaves.Filters.BiQuad;
 using NWaves.Operations.Convolution;
 using NWaves.Operations.Tsm;
 using NWaves.Signals;
@@ -14,6 +16,9 @@ namespace NWaves.Operations
     ///     - block convolution
     ///     - deconvolution
     ///     - resampling
+    ///     - time-stretching
+    ///     - rectification
+    ///     - envelope extraction
     /// 
     /// </summary>
     public static partial class Operation
@@ -245,6 +250,44 @@ namespace NWaves.Operations
             }
 
             return stretchFilter.ApplyTo(signal, FilteringMethod.Auto);
+        }
+
+        /// <summary>
+        /// Method for extracting the envelope of a signal
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="lowpassCutoff">LP filter cutoff frequency</param>
+        /// <returns></returns>
+        public static DiscreteSignal Envelope(DiscreteSignal signal, float lowpassCutoff = 0.05f)
+        {
+            var envelope = FullRectify(signal);
+
+            var lowpassFilter = new LowPassFilter(lowpassCutoff);
+            var smoothed = lowpassFilter.ApplyTo(envelope);
+
+            return smoothed;
+        }
+
+        /// <summary>
+        /// Full rectification
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <returns>Fully rectified signal</returns>
+        public static DiscreteSignal FullRectify(DiscreteSignal signal)
+        {
+            return new DiscreteSignal(signal.SamplingRate,
+                                      signal.Samples.Select(s => s < 0 ? -s : s));
+        }
+
+        /// <summary>
+        /// Half rectification
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <returns>Half rectified signal</returns>
+        public static DiscreteSignal HalfRectify(DiscreteSignal signal)
+        {
+            return new DiscreteSignal(signal.SamplingRate,
+                                      signal.Samples.Select(s => s < 0 ? 0 : s));
         }
 
 

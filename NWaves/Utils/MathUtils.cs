@@ -52,6 +52,21 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Diff signal (1st order derivative)
+        /// </summary>
+        /// <param name="samples"></param>
+        /// <param name="diff"></param>
+        public static void Diff(float[] samples, float[] diff)
+        {
+            diff[0] = samples[0];
+
+            for (var i = 1; i < samples.Length; i++)
+            {
+                diff[i] = samples[i] - samples[i - 1];
+            }
+        }
+
+        /// <summary>
         /// Linear interpolation (as numpy.interp)
         /// </summary>
         /// <param name="x"></param>

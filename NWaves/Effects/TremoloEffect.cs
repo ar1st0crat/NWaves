@@ -19,7 +19,7 @@ namespace NWaves.Effects
         /// Tremolo index (modulation index)
         /// </summary>
         public float TremoloIndex { get; }
-
+        
         /// <summary>
         /// Constructor
         /// </summary>
@@ -40,7 +40,7 @@ namespace NWaves.Effects
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
                                       FilteringMethod method = FilteringMethod.Auto)
         {
-            return Modulate.Amplitude(signal, Frequency, TremoloIndex);
+            return new Modulator().Amplitude(signal, Frequency, TremoloIndex);
         }
     }
 }

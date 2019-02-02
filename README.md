@@ -24,7 +24,7 @@ Already available:
 - [x] customizable feature extraction (time-domain, spectral, MFCC, PNCC/SPNCC, LPC, LPCC, AMS) and CSV serialization
 - [x] feature post-processing (mean and variance normalization, adding deltas)
 - [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest)
-- [x] signal builders (sinusoid, white/pink/red noise, Perlin noise, awgn, triangle, sawtooth, square, periodic pulse)
+- [x] signal builders (sine/cosine, white/pink/red noise, Perlin noise, awgn, triangle, sawtooth, square, periodic pulse)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking (autocorrelation, YIN, ZCR + Schmitt trigger, HSS/HPS, cepstrum)
 - [x] time scale modification (phase vocoder, PV with identity phase locking, WSOLA)
@@ -32,15 +32,15 @@ Already available:
 - [x] bandlimited resampling
 - [x] spectral subtraction
 - [x] sound effects (delay, echo, tremolo, wahwah, phaser, distortion, pitch shift)
-- [x] modulation (AM, ring, FM, PM)
+- [x] simple modulation/demodulation (AM, ring, FM, PM)
 - [x] simple audio playback and recording
 
 Planned:
 
+- [ ] sound synthesis (wavetable, ADSR, etc.)
 - [ ] more transforms (CQT, DWT, Mellin, Hartley, Haar, Hadamard)
 - [ ] more operations (adaptive filtering, Gabor filter)
 - [ ] more feature extraction (MIR descriptors and lots of others)
-- [ ] more sound synthesis (ADSR, etc.)
 - [ ] more sound effects (Reverb, Vibrato, Chorus, Flanger, etc.)
 
 
@@ -153,7 +153,7 @@ The ```DiscreteSignal``` class is a wrapper around array of floats, since for mo
 ```C#
 
 DiscreteSignal sinusoid = 
-	new SinusoidBuilder()
+	new SineBuilder()
 		.SetParameter("amplitude", 1.2)
 		.SetParameter("frequency", 500.0/*Hz*/)
 		.OfLength(1000)
@@ -170,7 +170,7 @@ DiscreteSignal noise =
 		.Build();
 
 DiscreteSignal noisy = 
-	new SinusoidBuilder()
+	new SineBuilder()
 		.SetParameter("amp", 3.0)
 		.SetParameter("freq", 1200.0/*Hz*/)
 		.SetParameter("phase", Math.PI/3)
@@ -273,13 +273,18 @@ var cepstrum = ct.Direct(signal);
 // Hilbert transformer
 
 var ht = new HilbertTransform(1024);
-var result = ht.Direct(signal);
+var result = ht.Direct(doubleSamples);
 
 // HilbertTransform class also provides method
 // for computing complex analytic signal.
 // Thus, previous line is equivalent to:
 
-var result = ht.AnalyticSignal(signal).Imag;
+var result = ht.AnalyticSignal(doubleSamples).Imag;
+
+// by default HilbertTransformer works with double precision;
+// this code is for floats:
+// var ht = new HilbertTransform(1024, doublePrecision: false);
+// var result = ht.AnalyticSignal(floatSamples).Item2;
 
 
 // in previous five cases the result of each transform was

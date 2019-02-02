@@ -1,5 +1,6 @@
 ﻿using NWaves.Signals;
 using NWaves.Utils;
+using System;
 
 namespace NWaves.Transforms
 {
@@ -9,38 +10,53 @@ namespace NWaves.Transforms
     public class HilbertTransform
     {
         /// <summary>
-        /// Length of Hilbert Transform
+        /// Size (length) of Hilbert Transform
         /// </summary>
-        public int Length { get; }
+        public int Size { get; }
 
         /// <summary>
-        /// Fft transformer
+        /// Fft transformer, single precision
         /// </summary>
-        private readonly Fft64 _fft;
+        private readonly Fft _fft32;
+
+        /// <summary>
+        /// Fft transformer, double precision
+        /// </summary>
+        private readonly Fft64 _fft64;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="length">Length of Hilbert Transform</param>
-        public HilbertTransform(int length = 1024)
+        /// <param name="length">Size of Hilbert Transform</param>
+        /// <param name="doublePrecision"></param>
+        public HilbertTransform(int size = 1024, bool doublePrecision = true)
         {
-            Length = length;
-            _fft = new Fft64(length);
+            Size = size;
+
+            if (doublePrecision)
+            {
+                _fft64 = new Fft64(size);
+            }
+            else
+            {
+                _fft32 = new Fft(size);
+            }
         }
 
         /// <summary>
-        /// Compute complex analytic signal
+        /// Compute complex analytic signal, double precision
         /// </summary>
         /// <param name="samples">Array of samples</param>
+        /// <param name="norm">Normalize by fft size</param>
         /// <returns>Complex analytic signal</returns>
-        public ComplexDiscreteSignal AnalyticSignal(double[] samples)
+        public ComplexDiscreteSignal AnalyticSignal(double[] samples, bool norm = true)
         {
             var analyticSignal = new ComplexDiscreteSignal(1, samples);
 
             var re = analyticSignal.Real;
             var im = analyticSignal.Imag;
 
-            _fft.Direct(re, im);
+            _fft64.Direct(re, im);
 
             for (var i = 1; i < re.Length / 2; i++)
             {
@@ -54,9 +70,53 @@ namespace NWaves.Transforms
                 im[i] = 0.0;
             }
 
-            _fft.Inverse(re, im);
+            _fft64.Inverse(re, im);
+
+            if (norm)
+            {
+                analyticSignal.Attenuate(re.Length);
+            }
 
             return analyticSignal;
+        }
+
+        /// <summary>
+        /// Compute complex analytic signal, single precision
+        /// </summary>
+        /// <param name="samples">Array of samples</param>
+        /// <param name="norm">Normalize by fft size</param>
+        /// <returns>Complex analytic signal</returns>
+        public Tuple<float[], float[]> AnalyticSignal(float[] samples, bool norm = true)
+        {
+            var sre = new DiscreteSignal(1, samples, allocateNew: true);
+            var sim = new DiscreteSignal(1, samples.Length);
+
+            var re = sre.Samples;
+            var im = sim.Samples;
+
+            _fft32.Direct(re, im);
+
+            for (var i = 1; i < re.Length / 2; i++)
+            {
+                re[i] *= 2;
+                im[i] *= 2;
+            }
+
+            for (var i = re.Length / 2 + 1; i < re.Length; i++)
+            {
+                re[i] = 0.0f;
+                im[i] = 0.0f;
+            }
+
+            _fft32.Inverse(re, im);
+
+            if (norm)
+            {
+                sre.Attenuate(re.Length);
+                sim.Attenuate(im.Length);
+            }
+
+            return new Tuple<float[], float[]>(re, im);
         }
 
         /// <summary>
@@ -72,7 +132,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Direct Hilbert Transform (in-place)
+        /// Direct Hilbert Transform
         /// </summary>
         /// <param name="samples">Array of samples</param>
         /// <param name="output">Hilbert Transform array</param>
@@ -83,18 +143,14 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Direct Hilbert Transform (in-place)
+        /// Direct Hilbert Transform
         /// </summary>
         /// <param name="samples">Array of samples</param>
         /// <param name="output">Hilbert Transform array</param>
         public void Direct(float[] samples, float[] output)
         {
-            var analyticSignal = AnalyticSignal(samples.ToDoubles()).Imag;
-            
-            for (var i = 0; i < output.Length; i++)
-            {
-                output[i] = (float)analyticSignal[i];
-            }
+            var analyticSignal = AnalyticSignal(samples).Item2;
+            analyticSignal.FastCopyTo(output, analyticSignal.Length);
         }
     }
 }
