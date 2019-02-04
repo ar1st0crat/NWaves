@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Features;
-using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
 
@@ -14,7 +13,7 @@ namespace NWaves.FeatureExtractors.Multi
     /// </summary>
     public class SpectralFeaturesExtractor : FeatureExtractor
     {
-        public const string FeatureSet = "centroid, spread, flatness, rolloff, crest, entropy, c1+c2+c3+c4+c5+c6";
+        public const string FeatureSet = "centroid, spread, flatness, rolloff, crest, entropy, decrease, c1+c2+c3+c4+c5+c6";
 
         /// <summary>
         /// String annotations (or simply names) of features
@@ -135,6 +134,10 @@ namespace NWaves.FeatureExtractors.Multi
                     case "ent":
                         return (spectrum, freqs) => Spectral.Entropy(spectrum);
 
+                    case "sd":
+                    case "decrease":
+                        return (spectrum, freqs) => Spectral.Decrease(spectrum);
+
                     case "c1":
                     case "c2":
                     case "c3":
@@ -207,6 +210,10 @@ namespace NWaves.FeatureExtractors.Multi
                 samples.FastCopyTo(_block, FrameSize, i);
 
                 _fft.MagnitudeSpectrum(_block, _spectrum);
+
+                // =======
+                // _spectrum -> reduced  _spectrum !
+                // =======
 
                 var featureVector = new float[featureCount];
 

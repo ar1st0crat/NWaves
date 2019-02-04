@@ -151,8 +151,8 @@ namespace NWaves.Filters.Fda
         {
             Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
 
-            var filter1 = LpToHp(FirLp(order, freq1, true, window));
-            var filter2 = FirLp(order, freq2, true, window);
+            var filter1 = LpToHp(FirLpSinc(order/2 + 1, freq1, window));
+            var filter2 = FirLpSinc(order/2 + 1, freq2, window);
             return filter1 * filter2;
         }
 
@@ -168,8 +168,8 @@ namespace NWaves.Filters.Fda
         {
             Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
 
-            var filter1 = FirLp(order, freq1, true, window);
-            var filter2 = LpToHp(FirLp(order, freq2, true, window));
+            var filter1 = FirLpSinc(order, freq1, window);
+            var filter2 = LpToHp(FirLpSinc(order, freq2, window));
             return filter1 + filter2;
         }
     }

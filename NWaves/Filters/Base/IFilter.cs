@@ -14,6 +14,6 @@ namespace NWaves.Filters.Base
         /// <param name="signal">Signal for filtering</param>
         /// <param name="method">General filtering strategy</param>
         /// <returns>Filtered signal</returns>
-        DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method);
+        DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto);
     }
 }

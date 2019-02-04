@@ -46,9 +46,10 @@
     <Compile Include="Filters\HilbertFilter.cs" />
     <Compile Include="Filters\OnePole\OnePoleFilter.cs" />
     <Compile Include="Filters\RastaFilter.cs" />
-    <Compile Include="Operations\Convolution\BlockConvolver.cs" />
+    <Compile Include="Operations\Convolution\OlaBlockConvolver.cs" />
     <Compile Include="Operations\Convolution\ComplexConvolver.cs" />
     <Compile Include="Operations\Convolution\Convolver.cs" />
+    <Compile Include="Operations\Convolution\OlsBlockConvolver.cs" />
     <Compile Include="Operations\Resampler.cs" />
     <Compile Include="Operations\Tsm\TsmAlgorithm.cs" />
     <Compile Include="Signals\Builders\ChirpBuilder.cs" />
@@ -90,7 +91,6 @@
     <Compile Include="Features\Harmonic.cs" />
     <Compile Include="Features\Pitch.cs" />
     <Compile Include="Features\Spectral.cs" />
-    <Compile Include="Features\Temporal.cs" />
     <Compile Include="Filters\Adaptive\KalmanFilter.cs" />
     <Compile Include="Filters\Adaptive\LmsFilter.cs" />
     <Compile Include="Filters\Adaptive\RlsFilter.cs" />

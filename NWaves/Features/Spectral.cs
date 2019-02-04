@@ -51,6 +51,25 @@ namespace NWaves.Features
         }
 
         /// <summary>
+        /// Spectral dicrease
+        /// </summary>
+        /// <param name="spectrum"></param>
+        /// <returns></returns>
+        public static float Decrease(float[] spectrum)
+        {
+            var sum = 0.0f;
+            var diffSum = 0.0f;
+
+            for (var i = 2; i < spectrum.Length; i++)
+            {
+                sum += spectrum[i];
+                diffSum += (spectrum[i] - spectrum[1]) / (i - 1);
+            }
+
+            return diffSum / sum;
+        }
+
+        /// <summary>
         /// Spectral flatness
         /// </summary>
         /// <param name="spectrum">Magnitude spectrum</param>
@@ -231,7 +250,7 @@ namespace NWaves.Features
                 return 0;
             }
 
-            for (var i = 0; i < spectrum.Length; i++)
+            for (var i = 1; i < spectrum.Length; i++)
             {
                 var p = spectrum[i] / sum;
 

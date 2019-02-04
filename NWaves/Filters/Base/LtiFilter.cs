@@ -28,18 +28,9 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// The online filtering algorithm should be implemented by particular subclass
         /// </summary>
-        /// <param name="input">Input block of samples</param>
-        /// <param name="output">Block of filtered samples</param>
-        /// <param name="count">Number of samples to filter</param>
-        /// <param name="inputPos">Input starting position</param>
-        /// <param name="outputPos">Output starting position</param>
-        /// <param name="method">General filtering strategy</param>
-        public abstract void Process(float[] input,
-                                     float[] output,
-                                     int count,
-                                     int inputPos = 0,
-                                     int outputPos = 0,
-                                     FilteringMethod method = FilteringMethod.Auto);
+        /// <param name="input">Input sample</param>
+        /// <returns>Output sample</returns>
+        public abstract float Process(float input);
 
         /// <summary>
         /// Reset filter (clear all internal buffers)

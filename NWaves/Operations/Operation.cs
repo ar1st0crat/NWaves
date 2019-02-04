@@ -102,17 +102,18 @@ namespace NWaves.Operations
                 return signal.Copy();
             }
 
-            var blockConvolver = new BlockConvolver(kernel.Samples, fftSize);
-            var filtered = new float[signal.Length + kernel.Length - 1];
+            IFilter blockConvolver;
 
-            var hopSize = blockConvolver.HopSize;
-
-            for (var i = 0; i < signal.Length; i += hopSize)
+            if (method == FilteringMethod.OverlapAdd)
             {
-                blockConvolver.Process(signal.Samples, filtered, fftSize, i, i, method);
+                blockConvolver = new OlaBlockConvolver(kernel.Samples, fftSize);
+            }
+            else
+            {
+                blockConvolver = new OlsBlockConvolver(kernel.Samples, fftSize);
             }
 
-            return new DiscreteSignal(signal.SamplingRate, filtered);
+            return blockConvolver.ApplyTo(signal);
         }
         
         /// <summary>

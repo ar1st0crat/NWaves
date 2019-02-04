@@ -458,9 +458,9 @@ namespace NWaves.DemoForms
 
         private void AnalyzeCustomBandpassFilter()
         {
-            var order = 115;
-            var freq1 = 0.1;
-            var freq2 = 0.2;
+            var order = 231;
+            var freq1 = 0.06;
+            var freq2 = 0.3;
 
             if (filterParamsDataGrid.RowCount > 0)
             {
@@ -472,7 +472,7 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            _filter = DesignFilter.FirBp(order, freq1, freq2);
+            _filter = DesignFilter.FirBr(order, freq1, freq2);
 
             filterParamsDataGrid.RowCount = 3;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";

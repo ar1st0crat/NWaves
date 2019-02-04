@@ -131,62 +131,52 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// The online filtering
+        /// IIR online filtering (sample-by-sample)
         /// </summary>
-        /// <param name="input">Input block of samples</param>
-        /// <param name="output">Block of filtered samples</param>
-        /// <param name="count">Number of samples to filter</param>
-        /// <param name="inputPos">Input starting position</param>
-        /// <param name="outputPos">Output starting position</param>
-        /// <param name="method">General filtering strategy</param>
-        public override void Process(float[] input,
-                                     float[] output,
-                                     int count,
-                                     int inputPos = 0,
-                                     int outputPos = 0,
-                                     FilteringMethod method = FilteringMethod.Auto)
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        public override float Process(float sample)
         {
             var a = _a32;
             var b = _b32;
 
-            var endPos = inputPos + count;
+            var output = 0.0f;
 
-            for (int n = inputPos, m = outputPos; n < endPos; n++, m++)
+            _delayLineB[_delayLineOffsetB] = sample;
+
+            var pos = 0;
+            for (var k = _delayLineOffsetB; k < b.Length; k++)
             {
-                _delayLineB[_delayLineOffsetB] = input[n];
-
-                var pos = 0;
-                for (var k = _delayLineOffsetB; k < b.Length; k++)
-                {
-                    output[m] += b[pos++] * _delayLineB[k];
-                }
-                for (var k = 0; k < _delayLineOffsetB; k++)
-                {
-                    output[m] += b[pos++] * _delayLineB[k];
-                }
-
-                pos = 1;
-                for (var p = _delayLineOffsetA + 1; p < a.Length; p++)
-                {
-                    output[m] -= a[pos++] * _delayLineA[p];
-                }
-                for (var p = 0; p < _delayLineOffsetA; p++)
-                {
-                    output[m] -= a[pos++] * _delayLineA[p];
-                }
-
-                _delayLineA[_delayLineOffsetA] = output[m];
-
-                if (--_delayLineOffsetB < 0)
-                {
-                    _delayLineOffsetB = _delayLineB.Length - 1;
-                }
-
-                if (--_delayLineOffsetA < 0)
-                {
-                    _delayLineOffsetA = _delayLineA.Length - 1;
-                }
+                output += b[pos++] * _delayLineB[k];
             }
+            for (var k = 0; k < _delayLineOffsetB; k++)
+            {
+                output += b[pos++] * _delayLineB[k];
+            }
+
+            pos = 1;
+            for (var p = _delayLineOffsetA + 1; p < a.Length; p++)
+            {
+                output -= a[pos++] * _delayLineA[p];
+            }
+            for (var p = 0; p < _delayLineOffsetA; p++)
+            {
+                output -= a[pos++] * _delayLineA[p];
+            }
+
+            _delayLineA[_delayLineOffsetA] = output;
+
+            if (--_delayLineOffsetB < 0)
+            {
+                _delayLineOffsetB = _delayLineB.Length - 1;
+            }
+
+            if (--_delayLineOffsetA < 0)
+            {
+                _delayLineOffsetA = _delayLineA.Length - 1;
+            }
+
+            return output;
         }
 
         /// <summary>

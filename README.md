@@ -23,8 +23,8 @@ Already available:
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and perceptual weighting (A, B, C)
 - [x] customizable feature extraction (time-domain, spectral, MFCC, PNCC/SPNCC, LPC, LPCC, AMS) and CSV serialization
 - [x] feature post-processing (mean and variance normalization, adding deltas)
-- [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest)
-- [x] signal builders (sine/cosine, white/pink/red noise, Perlin noise, awgn, triangle, sawtooth, square, periodic pulse)
+- [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest, decrease)
+- [x] signal builders (sine/cosine, white/pink/red noise, Perlin noise, awgn, triangle, sawtooth, square, pulse, ramp, sinc)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking (autocorrelation, YIN, ZCR + Schmitt trigger, HSS/HPS, cepstrum)
 - [x] time scale modification (phase vocoder, PV with identity phase locking, WSOLA)
@@ -423,8 +423,10 @@ var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
 
 ### Online processing
 
-Filters and BlockConvolvers contain the ```Process()``` method responsible for online processing.
-For filters simply prepare necessary buffers or just use them if they come from another part of your system:
+Online processing is supported by all classes that implement the ```IOnlineFilter``` interface.
+Currently, all filters and block convolvers (```OlaBlockConvolver```, ```OlsBlockConvolver```) contain the ```Process(sample)``` and ```Process(buffer)``` methods responsible for online processing.
+
+Simply prepare necessary buffers or just use them if they come from another part of your system:
 
 ```C#
 
@@ -434,8 +436,16 @@ float[] output;
 
 void NewChunkAvailable(float[] chunk)
 {
-	filter.Process(chunk, output, chunk.Length);
+	filter.Process(chunk, output);
 }
+
+```
+
+Sample after sample:
+
+```C#
+
+var outputSample = filter.Process(sample);
 
 ```
 
@@ -453,55 +463,64 @@ var output = new float[input.Length];
 
 for (int i = 0; i + frameSize < input.Length; i += frameSize)
 {
-	filter.Process(input, output, frameSize, i, i, method);
+	filter.Process(input, output, frameSize, inputPos: i, outputPos: i);
 }
 
 ```
 
-With BlockConvolvers things are a little bit tricker, since the chunk size is greater than the hop size and the output will always be "late" by ```KernelSize-1``` samples. If the entire input signal is available the offset is tracked easily: 
+Block convolvers:
 
 ```C#
 
-// OLA/OLS (OLS is used by default):
+// Overlap-Add / Overlap-Save
 
 FirFilter filter = new FirFilter(kernel);
 
-var blockConvolver = BlockConvolver.FromFilter(filter, 16384);
+var blockConvolver = OlaBlockConvolver.FromFilter(filter, 16384);
 
 // processing loop:
-// while new input is available
+// while new input sample is available
 {
-	blockConvolver.Process(input, output, inputPos: offset, method: FilteringMethod.OverlapAdd);
-	offset += blockConvolver.HopSize;
+	var outputSample = blockConvolver.Process(sample);
+}
+
+// or:
+// while new input buffer is available
+{
+    blockConvolver.Process(input, output);
 }
 
 ```
 
-If only chunks of input data (i.e., the *real* online processing) are available, then you'll need to take care about prepending each new chunk with last ```KernelSize-1``` samples from the previous chunk. Or just use ```BlockConvolver.ProcessChunks()``` function designed specifically for this:
+In case of block convolvers note that the output will always be "late" by ```FftSize-KernelSize+1``` samples.
+The property ```(Ola|Ols)BlockConvoler.HopSize``` returns this value. So you might want to process first ```HopSize``` samples without storing the result anywhere (the samples will just get into delay line). For example, this is how offline method ```ApplyTo``` is implemented for block convolvers:
 
 ```C#
 
-// take next random chunk 
+var firstCount = Math.Min(HopSize, signal.Length);
 
-input = signal[offset, offset + someRandomSize].Samples;
+int i = 0, j = 0;
 
-
-// process it
-
-int readyCount = blockConvolver.ProcessChunks(input, output);  // process everything that's available
-
-if (readyCount > 0)                                            // if new output is ready
+for (; i < firstCount; i++)    // first HopSize samples are just placed in the delay line
 {
-	// do what we need with the output block, e.g. :
-    output.FastCopyTo(_filtered.Samples, readyCount, 0, offset);
+    Process(signal[i]);
+}
 
-    // track the offset
-    offset += readyCount;
+var filtered = new float[signal.Length + _kernel.Length - 1];
+
+for (; i < signal.Length; i++, j++)    // process
+{
+    filtered[j] = Process(signal[i]);
+}
+
+var lastCount = firstCount + _kernel.Length - 1;
+
+for (i = 0; i < lastCount; i++, j++)    // get last 'late' samples
+{
+    filtered[j] = Process(0.0f);
 }
 
 ```
-
-Just feed data to this function - chunk after chunk (of arbitrary length), and it will handle everything. It returns the number of already filtered samples placed in the output array.
 
 See also OnlineDemoForm code.
 

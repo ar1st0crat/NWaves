@@ -16,7 +16,7 @@ namespace NWaves.DemoForms
         DiscreteSignal _signal;
         DiscreteSignal _filtered;
 
-        BlockConvolver _blockConvolver;
+        OlaBlockConvolver _blockConvolver;
 
         /// <summary>
         /// Buffer for input chunk
@@ -32,6 +32,7 @@ namespace NWaves.DemoForms
 
         int _offset = 0;
         int _filteredOffset = 0;
+        int _filteredLength = 0;
         int _chunkNo = 0;
         int _fftSize;
 
@@ -51,7 +52,7 @@ namespace NWaves.DemoForms
 
             chunkTimer.Interval = int.Parse(intervalTextBox.Text);
             var filter = DesignFilter.FirLp(int.Parse(kernelSizeTextBox.Text), 0.2);
-            _blockConvolver = BlockConvolver.FromFilter(filter, _fftSize);
+            _blockConvolver = OlaBlockConvolver.FromFilter(filter, _fftSize);
 
             _output = new float[_blockConvolver.HopSize * 5];
         }
@@ -71,7 +72,9 @@ namespace NWaves.DemoForms
             }
 
             // this signal will accumulate the output chunks in lower panel and it's just for visualization
-            _filtered = new DiscreteSignal(_signal.SamplingRate, Math.Min(_signal.Length + _fftSize, 60 * 16000));
+
+            _filteredLength = Math.Min(_signal.Length + _fftSize, 60 * 16000);
+            _filtered = new DiscreteSignal(_signal.SamplingRate, _filteredLength);
 
             signalPlot.Signal = _signal;
 
@@ -95,7 +98,7 @@ namespace NWaves.DemoForms
             _filteredOffset = 0;
             _chunkNo = 0;
 
-            _filtered = new DiscreteSignal(_signal.SamplingRate, Math.Min(_signal.Length + _fftSize, 60 * 16000));
+            _filtered = new DiscreteSignal(_signal.SamplingRate, _filteredLength);
         }
 
         private void applyButton_Click(object sender, EventArgs e)
@@ -108,61 +111,50 @@ namespace NWaves.DemoForms
         /// </summary>
         private void ProcessNewChunk(object sender, EventArgs e)
         {
-            // =============================== take next random chunk ====================================
+            // =========================== take next chunk of random size ================================
+            //                           (random size is chosen carefully)
 
-            var randomSize = _randomizer.Next(_blockConvolver.HopSize / 5 + 1, _blockConvolver.HopSize * 4);
+            var randomSize = Math.Min(_randomizer.Next(_blockConvolver.HopSize / 4, _blockConvolver.HopSize * 4),
+                             Math.Min(_signal.Length - _offset,
+                                      _filteredLength - _filteredOffset));
 
-            var currentChunkSize = Math.Min(randomSize,
-                                            Math.Min(_filtered.Length - _filteredOffset - _fftSize,
-                                                     _signal.Length - _offset));
-
-            _input = _signal[_offset, _offset + currentChunkSize].Samples;
-
-            // ===========================================================================================
-
-
+            _input = _signal[_offset, _offset + randomSize].Samples;
+            
 
             // ===================================== process it ==========================================
 
-            int readyCount = _blockConvolver.ProcessChunks(_input, _output);  // process everything that's available
+            _blockConvolver.Process(_input, _output);
 
-            if (readyCount > 0)                                               // if new output is ready
-            {
-                // do what we need with the output block, e.g. :
-                _output.FastCopyTo(_filtered.Samples, readyCount, 0, _filteredOffset);
+            
+            // ===================== do what we want with a new portion of data ==========================
 
-                // track the offset
-                _offset += readyCount;
-                _filteredOffset += readyCount;
-            }
+            _output.FastCopyTo(_filtered.Samples, _input.Length, 0, _filteredOffset);
 
-
+            _offset += _input.Length;
+            _filteredOffset += _input.Length;
 
             // ================================= visualize signals =======================================
 
             signalPlot.Signal = new DiscreteSignal(_signal.SamplingRate, _input);
-            if (readyCount > 0)
-            {
-                filteredSignalPlot.Signal = new DiscreteSignal(_signal.SamplingRate, _output).First(readyCount);
-            }
+            filteredSignalPlot.Signal = new DiscreteSignal(_signal.SamplingRate, _output);
 
-            if (_filteredOffset >= _filtered.Length - readyCount)
+            if (_filteredOffset >= _filtered.Length - _input.Length)
             {
                 _filteredOffset = 0;
                 _filtered = new DiscreteSignal(_signal.SamplingRate, Math.Min(_signal.Length + _fftSize, 60 * 16000));
             }
             filteredFullSignalPlot.Signal = _filtered;
 
+            // ====================== reset if we've reached the end of a signal =========================
 
-
-            // ================================== not important stuff =====================================
-
-            if (_offset > _signal.Length)
+            if (_offset + randomSize >= _signal.Length)
             {
-                _offset = 0;              // start all over again
+                _offset = 0;
                 _filteredOffset = 0;
                 _chunkNo = 0;
                 _blockConvolver.Reset();
+
+                _filtered = new DiscreteSignal(_signal.SamplingRate, _filteredLength);
             }
 
             _chunkNo++;

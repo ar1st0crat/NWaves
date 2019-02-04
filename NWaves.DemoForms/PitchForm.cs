@@ -70,6 +70,9 @@ namespace NWaves.DemoForms
 
             _pitches = pitchExtractor.ParallelComputeFrom(_signal);
 
+            _specNo = 0;
+            specNoComboBox.DataSource = Enumerable.Range(1, _pitches.Count).ToArray();
+
             UpdateSpectrumAndCepstrum();
             UpdateAutoCorrelation();
             
@@ -81,10 +84,6 @@ namespace NWaves.DemoForms
             spectrogramPanel.ColorMapName = "viridis";
             spectrogramPanel.Spectrogram = spectrogram.Select(s => s.Take(224).ToArray()).ToList();
             spectrogramPanel.Markline = _pitches.Select(p => p.Features[0] * _fftSize / _signal.SamplingRate).ToArray();
-
-            specNoComboBox.DataSource = Enumerable.Range(1, _pitches.Count).ToArray();
-
-            _specNo = 0;
         }
 
         private void specNoComboBox_TextChanged(object sender, EventArgs e)
@@ -179,7 +178,7 @@ namespace NWaves.DemoForms
             var autoCorrelation = Operation.CrossCorrelate(block, block).Last(_fftSize);
 
             autoCorrPanel.Line = autoCorrelation.Samples;
-            autoCorrPanel.Mark = pitch == 0 ? 0 : (int)(_signal.SamplingRate / pitch);  // _pitches[_specNo].Features[0]);         // pitch index
+            autoCorrPanel.Mark = pitch == 0 ? 0 : (int)(_signal.SamplingRate / pitch);   // pitch index
         }
     }
 }

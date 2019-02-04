@@ -82,11 +82,16 @@ namespace NWaves.Filters.Base
             switch (method)
             {
                 case FilteringMethod.OverlapAdd:
+                {
+                    var fftSize = MathUtils.NextPowerOfTwo(4 * Kernel.Length);
+                    var blockConvolver = OlaBlockConvolver.FromFilter(this, fftSize);
+                    return blockConvolver.ApplyTo(signal);
+                }
                 case FilteringMethod.OverlapSave:
                 {
                     var fftSize = MathUtils.NextPowerOfTwo(4 * Kernel.Length);
-                    var blockConvolver = BlockConvolver.FromFilter(this, fftSize);
-                    return blockConvolver.ApplyTo(signal, method);
+                    var blockConvolver = OlsBlockConvolver.FromFilter(this, fftSize);
+                    return blockConvolver.ApplyTo(signal);
                 }
                 case FilteringMethod.Custom:
                 {
@@ -100,42 +105,32 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// The online filtering
+        /// FIR online filtering (sample-by-sample)
         /// </summary>
-        /// <param name="input">Input block of samples</param>
-        /// <param name="output">Block of filtered samples</param>
-        /// <param name="count">Number of samples to filter</param>
-        /// <param name="inputPos">Input starting position</param>
-        /// <param name="outputPos">Output starting position</param>
-        /// <param name="method">General filtering strategy (ignored)</param>
-        public override void Process(float[] input,
-                                     float[] output,
-                                     int count,
-                                     int inputPos = 0,
-                                     int outputPos = 0,
-                                     FilteringMethod method = FilteringMethod.Auto)
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        public override float Process(float sample)
         {
-            var endPos = inputPos + count;
+            var output = 0.0f;
 
-            for (int n = inputPos, m = outputPos; n < endPos; n++, m++)
+            _delayLine[_delayLineOffset] = sample;
+
+            var pos = 0;
+            for (var k = _delayLineOffset; k < _kernel32.Length; k++)
             {
-                _delayLine[_delayLineOffset] = input[n];
-
-                var pos = 0;
-                for (var k = _delayLineOffset; k < _kernel32.Length; k++)
-                {
-                    output[m] += _kernel32[pos++] * _delayLine[k];
-                }
-                for (var k = 0; k < _delayLineOffset; k++)
-                {
-                    output[m] += _kernel32[pos++] * _delayLine[k];
-                }
-
-                if (--_delayLineOffset < 0)
-                {
-                    _delayLineOffset = _delayLine.Length - 1;
-                }
+                output += _kernel32[pos++] * _delayLine[k];
             }
+            for (var k = 0; k < _delayLineOffset; k++)
+            {
+                output += _kernel32[pos++] * _delayLine[k];
+            }
+
+            if (--_delayLineOffset < 0)
+            {
+                _delayLineOffset = _delayLine.Length - 1;
+            }
+
+            return output;
         }
 
         /// <summary>

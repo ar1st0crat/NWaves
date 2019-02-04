@@ -82,16 +82,23 @@ namespace NWaves.Filters
         /// <param name="count">Number of samples to filter</param>
         /// <param name="inputPos">Input starting position</param>
         /// <param name="outputPos">Output starting position</param>
-        /// <param name="method">General filtering strategy</param>
         public void Process(float[] input,
                             float[] output,
                             int count,
                             int inputPos = 0,
-                            int outputPos = 0,
-                            FilteringMethod method = FilteringMethod.Auto)
+                            int outputPos = 0)
         {
             throw new NotImplementedException();
-            //return ApplyTo(new DiscreteSignal(1, input)).Samples;
+        }
+
+        /// <summary>
+        /// Online filtering (sample-by-sample)
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        public float Process(float sample)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

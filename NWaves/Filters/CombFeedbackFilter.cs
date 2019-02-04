@@ -75,37 +75,25 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Online filtering (frame-by-frame)
+        /// Online filtering (sample-by-sample)
         /// </summary>
-        /// <param name="input">Input block of samples</param>
-        /// <param name="output">Block of filtered samples</param>
-        /// <param name="count">Number of samples to filter</param>
-        /// <param name="inputPos">Input starting position</param>
-        /// <param name="outputPos">Output starting position</param>
-        /// /// <param name="method">General filtering strategy</param>
-        public override void Process(float[] input,
-                                     float[] output,
-                                     int count,
-                                     int inputPos = 0,
-                                     int outputPos = 0,
-                                     FilteringMethod method = FilteringMethod.Auto)
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        public override float Process(float sample)
         {
             var b0 = _b32[0];
             var am = _a32[_delay];
 
-            var endPos = inputPos + count;
+            var output = b0 * sample - am * _delayLineA[_delayLineOffsetA];
 
-            for (int n = inputPos, m = outputPos; n < endPos; n++, m++)
+            _delayLineA[_delayLineOffsetA] = output;
+
+            if (--_delayLineOffsetA < 1)
             {
-                output[m] = b0 * input[n] - am * _delayLineA[_delayLineOffsetA];
-
-                _delayLineA[_delayLineOffsetA] = output[m];
-                
-                if (--_delayLineOffsetA < 1)
-                {
-                    _delayLineOffsetA = _delayLineA.Length - 1;
-                }
+                _delayLineOffsetA = _delayLineA.Length - 1;
             }
+
+            return output;
         }
     }
 }
