@@ -151,9 +151,13 @@ namespace NWaves.Filters.Fda
         {
             Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
 
-            var filter1 = LpToHp(FirLpSinc(order/2 + 1, freq1, window));
-            var filter2 = FirLpSinc(order/2 + 1, freq2, window);
-            return filter1 * filter2;
+            var filter1 = LpToHp(FirLpSinc(order, freq1, window));
+            var filter2 = FirLpSinc(order, freq2, window);
+
+            var filter = filter1 * filter2;
+            var kernel = filter.Tf.Numerator;
+
+            return new FirFilter(kernel.Skip(order/2).Take(order));
         }
 
         /// <summary>

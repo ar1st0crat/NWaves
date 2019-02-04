@@ -13,7 +13,7 @@ namespace NWaves.FeatureExtractors.Multi
     /// </summary>
     public class SpectralFeaturesExtractor : FeatureExtractor
     {
-        public const string FeatureSet = "centroid, spread, flatness, rolloff, crest, entropy, decrease, c1+c2+c3+c4+c5+c6";
+        public const string FeatureSet = "centroid, spread, flatness, noiseness, rolloff, crest, entropy, decrease, c1+c2+c3+c4+c5+c6";
 
         /// <summary>
         /// String annotations (or simply names) of features
@@ -49,6 +49,16 @@ namespace NWaves.FeatureExtractors.Multi
         /// Internal buffer for magnitude spectrum
         /// </summary>
         float[] _spectrum;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        float[] _mappedSpectrum;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        int[] _frequencyPositions;
 
         /// <summary>
         /// Internal buffer for currently processed block
@@ -109,11 +119,23 @@ namespace NWaves.FeatureExtractors.Multi
                         if (parameters?.ContainsKey("minLevel") ?? false)
                         {
                             var minLevel = (float) parameters["minLevel"];
-                            return (spectrum, freqs) => Spectral.Flatness(spectrum, freqs, minLevel);
+                            return (spectrum, freqs) => Spectral.Flatness(spectrum, minLevel);
                         }
                         else
                         {
-                            return (spectrum, freqs) => Spectral.Flatness(spectrum, freqs);
+                            return (spectrum, freqs) => Spectral.Flatness(spectrum);
+                        }
+
+                    case "sn":
+                    case "noiseness":
+                        if (parameters?.ContainsKey("noiseFrequency") ?? false)
+                        {
+                            var noiseFrequency = (float)parameters["noiseFrequency"];
+                            return (spectrum, freqs) => Spectral.Noiseness(spectrum, freqs, noiseFrequency);
+                        }
+                        else
+                        {
+                            return (spectrum, freqs) => Spectral.Noiseness(spectrum, freqs);
                         }
 
                     case "rolloff":
@@ -156,11 +178,26 @@ namespace NWaves.FeatureExtractors.Multi
             _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
             _fft = new Fft(_fftSize);
 
-            var resolution = (float) samplingRate / _fftSize;
+            var resolution = (float)samplingRate / _fftSize;
 
-            _frequencies = frequencies ?? Enumerable.Range(0, _fftSize + 1)
-                                                    .Select(f => f * resolution)
-                                                    .ToArray();
+            if (frequencies == null)
+            {
+                _frequencies = Enumerable.Range(0, _fftSize / 2 + 1)
+                                         .Select(f => f * resolution)
+                                         .ToArray();
+            }
+            else
+            {
+                _frequencies = frequencies;
+                _mappedSpectrum = new float[_frequencies.Length];
+                _frequencyPositions = new int[_frequencies.Length];
+
+                for (var i = 0; i < _frequencies.Length; i++)
+                {
+                    _frequencyPositions[i] = (int)(_frequencies[i] / resolution + 1);
+                }
+            }
+
             _parameters = parameters;
 
             // reserve memory for reusable blocks
@@ -211,15 +248,23 @@ namespace NWaves.FeatureExtractors.Multi
 
                 _fft.MagnitudeSpectrum(_block, _spectrum);
 
-                // =======
-                // _spectrum -> reduced  _spectrum !
-                // =======
+                if (_spectrum.Length == _frequencies.Length)
+                {
+                    _mappedSpectrum = _spectrum;
+                }
+                else
+                {
+                    for (var j = 0; j < _mappedSpectrum.Length; j++)
+                    {
+                        _mappedSpectrum[j] = _spectrum[_frequencyPositions[j]];
+                    }
+                }
 
                 var featureVector = new float[featureCount];
 
                 for (var j = 0; j < featureCount; j++)
                 {
-                    featureVector[j] = _extractors[j](_spectrum, _frequencies);
+                    featureVector[j] = _extractors[j](_mappedSpectrum, _frequencies);
                 }
 
                 featureVectors.Add(new FeatureVector

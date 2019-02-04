@@ -73,10 +73,9 @@ namespace NWaves.Features
         /// Spectral flatness
         /// </summary>
         /// <param name="spectrum">Magnitude spectrum</param>
-        /// <param name="frequencies">Centre frequencies</param>
         /// <param name="minLevel"></param>
         /// <returns></returns>
-        public static float Flatness(float[] spectrum, float[] frequencies, float minLevel = 1e-10f)
+        public static float Flatness(float[] spectrum, float minLevel = 1e-10f)
         {
             var sum = 0.0f;
             var logSum = 0.0;
@@ -93,6 +92,33 @@ namespace NWaves.Features
             logSum /= spectrum.Length;
 
             return sum > 0 ? (float)Math.Exp(logSum) / sum : 0.0f;
+        }
+
+        /// <summary>
+        /// Spectral noiseness
+        /// </summary>
+        /// <param name="spectrum"></param>
+        /// <param name="frequencies"></param>
+        /// <param name="noiseFrequency"></param>
+        /// <returns></returns>
+        public static float Noiseness(float[] spectrum, float[] frequencies, float noiseFrequency = 4000)
+        {
+            var noiseSum = 0.0f;
+            var totalSum = 0.0f;
+
+            var i = 0;
+            for (; frequencies[i] < noiseFrequency; i++)
+            {
+                totalSum += spectrum[i];
+            }
+
+            for (; i < spectrum.Length; i++)
+            {
+                noiseSum += spectrum[i];
+                totalSum += spectrum[i];
+            }
+
+            return noiseSum / totalSum;
         }
 
         /// <summary>
@@ -176,6 +202,11 @@ namespace NWaves.Features
                                            .OrderBy(s => s)
                                            .ToArray();
 
+                if (bandSpectrum.Length == 0)
+                {
+                    return contrasts;   // zeros
+                }
+
                 var selectedCount = Math.Max(alpha * bandSpectrum.Length, 1);
 
                 var avgPeaks = 0.0;
@@ -215,9 +246,14 @@ namespace NWaves.Features
             var octaveLow = minFrequency * Math.Pow(2, bandNo - 1);
             var octaveHigh = 2 * octaveLow;
 
-            var bandSpectrum = spectrum.Where((s,i) => frequencies[i] >= octaveLow && frequencies[i] <= octaveHigh)
+            var bandSpectrum = spectrum.Where((s, i) => frequencies[i] >= octaveLow && frequencies[i] <= octaveHigh)
                                        .OrderBy(s => s)
                                        .ToArray();
+
+            if (bandSpectrum.Length == 0)
+            {
+                return 0;
+            }
 
             var selectedCount = Math.Max(alpha * bandSpectrum.Length, 1);
 
