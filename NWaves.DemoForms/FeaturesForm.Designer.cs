@@ -34,8 +34,10 @@ namespace NWaves.DemoForms
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.featuresListView = new System.Windows.Forms.ListView();
-            this.featurePlotPanel = new LinePlot();
+            this.featurePlotPanel = new NWaves.DemoForms.UserControls.LinePlot();
+            this.spectrumPictureBox = new System.Windows.Forms.PictureBox();
             this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.spectrumPictureBox)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -45,7 +47,7 @@ namespace NWaves.DemoForms
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1026, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(1183, 28);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -70,25 +72,47 @@ namespace NWaves.DemoForms
             this.featuresListView.GridLines = true;
             this.featuresListView.Location = new System.Drawing.Point(12, 37);
             this.featuresListView.Name = "featuresListView";
-            this.featuresListView.Size = new System.Drawing.Size(1004, 391);
+            this.featuresListView.Size = new System.Drawing.Size(782, 391);
             this.featuresListView.TabIndex = 5;
             this.featuresListView.UseCompatibleStateImageBehavior = false;
             this.featuresListView.View = System.Windows.Forms.View.Details;
             this.featuresListView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.featuresListView_ColumnClick);
+            this.featuresListView.SelectedIndexChanged += new System.EventHandler(this.featuresListView_SelectedIndexChanged);
             // 
             // featurePlotPanel
             // 
+            this.featurePlotPanel.AutoScroll = true;
             this.featurePlotPanel.BackColor = System.Drawing.Color.White;
+            this.featurePlotPanel.ForeColor = System.Drawing.Color.Blue;
+            this.featurePlotPanel.Gain = null;
+            this.featurePlotPanel.Legend = null;
+            this.featurePlotPanel.Line = null;
             this.featurePlotPanel.Location = new System.Drawing.Point(12, 434);
+            this.featurePlotPanel.Mark = null;
+            this.featurePlotPanel.Markline = null;
             this.featurePlotPanel.Name = "featurePlotPanel";
-            this.featurePlotPanel.Size = new System.Drawing.Size(1004, 160);
+            this.featurePlotPanel.PaddingX = 30;
+            this.featurePlotPanel.PaddingY = 20;
+            this.featurePlotPanel.Size = new System.Drawing.Size(782, 160);
+            this.featurePlotPanel.Stride = 1;
             this.featurePlotPanel.TabIndex = 4;
+            this.featurePlotPanel.Thickness = 1;
+            // 
+            // spectrumPictureBox
+            // 
+            this.spectrumPictureBox.BackColor = System.Drawing.SystemColors.Window;
+            this.spectrumPictureBox.Location = new System.Drawing.Point(801, 37);
+            this.spectrumPictureBox.Name = "spectrumPictureBox";
+            this.spectrumPictureBox.Size = new System.Drawing.Size(370, 233);
+            this.spectrumPictureBox.TabIndex = 6;
+            this.spectrumPictureBox.TabStop = false;
             // 
             // FeaturesForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1026, 606);
+            this.ClientSize = new System.Drawing.Size(1183, 606);
+            this.Controls.Add(this.spectrumPictureBox);
             this.Controls.Add(this.featuresListView);
             this.Controls.Add(this.featurePlotPanel);
             this.Controls.Add(this.menuStrip1);
@@ -97,6 +121,7 @@ namespace NWaves.DemoForms
             this.Text = "FeaturesForm";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.spectrumPictureBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -109,5 +134,6 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
         private System.Windows.Forms.ListView featuresListView;
         private LinePlot featurePlotPanel;
+        private System.Windows.Forms.PictureBox spectrumPictureBox;
     }
 }

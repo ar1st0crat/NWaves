@@ -9,7 +9,7 @@ using System.Linq;
 namespace NWaves.Operations.Convolution
 {
     /// <summary>
-    /// Class responsible for OLA block convolution.
+    /// Class responsible for OLS block convolution.
     /// It can be used as a filter (online filter as well).
     /// </summary>
     public class OlsBlockConvolver : IFilter, IOnlineFilter

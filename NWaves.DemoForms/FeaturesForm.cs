@@ -8,6 +8,8 @@ using NWaves.FeatureExtractors.Base;
 using NWaves.FeatureExtractors.Multi;
 using NWaves.Signals;
 using NWaves.Features;
+using System.Drawing;
+using NWaves.Transforms;
 
 namespace NWaves.DemoForms
 {
@@ -91,5 +93,67 @@ namespace NWaves.DemoForms
             featurePlotPanel.Stride = 1;
             featurePlotPanel.Line = _vectors.Select(v => v.Features[e.Column - 1]).ToArray();
         }
+
+
+        // TODO: remove this crap )))
+
+        private void featuresListView_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var fft = new Fft(512);
+
+            var spectrum = fft.PowerSpectrum(_signal[3120, 3632]).Samples;
+
+            var peaks = new int[10];
+            var freqs = new float[10];
+
+            Harmonic.Peaks(spectrum, peaks, freqs, _signal.SamplingRate);
+
+
+            _spectrumImage = new Bitmap(512, spectrumPictureBox.Height);
+
+            var g = Graphics.FromImage(_spectrumImage);
+            g.Clear(Color.White);
+
+            var pen = new Pen(ForeColor);
+            var redpen = new Pen(Color.Red, 2);
+
+            var i = 1;
+            var Stride = 1;
+            var PaddingX = 5;
+            var PaddingY = 5;
+
+            var x = PaddingX + Stride;
+
+            var min = spectrum.Min();
+            var max = spectrum.Max();
+
+            var height = _spectrumImage.Height;
+            var gain = max - min < 1e-6 ? 1 : (height - 2 * PaddingY) / (max - min);
+
+            gain *= 100;
+
+            var offset = (int)(height - PaddingY + min * gain);
+
+            for (; i < spectrum.Length; i++)
+            {
+                g.DrawLine(pen, x - Stride, (float)(-spectrum[i - 1] * gain) + offset,
+                                x, (float)(-spectrum[i] * gain) + offset);
+                x += Stride;
+            }
+
+            for (i = 0; i < peaks.Length; i++)
+            {
+                g.DrawLine(redpen, PaddingX + peaks[i], (float)(-spectrum[peaks[i]] * gain) + offset,
+                                   PaddingX + peaks[i], (float)(height - PaddingY) + offset);
+            }
+
+            pen.Dispose();
+            redpen.Dispose();
+            g.Dispose();
+
+            spectrumPictureBox.Image = _spectrumImage;
+        }
+
+        Bitmap _spectrumImage;
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace NWaves.Filters.Adaptive
 {
-    public class KalmanFilter
-    {
-    }
+    //private class KalmanFilter
+    //{
+    //}
 }

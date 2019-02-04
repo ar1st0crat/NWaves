@@ -90,16 +90,11 @@ namespace NWaves.Operations
         public static DiscreteSignal BlockConvolve(DiscreteSignal signal,
                                                    DiscreteSignal kernel,
                                                    int fftSize,
-                                                   FilteringMethod method = FilteringMethod.OverlapAdd)
+                                                   FilteringMethod method = FilteringMethod.OverlapSave)
         {
             if (kernel.Length > fftSize)
             {
                 throw new ArgumentException("Kernel length must not exceed the size of FFT!");
-            }
-
-            if (signal.Length < fftSize)
-            {
-                return signal.Copy();
             }
 
             IFilter blockConvolver;

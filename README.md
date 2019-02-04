@@ -23,8 +23,9 @@ Already available:
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and perceptual weighting (A, B, C)
 - [x] customizable feature extraction (time-domain, spectral, MFCC, PNCC/SPNCC, LPC, LPCC, AMS) and CSV serialization
 - [x] feature post-processing (mean and variance normalization, adding deltas)
-- [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest, decrease)
-- [x] signal builders (sine/cosine, white/pink/red noise, Perlin noise, awgn, triangle, sawtooth, square, pulse, ramp, sinc)
+- [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest, decrease, noiseness)
+- [x] harmonic features (harmonic centroid and spread, inharmonicity, tristimulus, odd-to-even ratio)
+- [x] signal builders (sine/cosine, white/pink/red/Perlin noise, awgn, triangle, sawtooth, square, pulse, ramp, sinc, clicks)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking (autocorrelation, YIN, ZCR + Schmitt trigger, HSS/HPS, cepstrum)
 - [x] time scale modification (phase vocoder, PV with identity phase locking, WSOLA)
@@ -38,15 +39,14 @@ Already available:
 Planned:
 
 - [ ] sound synthesis (wavetable, ADSR, etc.)
+- [ ] more sound effects (Reverb, Vibrato, Chorus, Flanger, etc.)
 - [ ] more transforms (CQT, DWT, Mellin, Hartley, Haar, Hadamard)
 - [ ] more operations (adaptive filtering, Gabor filter)
-- [ ] more feature extraction (MIR descriptors and lots of others)
-- [ ] more sound effects (Reverb, Vibrato, Chorus, Flanger, etc.)
 
 
 ## Philosophy of NWaves
 
-NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and were first designed mostly for offline processing (now some online methods are also available). It doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C++ or Asm, but it's not that *very* slow for many purposes either.
+NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and were first designed mostly for offline processing (now some online methods are also available). It doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C/C++ or Asm, but it's not that *very* slow for many purposes either.
 
 
 ## Quickstart
