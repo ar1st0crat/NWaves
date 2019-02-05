@@ -9,11 +9,23 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors.Multi
 {
     /// <summary>
-    /// Extractor of spectral features
+    /// Extractor of spectral features.
+    /// 
+    /// It's a very flexible extractor that allows varying almost everything.
+    /// It allows computing harmonic features along with spectral features.
+    /// 
     /// </summary>
     public class SpectralFeaturesExtractor : FeatureExtractor
     {
+        /// <summary>
+        /// Names of supported spectral features
+        /// </summary>
         public const string FeatureSet = "centroid, spread, flatness, noiseness, rolloff, crest, entropy, decrease, c1+c2+c3+c4+c5+c6";
+
+        /// <summary>
+        /// Names of supported harmonic features
+        /// </summary>
+        public const string HarmonicSet = "centroid, spread, inharmonicity, oer, t1+t2+t3";
 
         /// <summary>
         /// String annotations (or simply names) of features
@@ -48,32 +60,52 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Internal buffer for magnitude spectrum
         /// </summary>
-        float[] _spectrum;
+        private float[] _spectrum;
 
         /// <summary>
-        /// 
+        /// Internal buffer for magnitude spectrum taken only at frequencies of interest
         /// </summary>
         float[] _mappedSpectrum;
 
         /// <summary>
-        /// 
+        /// Internal buffer for spectral positions of frequencies of interest
         /// </summary>
-        int[] _frequencyPositions;
+        private int[] _frequencyPositions;
+
+        /// <summary>
+        /// Internal buffer for harmonic peak frequencies
+        /// </summary>
+        private float[] _peakFrequencies;
+
+        /// <summary>
+        /// Internal buffer for spectral positions of harmonic peaks
+        /// </summary>
+        private int[] _peaks;
 
         /// <summary>
         /// Internal buffer for currently processed block
         /// </summary>
-        float[] _block;
+        private float[] _block;
 
         /// <summary>
         /// Internal block of zeros for a quick memset
         /// </summary>
-        float[] _zeroblock;
+        private float[] _zeroblock;
 
         /// <summary>
         /// Extractor functions
         /// </summary>
         private List<Func<float[], float[], float>> _extractors;
+
+        /// <summary>
+        /// Harmonic extractor functions
+        /// </summary>
+        private List<Func<float[], int[], float[], float>> _harmonicExtractors;
+
+        /// <summary>
+        /// Pitch estimator function
+        /// </summary>
+        private Func<float[], float> _pitchEstimator;
 
         /// <summary>
         /// Constructor
@@ -194,7 +226,7 @@ namespace NWaves.FeatureExtractors.Multi
 
                 for (var i = 0; i < _frequencies.Length; i++)
                 {
-                    _frequencyPositions[i] = (int)(_frequencies[i] / resolution + 1);
+                    _frequencyPositions[i] = (int)(_frequencies[i] / resolution) + 1;
                 }
             }
 
@@ -216,6 +248,91 @@ namespace NWaves.FeatureExtractors.Multi
         {
             FeatureDescriptions.Add(name);
             _extractors.Add(algorithm);
+        }
+
+        /// <summary>
+        /// Add set of harmonic features to calculation list
+        /// </summary>
+        /// <param name="featureList"></param>
+        /// <param name="peakCount"></param>
+        /// <param name="pitchEstimator"></param>
+        /// <param name="lowPitch"></param>
+        /// <param name="highPitch"></param>
+        public void IncludeHarmonicFeatures(string featureList,
+                                            int peakCount = 10,
+                                            Func<float[], float> pitchEstimator = null,
+                                            float lowPitch = 80,
+                                            float highPitch = 400)
+        {
+            if (featureList == "all" || featureList == "full")
+            {
+                featureList = HarmonicSet;
+            }
+
+            var features = featureList.Split(',', '+', '-', ';', ':');
+
+            _harmonicExtractors = features.Select<string, Func<float[], int[], float[], float>>(f =>
+            {
+                var feature = f.Trim().ToLower();
+                switch (feature)
+                {
+                    case "hc":
+                    case "centroid":
+                        return Harmonic.Centroid;
+
+                    case "hs":
+                    case "spread":
+                        return Harmonic.Spread;
+
+                    case "inh":
+                    case "inharmonicity":
+                        return Harmonic.Inharmonicity;
+
+                    case "oer":
+                    case "oddevenratio":
+                        return (spectrum, peaks, freqs) => Harmonic.OddToEvenRatio(spectrum, peaks);
+
+                    case "t1":
+                    case "t2":
+                    case "t3":
+                        return (spectrum, peaks, freqs) => Harmonic.Tristimulus(spectrum, peaks, int.Parse(feature.Substring(1)));
+
+                    default:
+                        return (spectrum, peaks, freqs) => 0;
+                }
+            }).ToList();
+
+            FeatureDescriptions.AddRange(features);
+
+            if (pitchEstimator == null)
+            {
+                _pitchEstimator = spectrum => Pitch.FromHss(spectrum, SamplingRate, lowPitch, highPitch);
+            }
+            else
+            {
+                _pitchEstimator = pitchEstimator;
+            }
+
+            _peaks = new int[peakCount];
+            _peakFrequencies = new float[peakCount];
+        }
+
+        /// <summary>
+        /// Add one more harmonic feature with routine for its calculation
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="algorithm"></param>
+        public void AddHarmonicFeature(string name, Func<float[], int[], float[], float> algorithm)
+        {
+            FeatureDescriptions.Add(name);
+            _harmonicExtractors.Add(algorithm);
+
+            if (_pitchEstimator == null)
+            {
+                _pitchEstimator = spectrum => Pitch.FromHss(spectrum, SamplingRate);
+                _peaks = new int[10];
+                _peakFrequencies = new float[10];
+            }
         }
 
         /// <summary>
@@ -246,6 +363,8 @@ namespace NWaves.FeatureExtractors.Multi
                 _zeroblock.FastCopyTo(_block, _fftSize);
                 samples.FastCopyTo(_block, FrameSize, i);
 
+                // compute and prepare spectrum
+
                 _fft.MagnitudeSpectrum(_block, _spectrum);
 
                 if (_spectrum.Length == _frequencies.Length)
@@ -260,12 +379,31 @@ namespace NWaves.FeatureExtractors.Multi
                     }
                 }
 
+                // extract spectral features
+
                 var featureVector = new float[featureCount];
 
-                for (var j = 0; j < featureCount; j++)
+                for (var j = 0; j < _extractors.Count; j++)
                 {
                     featureVector[j] = _extractors[j](_mappedSpectrum, _frequencies);
                 }
+
+                // ...and maybe harmonic features
+
+                if (_harmonicExtractors != null)
+                {
+                    var pitch = _pitchEstimator(_spectrum);
+
+                    Harmonic.Peaks(_spectrum, _peaks, _peakFrequencies, SamplingRate, pitch);
+
+                    var offset = _extractors.Count;
+                    for (var j = 0; j < _harmonicExtractors.Count; j++)
+                    {
+                        featureVector[j + offset] = _harmonicExtractors[j](_spectrum, _peaks, _peakFrequencies);
+                    }
+                }
+
+                // finally create new feature vector
 
                 featureVectors.Add(new FeatureVector
                 {
@@ -291,11 +429,19 @@ namespace NWaves.FeatureExtractors.Multi
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy()
         {
-            var featureset = string.Join(",", FeatureDescriptions);
-            var copy = new SpectralFeaturesExtractor(SamplingRate, featureset, FrameDuration, HopDuration, _fftSize, _frequencies, _parameters)
+            var spectralFeatureSet = string.Join(",", FeatureDescriptions.Take(_extractors.Count));
+            
+            var copy = new SpectralFeaturesExtractor(SamplingRate, spectralFeatureSet, FrameDuration, HopDuration, _fftSize, _frequencies, _parameters)
             {
                 _extractors = _extractors,
             };
+
+            if (_harmonicExtractors != null)
+            {
+                var harmonicFeatureSet = string.Join(",", FeatureDescriptions.Skip(_extractors.Count));
+                copy.IncludeHarmonicFeatures(harmonicFeatureSet, _peaks.Length, _pitchEstimator);
+            }
+
             return copy;
         }
     }

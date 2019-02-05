@@ -660,3 +660,7 @@ await player.PlayAsync(signal);
 ![lpc](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/lpc.png)
 
 ![mfcc](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/mfcc.png)
+
+![spectral](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/spectral.png)
+
+![effects](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/effects.png)

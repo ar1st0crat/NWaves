@@ -37,14 +37,15 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            var frameSize = (double) 4096 / _signal.SamplingRate;
-            var hopSize = (double) 2048 / _signal.SamplingRate;
+            var frameSize = (double) 512 / _signal.SamplingRate;
+            var hopSize = (double) 256 / _signal.SamplingRate;
 
             var freqs = new[] { 0.0f, 300, 600, 1000, 2000, 4000, 7000 };
 
 
             var tdExtractor = new TimeDomainFeaturesExtractor(_signal.SamplingRate, "all", frameSize, hopSize);
             var spectralExtractor = new SpectralFeaturesExtractor(_signal.SamplingRate, "all", frameSize, hopSize, frequencies: freqs);
+            spectralExtractor.IncludeHarmonicFeatures("all");
 
             tdExtractor.AddFeature("pitch_zcr", (signal, start, end) => { return Pitch.FromZeroCrossingsSchmitt(signal, start, end); });
             //spectralExtractor.AddFeature("pitch_hss", (spectrum, fs) => { return Pitch.FromHss(spectrum, _signal.SamplingRate); } );
@@ -90,23 +91,40 @@ namespace NWaves.DemoForms
                 return;
             }
 
+            featureLabel.Text = featuresListView.Columns[e.Column].Text;
+
             featurePlotPanel.Stride = 1;
             featurePlotPanel.Line = _vectors.Select(v => v.Features[e.Column - 1]).ToArray();
         }
 
 
-        // TODO: remove this crap )))
+        // TODO: remove this )))
 
         private void featuresListView_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (featuresListView.SelectedItems.Count == 0)
+            {
+                return;
+            }
+
+            var pos = featuresListView.SelectedIndices[0];
+
             var fft = new Fft(512);
 
-            var spectrum = fft.PowerSpectrum(_signal[3120, 3632]).Samples;
+            var spectrum = fft.PowerSpectrum(_signal[pos*256, pos*256+512]).Samples;
 
             var peaks = new int[10];
             var freqs = new float[10];
 
+
             Harmonic.Peaks(spectrum, peaks, freqs, _signal.SamplingRate);
+
+
+            peaksListBox.Items.Clear();
+            for (var p = 0; p < peaks.Length; p++)
+            {
+                peaksListBox.Items.Add($"peak #{p+1,-2} : {freqs[p],-7} Hz");
+            }
 
 
             _spectrumImage = new Bitmap(512, spectrumPictureBox.Height);
@@ -118,7 +136,7 @@ namespace NWaves.DemoForms
             var redpen = new Pen(Color.Red, 2);
 
             var i = 1;
-            var Stride = 1;
+            var Stride = 4;
             var PaddingX = 5;
             var PaddingY = 5;
 
@@ -130,21 +148,19 @@ namespace NWaves.DemoForms
             var height = _spectrumImage.Height;
             var gain = max - min < 1e-6 ? 1 : (height - 2 * PaddingY) / (max - min);
 
-            gain *= 100;
-
             var offset = (int)(height - PaddingY + min * gain);
 
             for (; i < spectrum.Length; i++)
             {
-                g.DrawLine(pen, x - Stride, (float)(-spectrum[i - 1] * gain) + offset,
-                                x, (float)(-spectrum[i] * gain) + offset);
+                g.DrawLine(pen, x - Stride, -spectrum[i - 1] * gain + offset,
+                                x,          -spectrum[i    ] * gain + offset);
                 x += Stride;
             }
 
             for (i = 0; i < peaks.Length; i++)
             {
-                g.DrawLine(redpen, PaddingX + peaks[i], (float)(-spectrum[peaks[i]] * gain) + offset,
-                                   PaddingX + peaks[i], (float)(height - PaddingY) + offset);
+                g.DrawLine(redpen, PaddingX + peaks[i] * Stride,  PaddingY + offset,
+                                   PaddingX + peaks[i] * Stride, -PaddingY - spectrum[peaks[i]] * gain + offset);
             }
 
             pen.Dispose();

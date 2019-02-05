@@ -8,12 +8,12 @@ namespace NWaves.Features
     public static class Harmonic
     {
         /// <summary>
-        /// Simple algorithm for detecting harmonic peaks
+        /// Simple algorithm for detecting harmonic peaks in spectrum
         /// </summary>
-        /// <param name="spectrum"></param>
-        /// <param name="peaks"></param>
-        /// <param name="peakFrequencies"></param>
-        /// <param name="samplingRate"></param>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="peaks">Array for peak positions</param>
+        /// <param name="peakFrequencies">Array for peak frequencies</param>
+        /// <param name="samplingRate">Sampling rate</param>
         /// <param name="pitch">Pitch is given if it is known</param>
         public static void Peaks(float[] spectrum, int[] peaks, float[] peakFrequencies, int samplingRate, float pitch = -1)
         {
@@ -24,15 +24,26 @@ namespace NWaves.Features
 
             var resolution = samplingRate / (2 * (spectrum.Length - 1));
 
-            peaks[0] = (int)(pitch / resolution) + 1;
+            var region = (int)(pitch/2 / resolution);
+
+            peaks[0] = (int)(pitch / resolution);
             peakFrequencies[0] = pitch;
 
             for (var i = 1; i < peaks.Length; i++)
             {
                 var candidate = (i + 1) * peaks[0];
 
-                // TODO:
-                // improve peak choosing
+                var c = candidate;
+                for (var j = -region; j < region; j++)
+                {
+                    if (c + j - 1       > 0 &&
+                        spectrum[c + j] > spectrum[c + j - 1] && 
+                        spectrum[c + j] > spectrum[c + j + 1] &&
+                        spectrum[c + j] > spectrum[candidate])
+                    {
+                        candidate = c + j;
+                    }
+                }
 
                 peaks[i] = candidate;
                 peakFrequencies[i] = resolution * candidate;
@@ -42,9 +53,10 @@ namespace NWaves.Features
         /// <summary>
         /// Harmonic centroid
         /// </summary>
-        /// <param name="spectrum">Magnitude spectrum</param>
-        /// <param name="peakFrequencies"></param>
-        /// <returns>Spectral centroid</returns>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="peaks">Peak positions</param>
+        /// <param name="peakFrequencies">Peak frequencies</param>
+        /// <returns>Harmonic centroid</returns>
         public static float Centroid(float[] spectrum, int[] peaks, float[] peakFrequencies)
         {
             var sum = 0.0f;
@@ -63,9 +75,10 @@ namespace NWaves.Features
         /// <summary>
         /// Harmonic spread
         /// </summary>
-        /// <param name="pitch"></param>
-        /// <param name="spectrum"></param>
-        /// <returns></returns>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="peaks">Peak positions</param>
+        /// <param name="peakFrequencies">Peak frequencies</param>
+        /// <returns>Harmonic spread</returns>
         public static float Spread(float[] spectrum, int[] peaks, float[] peakFrequencies)
         {
             var centroid = Centroid(spectrum, peaks, peakFrequencies);
@@ -73,7 +86,7 @@ namespace NWaves.Features
             var sum = 0.0f;
             var weightedSum = 0.0f;
 
-            for (var i = 1; i < spectrum.Length; i++)
+            for (var i = 0; i < peaks.Length; i++)
             {
                 var p = peaks[i];
                 sum += spectrum[p];
@@ -86,9 +99,10 @@ namespace NWaves.Features
         /// <summary>
         /// Inharmonicity
         /// </summary>
-        /// <param name="pitch"></param>
-        /// <param name="spectrum">Magnitude spectrum</param>
-        /// <returns>Spectral centroid</returns>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="peaks">Peak positions</param>
+        /// <param name="peakFrequencies">Peak frequencies</param>
+        /// <returns>Inharmonicity</returns>
         public static float Inharmonicity(float[] spectrum, int[] peaks, float[] peakFrequencies)
         {
             var f0 = peakFrequencies[0];
@@ -111,9 +125,9 @@ namespace NWaves.Features
         /// <summary>
         /// Harmonic Odd-to-Even Ratio
         /// </summary>
-        /// <param name="pitch"></param>
-        /// <param name="spectrum">Magnitude spectrum</param>
-        /// <returns>Spectral centroid</returns>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="peaks">Peak positions</param>
+        /// <returns>Odd-to-Even Ratio</returns>
         public static float OddToEvenRatio(float[] spectrum, int[] peaks)
         {
             var oddSum = 0.0f;
@@ -133,12 +147,13 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Tristimulus (1st component)
+        /// Tristimulus (nth component)
         /// </summary>
-        /// <param name="pitch"></param>
-        /// <param name="spectrum">Magnitude spectrum</param>
-        /// <returns>Spectral centroid</returns>
-        public static float Tristimulus1(float[] spectrum, int[] peaks)
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="peaks">Peak positions</param>
+        /// <param name="n">Tristimulus component: 1, 2 or 3</param>
+        /// <returns>Tristimulus</returns>
+        public static float Tristimulus(float[] spectrum, int[] peaks, int n)
         {
             var sum = 0.0f;
 
@@ -147,43 +162,18 @@ namespace NWaves.Features
                 sum += spectrum[peaks[i]];
             }
 
-            return spectrum[peaks[0]] / sum;
-        }
-
-        /// <summary>
-        /// Tristimulus (2nd component)
-        /// </summary>
-        /// <param name="pitch"></param>
-        /// <param name="spectrum">Magnitude spectrum</param>
-        /// <returns>Spectral centroid</returns>
-        public static float Tristimulus2(float[] spectrum, int[] peaks)
-        {
-            var sum = 0.0f;
-
-            for (var i = 0; i < peaks.Length; i++)
+            if (n == 1)
             {
-                sum += spectrum[peaks[i]];
+                return spectrum[peaks[0]] / sum;
             }
-
-            return (spectrum[peaks[1]] + spectrum[peaks[2]] + spectrum[peaks[3]]) / sum;
-        }
-
-        /// <summary>
-        /// Tristimulus (3rd component)
-        /// </summary>
-        /// <param name="pitch"></param>
-        /// <param name="spectrum">Magnitude spectrum</param>
-        /// <returns>Spectral centroid</returns>
-        public static float Tristimulus3(float[] spectrum, int[] peaks)
-        {
-            var sum = 0.0f;
-
-            for (var i = 4; i < peaks.Length; i++)
+            else if (n == 2)
             {
-                sum += spectrum[peaks[i]];
+                return (spectrum[peaks[1]] + spectrum[peaks[2]] + spectrum[peaks[3]]) / sum;
             }
-
-            return sum / (sum + spectrum[peaks[0]] + spectrum[peaks[1]] + spectrum[peaks[2]] + spectrum[peaks[3]]);
+            else
+            {
+                return (sum - spectrum[peaks[0]] - spectrum[peaks[1]] - spectrum[peaks[2]] - spectrum[peaks[3]]) / sum;
+            }
         }
     }
 }

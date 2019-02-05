@@ -34,8 +34,12 @@ namespace NWaves.DemoForms
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.featuresListView = new System.Windows.Forms.ListView();
-            this.featurePlotPanel = new NWaves.DemoForms.UserControls.LinePlot();
             this.spectrumPictureBox = new System.Windows.Forms.PictureBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.peaksListBox = new System.Windows.Forms.ListBox();
+            this.featurePlotPanel = new NWaves.DemoForms.UserControls.LinePlot();
+            this.featureLabel = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.spectrumPictureBox)).BeginInit();
             this.SuspendLayout();
@@ -72,12 +76,49 @@ namespace NWaves.DemoForms
             this.featuresListView.GridLines = true;
             this.featuresListView.Location = new System.Drawing.Point(12, 37);
             this.featuresListView.Name = "featuresListView";
-            this.featuresListView.Size = new System.Drawing.Size(782, 391);
+            this.featuresListView.Size = new System.Drawing.Size(680, 381);
             this.featuresListView.TabIndex = 5;
             this.featuresListView.UseCompatibleStateImageBehavior = false;
             this.featuresListView.View = System.Windows.Forms.View.Details;
             this.featuresListView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.featuresListView_ColumnClick);
             this.featuresListView.SelectedIndexChanged += new System.EventHandler(this.featuresListView_SelectedIndexChanged);
+            // 
+            // spectrumPictureBox
+            // 
+            this.spectrumPictureBox.BackColor = System.Drawing.SystemColors.Window;
+            this.spectrumPictureBox.Location = new System.Drawing.Point(698, 37);
+            this.spectrumPictureBox.Name = "spectrumPictureBox";
+            this.spectrumPictureBox.Size = new System.Drawing.Size(473, 233);
+            this.spectrumPictureBox.TabIndex = 6;
+            this.spectrumPictureBox.TabStop = false;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(557, 421);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(135, 17);
+            this.label1.TabIndex = 7;
+            this.label1.Text = "Click column header";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(886, 280);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(110, 17);
+            this.label2.TabIndex = 8;
+            this.label2.Text = "Harmonic peaks";
+            // 
+            // peaksListBox
+            // 
+            this.peaksListBox.Font = new System.Drawing.Font("Courier New", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.peaksListBox.FormattingEnabled = true;
+            this.peaksListBox.ItemHeight = 20;
+            this.peaksListBox.Location = new System.Drawing.Point(698, 320);
+            this.peaksListBox.Name = "peaksListBox";
+            this.peaksListBox.Size = new System.Drawing.Size(473, 284);
+            this.peaksListBox.TabIndex = 9;
             // 
             // featurePlotPanel
             // 
@@ -87,31 +128,34 @@ namespace NWaves.DemoForms
             this.featurePlotPanel.Gain = null;
             this.featurePlotPanel.Legend = null;
             this.featurePlotPanel.Line = null;
-            this.featurePlotPanel.Location = new System.Drawing.Point(12, 434);
+            this.featurePlotPanel.Location = new System.Drawing.Point(12, 460);
             this.featurePlotPanel.Mark = null;
             this.featurePlotPanel.Markline = null;
             this.featurePlotPanel.Name = "featurePlotPanel";
             this.featurePlotPanel.PaddingX = 30;
             this.featurePlotPanel.PaddingY = 20;
-            this.featurePlotPanel.Size = new System.Drawing.Size(782, 160);
+            this.featurePlotPanel.Size = new System.Drawing.Size(680, 134);
             this.featurePlotPanel.Stride = 1;
             this.featurePlotPanel.TabIndex = 4;
             this.featurePlotPanel.Thickness = 1;
             // 
-            // spectrumPictureBox
+            // featureLabel
             // 
-            this.spectrumPictureBox.BackColor = System.Drawing.SystemColors.Window;
-            this.spectrumPictureBox.Location = new System.Drawing.Point(801, 37);
-            this.spectrumPictureBox.Name = "spectrumPictureBox";
-            this.spectrumPictureBox.Size = new System.Drawing.Size(370, 233);
-            this.spectrumPictureBox.TabIndex = 6;
-            this.spectrumPictureBox.TabStop = false;
+            this.featureLabel.AutoSize = true;
+            this.featureLabel.Location = new System.Drawing.Point(12, 430);
+            this.featureLabel.Name = "featureLabel";
+            this.featureLabel.Size = new System.Drawing.Size(0, 17);
+            this.featureLabel.TabIndex = 10;
             // 
             // FeaturesForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1183, 606);
+            this.Controls.Add(this.featureLabel);
+            this.Controls.Add(this.peaksListBox);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.spectrumPictureBox);
             this.Controls.Add(this.featuresListView);
             this.Controls.Add(this.featurePlotPanel);
@@ -135,5 +179,9 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.ListView featuresListView;
         private LinePlot featurePlotPanel;
         private System.Windows.Forms.PictureBox spectrumPictureBox;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ListBox peaksListBox;
+        private System.Windows.Forms.Label featureLabel;
     }
 }
