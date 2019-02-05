@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
@@ -50,6 +49,8 @@ namespace NWaves.Signals.Builders
             _low = -1.0;
             _high = 1.0;
             _scale = 0.02;
+
+            _rand.NextBytes(_permutation);
         }
 
         /// <summary>
@@ -109,17 +110,26 @@ namespace NWaves.Signals.Builders
         /// Method for generating Perlin noise
         /// </summary>
         /// <returns></returns>
+        public override float NextSample()
+        {
+            var sample = GenerateSample(_n * _scale) * (_high - _low) / 2 + (_high + _low) / 2;
+            _n++;
+            return (float)sample;
+        }
+
+        public override void Reset()
+        {
+            _n = 0;
+            _rand.NextBytes(_permutation);
+        }
+
         protected override DiscreteSignal Generate()
         {
             Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
-
-            var random = new Random();
-            random.NextBytes(_permutation);
-
-            var noise = Enumerable.Range(0, Length)
-                                  .Select(i => GenerateSample(i * _scale) * (_high - _low) / 2 + (_high + _low) / 2);
-
-            return new DiscreteSignal(SamplingRate, noise.ToFloats());
+            return base.Generate();
         }
+
+        int _n;
+        Random _rand = new Random();
     }
 }

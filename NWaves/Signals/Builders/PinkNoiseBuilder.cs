@@ -33,39 +33,44 @@ namespace NWaves.Signals.Builders
             _low = -1.0;
             _high = 1.0;
         }
-
+        
         /// <summary>
         /// Method implements Paul Kellet's algorithm.
         /// </summary>
         /// <returns></returns>
-        protected override DiscreteSignal Generate()
+        public override float NextSample()
         {
-            Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
-
             var mean = (_low + _high) / 2;
             _low -= mean;
             _high -= mean;
 
-            var rand = new Random();
+            var white = _rand.NextDouble() * (_high - _low) + _low;
 
-            double b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+            _b0 = 0.99886f * _b0 + white * 0.0555179f;
+            _b1 = 0.99332f * _b1 + white * 0.0750759f;
+            _b2 = 0.96900f * _b2 + white * 0.1538520f;
+            _b3 = 0.86650f * _b3 + white * 0.3104856f;
+            _b4 = 0.55000f * _b4 + white * 0.5329522f;
+            _b5 = -0.7616f * _b5 - white * 0.0168980f;
+            var pink = (_b0 + _b1 + _b2 + _b3 + _b4 + _b5 + _b6 + white * 0.5362) * 0.11 + mean;
+            _b6 = white * 0.115926;
 
-            var pink = new float[Length];
-            for (var n = 0; n < Length; n++)
-            {
-                var white = rand.NextDouble() * (_high - _low) + _low;
-
-                b0 = 0.99886f * b0 + white * 0.0555179f;
-                b1 = 0.99332f * b1 + white * 0.0750759f;
-                b2 = 0.96900f * b2 + white * 0.1538520f;
-                b3 = 0.86650f * b3 + white * 0.3104856f;
-                b4 = 0.55000f * b4 + white * 0.5329522f;
-                b5 = -0.7616f * b5 - white * 0.0168980f;
-                pink[n] = (float)((b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11 + mean);
-                b6 = white * 0.115926;
-            }
-
-            return new DiscreteSignal(SamplingRate, pink);
+            return (float)pink;
         }
+
+        public override void Reset()
+        {
+            _b0 = _b1 = _b2 = _b3 = _b4 = _b5 = _b6 = 0;
+        }
+
+        protected override DiscreteSignal Generate()
+        {
+            Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
+            return base.Generate();
+        }
+
+        double _b0, _b1, _b2, _b3, _b4, _b5, _b6;
+
+        Random _rand = new Random();
     }
 }

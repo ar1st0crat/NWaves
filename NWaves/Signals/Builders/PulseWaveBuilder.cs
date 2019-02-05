@@ -45,20 +45,31 @@ namespace NWaves.Signals.Builders
         /// Method generates simple sequence of rectangular pulses.
         /// </summary>
         /// <returns></returns>
+        public override float NextSample()
+        {
+            var sample = _n <= (int)(_pulse * SamplingRate) ? _amplitude : 0;
+
+            if (++_n == (int)(_period * SamplingRate))
+            {
+                _n = 0;
+            }
+
+            return (float)sample;
+        }
+
+        public override void Reset()
+        {
+            _n = 0;
+        }
+
         protected override DiscreteSignal Generate()
         {
             Guard.AgainstNonPositive(_period, "Period");
             Guard.AgainstNonPositive(_pulse, "Pulse duration");
-
             Guard.AgainstInvalidRange(_pulse, _period, "Pulse duration", "Period");
-
-            var ones = new DiscreteSignal(SamplingRate, (int)(_pulse * SamplingRate), (float)_amplitude);
-            var zeros = new DiscreteSignal(SamplingRate, (int)((_period - _pulse) * SamplingRate), 0.0f);
-
-            var repeatTimes = Length / (int)(_period * SamplingRate) + 1;
-            var repeated = (ones.Concatenate(zeros)) * repeatTimes;
-            
-            return repeated.First(Length);
+            return base.Generate();
         }
+
+        int _n;
     }
 }

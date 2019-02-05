@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using NWaves.Operations;
 using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
@@ -47,18 +46,34 @@ namespace NWaves.Signals.Builders
         /// 
         ///     y[n] = A * cos(2 * pi * (f0 + k * n) / fs * n)
         /// 
+        /// The same could be achieved via:
+        /// 
+        ///     new Modulator().FrequencyLinear(f, amp, k, Length, SamplingRate);
+        /// 
         /// </summary>
         /// <returns></returns>
+        public override float NextSample()
+        {
+            var k = (float)((_f1 - _f0) / Length);
+            var fs = SamplingRate;
+            
+            var sample = _amplitude * Math.Cos(2 * Math.PI * (_f0 / fs + k * _n) * _n / fs);
+            _n++;
+            return (float)sample;
+        }
+
+        public override void Reset()
+        {
+            _n = 0;
+        }
+
         protected override DiscreteSignal Generate()
         {
             Guard.AgainstNonPositive(_f0, "Start frequency");
             Guard.AgainstNonPositive(_f1, "End frequency");
-
-            var k = (float)((_f1 - _f0) / Length);
-            var f = (float) _f0;
-            var amp = (float) _amplitude;
-
-            return new Modulator().FrequencyLinear(f, amp, k, Length, SamplingRate);
+            return base.Generate();
         }
+
+        int _n;
     }
 }

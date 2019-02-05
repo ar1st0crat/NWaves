@@ -37,25 +37,33 @@ namespace NWaves.Signals.Builders
         /// Method generates additive white gaussian noise by Box-Muller transform.
         /// </summary>
         /// <returns></returns>
-        protected override DiscreteSignal Generate()
+        public override float NextSample()
         {
-            var rand = new Random();
-            var noise = new float[Length];
-
-            var i = 0;
-            while (i < noise.Length)
+            if (_nextReady)
             {
-                var u1 = rand.NextDouble();
-                var u2 = rand.NextDouble();
-
-                var r = Math.Sqrt(-2 * Math.Log(u1));
-                var theta = 2 * Math.PI * u2;
-
-                noise[i++] = (float)(r * Math.Cos(theta) * _sigma + _mu);
-                if (i < noise.Length) noise[i++] = (float)(r * Math.Sin(theta) * _sigma + _mu);
+                return _next;
             }
 
-            return new DiscreteSignal(SamplingRate, noise);
+            var u1 = _rand.NextDouble();
+            var u2 = _rand.NextDouble();
+
+            var r = Math.Sqrt(-2 * Math.Log(u1));
+            var theta = 2 * Math.PI * u2;
+
+            var sample = (float)(r * Math.Cos(theta) * _sigma + _mu);
+            _next = (float)(r * Math.Sin(theta) * _sigma + _mu);
+
+            return sample;
         }
+
+        public override void Reset()
+        {
+            _nextReady = false;
+        }
+
+        float _next;
+        bool _nextReady;
+
+        Random _rand = new Random();
     }
 }

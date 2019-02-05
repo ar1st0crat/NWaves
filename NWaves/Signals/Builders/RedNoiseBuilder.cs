@@ -38,28 +38,31 @@ namespace NWaves.Signals.Builders
         /// Method implements fancy filtering for obtaining the red noise.
         /// </summary>
         /// <returns></returns>
-        protected override DiscreteSignal Generate()
+        public override float NextSample()
         {
-            Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
-
             var mean = (_low + _high) / 2;
             _low -= mean;
             _high -= mean;
 
-            var rand = new Random();
-            var prev = 0.0f;
-            var red = new float[Length];
+            var white = _rand.NextDouble() * (_high - _low) + _low;
 
-            for (var n = 0; n < Length; n++)
-            {
-                var white = rand.NextDouble() * (_high - _low) + _low;
-
-                red[n] = (float)((prev + (0.02 * white)) / 1.02);
-                prev = red[n];
-                red[n] = (float)(red[n] * 3.5 + mean);
-            }
-
-            return new DiscreteSignal(SamplingRate, red);
+            var red = (_prev + (0.02 * white)) / 1.02;
+            _prev = red;
+            return (float)(red * 3.5 + mean);
         }
+
+        public override void Reset()
+        {
+            _prev = 0;
+        }
+
+        protected override DiscreteSignal Generate()
+        {
+            Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
+            return base.Generate();
+        }
+
+        double _prev;
+        Random _rand = new Random();
     }
 }

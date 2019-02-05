@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
@@ -34,7 +33,7 @@ namespace NWaves.Signals.Builders
             {
                 { "low, lo, lower",  param => _low = param },
                 { "high, hi, upper", param => _high = param },
-                { "frequency, freq", param => _frequency = param }
+                { "frequency, freq", param => { _frequency = param; _cycles = SamplingRate / _frequency; }}
             };
         }
 
@@ -42,21 +41,33 @@ namespace NWaves.Signals.Builders
         /// Method generates square wave
         /// </summary>
         /// <returns></returns>
+        public override float NextSample()
+        {
+            var x = _n % _cycles;
+            var sample = x < _cycles / 2 ? _high : _low;
+            _n++;
+            return (float)sample;
+        }
+
+        public override void Reset()
+        {
+            _n = 0;
+        }
+
+        public override SignalBuilder SampledAt(int samplingRate)
+        {
+            _cycles = samplingRate / _frequency;
+            return base.SampledAt(samplingRate);
+        }
+
         protected override DiscreteSignal Generate()
         {
             Guard.AgainstNonPositive(_frequency, "Frequency");
             Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
-
-            var n = SamplingRate / _frequency;
-            
-            var samples = Enumerable.Range(0, Length)
-                                    .Select(i =>
-                                    {
-                                        var x = i % n;
-                                        return x < n / 2 ? _high : _low;
-                                    });
-
-            return new DiscreteSignal(SamplingRate, samples.ToFloats());
+            return base.Generate();
         }
+
+        int _n;
+        double _cycles;
     }
 }

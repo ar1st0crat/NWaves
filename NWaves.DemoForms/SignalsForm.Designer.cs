@@ -71,6 +71,7 @@ namespace NWaves.DemoForms
             this.effectsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.featuresToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.noiseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.modulationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.onlineToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -78,7 +79,6 @@ namespace NWaves.DemoForms
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.stftButton = new System.Windows.Forms.Button();
-            this.modulationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -182,6 +182,8 @@ namespace NWaves.DemoForms
             "Square Wave",
             "Pulse Wave",
             "Chirp",
+            "Sinc",
+            "Ramp",
             "White Noise",
             "AWGN",
             "Pink Noise",
@@ -456,6 +458,13 @@ namespace NWaves.DemoForms
             this.noiseToolStripMenuItem.Text = "&Noise";
             this.noiseToolStripMenuItem.Click += new System.EventHandler(this.noiseToolStripMenuItem_Click);
             // 
+            // modulationToolStripMenuItem
+            // 
+            this.modulationToolStripMenuItem.Name = "modulationToolStripMenuItem";
+            this.modulationToolStripMenuItem.Size = new System.Drawing.Size(98, 24);
+            this.modulationToolStripMenuItem.Text = "Mo&dulation";
+            this.modulationToolStripMenuItem.Click += new System.EventHandler(this.modulationToolStripMenuItem_Click);
+            // 
             // onlineToolStripMenuItem
             // 
             this.onlineToolStripMenuItem.Name = "onlineToolStripMenuItem";
@@ -517,13 +526,6 @@ namespace NWaves.DemoForms
             this.stftButton.Text = "More...";
             this.stftButton.UseVisualStyleBackColor = true;
             this.stftButton.Click += new System.EventHandler(this.stftButton_Click);
-            // 
-            // modulationToolStripMenuItem
-            // 
-            this.modulationToolStripMenuItem.Name = "modulationToolStripMenuItem";
-            this.modulationToolStripMenuItem.Size = new System.Drawing.Size(98, 24);
-            this.modulationToolStripMenuItem.Text = "Mo&dulation";
-            this.modulationToolStripMenuItem.Click += new System.EventHandler(this.modulationToolStripMenuItem_Click);
             // 
             // SignalsForm
             // 

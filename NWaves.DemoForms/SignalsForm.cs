@@ -138,6 +138,26 @@ namespace NWaves.DemoForms
                                     .Build();
                     break;
 
+                case "Sinc":
+                    signalBuilder = new SincBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("amp", 2)
+                                    .SetParameter("freq", 700/*Hz*/)
+                                    .OfLength(sampleCount)
+                                    .SampledAt(samplingRate)
+                                    .Build();
+                    break;
+
+                case "Ramp":
+                    signalBuilder = new RampBuilder();
+                    _signal2 = signalBuilder
+                                    .SetParameter("slope", 0.0007f)
+                                    .SetParameter("intercept", -0.5f)
+                                    .OfLength(sampleCount)
+                                    .SampledAt(samplingRate)
+                                    .Build();
+                    break;
+
                 case "AWGN":
                     signalBuilder = new AwgnBuilder();
                     _signal2 = signalBuilder
@@ -197,7 +217,9 @@ namespace NWaves.DemoForms
 
             if (_signal1 != null)
             {
-                _signal3 = _signal1 + _signal2;
+                //_signal3 = _signal1 + _signal2;
+                var positions = Enumerable.Range(0, 3).Select(pos => pos * (_signal2.Length + 2000)).ToArray();
+                _signal3 = _signal1.SuperimposeMany(_signal2, positions);
                 superimposedSignalPanel.Signal = _signal3;
             }
 
@@ -230,7 +252,7 @@ namespace NWaves.DemoForms
                     break;
             }
 
-            _signal3 = _signal1.Superimpose(_signal2);
+            _signal3 = _signal1 == null ? _signal2 : _signal1.Superimpose(_signal2);
 
             generatedSignalPanel.Signal = _signal2;
             superimposedSignalPanel.Signal = _signal3;

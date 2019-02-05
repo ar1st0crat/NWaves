@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
@@ -35,20 +34,22 @@ namespace NWaves.Signals.Builders
             _high = 1.0;
         }
 
+        protected override DiscreteSignal Generate()
+        {
+            Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
+            return base.Generate();
+        }
+
         /// <summary>
         /// Method generates white noise by simply generating 
         /// consecutive decorrelated random samples.
         /// </summary>
         /// <returns></returns>
-        protected override DiscreteSignal Generate()
+        public override float NextSample()
         {
-            Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
-
-            var rand = new Random();
-            var noise = Enumerable.Range(0, Length)
-                                  .Select(i => rand.NextDouble() * (_high - _low) + _low);
-
-            return new DiscreteSignal(SamplingRate, noise.ToFloats());
+            return (float)(_rand.NextDouble() * (_high - _low) + _low);
         }
+
+        Random _rand = new Random();
     }
 }

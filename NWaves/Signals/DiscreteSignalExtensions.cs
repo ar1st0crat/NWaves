@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using NWaves.Utils;
 
 namespace NWaves.Signals
@@ -82,6 +83,39 @@ namespace NWaves.Signals
                 for (var i = 0; i < signal1.Length; i++)
                 {
                     superimposed[i] += signal1.Samples[i];
+                }
+            }
+
+            return superimposed;
+        }
+
+        /// <summary>
+        /// Method superimposes two signals.
+        /// If sizes are different then the smaller signal is broadcasted 
+        /// to fit the size of the larger signal.
+        /// </summary>
+        /// <param name="signal1"></param>
+        /// <param name="signal2"></param>
+        /// <returns></returns>
+        public static DiscreteSignal SuperimposeMany(this DiscreteSignal signal1, DiscreteSignal signal2, int[] positions)
+        {
+            if (signal1.SamplingRate != signal2.SamplingRate)
+            {
+                throw new ArgumentException("Sampling rates must be the same!");
+            }
+
+            var totalLength = Math.Max(signal1.Length, signal2.Length + positions.Max());
+
+            DiscreteSignal superimposed = new DiscreteSignal(signal1.SamplingRate, totalLength);
+            signal1.Samples.FastCopyTo(superimposed.Samples, signal1.Length);
+
+            for (var p = 0; p < positions.Length; p++)
+            {
+                var offset = positions[p];
+
+                for (var i = 0; i < signal2.Length; i++)
+                {
+                    superimposed[offset + i] += signal2.Samples[i];
                 }
             }
 

@@ -55,6 +55,8 @@
     <Compile Include="Signals\Builders\ChirpBuilder.cs" />
     <Compile Include="Signals\Builders\CosineBuilder.cs" />
     <Compile Include="Signals\Builders\PerlinNoiseBuilder.cs" />
+    <Compile Include="Signals\Builders\RampBuilder.cs" />
+    <Compile Include="Signals\Builders\SincBuilder.cs" />
     <Compile Include="Transforms\Fft64.cs" />
     <Compile Include="Audio\Channels.cs" />
     <Compile Include="Audio\Interfaces\IAudioContainer.cs" />

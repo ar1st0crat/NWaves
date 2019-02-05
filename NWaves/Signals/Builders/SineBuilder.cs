@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
@@ -49,14 +48,24 @@ namespace NWaves.Signals.Builders
         /// 
         /// </summary>
         /// <returns></returns>
+        public override float NextSample()
+        {
+            var sample = (float)(_amplitude * Math.Sin(2 * Math.PI * _frequency / SamplingRate * _n + _phase));
+            _n++;
+            return sample;
+        }
+
+        public override void Reset()
+        {
+            _n = 0;
+        }
+
         protected override DiscreteSignal Generate()
         {
             Guard.AgainstNonPositive(_frequency, "Frequency");
-
-            var samples = Enumerable.Range(0, Length)
-                                    .Select(i => _amplitude * Math.Sin(2 * Math.PI * _frequency / SamplingRate * i + _phase));
-
-            return new DiscreteSignal(SamplingRate, samples.ToFloats());
+            return base.Generate();
         }
+
+        int _n;
     }
 }

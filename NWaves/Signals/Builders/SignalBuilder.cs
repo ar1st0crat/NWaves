@@ -77,11 +77,33 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
+        /// Method for online sample generation (must be implemented in subclasses)
+        /// </summary>
+        /// <returns></returns>
+        public abstract float NextSample();
+
+        /// <summary>
+        /// Reset online builder
+        /// </summary>
+        public virtual void Reset()
+        {
+        }
+
+        /// <summary>
         /// Method for generating signal of particular shape 
-        /// (must be implemented in subclasses).
         /// </summary>
         /// <returns>Generated signal</returns>
-        protected abstract DiscreteSignal Generate();
+        protected virtual DiscreteSignal Generate()
+        {
+            var signal = new DiscreteSignal(SamplingRate, Length);
+
+            for (var i = 0; i < signal.Length; i++)
+            {
+                signal[i] = NextSample();
+            }
+
+            return signal;
+        }
 
         /// <summary>
         /// Final or intermediate build step
