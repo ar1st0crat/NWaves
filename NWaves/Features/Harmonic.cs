@@ -19,17 +19,17 @@ namespace NWaves.Features
         {
             if (pitch < 0)
             {
-                pitch = Pitch.FromHss(spectrum, samplingRate);
+                pitch = Pitch.FromSpectralPeaks(spectrum, samplingRate);
             }
 
             var resolution = samplingRate / (2 * (spectrum.Length - 1));
 
-            var region = (int)(pitch/2 / resolution);
+            var region = (int)(pitch / (2 * resolution));
 
             peaks[0] = (int)(pitch / resolution);
             peakFrequencies[0] = pitch;
 
-            for (var i = 1; i < peaks.Length; i++)
+            for (var i = 0; i < peaks.Length; i++)
             {
                 var candidate = (i + 1) * peaks[0];
 
@@ -59,6 +59,11 @@ namespace NWaves.Features
         /// <returns>Harmonic centroid</returns>
         public static float Centroid(float[] spectrum, int[] peaks, float[] peakFrequencies)
         {
+            if (peaks[0] == 0)
+            {
+                return 0;
+            }
+
             var sum = 0.0f;
             var weightedSum = 0.0f;
 
@@ -81,6 +86,11 @@ namespace NWaves.Features
         /// <returns>Harmonic spread</returns>
         public static float Spread(float[] spectrum, int[] peaks, float[] peakFrequencies)
         {
+            if (peaks[0] == 0)
+            {
+                return 0;
+            }
+
             var centroid = Centroid(spectrum, peaks, peakFrequencies);
 
             var sum = 0.0f;
@@ -105,6 +115,11 @@ namespace NWaves.Features
         /// <returns>Inharmonicity</returns>
         public static float Inharmonicity(float[] spectrum, int[] peaks, float[] peakFrequencies)
         {
+            if (peaks[0] == 0)
+            {
+                return 0;
+            }
+
             var f0 = peakFrequencies[0];
 
             var squaredSum = 0.0f;
@@ -130,17 +145,22 @@ namespace NWaves.Features
         /// <returns>Odd-to-Even Ratio</returns>
         public static float OddToEvenRatio(float[] spectrum, int[] peaks)
         {
+            if (peaks[0] == 0)
+            {
+                return 0;
+            }
+
             var oddSum = 0.0f;
             var evenSum = 0.0f;
+
+            for (var i = 0; i < peaks.Length; i += 2)
+            {
+                evenSum += spectrum[peaks[i]];
+            }
 
             for (var i = 1; i < peaks.Length; i += 2)
             {
                 oddSum += spectrum[peaks[i]];
-            }
-
-            for (var i = 0; i < peaks.Length; i+=2)
-            {
-                evenSum += spectrum[peaks[i]];
             }
 
             return oddSum / evenSum;
@@ -155,6 +175,11 @@ namespace NWaves.Features
         /// <returns>Tristimulus</returns>
         public static float Tristimulus(float[] spectrum, int[] peaks, int n)
         {
+            if (peaks[0] == 0)
+            {
+                return 0;
+            }
+
             var sum = 0.0f;
 
             for (var i = 0; i < peaks.Length; i++)

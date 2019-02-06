@@ -14,6 +14,8 @@ namespace NWaves.FeatureExtractors.Multi
     /// It's a very flexible extractor that allows varying almost everything.
     /// It allows computing harmonic features along with spectral features.
     /// 
+    /// At least one spectral feature MUST be specified.
+    /// 
     /// </summary>
     public class SpectralFeaturesExtractor : FeatureExtractor
     {
@@ -73,12 +75,12 @@ namespace NWaves.FeatureExtractors.Multi
         private int[] _frequencyPositions;
 
         /// <summary>
-        /// Internal buffer for harmonic peak frequencies
+        /// Internal buffer for harmonic peak frequencies (optional)
         /// </summary>
         private float[] _peakFrequencies;
 
         /// <summary>
-        /// Internal buffer for spectral positions of harmonic peaks
+        /// Internal buffer for spectral positions of harmonic peaks (optional)
         /// </summary>
         private int[] _peaks;
 
@@ -98,14 +100,19 @@ namespace NWaves.FeatureExtractors.Multi
         private List<Func<float[], float[], float>> _extractors;
 
         /// <summary>
-        /// Harmonic extractor functions
+        /// Harmonic extractor functions (optional)
         /// </summary>
         private List<Func<float[], int[], float[], float>> _harmonicExtractors;
 
         /// <summary>
-        /// Pitch estimator function
+        /// Pitch estimator function (optional)
         /// </summary>
         private Func<float[], float> _pitchEstimator;
+
+        /// <summary>
+        /// Array of precomputed pitches (optional)
+        /// </summary>
+        private float[] _pitchTrack;
 
         /// <summary>
         /// Constructor
@@ -206,7 +213,7 @@ namespace NWaves.FeatureExtractors.Multi
             }).ToList();
 
             FeatureDescriptions = features.ToList();
-
+            
             _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
             _fft = new Fft(_fftSize);
 
@@ -246,7 +253,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <param name="algorithm"></param>
         public void AddFeature(string name, Func<float[], float[], float> algorithm)
         {
-            FeatureDescriptions.Add(name);
+            FeatureDescriptions.Insert(_extractors.Count, name);
             _extractors.Add(algorithm);
         }
 
@@ -306,7 +313,7 @@ namespace NWaves.FeatureExtractors.Multi
 
             if (pitchEstimator == null)
             {
-                _pitchEstimator = spectrum => Pitch.FromHss(spectrum, SamplingRate, lowPitch, highPitch);
+                _pitchEstimator = spectrum => Pitch.FromSpectralPeaks(spectrum, SamplingRate, lowPitch, highPitch);
             }
             else
             {
@@ -324,15 +331,22 @@ namespace NWaves.FeatureExtractors.Multi
         /// <param name="algorithm"></param>
         public void AddHarmonicFeature(string name, Func<float[], int[], float[], float> algorithm)
         {
+            if (_harmonicExtractors == null)
+            {
+                return;
+            }
+
             FeatureDescriptions.Add(name);
             _harmonicExtractors.Add(algorithm);
+        }
 
-            if (_pitchEstimator == null)
-            {
-                _pitchEstimator = spectrum => Pitch.FromHss(spectrum, SamplingRate);
-                _peaks = new int[10];
-                _peakFrequencies = new float[10];
-            }
+        /// <summary>
+        /// Set array of precomputed pitches
+        /// </summary>
+        /// <param name="pitchTrack"></param>
+        public void SetPitchTrack(float[] pitchTrack)
+        {
+            _pitchTrack = pitchTrack;
         }
 
         /// <summary>
@@ -354,7 +368,9 @@ namespace NWaves.FeatureExtractors.Multi
             
             var featureVectors = new List<FeatureVector>();
             var featureCount = FeatureCount;
-            
+
+            var pitchPos = startSample / HopSize;
+
             var i = startSample;
             while (i + FrameSize < endSample)
             {
@@ -367,32 +383,35 @@ namespace NWaves.FeatureExtractors.Multi
 
                 _fft.MagnitudeSpectrum(_block, _spectrum);
 
-                if (_spectrum.Length == _frequencies.Length)
-                {
-                    _mappedSpectrum = _spectrum;
-                }
-                else
-                {
-                    for (var j = 0; j < _mappedSpectrum.Length; j++)
-                    {
-                        _mappedSpectrum[j] = _spectrum[_frequencyPositions[j]];
-                    }
-                }
-
-                // extract spectral features
-
                 var featureVector = new float[featureCount];
 
-                for (var j = 0; j < _extractors.Count; j++)
+                if (_extractors != null)
                 {
-                    featureVector[j] = _extractors[j](_mappedSpectrum, _frequencies);
+                    if (_spectrum.Length == _frequencies.Length)
+                    {
+                        _mappedSpectrum = _spectrum;
+                    }
+                    else
+                    {
+                        for (var j = 0; j < _mappedSpectrum.Length; j++)
+                        {
+                            _mappedSpectrum[j] = _spectrum[_frequencyPositions[j]];
+                        }
+                    }
+
+                    // extract spectral features
+
+                    for (var j = 0; j < _extractors.Count; j++)
+                    {
+                        featureVector[j] = _extractors[j](_mappedSpectrum, _frequencies);
+                    }
                 }
 
                 // ...and maybe harmonic features
 
                 if (_harmonicExtractors != null)
                 {
-                    var pitch = _pitchEstimator(_spectrum);
+                    var pitch = _pitchTrack == null ? _pitchEstimator(_spectrum) : _pitchTrack[pitchPos++];
 
                     Harmonic.Peaks(_spectrum, _peaks, _peakFrequencies, SamplingRate, pitch);
 
@@ -434,6 +453,7 @@ namespace NWaves.FeatureExtractors.Multi
             var copy = new SpectralFeaturesExtractor(SamplingRate, spectralFeatureSet, FrameDuration, HopDuration, _fftSize, _frequencies, _parameters)
             {
                 _extractors = _extractors,
+                _pitchTrack = _pitchTrack
             };
 
             if (_harmonicExtractors != null)

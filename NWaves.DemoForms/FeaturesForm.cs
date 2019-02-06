@@ -37,15 +37,20 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            var frameSize = (double) 512 / _signal.SamplingRate;
-            var hopSize = (double) 256 / _signal.SamplingRate;
+            var frameDuration = (double) 512 / _signal.SamplingRate;
+            var hopDuration = (double) 256 / _signal.SamplingRate;
 
             var freqs = new[] { 0.0f, 300, 600, 1000, 2000, 4000, 7000 };
 
+            var pitchExtractor = new PitchExtractor(_signal.SamplingRate, frameDuration, hopDuration);
+            var pitchTrack = pitchExtractor.ComputeFrom(_signal)
+                                           .Select(p => p.Features[0])
+                                           .ToArray();
 
-            var tdExtractor = new TimeDomainFeaturesExtractor(_signal.SamplingRate, "all", frameSize, hopSize);
-            var spectralExtractor = new SpectralFeaturesExtractor(_signal.SamplingRate, "all", frameSize, hopSize, frequencies: freqs);
+            var tdExtractor = new TimeDomainFeaturesExtractor(_signal.SamplingRate, "all", frameDuration, hopDuration);
+            var spectralExtractor = new SpectralFeaturesExtractor(_signal.SamplingRate, "sc+sn", frameDuration, hopDuration, frequencies: freqs);
             spectralExtractor.IncludeHarmonicFeatures("all");
+            spectralExtractor.SetPitchTrack(pitchTrack);
 
             tdExtractor.AddFeature("pitch_zcr", (signal, start, end) => { return Pitch.FromZeroCrossingsSchmitt(signal, start, end); });
             //spectralExtractor.AddFeature("pitch_hss", (spectrum, fs) => { return Pitch.FromHss(spectrum, _signal.SamplingRate); } );

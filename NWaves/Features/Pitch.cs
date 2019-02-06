@@ -344,7 +344,7 @@ namespace NWaves.Features
             var fftSize = (spectrum.Length - 1) * 2;
 
             var startIdx = (int)(low * fftSize / samplingRate) + 1;
-            var endIdx = (int)(high * fftSize / samplingRate);
+            var endIdx = (int)(high * fftSize / samplingRate) + 1;
             var decimations = Math.Min(spectrum.Length / endIdx, 10);
 
             var hssIndex = 0;
@@ -388,11 +388,6 @@ namespace NWaves.Features
                 endPos = signal.Length;
             }
 
-            if (endPos == -1)
-            {
-                endPos = signal.Length;
-            }
-
             if (startPos != 0 || endPos != signal.Length)
             {
                 signal = signal[startPos, endPos];
@@ -425,7 +420,7 @@ namespace NWaves.Features
             var fftSize = (spectrum.Length - 1) * 2;
 
             var startIdx = (int)(low * fftSize / samplingRate) + 1;
-            var endIdx = (int)(high * fftSize / samplingRate);
+            var endIdx = (int)(high * fftSize / samplingRate) + 1;
             var decimations = Math.Min(spectrum.Length / endIdx, 10);
 
             var hpsIndex = 0;
@@ -449,6 +444,71 @@ namespace NWaves.Features
         }
 
         /// <summary>
+        /// Pitch estimation: from spectral peaks
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="startPos"></param>
+        /// <param name="endPos"></param>
+        /// <returns></returns>
+        public static float FromSpectralPeaks(DiscreteSignal signal,
+                                              int startPos = 0,
+                                              int endPos = -1,
+                                              float low = 80,
+                                              float high = 400,
+                                              int fftSize = 0)
+        {
+            if (endPos == -1)
+            {
+                endPos = signal.Length;
+            }
+
+            if (startPos != 0 || endPos != signal.Length)
+            {
+                signal = signal[startPos, endPos];
+            }
+
+            signal.ApplyWindow(WindowTypes.Hann);
+
+            var size = fftSize > 0 ? fftSize : MathUtils.NextPowerOfTwo(signal.Length);
+            var fft = new Fft(size);
+
+            var spectrum = fft.PowerSpectrum(signal, false).Samples;
+
+            return FromSpectralPeaks(spectrum, signal.SamplingRate, low, high);
+        }
+
+        /// <summary>
+        /// Pitch estimation: from spectral peaks (given pre-computed spectrum)
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="startPos"></param>
+        /// <param name="endPos"></param>
+        /// <returns></returns>
+        public static float FromSpectralPeaks(float[] spectrum,
+                                              int samplingRate,
+                                              float low = 80,
+                                              float high = 400)
+        {
+            var sumSpectrum = spectrum.FastCopy();
+
+            var fftSize = (spectrum.Length - 1) * 2;
+
+            var startIdx = (int)(low * fftSize / samplingRate) + 1;
+            var endIdx = (int)(high * fftSize / samplingRate) + 1;
+
+            for (var k = startIdx + 1; k < endIdx; k++)
+            {
+                if (spectrum[k] > spectrum[k - 1] && spectrum[k] > spectrum[k - 2] &&
+                    spectrum[k] > spectrum[k + 1] && spectrum[k] > spectrum[k + 2])
+                {
+                    return (float)k * samplingRate / fftSize;
+                }
+            }
+
+            return (float)startIdx * samplingRate / fftSize;
+        }
+
+        /// <summary>
         /// Pitch estimation from signal cepstrum
         /// </summary>
         /// <param name="signal"></param>
@@ -464,11 +524,6 @@ namespace NWaves.Features
                                          int fftSize = 512)
         {
             var samplingRate = signal.SamplingRate;
-
-            if (endPos == -1)
-            {
-                endPos = signal.Length;
-            }
 
             if (endPos == -1)
             {
