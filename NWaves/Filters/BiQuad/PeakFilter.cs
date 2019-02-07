@@ -27,23 +27,39 @@ namespace NWaves.Filters.BiQuad
         /// <param name="freq"></param>
         /// <param name="q"></param>
         /// <param name="gain"></param>
-        /// <returns></returns>
-        private static TransferFunction MakeTf(double freq, double q, double gain)
+        /// <param name="b"></param>
+        /// <param name="a"></param>
+        public static void MakeTf(double freq, double q, double gain, double[] b, double[] a)
         {
-            var a = Math.Pow(10, gain / 40);
+            var ga = Math.Pow(10, gain / 40);
             var omega = 2 * Math.PI * freq;
             var alpha = Math.Sin(omega) / (2 * q);
             var cosw = Math.Cos(omega);
 
-            var b0 = 1 + alpha * a;
-            var b1 = -2 * cosw;
-            var b2 = 1 - alpha * a;
+            b[0] = 1 + alpha * ga;
+            b[1] = -2 * cosw;
+            b[2] = 1 - alpha * ga;
 
-            var a0 = 1 + alpha / a;
-            var a1 = -2 * cosw;
-            var a2 = 1 - alpha / a;
+            a[0] = 1 + alpha / ga;
+            a[1] = -2 * cosw;
+            a[2] = 1 - alpha / ga;
+        }
 
-            return new TransferFunction(new[] { b0, b1, b2 }, new [] { a0, a1, a2 });
+        /// <summary>
+        /// TF generator
+        /// </summary>
+        /// <param name="freq"></param>
+        /// <param name="q"></param>
+        /// <param name="gain"></param>
+        /// <returns>Transfer function</returns>
+        private static TransferFunction MakeTf(double freq, double q, double gain)
+        {
+            var b = new double[3];
+            var a = new double[3];
+
+            MakeTf(freq, q, gain, b, a);
+
+            return new TransferFunction(b, a);
         }
     }
 }

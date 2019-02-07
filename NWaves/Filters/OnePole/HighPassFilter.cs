@@ -20,13 +20,27 @@ namespace NWaves.Filters.OnePole
         /// TF generator
         /// </summary>
         /// <param name="freq"></param>
+        public static void MakeTf(double freq, double[] b, double[] a)
+        {
+            a[0] = 1;
+            a[1] = Math.Exp(-2 * Math.PI * (0.5 - freq));
+
+            b[0] = 1 - a[1];
+        }
+
+        /// <summary>
+        /// TF generator
+        /// </summary>
+        /// <param name="freq"></param>
         /// <returns></returns>
         private static TransferFunction MakeTf(double freq)
         {
-            var a1 = Math.Exp(-2 * Math.PI * (0.5 - freq));
-            var b0 = 1 - a1;
+            var b = new double[1];
+            var a = new double[2];
 
-            return new TransferFunction(new[] { b0 }, new[] { 1, a1 });
+            MakeTf(freq, b, a);
+
+            return new TransferFunction(b, a);
         }
     }
 }

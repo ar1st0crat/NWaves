@@ -61,9 +61,9 @@ namespace NWaves.Signals.Builders
             _nextReady = false;
         }
 
-        float _next;
-        bool _nextReady;
+        private float _next;
+        private bool _nextReady;
 
-        Random _rand = new Random();
+        private Random _rand = new Random();
     }
 }

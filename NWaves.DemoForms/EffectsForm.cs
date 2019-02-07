@@ -70,7 +70,9 @@ namespace NWaves.DemoForms
 
         private void applyEffectButton_Click(object sender, EventArgs e)
         {
-            IFilter effect;
+            AudioEffect effect;
+
+            var fs = _signal.SamplingRate;
 
             var winSize = int.Parse(winSizeTextBox.Text);
             var hopSize = int.Parse(hopSizeTextBox.Text);
@@ -82,22 +84,22 @@ namespace NWaves.DemoForms
             {
                 var freq = float.Parse(tremoloFrequencyTextBox.Text);
                 var index = float.Parse(tremoloIndexTextBox.Text);
-                effect = new TremoloEffect(freq, index);
+                effect = new TremoloEffect(fs, freq, index);
             }
             else if (overdriveRadioButton.Checked)
             {
-                effect = new OverdriveEffect();
+                var gain = float.Parse(distortionGainTextBox.Text);
+                effect = new OverdriveEffect(gain);
             }
             else if (distortionRadioButton.Checked)
             {
                 var gain = float.Parse(distortionGainTextBox.Text);
-                var mix = float.Parse(distortionMixTextBox.Text);
-                effect = new DistortionEffect(gain, mix);
+                effect = new DistortionEffect(gain);
             }
             else if (tubeDistortionRadioButton.Checked)
             {
                 var gain = float.Parse(distortionGainTextBox.Text);
-                var mix = float.Parse(distortionMixTextBox.Text);
+                var mix = float.Parse(wetTextBox.Text);
                 var dist = float.Parse(distTextBox.Text);
                 var q = float.Parse(qTextBox.Text);
                 effect = new TubeDistortionEffect(gain, mix, q, dist);
@@ -106,13 +108,13 @@ namespace NWaves.DemoForms
             {
                 var delay = float.Parse(echoDelayTextBox.Text);
                 var decay = float.Parse(echoDecayTextBox.Text);
-                effect = new EchoEffect(delay, decay);
+                effect = new EchoEffect(fs, delay, decay);
             }
             else if (delayRadioButton.Checked)
             {
                 var delay = float.Parse(echoDelayTextBox.Text);
                 var decay = float.Parse(echoDecayTextBox.Text);
-                effect = new DelayEffect(delay, decay);
+                effect = new DelayEffect(fs, delay, decay);
             }
             else if (wahwahRadioButton.Checked)
             {
@@ -120,7 +122,8 @@ namespace NWaves.DemoForms
                 var minFrequency = float.Parse(minFreqTextBox.Text);
                 var maxFrequency = float.Parse(maxFreqTextBox.Text);
                 var q = float.Parse(lfoQTextBox.Text);
-                effect = new WahwahEffect(lfoFrequency, minFrequency, maxFrequency, q);
+                //effect = new WahwahEffect(fs, lfoFrequency, minFrequency, maxFrequency, q);
+                effect = new AutowahEffect(fs, minFrequency, maxFrequency, q);
             }
             else if (pitchShiftRadioButton.Checked)
             {
@@ -132,13 +135,21 @@ namespace NWaves.DemoForms
                 var minFrequency = float.Parse(minFreqTextBox.Text);
                 var maxFrequency = float.Parse(maxFreqTextBox.Text);
                 var q = float.Parse(lfoQTextBox.Text);
-                effect = new PhaserEffect(lfoFrequency, minFrequency, maxFrequency, q);
+                effect = new PhaserEffect(fs, lfoFrequency, minFrequency, maxFrequency, q);
             }
 
-            _filteredSignal = effect != null ?
-                              effect.ApplyTo(_signal, FilteringMethod.Auto) :
-                              Operation.TimeStretch(_signal, shift, tsm);
-                              //Operation.TimeStretch(_signal, shift, winSize, hopSize, tsm);
+            if (effect != null)
+            {
+                effect.Wet = float.Parse(wetTextBox.Text);
+                effect.Dry = float.Parse(dryTextBox.Text);
+
+                _filteredSignal = effect.ApplyTo(_signal, FilteringMethod.Auto);
+            }
+            else
+            {
+                _filteredSignal = Operation.TimeStretch(_signal, shift, tsm);
+                                  //Operation.TimeStretch(_signal, shift, winSize, hopSize, tsm);
+            }
 
             signalAfterFilteringPanel.Signal = _filteredSignal;
             spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal.Samples);

@@ -32,7 +32,7 @@ Already available:
 - [x] simple resampling, interpolation, decimation
 - [x] bandlimited resampling
 - [x] spectral subtraction
-- [x] sound effects (delay, echo, tremolo, wahwah, phaser, distortion, pitch shift)
+- [x] sound effects (delay, echo, tremolo, wahwah, autowah, phaser, distortion, pitch shift)
 - [x] simple modulation/demodulation (AM, ring, FM, PM)
 - [x] simple audio playback and recording
 
@@ -178,6 +178,25 @@ DiscreteSignal noisy =
 		.SampledAt(44100)
 		.SuperimposedWith(noise)
 		.Build();
+
+```
+
+Signal builders can also act as real-time generators of samples:
+
+```C#
+
+DiscreteSignal lfo = 
+    new TriangleWaveBuilder()
+        .SetParameter("low", 100)
+        .SetParameter("high", 1500)
+        .SetParameter("frequency", 2.0/*Hz*/)
+        .SampledAt(16000/*Hz*/);
+
+while (...)
+{
+    var sample = lfo.NextSample();
+    //...
+}
 
 ```
 
@@ -424,7 +443,7 @@ var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
 ### Online processing
 
 Online processing is supported by all classes that implement the ```IOnlineFilter``` interface.
-Currently, all filters and block convolvers (```OlaBlockConvolver```, ```OlsBlockConvolver```) contain the ```Process(sample)``` and ```Process(buffer)``` methods responsible for online processing.
+Currently, all filters, block convolvers (```OlaBlockConvolver```, ```OlsBlockConvolver```) and audio effects contain the ```Process(sample)``` and ```Process(buffer)``` methods responsible for online processing.
 
 Simply prepare necessary buffers or just use them if they come from another part of your system:
 

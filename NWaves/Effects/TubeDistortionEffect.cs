@@ -10,7 +10,7 @@ namespace NWaves.Effects
     /// Class for tube distortion effect.
     /// DAFX book [Udo Zoelzer], p.123-124.
     /// </summary>
-    public class TubeDistortionEffect : IFilter
+    public class TubeDistortionEffect : AudioEffect
     {
         /// <summary>
         /// Amount of distortion
@@ -128,6 +128,32 @@ namespace NWaves.Effects
             var output = tempY.Select(y => y * maxAmp / maxY);
 
             return _outputFilter.ApplyTo(new DiscreteSignal(signal.SamplingRate, output));
+        }
+
+        public override float Process(float sample)
+        {
+            float output;
+
+            var q = Gain * sample;
+
+            if (Math.Abs(Q) < 1e-10)
+            {
+                output = Math.Abs(q - Q) < 1e-10 ? 1.0f / Dist : (float)(q / (1 - Math.Exp(-Dist * q)));
+            }
+            else
+            {
+                output = Math.Abs(q - Q) < 1e-10 ?
+                           (float)(1.0 / Dist + Q / (1 - Math.Exp(Dist * Q))) :
+                           (float)((q - Q) / (1 - Math.Exp(-Dist * (q - Q))) + Q / (1 - Math.Exp(Dist * Q)));
+            }
+
+            output = _outputFilter.Process(output);
+
+            return output * Wet / 2 + sample * Dry;
+        }
+
+        public override void Reset()
+        {
         }
     }
 }

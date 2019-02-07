@@ -1,7 +1,4 @@
-﻿using System;
-using NWaves.Filters;
-using NWaves.Filters.Base;
-using NWaves.Signals;
+﻿using NWaves.Filters;
 
 namespace NWaves.Effects
 {
@@ -9,7 +6,7 @@ namespace NWaves.Effects
     /// Class for delay effect.
     /// Essentially it's a feedforward comb filter.
     /// </summary>
-    public class DelayEffect : IFilter
+    public class DelayEffect : AudioEffect
     {
         /// <summary>
         /// Echo length (in seconds)
@@ -22,33 +19,32 @@ namespace NWaves.Effects
         public float Decay { get; }
 
         /// <summary>
-        /// Delay filter
+        /// Feedforward comb filter
         /// </summary>
-        private CombFeedforwardFilter _delayFilter;
+        private CombFeedforwardFilter _filter;
 
         /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="samplingRate"></param>
         /// <param name="length"></param>
         /// <param name="decay"></param>
-        public DelayEffect(float length, float decay)
+        public DelayEffect(int samplingRate, float length, float decay)
         {
             Length = length;
             Decay = decay;
+
+            _filter = new CombFeedforwardFilter((int)(length * samplingRate), bm: decay);
         }
 
-        /// <summary>
-        /// Method implements simple delay effect
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringMethod method = FilteringMethod.Auto)
+        public override float Process(float sample)
         {
-            var delay = (int)(Length * signal.SamplingRate);
-            _delayFilter = new CombFeedforwardFilter(delay, bm: Decay);
-            return _delayFilter.ApplyTo(signal);
+            return _filter.Process(sample) * Wet + sample * Dry;
+        }
+
+        public override void Reset()
+        {
+            _filter.Reset();
         }
     }
 }

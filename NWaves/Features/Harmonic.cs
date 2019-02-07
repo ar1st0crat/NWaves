@@ -130,7 +130,7 @@ namespace NWaves.Features
                 var p = peaks[i];
                 var sqr = spectrum[p] * spectrum[p];
 
-                sum += (peakFrequencies[i] - i * f0) * sqr;
+                sum += (peakFrequencies[i] - (i + 1) * f0) * sqr;
                 squaredSum += sqr;
             }
 

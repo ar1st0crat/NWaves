@@ -27,24 +27,38 @@ namespace NWaves.Filters.BiQuad
         /// <param name="freq"></param>
         /// <param name="q"></param>
         /// <param name="gain"></param>
-        /// <returns></returns>
-        private static TransferFunction MakeTf(double freq, double q, double gain)
+        public static void MakeTf(double freq, double q, double gain, double[] b, double[] a)
         {
-            var a = Math.Pow(10, gain / 40);
-            var asqrt = Math.Sqrt(a);
+            var ga = Math.Pow(10, gain / 40);
+            var asqrt = Math.Sqrt(ga);
             var omega = 2 * Math.PI * freq;
-            var alpha = Math.Sin(omega) / 2 * Math.Sqrt((a + 1 / a) * (1 / q - 1) + 2);
+            var alpha = Math.Sin(omega) / 2 * Math.Sqrt((ga + 1 / ga) * (1 / q - 1) + 2);
             var cosw = Math.Cos(omega);
 
-            var b0 = a * (a + 1 + (a - 1) * cosw + 2 * asqrt * alpha);
-            var b1 = -2 * a * (a - 1 + (a + 1) * cosw);
-            var b2 = a * (a + 1 + (a - 1) * cosw - 2 * asqrt * alpha);
+            b[0] = ga * (ga + 1 + (ga - 1) * cosw + 2 * asqrt * alpha);
+            b[1] = -2 * ga * (ga - 1 + (ga + 1) * cosw);
+            b[2] = ga * (ga + 1 + (ga - 1) * cosw - 2 * asqrt * alpha);
 
-            var a0 = a + 1 - (a - 1) * cosw + 2 * asqrt * alpha;
-            var a1 = 2 * (a - 1 - (a + 1) * cosw);
-            var a2 = a + 1 - (a - 1) * cosw - 2 * asqrt * alpha;
+            a[0] = ga + 1 - (ga - 1) * cosw + 2 * asqrt * alpha;
+            a[1] = 2 * (ga - 1 - (ga + 1) * cosw);
+            a[2] = ga + 1 - (ga - 1) * cosw - 2 * asqrt * alpha;
+        }
 
-            return new TransferFunction(new[] { b0, b1, b2 }, new[] { a0, a1, a2 });
+        /// <summary>
+        /// TF generator
+        /// </summary>
+        /// <param name="freq"></param>
+        /// <param name="q"></param>
+        /// <param name="gain"></param>
+        /// <returns>Transfer function</returns>
+        private static TransferFunction MakeTf(double freq, double q, double gain)
+        {
+            var b = new double[3];
+            var a = new double[3];
+
+            MakeTf(freq, q, gain, b, a);
+
+            return new TransferFunction(b, a);
         }
     }
 }

@@ -67,7 +67,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Internal buffer for magnitude spectrum taken only at frequencies of interest
         /// </summary>
-        float[] _mappedSpectrum;
+        private float[] _mappedSpectrum;
 
         /// <summary>
         /// Internal buffer for spectral positions of frequencies of interest

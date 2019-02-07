@@ -70,6 +70,6 @@ namespace NWaves.Signals.Builders
             return base.Generate();
         }
 
-        int _n;
+        private int _n;
     }
 }

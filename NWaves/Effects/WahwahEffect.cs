@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Linq;
-using NWaves.Filters.Base;
-using NWaves.Signals;
 using NWaves.Signals.Builders;
 
 namespace NWaves.Effects
@@ -9,84 +6,82 @@ namespace NWaves.Effects
     /// <summary>
     /// Class for wah-wah effect
     /// </summary>
-    public class WahwahEffect : IFilter
+    public class WahwahEffect : AudioEffect
     {
         /// <summary>
-        /// 
+        /// Q
         /// </summary>
         public float Q { get; }
 
         /// <summary>
-        /// 
+        /// LFO frequency
         /// </summary>
         public float LfoFrequency { get; }
 
         /// <summary>
-        /// 
+        /// Min LFO frequency
         /// </summary>
         public float MinFrequency { get; }
 
         /// <summary>
-        /// 
+        /// Max LFO frequency
         /// </summary>
         public float MaxFrequency { get; }
 
         /// <summary>
-        /// 
+        /// Sampling rate
         /// </summary>
+        private int _fs;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="samplingRate"></param>
         /// <param name="lfoFrequency"></param>
         /// <param name="minFrequency"></param>
         /// <param name="maxFrequency"></param>
         /// <param name="q"></param>
-        public WahwahEffect(float lfoFrequency = 1.0f, float minFrequency = 300, float maxFrequency = 3000, float q = 0.5f)
+        public WahwahEffect(int samplingRate, float lfoFrequency = 1.0f, float minFrequency = 300, float maxFrequency = 1500, float q = 0.5f)
         {
+            _fs = samplingRate;
             LfoFrequency = lfoFrequency;
             MinFrequency = minFrequency;
             MaxFrequency = maxFrequency;
             Q = q;
+
+            _lfo = new TriangleWaveBuilder()
+                            .SetParameter("lo", MinFrequency)
+                            .SetParameter("hi", MaxFrequency)
+                            .SetParameter("freq", LfoFrequency)
+                            .SampledAt(samplingRate);
         }
 
         /// <summary>
         /// Method implements simple wah-wah effect
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
+        /// <param name="sample"></param>
         /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringMethod method = FilteringMethod.Auto)
+        public override float Process(float sample)
         {
-            var x = signal.Samples;
-            var samplingRateInverted = 2 * Math.PI / signal.SamplingRate;
+            var fs2pi = 2 * Math.PI / _fs;
 
-            var lfo = new TriangleWaveBuilder()
-                                    .SetParameter("lo", MinFrequency)
-                                    .SetParameter("hi", MaxFrequency)
-                                    .SetParameter("freq", LfoFrequency)
-                                    .OfLength(signal.Length)
-                                    .SampledAt(signal.SamplingRate)
-                                    .Build();
+            _f = (float)(2 * Math.Sin(_lfo.NextSample() * fs2pi));
 
-            var f = 2 * Math.Sin(lfo[0] * samplingRateInverted);
-            
-            var yh = new float[x.Length];
-            var yb = new float[x.Length];
-            var yl = new float[x.Length];
+            _yh = sample - _yl - Q * _yb;
+            _yb += _f * _yh;
+            _yl += _f * _yb;
 
-            yh[0] = x[0];
-            yb[0] = (float)(f * yh[0]);
-            yl[0] = (float)(f * yb[0]);
-
-            for (var i = 1; i < signal.Length; i++)
-            {
-                yh[i] = x[i] - yl[i - 1] - Q * yb[i - 1];
-                yb[i] = (float)(f * yh[i] + yb[i - 1]);
-                yl[i] = (float)(f * yb[i] + yl[i - 1]);
-                f = 2 * Math.Sin(lfo[i] * samplingRateInverted);
-            }
-
-            var maxYb = yb.Max(y => Math.Abs(y));
-            
-            return new DiscreteSignal(signal.SamplingRate, yb.Select(y => y / maxYb));
+            return _yb * Wet + sample * Dry;
         }
+
+        public override void Reset()
+        {
+            _yh = _yb = _yl = 0;
+        }
+
+        private SignalBuilder _lfo;
+
+        private float _yh, _yb, _yl;
+        private float _f;
     }
 }

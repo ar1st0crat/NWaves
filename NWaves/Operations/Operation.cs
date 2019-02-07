@@ -5,6 +5,7 @@ using NWaves.Filters.BiQuad;
 using NWaves.Operations.Convolution;
 using NWaves.Operations.Tsm;
 using NWaves.Signals;
+using NWaves.Utils;
 
 namespace NWaves.Operations
 {
@@ -231,14 +232,17 @@ namespace NWaves.Operations
             }
 
             IFilter stretchFilter;
+            int frameSize;
 
             switch (algorithm)
             {
                 case TsmAlgorithm.PhaseVocoder:
-                    stretchFilter = new PhaseVocoder(stretch, 100, 1024, false);
+                    frameSize = MathUtils.NextPowerOfTwo(1024 * signal.SamplingRate / 16000);
+                    stretchFilter = new PhaseVocoder(stretch, frameSize / 10, frameSize, false);
                     break;
                 case TsmAlgorithm.PhaseVocoderPhaseLocking:
-                    stretchFilter = new PhaseVocoder(stretch, 256, 1024);
+                    frameSize = MathUtils.NextPowerOfTwo(1024 * signal.SamplingRate / 16000);
+                    stretchFilter = new PhaseVocoder(stretch, frameSize / 4, frameSize);
                     break;
                 default:
                     stretchFilter = new Wsola(stretch);

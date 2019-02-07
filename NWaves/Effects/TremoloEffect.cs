@@ -1,14 +1,11 @@
-﻿using System;
-using NWaves.Filters.Base;
-using NWaves.Operations;
-using NWaves.Signals;
+﻿using NWaves.Signals.Builders;
 
 namespace NWaves.Effects
 {
     /// <summary>
     /// Class for tremolo effect
     /// </summary>
-    public class TremoloEffect : IFilter
+    public class TremoloEffect : AudioEffect
     {
         /// <summary>
         /// Modulation frequency
@@ -19,16 +16,28 @@ namespace NWaves.Effects
         /// Tremolo index (modulation index)
         /// </summary>
         public float TremoloIndex { get; }
+
+        /// <summary>
+        /// Sampling rate
+        /// </summary>
+        private int _fs;
         
         /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="samplingRate"></param>
         /// <param name="frequency"></param>
         /// <param name="tremoloIndex"></param>
-        public TremoloEffect(float frequency = 10/*Hz*/, float tremoloIndex = 0.5f)
+        public TremoloEffect(int samplingRate, float frequency = 10/*Hz*/, float tremoloIndex = 0.5f)
         {
+            _fs = samplingRate;
             Frequency = frequency;
             TremoloIndex = tremoloIndex;
+
+            _lfo = new CosineBuilder()
+                            .SetParameter("amp", tremoloIndex)
+                            .SetParameter("freq", frequency)
+                            .SampledAt(samplingRate);
         }
 
         /// <summary>
@@ -37,10 +46,16 @@ namespace NWaves.Effects
         /// <param name="signal"></param>
         /// <param name="method"></param>
         /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringMethod method = FilteringMethod.Auto)
+        public override float Process(float sample)
         {
-            return new Modulator().Amplitude(signal, Frequency, TremoloIndex);
+            var output = sample * (1 + _lfo.NextSample());
+            return output * Wet + sample * Dry;
         }
+
+        public override void Reset()
+        {
+        }
+
+        private SignalBuilder _lfo;
     }
 }

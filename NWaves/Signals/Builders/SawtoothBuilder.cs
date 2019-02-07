@@ -76,7 +76,8 @@ namespace NWaves.Signals.Builders
             return base.Generate();
         }
 
-        int _n;
-        double _cycles;
+        private int _n;
+
+        private double _cycles;
     }
 }

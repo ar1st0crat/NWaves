@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Linq;
-using NWaves.Filters.Base;
-using NWaves.Signals;
 
 namespace NWaves.Effects
 {
@@ -9,40 +6,62 @@ namespace NWaves.Effects
     /// Class for overdrive effect.
     /// DAFX book [Udo Zoelzer], p.118.
     /// </summary>
-    public class OverdriveEffect : IFilter
+    public class OverdriveEffect : AudioEffect
     {
+        /// <summary>
+        /// Input gain
+        /// </summary>
+        public float InputGain { get; }
+
+        /// <summary>
+        /// Output gain
+        /// </summary>
+        public float OutputGain { get; }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="gain"></param>
+        public OverdriveEffect(float inputGain, float outputGain = 0.4f)
+        {
+            InputGain = inputGain;
+            OutputGain = outputGain;
+        }
+
         /// <summary>
         /// Method implements simple overdrive effect
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
+        /// <param name="sample"></param>
         /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringMethod method = FilteringMethod.Auto)
+        public override float Process(float sample)
         {
-            var maxAmp = signal.Samples.Max(s => Math.Abs(s));
+            var lowerThreshold = 0.33333f;
+            var upperThreshold = 0.66667f;
 
-            var lowerThreshold = maxAmp / 3;
-            var upperThreshold = maxAmp * 2 / 3;
+            var abs = Math.Abs(sample) * InputGain;
 
-            var output = signal.Samples.Select(s =>
+            float output;
+
+            if (abs > upperThreshold)
             {
-                var abs = Math.Abs(s);
+                output = Math.Sign(sample);
+            }
+            else if (abs >= lowerThreshold)
+            {
+                output = Math.Sign(sample) * (3 - (2 - 3 * abs) * (2 - 3 * abs)) / 3;
+            }
+            else
+            {
+                output = 2 * sample;
+            }
 
-                if (abs > upperThreshold)
-                {
-                    return Math.Sign(s);
-                }
+            output *= OutputGain;
 
-                if (abs >= lowerThreshold)
-                {
-                    return Math.Sign(s) * (3 - (2 - 3 * abs) * (2 - 3 * abs)) / 3;
-                }
+            return output * Wet + sample * Dry;
+        }
 
-                return 2 * s;
-            });
-            
-            return new DiscreteSignal(signal.SamplingRate, output);
+        public override void Reset()
+        {
         }
     }
 }

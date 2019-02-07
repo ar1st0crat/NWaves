@@ -50,6 +50,6 @@ namespace NWaves.Signals.Builders
             return (float)(_rand.NextDouble() * (_high - _low) + _low);
         }
 
-        Random _rand = new Random();
+        private Random _rand = new Random();
     }
 }

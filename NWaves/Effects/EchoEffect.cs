@@ -1,6 +1,4 @@
 ﻿using NWaves.Filters;
-using NWaves.Filters.Base;
-using NWaves.Signals;
 
 namespace NWaves.Effects
 {
@@ -8,7 +6,7 @@ namespace NWaves.Effects
     /// Class for echo effect.
     /// Essentially it's a feedback comb filter.
     /// </summary>
-    public class EchoEffect : IFilter
+    public class EchoEffect : AudioEffect
     {
         /// <summary>
         /// Echo length (in seconds)
@@ -21,28 +19,32 @@ namespace NWaves.Effects
         public float Decay { get; }
 
         /// <summary>
+        /// Feedforward comb filter
+        /// </summary>
+        private CombFeedbackFilter _filter;
+
+        /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="samplingRate"></param>
         /// <param name="length"></param>
         /// <param name="decay"></param>
-        public EchoEffect(float length, float decay)
+        public EchoEffect(int samplingRate, float length, float decay)
         {
             Length = length;
             Decay = decay;
+
+            _filter = new CombFeedbackFilter((int)(length * samplingRate), am: decay);
         }
 
-        /// <summary>
-        /// Method implements simple echo effect
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringMethod method = FilteringMethod.Auto)
+        public override float Process(float sample)
         {
-            var delay = (int)(Length * signal.SamplingRate);
-            var delayFilter = new CombFeedbackFilter(delay, am: Decay);
-            return delayFilter.ApplyTo(signal);
+            return _filter.Process(sample) * Wet + sample * Dry;
+        }
+
+        public override void Reset()
+        {
+            _filter.Reset();
         }
     }
 }

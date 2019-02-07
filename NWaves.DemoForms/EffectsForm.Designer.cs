@@ -40,6 +40,14 @@ namespace NWaves.DemoForms
             this.stopFilteredButton = new System.Windows.Forms.Button();
             this.applyEffectButton = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label18 = new System.Windows.Forms.Label();
+            this.dryTextBox = new System.Windows.Forms.TextBox();
+            this.label19 = new System.Windows.Forms.Label();
+            this.wetTextBox = new System.Windows.Forms.TextBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.hopSizeTextBox = new System.Windows.Forms.TextBox();
+            this.winSizeTextBox = new System.Windows.Forms.TextBox();
             this.tsmComboBox = new System.Windows.Forms.ComboBox();
             this.pitchShiftCheckBox = new System.Windows.Forms.CheckBox();
             this.delayRadioButton = new System.Windows.Forms.RadioButton();
@@ -67,9 +75,7 @@ namespace NWaves.DemoForms
             this.label4 = new System.Windows.Forms.Label();
             this.distTextBox = new System.Windows.Forms.TextBox();
             this.qTextBox = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.distortionMixTextBox = new System.Windows.Forms.TextBox();
             this.distortionGainTextBox = new System.Windows.Forms.TextBox();
             this.wahwahRadioButton = new System.Windows.Forms.RadioButton();
             this.echoRadioButton = new System.Windows.Forms.RadioButton();
@@ -83,10 +89,6 @@ namespace NWaves.DemoForms
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.signalAfterFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
             this.signalBeforeFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
-            this.winSizeTextBox = new System.Windows.Forms.TextBox();
-            this.hopSizeTextBox = new System.Windows.Forms.TextBox();
-            this.label16 = new System.Windows.Forms.Label();
-            this.label17 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -185,6 +187,10 @@ namespace NWaves.DemoForms
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label18);
+            this.groupBox1.Controls.Add(this.dryTextBox);
+            this.groupBox1.Controls.Add(this.label19);
+            this.groupBox1.Controls.Add(this.wetTextBox);
             this.groupBox1.Controls.Add(this.label17);
             this.groupBox1.Controls.Add(this.label16);
             this.groupBox1.Controls.Add(this.hopSizeTextBox);
@@ -216,9 +222,7 @@ namespace NWaves.DemoForms
             this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Controls.Add(this.distTextBox);
             this.groupBox1.Controls.Add(this.qTextBox);
-            this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Controls.Add(this.distortionMixTextBox);
             this.groupBox1.Controls.Add(this.distortionGainTextBox);
             this.groupBox1.Controls.Add(this.wahwahRadioButton);
             this.groupBox1.Controls.Add(this.echoRadioButton);
@@ -233,6 +237,80 @@ namespace NWaves.DemoForms
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Sound Effects";
             // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label18.Location = new System.Drawing.Point(835, 56);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(42, 25);
+            this.label18.TabIndex = 44;
+            this.label18.Text = "Dry";
+            // 
+            // dryTextBox
+            // 
+            this.dryTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.dryTextBox.Location = new System.Drawing.Point(883, 56);
+            this.dryTextBox.Name = "dryTextBox";
+            this.dryTextBox.Size = new System.Drawing.Size(49, 30);
+            this.dryTextBox.TabIndex = 43;
+            this.dryTextBox.Text = "0,2";
+            this.dryTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label19.Location = new System.Drawing.Point(827, 19);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(48, 25);
+            this.label19.TabIndex = 42;
+            this.label19.Text = "Wet";
+            // 
+            // wetTextBox
+            // 
+            this.wetTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.wetTextBox.Location = new System.Drawing.Point(883, 19);
+            this.wetTextBox.Name = "wetTextBox";
+            this.wetTextBox.Size = new System.Drawing.Size(49, 30);
+            this.wetTextBox.TabIndex = 41;
+            this.wetTextBox.Text = "0,8";
+            this.wetTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(851, 174);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(34, 17);
+            this.label17.TabIndex = 40;
+            this.label17.Text = "Hop";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(766, 174);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(32, 17);
+            this.label16.TabIndex = 39;
+            this.label16.Text = "Win";
+            // 
+            // hopSizeTextBox
+            // 
+            this.hopSizeTextBox.Location = new System.Drawing.Point(891, 172);
+            this.hopSizeTextBox.Name = "hopSizeTextBox";
+            this.hopSizeTextBox.Size = new System.Drawing.Size(41, 22);
+            this.hopSizeTextBox.TabIndex = 38;
+            this.hopSizeTextBox.Text = "128";
+            // 
+            // winSizeTextBox
+            // 
+            this.winSizeTextBox.Location = new System.Drawing.Point(804, 172);
+            this.winSizeTextBox.Name = "winSizeTextBox";
+            this.winSizeTextBox.Size = new System.Drawing.Size(41, 22);
+            this.winSizeTextBox.TabIndex = 37;
+            this.winSizeTextBox.Text = "512";
+            // 
             // tsmComboBox
             // 
             this.tsmComboBox.FormattingEnabled = true;
@@ -240,16 +318,16 @@ namespace NWaves.DemoForms
             "Phase Vocoder",
             "Phase Vocoder (Phase Locking)",
             "WSOLA"});
-            this.tsmComboBox.Location = new System.Drawing.Point(767, 142);
+            this.tsmComboBox.Location = new System.Drawing.Point(687, 142);
             this.tsmComboBox.Name = "tsmComboBox";
-            this.tsmComboBox.Size = new System.Drawing.Size(169, 24);
+            this.tsmComboBox.Size = new System.Drawing.Size(245, 24);
             this.tsmComboBox.TabIndex = 36;
             this.tsmComboBox.Text = "Phase Vocoder";
             // 
             // pitchShiftCheckBox
             // 
             this.pitchShiftCheckBox.AutoSize = true;
-            this.pitchShiftCheckBox.Location = new System.Drawing.Point(663, 159);
+            this.pitchShiftCheckBox.Location = new System.Drawing.Point(583, 159);
             this.pitchShiftCheckBox.Name = "pitchShiftCheckBox";
             this.pitchShiftCheckBox.Size = new System.Drawing.Size(91, 21);
             this.pitchShiftCheckBox.TabIndex = 35;
@@ -269,7 +347,7 @@ namespace NWaves.DemoForms
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(573, 163);
+            this.label15.Location = new System.Drawing.Point(493, 163);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(23, 17);
             this.label15.TabIndex = 33;
@@ -277,7 +355,7 @@ namespace NWaves.DemoForms
             // 
             // pitchShiftTextBox
             // 
-            this.pitchShiftTextBox.Location = new System.Drawing.Point(610, 158);
+            this.pitchShiftTextBox.Location = new System.Drawing.Point(530, 158);
             this.pitchShiftTextBox.Name = "pitchShiftTextBox";
             this.pitchShiftTextBox.Size = new System.Drawing.Size(41, 22);
             this.pitchShiftTextBox.TabIndex = 32;
@@ -286,7 +364,7 @@ namespace NWaves.DemoForms
             // pitchShiftRadioButton
             // 
             this.pitchShiftRadioButton.AutoSize = true;
-            this.pitchShiftRadioButton.Location = new System.Drawing.Point(460, 161);
+            this.pitchShiftRadioButton.Location = new System.Drawing.Point(387, 161);
             this.pitchShiftRadioButton.Name = "pitchShiftRadioButton";
             this.pitchShiftRadioButton.Size = new System.Drawing.Size(107, 21);
             this.pitchShiftRadioButton.TabIndex = 31;
@@ -296,7 +374,7 @@ namespace NWaves.DemoForms
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(678, 68);
+            this.label13.Location = new System.Drawing.Point(598, 68);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(19, 17);
             this.label13.TabIndex = 30;
@@ -305,7 +383,7 @@ namespace NWaves.DemoForms
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(566, 68);
+            this.label14.Location = new System.Drawing.Point(486, 68);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(37, 17);
             this.label14.TabIndex = 29;
@@ -313,7 +391,7 @@ namespace NWaves.DemoForms
             // 
             // lfoQTextBox
             // 
-            this.lfoQTextBox.Location = new System.Drawing.Point(727, 65);
+            this.lfoQTextBox.Location = new System.Drawing.Point(647, 65);
             this.lfoQTextBox.Name = "lfoQTextBox";
             this.lfoQTextBox.Size = new System.Drawing.Size(41, 22);
             this.lfoQTextBox.TabIndex = 28;
@@ -321,7 +399,7 @@ namespace NWaves.DemoForms
             // 
             // lfoFreqTextBox
             // 
-            this.lfoFreqTextBox.Location = new System.Drawing.Point(610, 65);
+            this.lfoFreqTextBox.Location = new System.Drawing.Point(530, 65);
             this.lfoFreqTextBox.Name = "lfoFreqTextBox";
             this.lfoFreqTextBox.Size = new System.Drawing.Size(54, 22);
             this.lfoFreqTextBox.TabIndex = 27;
@@ -330,7 +408,7 @@ namespace NWaves.DemoForms
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(678, 40);
+            this.label11.Location = new System.Drawing.Point(598, 40);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(33, 17);
             this.label11.TabIndex = 26;
@@ -339,7 +417,7 @@ namespace NWaves.DemoForms
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(566, 40);
+            this.label12.Location = new System.Drawing.Point(486, 40);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(30, 17);
             this.label12.TabIndex = 25;
@@ -347,7 +425,7 @@ namespace NWaves.DemoForms
             // 
             // maxFreqTextBox
             // 
-            this.maxFreqTextBox.Location = new System.Drawing.Point(727, 37);
+            this.maxFreqTextBox.Location = new System.Drawing.Point(647, 37);
             this.maxFreqTextBox.Name = "maxFreqTextBox";
             this.maxFreqTextBox.Size = new System.Drawing.Size(41, 22);
             this.maxFreqTextBox.TabIndex = 24;
@@ -355,7 +433,7 @@ namespace NWaves.DemoForms
             // 
             // minFreqTextBox
             // 
-            this.minFreqTextBox.Location = new System.Drawing.Point(610, 37);
+            this.minFreqTextBox.Location = new System.Drawing.Point(530, 37);
             this.minFreqTextBox.Name = "minFreqTextBox";
             this.minFreqTextBox.Size = new System.Drawing.Size(54, 22);
             this.minFreqTextBox.TabIndex = 23;
@@ -364,7 +442,7 @@ namespace NWaves.DemoForms
             // phaserRadioButton
             // 
             this.phaserRadioButton.AutoSize = true;
-            this.phaserRadioButton.Location = new System.Drawing.Point(467, 38);
+            this.phaserRadioButton.Location = new System.Drawing.Point(387, 38);
             this.phaserRadioButton.Name = "phaserRadioButton";
             this.phaserRadioButton.Size = new System.Drawing.Size(74, 21);
             this.phaserRadioButton.TabIndex = 22;
@@ -473,15 +551,6 @@ namespace NWaves.DemoForms
             this.qTextBox.TabIndex = 10;
             this.qTextBox.Text = "-0,2";
             // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(257, 94);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(28, 17);
-            this.label2.TabIndex = 9;
-            this.label2.Text = "Mix";
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -490,14 +559,6 @@ namespace NWaves.DemoForms
             this.label1.Size = new System.Drawing.Size(38, 17);
             this.label1.TabIndex = 8;
             this.label1.Text = "Gain";
-            // 
-            // distortionMixTextBox
-            // 
-            this.distortionMixTextBox.Location = new System.Drawing.Point(306, 91);
-            this.distortionMixTextBox.Name = "distortionMixTextBox";
-            this.distortionMixTextBox.Size = new System.Drawing.Size(41, 22);
-            this.distortionMixTextBox.TabIndex = 7;
-            this.distortionMixTextBox.Text = "0,9";
             // 
             // distortionGainTextBox
             // 
@@ -510,7 +571,7 @@ namespace NWaves.DemoForms
             // wahwahRadioButton
             // 
             this.wahwahRadioButton.AutoSize = true;
-            this.wahwahRadioButton.Location = new System.Drawing.Point(467, 64);
+            this.wahwahRadioButton.Location = new System.Drawing.Point(387, 64);
             this.wahwahRadioButton.Name = "wahwahRadioButton";
             this.wahwahRadioButton.Size = new System.Drawing.Size(87, 21);
             this.wahwahRadioButton.TabIndex = 5;
@@ -633,40 +694,6 @@ namespace NWaves.DemoForms
             this.signalBeforeFilteringPanel.Stride = 256;
             this.signalBeforeFilteringPanel.TabIndex = 20;
             // 
-            // winSizeTextBox
-            // 
-            this.winSizeTextBox.Location = new System.Drawing.Point(808, 172);
-            this.winSizeTextBox.Name = "winSizeTextBox";
-            this.winSizeTextBox.Size = new System.Drawing.Size(41, 22);
-            this.winSizeTextBox.TabIndex = 37;
-            this.winSizeTextBox.Text = "512";
-            // 
-            // hopSizeTextBox
-            // 
-            this.hopSizeTextBox.Location = new System.Drawing.Point(895, 172);
-            this.hopSizeTextBox.Name = "hopSizeTextBox";
-            this.hopSizeTextBox.Size = new System.Drawing.Size(41, 22);
-            this.hopSizeTextBox.TabIndex = 38;
-            this.hopSizeTextBox.Text = "128";
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(772, 174);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(32, 17);
-            this.label16.TabIndex = 39;
-            this.label16.Text = "Win";
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(859, 176);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(34, 17);
-            this.label17.TabIndex = 40;
-            this.label17.Text = "Hop";
-            // 
             // EffectsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -718,9 +745,7 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.RadioButton distortionRadioButton;
         private System.Windows.Forms.RadioButton overdriveRadioButton;
         private System.Windows.Forms.RadioButton tremoloRadioButton;
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox distortionMixTextBox;
         private System.Windows.Forms.TextBox distortionGainTextBox;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
@@ -756,5 +781,9 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox hopSizeTextBox;
         private System.Windows.Forms.TextBox winSizeTextBox;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.TextBox dryTextBox;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.TextBox wetTextBox;
     }
 }

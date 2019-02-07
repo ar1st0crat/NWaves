@@ -54,6 +54,6 @@ namespace NWaves.Signals.Builders
             _n = 0;
         }
 
-        int _n;
+        private int _n;
     }
 }

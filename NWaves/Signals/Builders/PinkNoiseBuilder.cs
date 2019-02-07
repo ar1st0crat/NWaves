@@ -69,8 +69,8 @@ namespace NWaves.Signals.Builders
             return base.Generate();
         }
 
-        double _b0, _b1, _b2, _b3, _b4, _b5, _b6;
+        private double _b0, _b1, _b2, _b3, _b4, _b5, _b6;
 
-        Random _rand = new Random();
+        private Random _rand = new Random();
     }
 }
