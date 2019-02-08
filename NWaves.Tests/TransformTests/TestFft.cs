@@ -24,5 +24,19 @@ namespace NWaves.Tests.TransformTests
 
             Assert.Throws<ArgumentException>(() => Fft.Shift(array));
         }
+
+        [Test]
+        public void TestGoertzel()
+        {
+            float[] array = { 1, 2, 3, 4, 5, 6, 7, 8 };
+
+            var cmpx = new Goertzel(8).Direct(array, 2);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(cmpx.Real, Is.EqualTo(-4).Within(1e-6));
+                Assert.That(cmpx.Imaginary, Is.EqualTo(4).Within(1e-6));
+            });
+        }
     }
 }
