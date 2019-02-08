@@ -167,7 +167,7 @@ namespace NWaves.DemoForms
             var pos = _hopSize * _specNo;
 
             var pitch = //Pitch.FromHss(_signal, pos, pos + _fftSize);
-                        Pitch.FromAutoCorrelation(_signal, pos, pos + _fftSize);
+                        Pitch.FromAutoCorrelation(_signal, pos, pos + _fftSize, 80, 1000);
                         //Pitch.FromZeroCrossingsSchmitt(_signal, pos, pos + _fftSize);
                         //Pitch.FromYin(_signal, pos, pos + _fftSize);
 

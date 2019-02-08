@@ -13,12 +13,12 @@ namespace NWaves.Operations.Convolution
         /// <summary>
         /// FFT size
         /// </summary>
-        private readonly int _fftSize;
+        private int _fftSize;
 
         /// <summary>
         /// FFT transformer
         /// </summary>
-        private readonly Fft _fft;
+        private Fft _fft;
 
         // internal reusable buffers
 
@@ -28,22 +28,26 @@ namespace NWaves.Operations.Convolution
         private float[] _imag2;
         private float[] _zeroblock;
 
-
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="fftSize">FFT size</param>
         public Convolver(int fftSize = 0)
         {
-            if (fftSize <= 0)
+            if (fftSize > 0)
             {
-                return;
+                PrepareMemory(fftSize);
             }
+        }
 
+        /// <summary>
+        /// Prepare all necessary arrays for calculations
+        /// </summary>
+        /// <param name="fftSize"></param>
+        private void PrepareMemory(int fftSize)
+        {
             _fftSize = fftSize;
             _fft = new Fft(_fftSize);
-
-            // prepare blocks in memory:
 
             _real1 = new float[_fftSize];
             _imag1 = new float[_fftSize];
@@ -55,9 +59,9 @@ namespace NWaves.Operations.Convolution
         /// <summary>
         /// Convolution
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="kernel"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal of length N</param>
+        /// <param name="kernel">Kernel of length M</param>
+        /// <returns>Convolution signal of length N + M - 1</returns>
         public DiscreteSignal Convolve(DiscreteSignal signal, DiscreteSignal kernel)
         {
             var length = signal.Length + kernel.Length - 1;
@@ -67,48 +71,14 @@ namespace NWaves.Operations.Convolution
 
             if (_fft == null)
             {
-                fftSize = MathUtils.NextPowerOfTwo(length);
-                fft = new Fft(fftSize);
-
-                // prepare blocks in memory:
-
-                _real1 = new float[fftSize];
-                _imag1 = new float[fftSize];
-                _real2 = new float[fftSize];
-                _imag2 = new float[fftSize];
-                _zeroblock = new float[fftSize];
+                PrepareMemory(MathUtils.NextPowerOfTwo(length));
             }
 
-            _zeroblock.FastCopyTo(_real1, fftSize);
-            _zeroblock.FastCopyTo(_real2, fftSize);
-            _zeroblock.FastCopyTo(_imag1, fftSize);
-            _zeroblock.FastCopyTo(_imag2, fftSize);
+            var output = new float[_fftSize];
 
-            signal.Samples.FastCopyTo(_real1, signal.Length);
-            kernel.Samples.FastCopyTo(_real2, kernel.Length);
+            Convolve(signal.Samples, kernel.Samples, output);
 
-            // 1) do FFT of both signals
-
-            fft.Direct(_real1, _imag1);
-            fft.Direct(_real2, _imag2);
-
-            // 2) do complex multiplication of spectra and normalize
-
-            for (var i = 0; i < fftSize; i++)
-            {
-                var re = _real1[i] * _real2[i] - _imag1[i] * _imag2[i];
-                var im = _real1[i] * _imag2[i] + _imag1[i] * _real2[i];
-                _real1[i] = re / fftSize;
-                _imag1[i] = im / fftSize;
-            }
-
-            // 3) do inverse FFT of resulting spectrum
-
-            fft.Inverse(_real1, _imag1);
-
-            // 4) return resulting meaningful part of the signal (truncate size to N + M - 1)
-
-            return new DiscreteSignal(signal.SamplingRate, _real1).First(length);
+            return new DiscreteSignal(signal.SamplingRate, output).First(length);
         }
 
         /// <summary>

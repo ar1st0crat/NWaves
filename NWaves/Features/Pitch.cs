@@ -38,22 +38,24 @@ namespace NWaves.Features
 
             var block = new DiscreteSignal(samplingRate, signal)[startPos, endPos].Samples;
 
-            var fftSize = MathUtils.NextPowerOfTwo(endPos - startPos);
+            var fftSize = MathUtils.NextPowerOfTwo(2 * block.Length - 1);
 
             var cc = new float[fftSize];
 
             new Convolver(fftSize).CrossCorrelate(block, block.FastCopy(), cc);
 
-            var start = pitch1;
+            var start = pitch1 + block.Length - 1;
+            var end = Math.Min(start + pitch2, cc.Length);
 
-            var max = cc[start];
+            var max = start < cc.Length ? cc[start] : 0;
+
             var peakIndex = start;
-            for (var k = start + 1; k <= start + pitch2; k++)
+            for (var k = start; k < end; k++)
             {
                 if (cc[k] > max)
                 {
                     max = cc[k];
-                    peakIndex = k + 1;
+                    peakIndex = k - block.Length + 1;
                 }
             }
 
@@ -489,8 +491,6 @@ namespace NWaves.Features
                                               float low = 80,
                                               float high = 400)
         {
-            var sumSpectrum = spectrum.FastCopy();
-
             var fftSize = (spectrum.Length - 1) * 2;
 
             var startIdx = (int)(low * fftSize / samplingRate) + 1;

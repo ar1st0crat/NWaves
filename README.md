@@ -23,7 +23,7 @@ Already available:
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and perceptual weighting (A, B, C)
 - [x] customizable feature extraction (time-domain, spectral, MFCC, PNCC/SPNCC, LPC, LPCC, AMS) and CSV serialization
 - [x] feature post-processing (mean and variance normalization, adding deltas)
-- [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest, decrease, noiseness)
+- [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest, decrease, noiseness, MPEG7)
 - [x] harmonic features (harmonic centroid and spread, inharmonicity, tristimulus, odd-to-even ratio)
 - [x] signal builders (sine/cosine, white/pink/red/Perlin noise, awgn, triangle, sawtooth, square, pulse, ramp, sinc, clicks)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)

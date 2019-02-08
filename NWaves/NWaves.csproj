@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="Effects\AudioEffect.cs" />
     <Compile Include="Effects\AutowahEffect.cs" />
+    <Compile Include="FeatureExtractors\Multi\Mpeg7SpectralFeaturesExtractor.cs" />
     <Compile Include="FeatureExtractors\PitchExtractor.cs" />
     <Compile Include="Filters\Base\IFilterExtensions.cs" />
     <Compile Include="Filters\Base\IOnlineFilter.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="Filters\Adaptive\KalmanFilter.cs" />
     <Compile Include="Filters\Adaptive\LmsFilter.cs" />
     <Compile Include="Filters\Adaptive\RlsFilter.cs" />
+    <Compile Include="Transforms\Goertzel.cs" />
     <Compile Include="Utils\DecimalComplex.cs" />
     <Compile Include="Utils\Guard.cs" />
     <Compile Include="Utils\MemoryOperationExtensions.cs" />

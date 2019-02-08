@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Operations.Convolution;
-using NWaves.Signals;
 using NWaves.Utils;
 
 namespace NWaves.Features
@@ -18,7 +18,7 @@ namespace NWaves.Features
     /// 
     /// Example:
     /// 
-    /// var extractor = new TimeDomainFeaturesExtractor(sr, "", 0.0256, 0.010);
+    /// var extractor = new TimeDomainFeaturesExtractor(sr, "en", 0.0256, 0.010);
     /// 
     /// extractor.AddFeature("yin", (s, start, end) => { return Pitch.FromYin(s, start, end); });
     /// 
@@ -28,7 +28,7 @@ namespace NWaves.Features
     public class PitchExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Number of pitch algorithms (1 by default, YIN, AutoCorrelation)
+        /// Number of features (currently 1 pitch value estimated by autocorrelation)
         /// </summary>
         public override int FeatureCount { get; }
 
@@ -68,7 +68,7 @@ namespace NWaves.Features
         private float[] _cc;
 
         /// <summary>
-        /// 
+        /// Constructor
         /// </summary>
         /// <param name="samplingRate"></param>
         /// <param name="frameDuration"></param>
@@ -84,12 +84,12 @@ namespace NWaves.Features
             _low = low;
             _high = high;
 
-            var fftSize = MathUtils.NextPowerOfTwo(FrameSize);
+            var fftSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
             _convolver = new Convolver(fftSize);
 
-            _block = new float[FrameSize];    // buffer for the currently processed block
-            _reversed = new float[FrameSize]; // buffer for the currently processed block
-            _cc = new float[fftSize];         // buffer for cross-correlation signal
+            _block = new float[FrameSize];
+            _reversed = new float[FrameSize];
+            _cc = new float[fftSize];
 
             FeatureDescriptions = new List<string>() { "pitch" };
         }
@@ -119,16 +119,18 @@ namespace NWaves.Features
 
                 _convolver.CrossCorrelate(_block, _reversed, _cc);
 
-                var startPos = pitch1;
+                var start = pitch1 + FrameSize - 1;
+                var end = Math.Min(start + pitch2, _cc.Length);
 
-                var max = _cc[startPos];
-                var peakIndex = startPos;
-                for (var k = startPos + 1; k <= pitch2 + startPos; k++)
+                var max = start < _cc.Length ? _cc[start] : 0;
+
+                var peakIndex = start;
+                for (var k = start; k < end; k++)
                 {
                     if (_cc[k] > max)
                     {
                         max = _cc[k];
-                        peakIndex = k + 1;
+                        peakIndex = k - FrameSize + 1;
                     }
                 }
 

@@ -22,21 +22,29 @@ namespace NWaves.Features
                 pitch = Pitch.FromSpectralPeaks(spectrum, samplingRate);
             }
 
-            var resolution = samplingRate / (2 * (spectrum.Length - 1));
+            var resolution = (float)samplingRate / (2 * (spectrum.Length - 1));
 
             var region = (int)(pitch / (2 * resolution));
 
             peaks[0] = (int)(pitch / resolution);
             peakFrequencies[0] = pitch;
-
+            
             for (var i = 0; i < peaks.Length; i++)
             {
                 var candidate = (i + 1) * peaks[0];
+
+                if (candidate >= spectrum.Length)
+                {
+                    peaks[i] = spectrum.Length - 1;
+                    peakFrequencies[i] = resolution * (spectrum.Length - 1);
+                    continue;
+                }
 
                 var c = candidate;
                 for (var j = -region; j < region; j++)
                 {
                     if (c + j - 1       > 0 &&
+                        c + j + 1       < spectrum.Length &&
                         spectrum[c + j] > spectrum[c + j - 1] && 
                         spectrum[c + j] > spectrum[c + j + 1] &&
                         spectrum[c + j] > spectrum[candidate])
@@ -64,7 +72,7 @@ namespace NWaves.Features
                 return 0;
             }
 
-            var sum = 0.0f;
+            var sum = 1e-10f;
             var weightedSum = 0.0f;
 
             for (var i = 0; i < peaks.Length; i++)
@@ -93,7 +101,7 @@ namespace NWaves.Features
 
             var centroid = Centroid(spectrum, peaks, peakFrequencies);
 
-            var sum = 0.0f;
+            var sum = 1e-10f;
             var weightedSum = 0.0f;
 
             for (var i = 0; i < peaks.Length; i++)
@@ -122,7 +130,7 @@ namespace NWaves.Features
 
             var f0 = peakFrequencies[0];
 
-            var squaredSum = 0.0f;
+            var squaredSum = 1e-10f;
             var sum = 0.0f;
 
             for (var i = 0; i < peaks.Length; i++)
@@ -150,8 +158,8 @@ namespace NWaves.Features
                 return 0;
             }
 
-            var oddSum = 0.0f;
-            var evenSum = 0.0f;
+            var oddSum = 1e-10f;
+            var evenSum = 1e-10f;
 
             for (var i = 0; i < peaks.Length; i += 2)
             {
@@ -180,7 +188,7 @@ namespace NWaves.Features
                 return 0;
             }
 
-            var sum = 0.0f;
+            var sum = 1e-10f;
 
             for (var i = 0; i < peaks.Length; i++)
             {

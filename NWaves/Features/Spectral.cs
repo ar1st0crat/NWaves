@@ -16,7 +16,7 @@ namespace NWaves.Features
         /// <returns>Spectral centroid</returns>
         public static float Centroid(float[] spectrum, float[] frequencies)
         {
-            var sum = 0.0f;
+            var sum = 1e-10f;
             var weightedSum = 0.0f;
 
             for (var i = 1; i < spectrum.Length; i++)
@@ -38,7 +38,7 @@ namespace NWaves.Features
         {
             var centroid = Centroid(spectrum, frequencies);
 
-            var sum = 0.0f;
+            var sum = 1e-10f;
             var weightedSum = 0.0f;
 
             for (var i = 1; i < spectrum.Length; i++)
@@ -57,7 +57,7 @@ namespace NWaves.Features
         /// <returns></returns>
         public static float Decrease(float[] spectrum)
         {
-            var sum = 0.0f;
+            var sum = 1e-10f;
             var diffSum = 0.0f;
 
             for (var i = 2; i < spectrum.Length; i++)
@@ -91,7 +91,7 @@ namespace NWaves.Features
             sum /= spectrum.Length;
             logSum /= spectrum.Length;
 
-            return sum > 0 ? (float)Math.Exp(logSum) / sum : 0.0f;
+            return sum > 1e-10 ? (float)Math.Exp(logSum) / sum : 0.0f;
         }
 
         /// <summary>
@@ -101,13 +101,13 @@ namespace NWaves.Features
         /// <param name="frequencies"></param>
         /// <param name="noiseFrequency"></param>
         /// <returns></returns>
-        public static float Noiseness(float[] spectrum, float[] frequencies, float noiseFrequency = 4000)
+        public static float Noiseness(float[] spectrum, float[] frequencies, float noiseFrequency = 3000)
         {
             var noiseSum = 0.0f;
-            var totalSum = 0.0f;
+            var totalSum = 1e-10f;
 
-            var i = 0;
-            for (; frequencies[i] < noiseFrequency; i++)
+            var i = 1;
+            for (; i < spectrum.Length && frequencies[i] < noiseFrequency; i++)
             {
                 totalSum += spectrum[i];
             }
@@ -176,7 +176,7 @@ namespace NWaves.Features
                 }
             }
 
-            return sum > 0 ? spectrum.Length * max / sum : 1.0f;
+            return sum > 1e-10 ? spectrum.Length * max / sum : 1.0f;
         }
 
         /// <summary>

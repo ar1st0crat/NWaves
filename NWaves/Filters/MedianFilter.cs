@@ -27,6 +27,9 @@ namespace NWaves.Filters
             }
 
             Size = size;
+
+            _buf = new float[Size];
+            _tmp = new float[Size];
         }
 
         /// <summary>
@@ -41,54 +44,29 @@ namespace NWaves.Filters
             var input = signal.Samples;
             var output = new float[input.Length];
 
-            var mid = Size / 2;
+            int i = 0, j = 0;
 
-            var buf = new float[Size + mid];
-            var zeros = new float[Size];
-
-            var n = 0;
-            var i = Size / 2;
-            while (i >= 0)
-            {
-                zeros.FastCopyTo(buf, zeros.Length);
-                input.FastCopyTo(buf, Size, 0, i--);
-                output[n++] = MathUtils.FindNth(buf, mid, 0, Size - 1);
+            for (; i < Size/2; i++)     // to mimic scipy.signal.medfilt() 
+            {                           // first feed zeros
+                Process(0);
             }
 
-            i = 1;
-            while (i <= input.Length - Size)
+            for (i = 0; i < Size/2; i++)    // then feed first samples
             {
-                input.FastCopyTo(buf, Size, i++);
-                output[n++] = MathUtils.FindNth(buf, mid, 0, Size - 1);
+                Process(input[i]);
             }
 
-            var offset = 1;
-            while (i < input.Length - Size / 2)
+            for (; j < input.Length - Size / 2; j++, i++)   // and begin populating output signal
             {
-                zeros.FastCopyTo(buf, zeros.Length, 0, offset);
-                input.FastCopyTo(buf, Size - offset, i++, offset);
-                output[n++] = MathUtils.FindNth(buf, mid + offset, offset, offset + Size - 1);
-                offset++;
+                output[j] = Process(input[i]);
+            }
+
+            for (i = 0; i < Size / 2; i++, j++)     // don't forget last samples
+            {
+                output[j] = Process(0);
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
-        }
-
-        /// <summary>
-        /// Online filtering
-        /// </summary>
-        /// <param name="input">Input block of samples</param>
-        /// <param name="output">Block of filtered samples</param>
-        /// <param name="count">Number of samples to filter</param>
-        /// <param name="inputPos">Input starting position</param>
-        /// <param name="outputPos">Output starting position</param>
-        public void Process(float[] input,
-                            float[] output,
-                            int count,
-                            int inputPos = 0,
-                            int outputPos = 0)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -98,7 +76,16 @@ namespace NWaves.Filters
         /// <returns></returns>
         public float Process(float sample)
         {
-            throw new NotImplementedException();
+            if (_n == _buf.Length)      // some kind of a circular buffer
+            {
+                _n = 0;
+            }
+
+            _buf[_n++] = sample;
+
+            _buf.FastCopyTo(_tmp, _buf.Length);
+
+            return MathUtils.FindNth(_tmp, Size / 2, 0, Size - 1);
         }
 
         /// <summary>
@@ -106,6 +93,17 @@ namespace NWaves.Filters
         /// </summary>
         public void Reset()
         {
+            _n = 0;
+
+            for (var i = 0; i < _buf.Length; i++)
+            {
+                _buf[i] = 0;
+            }
         }
+
+        private int _n;
+
+        private float[] _buf;
+        private float[] _tmp;
     }
 }

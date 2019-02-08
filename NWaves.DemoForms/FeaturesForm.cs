@@ -37,34 +37,37 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            var frameDuration = (double) 512 / _signal.SamplingRate;
-            var hopDuration = (double) 256 / _signal.SamplingRate;
+            var frameDuration = (double) 2048 / _signal.SamplingRate;
+            var hopDuration = (double) 1024 / _signal.SamplingRate;
 
-            var freqs = new[] { 0.0f, 300, 600, 1000, 2000, 4000, 7000 };
+            var freqs = new[] { 300f, 600, 1000, 2000, 4000, 7000 };
 
-            var pitchExtractor = new PitchExtractor(_signal.SamplingRate, frameDuration, hopDuration);
+            var pitchExtractor = new PitchExtractor(_signal.SamplingRate, frameDuration, hopDuration, high: 900/*Hz*/);
             var pitchTrack = pitchExtractor.ComputeFrom(_signal)
                                            .Select(p => p.Features[0])
                                            .ToArray();
 
             var tdExtractor = new TimeDomainFeaturesExtractor(_signal.SamplingRate, "all", frameDuration, hopDuration);
             var spectralExtractor = new SpectralFeaturesExtractor(_signal.SamplingRate, "sc+sn", frameDuration, hopDuration, frequencies: freqs);
-            spectralExtractor.IncludeHarmonicFeatures("all");
-            spectralExtractor.SetPitchTrack(pitchTrack);
+            var mpeg7Extractor = new Mpeg7SpectralFeaturesExtractor(_signal.SamplingRate, "all", frameDuration, hopDuration);
+            mpeg7Extractor.IncludeHarmonicFeatures("all");
+            mpeg7Extractor.SetPitchTrack(pitchTrack);
 
             tdExtractor.AddFeature("pitch_zcr", (signal, start, end) => { return Pitch.FromZeroCrossingsSchmitt(signal, start, end); });
             //spectralExtractor.AddFeature("pitch_hss", (spectrum, fs) => { return Pitch.FromHss(spectrum, _signal.SamplingRate); } );
 
             var tdVectors = tdExtractor.ParallelComputeFrom(_signal);
             var spectralVectors = spectralExtractor.ParallelComputeFrom(_signal);
+            var mpeg7Vectors = mpeg7Extractor.ParallelComputeFrom(_signal);
 
-            _vectors = FeaturePostProcessing.Join(tdVectors, spectralVectors);
+            _vectors = FeaturePostProcessing.Join(tdVectors, spectralVectors, mpeg7Vectors);
 
             //FeaturePostProcessing.NormalizeMean(_vectors);
             //FeaturePostProcessing.AddDeltas(_vectors);
 
             var descriptions = tdExtractor.FeatureDescriptions
-                                          .Concat(spectralExtractor.FeatureDescriptions);
+                                          .Concat(spectralExtractor.FeatureDescriptions)
+                                          .Concat(mpeg7Extractor.FeatureDescriptions);
 
             FillFeaturesList(_vectors, descriptions);
         }

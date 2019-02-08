@@ -98,7 +98,8 @@ namespace NWaves.DemoForms.UserControls
                 _logLine = _line.Select(l =>
                 {
                     var val = (float)LevelScale.ToDecibel(l);
-                    if (float.IsNaN(val)) val = Height / 2 + 1;
+                    //if (float.IsNaN(val)) val = Height / 2 + 1;
+                    if (float.IsNaN(val) || Math.Abs(val) > int.MaxValue) val = Height / 2 + 1;
                     return val / Gain ?? val;
                 })
                 .ToArray();
@@ -115,7 +116,7 @@ namespace NWaves.DemoForms.UserControls
                     _logMarkline = _markline.Select(l =>
                     {
                         var val = (float)LevelScale.ToDecibel(l);
-                        if (float.IsNaN(val)) val = Height/2 + 1;
+                        if (float.IsNaN(val) || Math.Abs(val) > Height) val = Height/2 + 1;
                         return val / Gain ?? val;
                     })
                         .ToArray();
@@ -166,7 +167,6 @@ namespace NWaves.DemoForms.UserControls
             {
                 var pen = new Pen(ForeColor, Thickness);
 
-                var i = 1;
                 var x = PaddingX + Stride;
 
                 var line = _logLine ?? _line;
@@ -189,7 +189,7 @@ namespace NWaves.DemoForms.UserControls
                                  (Height-2*PaddingY) / (2 * gain.Value));
                 }
                 
-                for (; i < line.Length; i++)
+                for (var i = 1; i < line.Length; i++)
                 {
                     g.DrawLine(pen, x - Stride, (float)(-line[i - 1] * gain) + offset, 
                                     x,          (float)(-line[i] * gain) + offset);
@@ -220,7 +220,8 @@ namespace NWaves.DemoForms.UserControls
                         DrawAxes(g, min, max);
                     }
 
-                    gain = (Height - 2*PaddingY) / (max - min);
+                    gain = max - min < 1e-6 ? 1 : (Height - 2 * PaddingY) / (max - min);
+
                     offset = (int)(Height - PaddingY + min * gain);
                 }
 
@@ -228,8 +229,10 @@ namespace NWaves.DemoForms.UserControls
                 var x = PaddingX + Stride;
                 for (var j = 1; j < _markline.Length; j++)
                 {
-                    g.DrawLine(pen, x - Stride, (float)(-markline[j - 1] * gain) + offset, 
-                                    x,          (float)(-markline[j] * gain) + offset);
+                    var y1 = Math.Abs(markline[j - 1]) < Math.Abs(Height) ? (float)(-markline[j - 1] * gain) : 0;
+                    var y2 = Math.Abs(markline[j]) < Math.Abs(Height) ? (float)(-markline[j] * gain) : 0;
+
+                    g.DrawLine(pen, x - Stride, y1 + offset, x, y2 + offset);
                     x += Stride;
                 }
 
