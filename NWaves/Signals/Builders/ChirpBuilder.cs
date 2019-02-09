@@ -58,7 +58,12 @@ namespace NWaves.Signals.Builders
             var fs = SamplingRate;
             
             var sample = _amplitude * Math.Cos(2 * Math.PI * (_f0 / fs + k * _n) * _n / fs);
-            _n++;
+
+            if (++_n == Length)
+            {
+                _n = 0;
+            }
+
             return (float)sample;
         }
 

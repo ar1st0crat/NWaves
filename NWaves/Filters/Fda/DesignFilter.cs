@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using NWaves.Filters.Base;
+using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
 using NWaves.Windows;
@@ -13,13 +14,13 @@ namespace NWaves.Filters.Fda
     public static class DesignFilter
     {
         /// <summary>
-        /// Method for FIR filter design using window method
+        /// FIR filter design using window method
         /// </summary>
-        /// <param name="order"></param>
-        /// <param name="magnitudeResponse"></param>
-        /// <param name="phaseResponse"></param>
-        /// <param name="window"></param>
-        /// <returns></returns>
+        /// <param name="order">Filter order</param>
+        /// <param name="magnitudeResponse">Magnitude response</param>
+        /// <param name="phaseResponse">Phase response</param>
+        /// <param name="window">Window</param>
+        /// <returns>FIR filter kernel</returns>
         public static FirFilter Fir(int order, double[] magnitudeResponse, double[] phaseResponse = null, WindowTypes window = WindowTypes.Blackman)
         {
             if (order % 2 == 0)
@@ -53,6 +54,18 @@ namespace NWaves.Filters.Fda
             kernel.ApplyWindow(window);
 
             return new FirFilter(kernel);
+        }
+
+        /// <summary>
+        /// FIR filter design using window method
+        /// </summary>
+        /// <param name="order">Filter order</param>
+        /// <param name="frequencyResponse">Complex frequency response</param>
+        /// <param name="window">Window</param>
+        /// <returns>FIR filter kernel</returns>
+        public static FirFilter Fir(int order, ComplexDiscreteSignal frequencyResponse, WindowTypes window = WindowTypes.Blackman)
+        {
+            return Fir(order, frequencyResponse.Real, frequencyResponse.Imag, window);
         }
 
         /// <summary>

@@ -151,7 +151,7 @@ namespace NWaves.Operations.Convolution
         /// <returns></returns>
         public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
         {
-            var firstCount = Math.Min(HopSize, signal.Length);
+            var firstCount = Math.Min(HopSize - 1, signal.Length);
 
             int i = 0, j = 0;
 

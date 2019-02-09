@@ -39,6 +39,9 @@
   <ItemGroup>
     <Compile Include="Effects\AudioEffect.cs" />
     <Compile Include="Effects\AutowahEffect.cs" />
+    <Compile Include="Effects\MorphEffect.cs" />
+    <Compile Include="Effects\RobotEffect.cs" />
+    <Compile Include="Effects\WhisperEffect.cs" />
     <Compile Include="FeatureExtractors\Multi\Mpeg7SpectralFeaturesExtractor.cs" />
     <Compile Include="FeatureExtractors\PitchExtractor.cs" />
     <Compile Include="Filters\Base\IFilterExtensions.cs" />
@@ -53,6 +56,7 @@
     <Compile Include="Operations\Convolution\Convolver.cs" />
     <Compile Include="Operations\Convolution\OlsBlockConvolver.cs" />
     <Compile Include="Operations\Resampler.cs" />
+    <Compile Include="Operations\Tsm\PhaseLockingVocoder.cs" />
     <Compile Include="Operations\Tsm\TsmAlgorithm.cs" />
     <Compile Include="Signals\Builders\ChirpBuilder.cs" />
     <Compile Include="Signals\Builders\CosineBuilder.cs" />
@@ -67,7 +71,6 @@
     <Compile Include="Audio\Mci\Mci.cs" />
     <Compile Include="Audio\Mci\MciAudioPlayer.cs" />
     <Compile Include="Audio\Mci\MciAudioRecorder.cs" />
-    <Compile Include="Effects\ChorusEffect.cs" />
     <Compile Include="Effects\DistortionEffect.cs" />
     <Compile Include="Effects\DelayEffect.cs" />
     <Compile Include="Effects\EchoEffect.cs" />
@@ -75,7 +78,6 @@
     <Compile Include="Effects\OverdriveEffect.cs" />
     <Compile Include="Effects\PhaserEffect.cs" />
     <Compile Include="Effects\PitchShiftEffect.cs" />
-    <Compile Include="Effects\ReverbEffect.cs" />
     <Compile Include="Effects\TremoloEffect.cs" />
     <Compile Include="Effects\TubeDistortionEffect.cs" />
     <Compile Include="Effects\VibratoEffect.cs" />

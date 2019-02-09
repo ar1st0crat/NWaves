@@ -202,10 +202,10 @@ namespace NWaves.Operations
             switch (algorithm)
             {
                 case TsmAlgorithm.PhaseVocoder:
-                    stretchFilter = new PhaseVocoder(stretch, hopSize, windowSize, false);
+                    stretchFilter = new PhaseVocoder(stretch, hopSize, windowSize);
                     break;
                 case TsmAlgorithm.PhaseVocoderPhaseLocking:
-                    stretchFilter = new PhaseVocoder(stretch, hopSize, windowSize);
+                    stretchFilter = new PhaseLockingVocoder(stretch, hopSize, windowSize);
                     break;
                 default:
                     stretchFilter = new Wsola(stretch, windowSize, hopSize);
@@ -238,11 +238,11 @@ namespace NWaves.Operations
             {
                 case TsmAlgorithm.PhaseVocoder:
                     frameSize = MathUtils.NextPowerOfTwo(1024 * signal.SamplingRate / 16000);
-                    stretchFilter = new PhaseVocoder(stretch, frameSize / 10, frameSize, false);
+                    stretchFilter = new PhaseVocoder(stretch, frameSize / 10, frameSize);
                     break;
                 case TsmAlgorithm.PhaseVocoderPhaseLocking:
                     frameSize = MathUtils.NextPowerOfTwo(1024 * signal.SamplingRate / 16000);
-                    stretchFilter = new PhaseVocoder(stretch, frameSize / 4, frameSize);
+                    stretchFilter = new PhaseLockingVocoder(stretch, frameSize / 4, frameSize);
                     break;
                 default:
                     stretchFilter = new Wsola(stretch);

@@ -47,7 +47,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Algorithm is based on Phase Vocoder
+        /// Algorithm is essentially: 1) TSM; 2) linear interpolation
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="method">Filtering method</param>

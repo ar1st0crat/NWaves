@@ -127,7 +127,8 @@ namespace NWaves.DemoForms
             }
             else if (pitchShiftRadioButton.Checked)
             {
-                effect = pitchShiftCheckBox.Checked ? new PitchShiftEffect(shift, winSize, hopSize, tsm) : null;
+                //effect = pitchShiftCheckBox.Checked ? new PitchShiftEffect(shift, winSize, hopSize, tsm) : null;
+                effect = pitchShiftCheckBox.Checked ? new RobotEffect(hopSize, winSize) : null;
             }
             else
             {
