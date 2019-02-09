@@ -127,8 +127,9 @@ namespace NWaves.DemoForms
             }
             else if (pitchShiftRadioButton.Checked)
             {
-                //effect = pitchShiftCheckBox.Checked ? new PitchShiftEffect(shift, winSize, hopSize, tsm) : null;
-                effect = pitchShiftCheckBox.Checked ? new RobotEffect(hopSize, winSize) : null;
+                effect = pitchShiftCheckBox.Checked ? new PitchShiftEffect(shift, winSize, hopSize, tsm) : null;
+                //effect = pitchShiftCheckBox.Checked ? new RobotEffect(hopSize, winSize) : null;
+                //effect = new MorphEffect(hopSize, winSize);
             }
             else
             {
@@ -145,6 +146,15 @@ namespace NWaves.DemoForms
                 effect.Dry = float.Parse(dryTextBox.Text);
 
                 _filteredSignal = effect.ApplyTo(_signal, FilteringMethod.Auto);
+
+                //DiscreteSignal morph;
+                //using (var stream = new FileStream(@"D:\Docs\Research\DATABASE\Dictor1\wav\gtr16khz.wav", FileMode.Open))
+                //{
+                //    var waveFile = new WaveFile(stream);
+                //    morph = waveFile[Channels.Average];
+                //}
+
+                //_filteredSignal = ((MorphEffect)effect).ApplyTo(_signal, morph);
             }
             else
             {

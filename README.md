@@ -32,7 +32,7 @@ Already available:
 - [x] simple resampling, interpolation, decimation
 - [x] bandlimited resampling
 - [x] noise reduction (spectral subtraction, Wiener filtering)
-- [x] sound effects (delay, echo, tremolo, wahwah, autowah, phaser, pitch shift, robotize, whisperize)
+- [x] sound effects (delay, echo, tremolo, wahwah/autowah, phaser, pitch shift, sound morphing, robotize, whisperize)
 - [x] simple modulation/demodulation (AM, ring, FM, PM)
 - [x] simple audio playback and recording
 
