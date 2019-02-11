@@ -5,6 +5,7 @@ using NWaves.FeatureExtractors.Base;
 using NWaves.Features;
 using NWaves.Transforms;
 using NWaves.Utils;
+using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors.Multi
 {
@@ -39,6 +40,16 @@ namespace NWaves.FeatureExtractors.Multi
         /// FFT transformer
         /// </summary>
         private readonly Fft _fft;
+
+        /// <summary>
+        /// Type of the window function
+        /// </summary>
+        private readonly WindowTypes _window;
+
+        /// <summary>
+        /// Window samples
+        /// </summary>
+        private readonly float[] _windowSamples;
 
         /// <summary>
         /// Extractor functions
@@ -95,6 +106,7 @@ namespace NWaves.FeatureExtractors.Multi
                                          double hopDuration = 0.010/*sec*/,
                                          int fftSize = 0,
                                          float[] frequencies = null,
+                                         WindowTypes window = WindowTypes.Hamming,
                                          IReadOnlyDictionary<string, object> parameters = null)
 
             : base(samplingRate, frameDuration, hopDuration)
@@ -183,6 +195,12 @@ namespace NWaves.FeatureExtractors.Multi
             _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
             _fft = new Fft(_fftSize);
 
+            _window = window;
+            if (_window != WindowTypes.Rectangular)
+            {
+                _windowSamples = Window.OfType(_window, FrameSize);
+            }
+
             var resolution = (float)samplingRate / _fftSize;
 
             if (frequencies == null)
@@ -255,6 +273,13 @@ namespace NWaves.FeatureExtractors.Multi
                 _zeroblock.FastCopyTo(_block, _fftSize);
                 samples.FastCopyTo(_block, FrameSize, i);
 
+                // apply window if necessary
+
+                if (_window != WindowTypes.Rectangular)
+                {
+                    _block.ApplyWindow(_windowSamples);
+                }
+
                 // compute and prepare spectrum
 
                 _fft.MagnitudeSpectrum(_block, _spectrum);
@@ -308,7 +333,7 @@ namespace NWaves.FeatureExtractors.Multi
         {
             var spectralFeatureSet = string.Join(",", FeatureDescriptions.Take(_extractors.Count));
             
-            var copy = new SpectralFeaturesExtractor(SamplingRate, spectralFeatureSet, FrameDuration, HopDuration, _fftSize, _frequencies, _parameters)
+            var copy = new SpectralFeaturesExtractor(SamplingRate, spectralFeatureSet, FrameDuration, HopDuration, _fftSize, _frequencies, _window, _parameters)
             {
                 _extractors = _extractors
             };

@@ -44,6 +44,7 @@
     <Compile Include="Effects\WhisperEffect.cs" />
     <Compile Include="FeatureExtractors\Multi\Mpeg7SpectralFeaturesExtractor.cs" />
     <Compile Include="FeatureExtractors\PitchExtractor.cs" />
+    <Compile Include="Features\Perceptual.cs" />
     <Compile Include="Filters\Base\IFilterExtensions.cs" />
     <Compile Include="Filters\Base\IOnlineFilter.cs" />
     <Compile Include="Filters\Base\TransferFunction.cs" />

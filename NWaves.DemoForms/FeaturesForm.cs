@@ -18,6 +18,11 @@ namespace NWaves.DemoForms
         private DiscreteSignal _signal;
         private FeatureVector[] _vectors;
 
+        private int _frameSize = 512;
+        private int _hopSize = 128;
+
+        private Stft _stft;
+
         public FeaturesForm()
         {
             InitializeComponent();
@@ -37,8 +42,10 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            var frameDuration = (double) 2048 / _signal.SamplingRate;
-            var hopDuration = (double) 1024 / _signal.SamplingRate;
+            _stft = new Stft(_frameSize, _hopSize);
+
+            var frameDuration = (double) _frameSize / _signal.SamplingRate;
+            var hopDuration = (double) _hopSize / _signal.SamplingRate;
 
             var freqs = new[] { 300f, 600, 1000, 2000, 4000, 7000 };
 
@@ -101,8 +108,19 @@ namespace NWaves.DemoForms
 
             featureLabel.Text = featuresListView.Columns[e.Column].Text;
 
-            featurePlotPanel.Stride = 1;
-            featurePlotPanel.Line = _vectors.Select(v => v.Features[e.Column - 1]).ToArray();
+            spectrogramPlot.ColorMapName = "afmhot";
+            spectrogramPlot.MarklineThickness = 2;
+            spectrogramPlot.Spectrogram = _stft.Spectrogram(_signal);
+
+            var max = _vectors.Select(v => v.Features[e.Column - 1]).Max();
+            var min = _vectors.Select(v => v.Features[e.Column - 1]).Min();
+
+            var height = spectrogramPlot.Height;
+
+            spectrogramPlot.Markline = _vectors.Select(v =>  height * (v.Features[e.Column - 1] - min) / (max - min)).ToArray();
+
+            //featurePlotPanel.Stride = 1;
+            //featurePlotPanel.Line = _vectors.Select(v => v.Features[e.Column - 1]).ToArray();
         }
 
 
@@ -119,7 +137,7 @@ namespace NWaves.DemoForms
 
             var fft = new Fft(512);
 
-            var spectrum = fft.PowerSpectrum(_signal[pos*256, pos*256+512]).Samples;
+            var spectrum = fft.PowerSpectrum(_signal[pos * _hopSize, pos * _hopSize + _frameSize]).Samples;
 
             var peaks = new int[10];
             var freqs = new float[10];

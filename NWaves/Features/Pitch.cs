@@ -18,6 +18,9 @@ namespace NWaves.Features
         /// Pitch estimation by autocorrelation method
         /// </summary>
         /// <param name="signal"></param>
+        /// <param name="samplingRate"></param>
+        /// <param name="startPos"></param>
+        /// <param name="endPos"></param>
         /// <param name="low"></param>
         /// <param name="high"></param>
         /// <returns></returns>
@@ -65,10 +68,12 @@ namespace NWaves.Features
         /// <summary>
         /// Pitch estimation by autocorrelation method (overloaded for DiscreteSignal)
         /// </summary>
-        /// <param name="samples"></param>
-        /// <param name="samplingRate"></param>
+        /// <param name="signal"></param>
+        /// <param name="startPos"></param>
+        /// <param name="endPos"></param>
         /// <param name="low"></param>
         /// <param name="high"></param>
+        /// <param name="window"></param>
         /// <returns></returns>
         public static float FromAutoCorrelation(DiscreteSignal signal,
                                                 int startPos = 0,

@@ -6,6 +6,7 @@ using NWaves.Features;
 using NWaves.Filters.Fda;
 using NWaves.Transforms;
 using NWaves.Utils;
+using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors.Multi
 {
@@ -26,7 +27,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Names of supported spectral features
         /// </summary>
-        public const string FeatureSet = "centroid, spread, flatness, noiseness, rolloff, crest, entropy, decrease";
+        public const string FeatureSet = "centroid, spread, flatness, noiseness, rolloff, crest, entropy, decrease, loudness, sharpness";
 
         /// <summary>
         /// Names of supported harmonic features
@@ -52,6 +53,16 @@ namespace NWaves.FeatureExtractors.Multi
         /// FFT transformer
         /// </summary>
         private readonly Fft _fft;
+
+        /// <summary>
+        /// Type of the window function
+        /// </summary>
+        private readonly WindowTypes _window;
+
+        /// <summary>
+        /// Window samples
+        /// </summary>
+        private readonly float[] _windowSamples;
 
         /// <summary>
         /// Filterbank from frequency bands
@@ -144,6 +155,7 @@ namespace NWaves.FeatureExtractors.Multi
                                               double hopDuration = 0.010/*sec*/,
                                               int fftSize = 0,
                                               Tuple<double, double, double>[] frequencyBands = null,
+                                              WindowTypes window = WindowTypes.Hamming,
                                               IReadOnlyDictionary<string, object> parameters = null)
 
             : base(samplingRate, frameDuration, hopDuration)
@@ -214,6 +226,14 @@ namespace NWaves.FeatureExtractors.Multi
                     case "decrease":
                         return (spectrum, freqs) => Spectral.Decrease(spectrum);
 
+                    case "loud":
+                    case "loudness":
+                        return (spectrum, freqs) => Perceptual.Loudness(spectrum);
+
+                    case "sharp":
+                    case "sharpness":
+                        return (spectrum, freqs) => Perceptual.Sharpness(spectrum);
+
                     default:
                         return (spectrum, freqs) => 0;
                 }
@@ -223,6 +243,12 @@ namespace NWaves.FeatureExtractors.Multi
 
             _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
             _fft = new Fft(_fftSize);
+
+            _window = window;
+            if (_window != WindowTypes.Rectangular)
+            {
+                _windowSamples = Window.OfType(_window, FrameSize);
+            }
 
             _frequencyBands = frequencyBands ?? FilterBanks.OctaveBands(6, _fftSize, samplingRate);
             _filterbank = FilterBanks.Rectangular(_fftSize, samplingRate, _frequencyBands);
@@ -374,6 +400,13 @@ namespace NWaves.FeatureExtractors.Multi
                 _zeroblock.FastCopyTo(_block, _fftSize);
                 samples.FastCopyTo(_block, FrameSize, i);
 
+                // apply window if necessary
+
+                if (_window != WindowTypes.Rectangular)
+                {
+                    _block.ApplyWindow(_windowSamples);
+                }
+
                 // compute and prepare spectrum
 
                 _fft.MagnitudeSpectrum(_block, _spectrum);
@@ -442,7 +475,7 @@ namespace NWaves.FeatureExtractors.Multi
         {
             var spectralFeatureSet = string.Join(",", FeatureDescriptions.Take(_extractors.Count));
 
-            var copy = new Mpeg7SpectralFeaturesExtractor(SamplingRate, spectralFeatureSet, FrameDuration, HopDuration, _fftSize, _frequencyBands, _parameters)
+            var copy = new Mpeg7SpectralFeaturesExtractor(SamplingRate, spectralFeatureSet, FrameDuration, HopDuration, _fftSize, _frequencyBands, _window, _parameters)
             {
                 _extractors = _extractors,
                 _pitchTrack = _pitchTrack

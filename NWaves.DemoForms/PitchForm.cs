@@ -82,6 +82,7 @@ namespace NWaves.DemoForms
             var spectrogram = _stft.Spectrogram(_signal);
 
             spectrogramPanel.ColorMapName = "viridis";
+            spectrogramPanel.MarklineThickness = 6;
             spectrogramPanel.Spectrogram = spectrogram.Select(s => s.Take(224).ToArray()).ToList();
             spectrogramPanel.Markline = _pitches.Select(p => p.Features[0] * _fftSize / _signal.SamplingRate).ToArray();
         }

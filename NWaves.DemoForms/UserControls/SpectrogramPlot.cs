@@ -59,6 +59,17 @@ namespace NWaves.DemoForms.UserControls
             }
         }
 
+        private int _marklineThickness;
+        public int MarklineThickness
+        {
+            get { return _marklineThickness; }
+            set
+            {
+                _marklineThickness = value;
+                Invalidate();
+            }
+        }
+
         public string ColorMapName { get; set; } = "magma";
 
         private ColorMap _cmap;
@@ -98,7 +109,7 @@ namespace NWaves.DemoForms.UserControls
 
             if (_markline != null)
             {
-                var pen = new Pen(Color.DeepPink, 7);
+                var pen = new Pen(Color.DeepPink, _marklineThickness);
 
                 realPos = 1;
                 for (var i = startPos + 1; i < startPos + spectrogramBitmap.Width; i++, realPos++)
