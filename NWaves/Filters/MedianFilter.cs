@@ -30,6 +30,10 @@ namespace NWaves.Filters
 
             _buf = new float[Size];
             _tmp = new float[Size];
+
+            // to mimic scipy.signal.medfilt() 
+            // feed Size / 2 zeros first
+            _n = Size / 2;
         }
 
         /// <summary>
@@ -46,12 +50,7 @@ namespace NWaves.Filters
 
             int i = 0, j = 0;
 
-            for (; i < Size/2; i++)     // to mimic scipy.signal.medfilt() 
-            {                           // first feed zeros
-                Process(0);
-            }
-
-            for (i = 0; i < Size/2; i++)    // then feed first samples
+            for (i = 0; i < Size / 2; i++)    // then feed first samples
             {
                 Process(input[i]);
             }
@@ -93,7 +92,7 @@ namespace NWaves.Filters
         /// </summary>
         public void Reset()
         {
-            _n = 0;
+            _n = Size / 2;
 
             for (var i = 0; i < _buf.Length; i++)
             {

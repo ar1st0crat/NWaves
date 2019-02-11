@@ -7,8 +7,6 @@ namespace NWaves.Tests.FilterTests
     [TestFixture]
     public class TestMedianFilter
     {
-        //private readonly MedianFilter _filter = new MedianFilter(5);
-
         [Test]
         public void TestMedianFiltering()
         {

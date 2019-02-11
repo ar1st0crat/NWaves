@@ -4,7 +4,6 @@ using NWaves.Transforms;
 using NWaves.Utils;
 using NWaves.Windows;
 using System;
-using System.Linq;
 
 namespace NWaves.Effects
 {
@@ -32,11 +31,6 @@ namespace NWaves.Effects
         /// Window coefficients
         /// </summary>
         private readonly float[] _window;
-
-        /// <summary>
-        /// Window coefficients squared
-        /// </summary>
-        private readonly float[] _windowSquared;
 
         /// <summary>
         /// Internal buffer for real parts of analyzed block
@@ -75,7 +69,6 @@ namespace NWaves.Effects
 
             _fft = new Fft(_fftSize);
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
-            _windowSquared = _window.Select(w => w * w).ToArray();
 
             _re1 = new float[_fftSize];
             _im1 = new float[_fftSize];

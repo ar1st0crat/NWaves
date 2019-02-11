@@ -69,9 +69,9 @@ namespace NWaves.DemoForms
 
             using (var csvFile = new FileStream("mfccs.csv", FileMode.Create))
             {
-                var header =  mfccExtractor.FeatureDescriptions
-                                           .Concat(mfccExtractor.DeltaFeatureDescriptions)
-                                           .Concat(mfccExtractor.DeltaDeltaFeatureDescriptions);
+                var header = mfccExtractor.FeatureDescriptions;
+                                           //.Concat(mfccExtractor.DeltaFeatureDescriptions)
+                                           //.Concat(mfccExtractor.DeltaDeltaFeatureDescriptions);
 
                 var serializer = new CsvFeatureSerializer(_mfccVectors, header);
                 await serializer.SerializeAsync(csvFile);

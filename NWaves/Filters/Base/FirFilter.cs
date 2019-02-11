@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using NWaves.Operations.Convolution;
@@ -222,12 +223,13 @@ namespace NWaves.Filters.Base
         /// Load kernel from csv file
         /// </summary>
         /// <param name="stream"></param>
-        public static FirFilter FromCsv(Stream stream)
+        /// <param name="delimiter"></param>
+        public static FirFilter FromCsv(Stream stream, char delimiter = ',')
         {
             using (var reader = new StreamReader(stream))
             {
                 var content = reader.ReadToEnd();
-                var kernel = content.Split(';').Select(double.Parse);
+                var kernel = content.Split(delimiter).Select(s => double.Parse(s, NumberStyles.Any, CultureInfo.InvariantCulture));
                 return new FirFilter(kernel);
             }
         }
@@ -236,11 +238,12 @@ namespace NWaves.Filters.Base
         /// Serialize kernel to csv file
         /// </summary>
         /// <param name="stream"></param>
-        public void Serialize(Stream stream)
+        /// <param name="delimiter"></param>
+        public void ToCsv(Stream stream, char delimiter = ',')
         {
             using (var writer = new StreamWriter(stream))
             {
-                var content = string.Join(";", Kernel.Select(k => k.ToString()));
+                var content = string.Join(delimiter.ToString(), Kernel.Select(k => k.ToString(CultureInfo.InvariantCulture)));
                 writer.WriteLine(content);
             }
         }

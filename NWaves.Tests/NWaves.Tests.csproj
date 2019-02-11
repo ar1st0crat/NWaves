@@ -42,6 +42,7 @@
     <Compile Include="FilterTests\TestMedianFilter.cs" />
     <Compile Include="FilterTests\TestTransferFunction.cs" />
     <Compile Include="FeaturesTest\TestFeaturePostProcessing.cs" />
+    <Compile Include="FilterTests\TestWienerFilter.cs" />
     <Compile Include="OperationTests\TestResampling.cs" />
     <Compile Include="SignalTests\TestSignalBuilders.cs" />
     <Compile Include="TransformTests\TestFft.cs" />
