@@ -228,7 +228,7 @@ namespace NWaves.Audio
             
             WaveFormat waveFmt;
             waveFmt.AudioFormat = 1;                        // PCM
-            waveFmt.ChannelCount = (short)signals.Count;    // mono
+            waveFmt.ChannelCount = (short)signals.Count;    // number of channels
             waveFmt.BitsPerSample = bitsPerSample;          // 8, 16, 24 or 32
 
             waveFmt.Align = (short)(waveFmt.ChannelCount * waveFmt.BitsPerSample / 8);

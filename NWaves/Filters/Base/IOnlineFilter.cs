@@ -1,7 +1,7 @@
 ﻿namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Interface for "online" filters
+    /// Interface for all objects that support online filtering
     /// </summary>
     public interface IOnlineFilter
     {
@@ -13,7 +13,7 @@
         float Process(float input);
 
         /// <summary>
-        /// Method for resetting the filter
+        /// Method for resetting state
         /// </summary>
         void Reset();
     }

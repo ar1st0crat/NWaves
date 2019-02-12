@@ -125,6 +125,12 @@ namespace NWaves.DemoForms
                 //effect = new WahwahEffect(fs, lfoFrequency, minFrequency, maxFrequency, q);
                 effect = new AutowahEffect(fs, minFrequency, maxFrequency, q);
             }
+            else if (flangerRadioButton.Checked)
+            {
+                var lfoFrequency = float.Parse(lfoFreqTextBox.Text);
+                var maxDelay = float.Parse(maxDelayTextBox.Text);
+                effect = new FlangerEffect(fs, maxDelay, lfoFrequency);
+            }
             else if (pitchShiftRadioButton.Checked)
             {
                 effect = pitchShiftCheckBox.Checked ? new PitchShiftEffect(shift, winSize, hopSize, tsm) : null;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using NWaves.Filters;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;

@@ -40,6 +40,7 @@ namespace NWaves.DemoForms
             this.stopFilteredButton = new System.Windows.Forms.Button();
             this.applyEffectButton = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.flangerRadioButton = new System.Windows.Forms.RadioButton();
             this.label18 = new System.Windows.Forms.Label();
             this.dryTextBox = new System.Windows.Forms.TextBox();
             this.label19 = new System.Windows.Forms.Label();
@@ -89,6 +90,8 @@ namespace NWaves.DemoForms
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.signalAfterFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
             this.signalBeforeFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
+            this.label2 = new System.Windows.Forms.Label();
+            this.maxDelayTextBox = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -138,6 +141,7 @@ namespace NWaves.DemoForms
             this.spectrogramAfterFilteringPanel.ColorMapName = "magma";
             this.spectrogramAfterFilteringPanel.Location = new System.Drawing.Point(480, 476);
             this.spectrogramAfterFilteringPanel.Markline = null;
+            this.spectrogramAfterFilteringPanel.MarklineThickness = 0;
             this.spectrogramAfterFilteringPanel.Name = "spectrogramAfterFilteringPanel";
             this.spectrogramAfterFilteringPanel.Size = new System.Drawing.Size(475, 152);
             this.spectrogramAfterFilteringPanel.Spectrogram = null;
@@ -150,6 +154,7 @@ namespace NWaves.DemoForms
             this.spectrogramBeforeFilteringPanel.ColorMapName = "magma";
             this.spectrogramBeforeFilteringPanel.Location = new System.Drawing.Point(13, 475);
             this.spectrogramBeforeFilteringPanel.Markline = null;
+            this.spectrogramBeforeFilteringPanel.MarklineThickness = 0;
             this.spectrogramBeforeFilteringPanel.Name = "spectrogramBeforeFilteringPanel";
             this.spectrogramBeforeFilteringPanel.Size = new System.Drawing.Size(461, 153);
             this.spectrogramBeforeFilteringPanel.Spectrogram = null;
@@ -187,6 +192,9 @@ namespace NWaves.DemoForms
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label2);
+            this.groupBox1.Controls.Add(this.maxDelayTextBox);
+            this.groupBox1.Controls.Add(this.flangerRadioButton);
             this.groupBox1.Controls.Add(this.label18);
             this.groupBox1.Controls.Add(this.dryTextBox);
             this.groupBox1.Controls.Add(this.label19);
@@ -236,6 +244,16 @@ namespace NWaves.DemoForms
             this.groupBox1.TabIndex = 31;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Sound Effects";
+            // 
+            // flangerRadioButton
+            // 
+            this.flangerRadioButton.AutoSize = true;
+            this.flangerRadioButton.Location = new System.Drawing.Point(387, 90);
+            this.flangerRadioButton.Name = "flangerRadioButton";
+            this.flangerRadioButton.Size = new System.Drawing.Size(77, 21);
+            this.flangerRadioButton.TabIndex = 45;
+            this.flangerRadioButton.Text = "Flanger";
+            this.flangerRadioButton.UseVisualStyleBackColor = true;
             // 
             // label18
             // 
@@ -694,6 +712,23 @@ namespace NWaves.DemoForms
             this.signalBeforeFilteringPanel.Stride = 256;
             this.signalBeforeFilteringPanel.TabIndex = 20;
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(570, 96);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(71, 17);
+            this.label2.TabIndex = 47;
+            this.label2.Text = "Max delay";
+            // 
+            // maxDelayTextBox
+            // 
+            this.maxDelayTextBox.Location = new System.Drawing.Point(647, 93);
+            this.maxDelayTextBox.Name = "maxDelayTextBox";
+            this.maxDelayTextBox.Size = new System.Drawing.Size(41, 22);
+            this.maxDelayTextBox.TabIndex = 46;
+            this.maxDelayTextBox.Text = "0,003";
+            // 
             // EffectsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -785,5 +820,8 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.TextBox dryTextBox;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.TextBox wetTextBox;
+        private System.Windows.Forms.RadioButton flangerRadioButton;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox maxDelayTextBox;
     }
 }

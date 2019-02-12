@@ -6,7 +6,7 @@ namespace NWaves.Filters
 {
     /// <summary>
     /// Wiener filter.
-    /// Implementation is identical to sciPy.wiener().
+    /// Implementation is identical to scipy.signal.wiener().
     /// </summary>
     public class WienerFilter : IFilter, IOnlineFilter
     {

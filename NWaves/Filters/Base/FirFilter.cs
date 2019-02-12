@@ -96,7 +96,7 @@ namespace NWaves.Filters.Base
                 }
                 case FilteringMethod.Custom:
                 {
-                    return this.OnlineChunks(signal);
+                    return this.ProcessChunks(signal);
                 }
                 default:
                 {

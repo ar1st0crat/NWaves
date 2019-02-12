@@ -113,7 +113,7 @@ namespace NWaves.Filters.Base
             {
                 case FilteringMethod.Custom:
                 {
-                    return this.OnlineChunks(signal);
+                    return this.ProcessChunks(signal);
                 }
                 case FilteringMethod.OverlapAdd:       // are you sure you wanna do this? It's IIR filter!
                 case FilteringMethod.OverlapSave:

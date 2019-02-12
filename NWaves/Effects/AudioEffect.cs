@@ -1,5 +1,6 @@
 ﻿using NWaves.Filters.Base;
 using NWaves.Signals;
+using System.Linq;
 
 namespace NWaves.Effects
 {
@@ -39,14 +40,7 @@ namespace NWaves.Effects
         public virtual DiscreteSignal ApplyTo(DiscreteSignal signal,
                                               FilteringMethod method = FilteringMethod.Auto)
         {
-            var output = signal.Copy();
-
-            for (var i = 0; i < signal.Length; i++)
-            {
-                output[i] = Process(signal[i]);
-            }
-
-            return output;
+            return new DiscreteSignal(signal.SamplingRate, signal.Samples.Select(s => Process(s)));
         }
     }
 }

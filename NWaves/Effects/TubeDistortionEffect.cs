@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using NWaves.Filters.Base;
-using NWaves.Signals;
 
 namespace NWaves.Effects
 {
@@ -13,14 +10,14 @@ namespace NWaves.Effects
     public class TubeDistortionEffect : AudioEffect
     {
         /// <summary>
-        /// Amount of distortion
+        /// Input gain (amount of distortion)
         /// </summary>
-        public float Gain { get; }
+        public float InputGain { get; }
 
         /// <summary>
-        /// Mix of original and distorted sound (1 - only distorted)
+        /// Output gain
         /// </summary>
-        public float Mix { get; }
+        public float OutputGain { get; }
 
         /// <summary>
         /// Work point.
@@ -62,15 +59,16 @@ namespace NWaves.Effects
         /// <param name="dist"></param>
         /// <param name="rh"></param>
         /// <param name="rl"></param>
-        public TubeDistortionEffect(float gain = 20.0f,
-                                    float mix = 0.9f,
+        public TubeDistortionEffect(float inputGain = 20.0f,
+                                    float outputGain = 0.2f,
                                     float q = -0.2f,
                                     float dist = 5,
                                     float rh = 0.995f,
                                     float rl = 0.5f)
         {
-            Gain = gain;
-            Mix = mix;
+            InputGain = inputGain;
+            OutputGain = outputGain;
+
             Q = q;
             Dist = dist;
             Rh = rh;
@@ -83,58 +81,15 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Method implements tube distortion effect
+        /// Tube distortion
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
+        /// <param name="sample"></param>
         /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringMethod method = FilteringMethod.Auto)
-        {
-            var maxAmp = signal.Samples.Max(s => Math.Abs(s));
-
-            if (Math.Abs(maxAmp) < 1e-10)
-            {
-                return signal.Copy();
-            }
-
-            IEnumerable<float> tempZ;
-
-            if (Math.Abs(Q) < 1e-10)
-            {
-                tempZ = signal.Samples.Select(s =>
-                {
-                    var q = Gain * s / maxAmp;
-                    return Math.Abs(q - Q) < 1e-10 ?
-                           1.0f / Dist :
-                           (float)(q / (1 - Math.Exp(-Dist * q)));
-                });
-            }
-            else
-            {
-                tempZ = signal.Samples.Select(s =>
-                {
-                    var q = Gain * s / maxAmp;
-                    return Math.Abs(q - Q) < 1e-10 ?
-                           (float)(1.0 / Dist + Q / (1 - Math.Exp(Dist * Q))) :
-                           (float)((q - Q) / (1 - Math.Exp(-Dist * (q - Q))) + Q / (1 - Math.Exp(Dist * Q)));
-                });
-            }
-
-            var maxZ = tempZ.Max(z => Math.Abs(z));
-            var tempY = tempZ.Zip(signal.Samples, (z, x) => Mix * z * maxAmp / maxZ + (1 - Mix) * x);
-
-            var maxY = tempY.Max(y => Math.Abs(y));
-            var output = tempY.Select(y => y * maxAmp / maxY);
-
-            return _outputFilter.ApplyTo(new DiscreteSignal(signal.SamplingRate, output));
-        }
-
         public override float Process(float sample)
         {
             float output;
 
-            var q = Gain * sample;
+            var q = InputGain * sample;
 
             if (Math.Abs(Q) < 1e-10)
             {
@@ -147,9 +102,9 @@ namespace NWaves.Effects
                            (float)((q - Q) / (1 - Math.Exp(-Dist * (q - Q))) + Q / (1 - Math.Exp(Dist * Q)));
             }
 
-            output = _outputFilter.Process(output);
+            output = _outputFilter.Process(output) * OutputGain;
 
-            return output * Wet / 2 + sample * Dry;
+            return output * Wet + sample * Dry;
         }
 
         public override void Reset()

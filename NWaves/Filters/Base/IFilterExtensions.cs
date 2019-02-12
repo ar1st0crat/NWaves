@@ -57,9 +57,9 @@ namespace NWaves.Filters.Base
         /// <param name="frameSize"></param>
         /// <param name="method"></param>
         /// <returns></returns>        
-        public static DiscreteSignal OnlineChunks(this IOnlineFilter filter,
-                                                       DiscreteSignal signal,
-                                                       int frameSize = 4096)
+        public static DiscreteSignal ProcessChunks(this IOnlineFilter filter,
+                                                        DiscreteSignal signal,
+                                                        int frameSize = 4096)
         {
             var input = signal.Samples;
             var output = new float[input.Length];

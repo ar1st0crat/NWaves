@@ -31,15 +31,15 @@ Already available:
 - [x] time scale modification (phase vocoder, PV with identity phase locking, WSOLA)
 - [x] simple resampling, interpolation, decimation
 - [x] bandlimited resampling
-- [x] noise reduction (spectral subtraction, Wiener filtering)
-- [x] sound effects (delay, echo, tremolo, wahwah/autowah, phaser, pitch shift, sound morphing, robotize, whisperize)
+- [x] noise reduction (spectral subtraction, sciPy-style Wiener filtering)
+- [x] sound effects (delay, echo, tremolo, wahwah, phaser, vibrato, flanger, pitch shift, sound morphing, robotize, whisperize)
 - [x] simple modulation/demodulation (AM, ring, FM, PM)
 - [x] simple audio playback and recording
 
 Planned:
 
 - [ ] sound synthesis (wavetable, ADSR, etc.)
-- [ ] more sound effects (Reverb, Vibrato, Chorus, etc.)
+- [ ] more sound effects (reverb, chorus, etc.)
 - [ ] more transforms (CQT, DWT, Mellin, Hartley, Haar, Hadamard)
 - [ ] more operations (adaptive filtering, Gabor filter)
 

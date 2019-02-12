@@ -155,7 +155,7 @@ namespace NWaves.Operations.Convolution
 
             int i = 0, j = 0;
 
-            for (; i < firstCount; i++)    // first HopSize samples are just placed in the delay line
+            for (; i < firstCount; i++)    // first HopSize-1 samples are just placed in the delay line
             {
                 Process(signal[i]);
             }
