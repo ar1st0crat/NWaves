@@ -19,7 +19,8 @@ namespace NWaves.Operations
     ///     - resampling
     ///     - time-stretching
     ///     - rectification
-    ///     - envelope extraction
+    ///     - envelope detection
+    ///     - spectral subtraction
     /// 
     /// </summary>
     public static partial class Operation
@@ -290,6 +291,21 @@ namespace NWaves.Operations
                                       signal.Samples.Select(s => s < 0 ? 0 : s));
         }
 
+        /// <summary>
+        /// Spectral subtraction
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="noise"></param>
+        /// <param name="fftSize"></param>
+        /// <param name="hopSize"></param>
+        /// <returns></returns>
+        public static DiscreteSignal SpectralSubtract(DiscreteSignal signal,
+                                                      DiscreteSignal noise,
+                                                      int fftSize = 1024,
+                                                      int hopSize = 410)
+        {
+            return new SpectralSubtractor(noise, fftSize, hopSize).ApplyTo(signal);
+        }
 
         /****************************************************************************
          * 

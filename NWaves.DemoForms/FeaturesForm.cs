@@ -77,6 +77,10 @@ namespace NWaves.DemoForms
                                           .Concat(mpeg7Extractor.FeatureDescriptions);
 
             FillFeaturesList(_vectors, descriptions);
+
+            spectrogramPlot.ColorMapName = "afmhot";
+            spectrogramPlot.MarklineThickness = 2;
+            spectrogramPlot.Spectrogram = _stft.Spectrogram(_signal);
         }
 
         private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors,
@@ -107,10 +111,6 @@ namespace NWaves.DemoForms
             }
 
             featureLabel.Text = featuresListView.Columns[e.Column].Text;
-
-            spectrogramPlot.ColorMapName = "afmhot";
-            spectrogramPlot.MarklineThickness = 2;
-            spectrogramPlot.Spectrogram = _stft.Spectrogram(_signal);
 
             var max = _vectors.Select(v => v.Features[e.Column - 1]).Max();
             var min = _vectors.Select(v => v.Features[e.Column - 1]).Min();
