@@ -257,16 +257,14 @@ namespace NWaves.Operations
         /// Method for extracting the envelope of a signal
         /// </summary>
         /// <param name="signal">Signal</param>
-        /// <param name="lowpassCutoff">LP filter cutoff frequency</param>
+        /// <param name="attackTime"></param>
+        /// <param name="releaseTime"></param>
         /// <returns></returns>
-        public static DiscreteSignal Envelope(DiscreteSignal signal, float lowpassCutoff = 0.05f)
+        public static DiscreteSignal Envelope(DiscreteSignal signal, float attackTime = 0.01f, float releaseTime = 0.05f)
         {
-            var envelope = FullRectify(signal);
+            var envelopeFollower = new EnvelopeFollower(signal.SamplingRate, attackTime, releaseTime);
 
-            var lowpassFilter = new LowPassFilter(lowpassCutoff);
-            var smoothed = lowpassFilter.ApplyTo(envelope);
-
-            return smoothed;
+            return new DiscreteSignal(signal.SamplingRate, signal.Samples.Select(s => envelopeFollower.Process(s)));
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
-﻿using NWaves.Filters.Base;
-using NWaves.Filters.BiQuad;
+﻿using NWaves.Operations;
 using System;
 
 namespace NWaves.Effects
@@ -32,7 +31,7 @@ namespace NWaves.Effects
         /// <summary>
         /// Envelope follower
         /// </summary>
-        private IOnlineFilter _envelopeFollower;
+        private EnvelopeFollower _envelopeFollower;
 
         /// <summary>
         /// Constructor
@@ -48,30 +47,23 @@ namespace NWaves.Effects
             MaxFrequency = maxFrequency;
             Q = q;
 
-            Wet = 0.65f;
-            Dry = 1 - Wet;
-
-            _envelopeFollower = new LowPassFilter(0.05);
+            _envelopeFollower = new EnvelopeFollower(samplingRate);
         }
 
+        /// <summary>
+        /// Autowah means: 1) envelope follower + 2) wahwah effect
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
         public override float Process(float sample)
         {
-            var filt = _envelopeFollower.Process(Math.Abs(sample)) * 0.4;
+            var filt = _envelopeFollower.Process(sample) * Math.Sqrt(Q);
 
             var frequencyRange = Math.PI * (MaxFrequency - MinFrequency) / _fs;
             var minFreq = Math.PI * MinFrequency / _fs;
             var maxFreq = Math.PI * MaxFrequency / _fs;
 
             var centerFrequency = filt * frequencyRange + minFreq;
-
-            if (centerFrequency > maxFreq)
-            {
-                centerFrequency = 2*maxFreq;
-            }
-            if (centerFrequency < minFreq)
-            {
-                centerFrequency = minFreq;
-            }
 
             _f = (float)(2 * Math.Sin(centerFrequency));
 
@@ -85,6 +77,7 @@ namespace NWaves.Effects
         public override void Reset()
         {
             _yh = _yl = _yb = 0;
+            _envelopeFollower.Reset();
         }
 
         private float _yh, _yb, _yl;

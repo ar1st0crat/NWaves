@@ -11,6 +11,7 @@ NWaves is a .NET library for 1d signal processing focused specifically on audio 
 Already available:
 
 - [x] major DSP transforms (FFT, DCT, STFT, Hilbert, cepstral, Goertzel)
+- [x] signal builders (sine/cosine, white/pink/red/Perlin noise, awgn, triangle, sawtooth, square, pulse, ramp, sinc)
 - [x] basic LTI digital filters (FIR, IIR, comb, moving average, pre/de-emphasis, DC removal, RASTA)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
@@ -25,13 +26,14 @@ Already available:
 - [x] feature post-processing (mean and variance normalization, adding deltas)
 - [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest, decrease, noiseness, MPEG7)
 - [x] harmonic features (harmonic centroid and spread, inharmonicity, tristimulus, odd-to-even ratio)
-- [x] signal builders (sine/cosine, white/pink/red/Perlin noise, awgn, triangle, sawtooth, square, pulse, ramp, sinc, clicks)
+- [x] perceptual features (loudness, sharpness)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking (autocorrelation, YIN, ZCR + Schmitt trigger, HSS/HPS, cepstrum)
 - [x] time scale modification (phase vocoder, PV with identity phase locking, WSOLA)
 - [x] simple resampling, interpolation, decimation
 - [x] bandlimited resampling
 - [x] noise reduction (spectral subtraction, sciPy-style Wiener filtering)
+- [x] envelope following
 - [x] sound effects (delay, echo, tremolo, wahwah, phaser, vibrato, flanger, pitch shift, sound morphing, robotize, whisperize)
 - [x] simple modulation/demodulation (AM, ring, FM, PM)
 - [x] simple audio playback and recording

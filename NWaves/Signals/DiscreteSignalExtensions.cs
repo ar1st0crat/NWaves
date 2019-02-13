@@ -273,13 +273,11 @@ namespace NWaves.Signals
         /// <returns>Fully rectified signal</returns>
         public static void FullRectify(this DiscreteSignal signal)
         {
-            var s = signal.Samples;
-
-            for (var i = 0; i < s.Length; i++)
+            for (var i = 0; i < signal.Length; i++)
             {
-                if (s[i] < 0)
+                if (signal[i] < 0)
                 {
-                    s[i] = -s[i];
+                    signal[i] = -signal[i];
                 }
             }
         }
@@ -291,13 +289,11 @@ namespace NWaves.Signals
         /// <returns>Half rectified signal</returns>
         public static void HalfRectify(this DiscreteSignal signal)
         {
-            var s = signal.Samples;
-
-            for (var i = 0; i < s.Length; i++)
+            for (var i = 0; i < signal.Length; i++)
             {
-                if (s[i] < 0)
+                if (signal[i] < 0)
                 {
-                    s[i] = 0;
+                    signal[i] = 0;
                 }
             }
         }

@@ -39,7 +39,7 @@ namespace NWaves.Effects
                             .SampledAt(samplingRate);
 
             _maxDelayPos = (int)(Math.Ceiling(samplingRate * maxDelay));
-            _delayLine = new float[_maxDelayPos];
+            _delayLine = new float[_maxDelayPos + 1];
         }
 
         /// <summary>
@@ -49,16 +49,24 @@ namespace NWaves.Effects
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var delay = (int)Math.Ceiling((_lfo.NextSample() + 1) / 2 * _maxDelayPos);
+            var preciseDelay = (_lfo.NextSample() + 1) / 2 * _maxDelayPos;
+
+            var delay = (int)preciseDelay;
+            var fracDelay = preciseDelay - delay;
 
             if (_n == _delayLine.Length)
             {
-                _n = 0;
+                _n = 1;
             }
 
             _delayLine[_n] = sample;
 
-            var delayedSample = _n >= delay ? _delayLine[_n - delay] : _delayLine[_n + _maxDelayPos - delay];
+            // linear interpolation:
+
+            var offset1 = _n > delay ? _n - delay : _n + _maxDelayPos - delay;
+            var offset2 = offset1 == 1 ? _maxDelayPos : offset1 - 1;
+
+            var delayedSample = _delayLine[offset2] + (1 - fracDelay) * (_delayLine[offset1] - _delayLine[offset2]);
 
             _n++;
 
@@ -70,7 +78,7 @@ namespace NWaves.Effects
 
         public override void Reset()
         {
-            _n = 0;
+            _n = 1;
 
             for (var i = 0; i < _delayLine.Length; i++)
             {
@@ -83,6 +91,6 @@ namespace NWaves.Effects
         private float[] _delayLine;
         private int _maxDelayPos;
 
-        private int _n;
+        private int _n = 1;
     }
 }

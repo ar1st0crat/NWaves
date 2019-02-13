@@ -110,11 +110,8 @@ namespace NWaves.Transforms
         /// <returns></returns>
         public void Inverse(float[] cepstrum, float[] samples, bool power = false)
         {
-            if (cepstrum.Length != _realSpectrum.Length)
-            {
-                throw new ArgumentException("");
-            }
-
+            Guard.AgainstInequality(cepstrum.Length, _realSpectrum.Length, "Cepstrum length", "Size of FFT");
+            
             for (var i = 0; i < _realSpectrum.Length; i++)
             {
                 _realSpectrum[i] = cepstrum[i];
