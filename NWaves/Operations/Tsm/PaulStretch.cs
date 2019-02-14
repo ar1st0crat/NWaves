@@ -4,27 +4,34 @@ using NWaves.Transforms;
 using NWaves.Utils;
 using NWaves.Windows;
 using System;
+using System.Linq;
 
-namespace NWaves.Effects
+namespace NWaves.Operations.Tsm
 {
     /// <summary>
-    /// Effect for speech whisperization.
-    /// Currently it's based on the phase vocoder technique.
-    /// 
-    /// Hint. Choose relatively small fft and hop sizes (e.g., 128 and 40).
-    /// 
+    /// Paul stretch algorithm
     /// </summary>
-    public class WhisperEffect : AudioEffect
+    class PaulStretch : IFilter
     {
         /// <summary>
-        /// Hop size
+        /// Hop size at analysis stage (STFT decomposition)
         /// </summary>
-        private readonly int _hopSize;
+        private readonly int _hopAnalysis;
+
+        /// <summary>
+        /// Hop size at synthesis stage (STFT merging)
+        /// </summary>
+        private readonly int _hopSynthesis;
 
         /// <summary>
         /// Size of FFT for analysis and synthesis
         /// </summary>
         private readonly int _fftSize;
+
+        /// <summary>
+        /// Stretch ratio
+        /// </summary>
+        private readonly double _stretch;
 
         /// <summary>
         /// Internal FFT transformer
@@ -35,6 +42,11 @@ namespace NWaves.Effects
         /// Window coefficients
         /// </summary>
         private readonly float[] _window;
+
+        /// <summary>
+        /// Window coefficients squared
+        /// </summary>
+        private readonly float[] _windowSquared;
 
         /// <summary>
         /// Internal buffer for real parts of analyzed block
@@ -57,31 +69,43 @@ namespace NWaves.Effects
         private readonly Random _rand = new Random();
 
         /// <summary>
-        /// Constuctor
+        /// Constructor
         /// </summary>
-        /// <param name="hopSize"></param>
+        /// <param name="stretch"></param>
+        /// <param name="hopAnalysis"></param>
         /// <param name="fftSize"></param>
-        public WhisperEffect(int hopSize, int fftSize = 0)
+        public PaulStretch(double stretch, int hopAnalysis, int fftSize = 0)
         {
-            _hopSize = hopSize;
-            _fftSize = (fftSize > 0) ? fftSize : 8 * hopSize;
+            _stretch = stretch;
+            _hopAnalysis = hopAnalysis;
+            _hopSynthesis = (int)(hopAnalysis * stretch);
+            _fftSize = (fftSize > 0) ? fftSize : 8 * Math.Max(_hopAnalysis, _hopSynthesis);
 
             _fft = new Fft(_fftSize);
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
+            _windowSquared = _window.Select(w => w * w).ToArray();
 
             _re = new float[_fftSize];
             _im = new float[_fftSize];
             _zeroblock = new float[_fftSize];
         }
 
-        public override DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                               FilteringMethod method = FilteringMethod.Auto)
+        /// <summary>
+        /// Phase Vocoder algorithm
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public DiscreteSignal ApplyTo(DiscreteSignal signal,
+                                      FilteringMethod method = FilteringMethod.Auto)
         {
             var input = signal.Samples;
-            var output = new float[input.Length];
+            var output = new float[(int)(input.Length * _stretch) + _fftSize];
+
+            var windowSum = new float[output.Length];
 
             var posSynthesis = 0;
-            for (var posAnalysis = 0; posAnalysis + _fftSize < input.Length; posAnalysis += _hopSize)
+            for (var posAnalysis = 0; posAnalysis + _fftSize < input.Length; posAnalysis += _hopAnalysis)
             {
                 input.FastCopyTo(_re, _fftSize, posAnalysis);
                 _zeroblock.FastCopyTo(_im, _fftSize);
@@ -109,27 +133,19 @@ namespace NWaves.Effects
                 for (var j = 0; j < _re.Length; j++)
                 {
                     output[posSynthesis + j] += _re[j] * _window[j];
+                    windowSum[posSynthesis + j] += _windowSquared[j];
                 }
 
-                posSynthesis += _hopSize;
+                posSynthesis += _hopSynthesis;
             }
 
             for (var j = 0; j < output.Length; j++)
             {
-                output[j] /= _fftSize / 2;
-                output[j] = Wet * output[j] + Dry * input[j];
+                if (windowSum[j] < 1e-3) continue;
+                output[j] /= windowSum[j] * (_fftSize / 2 + 1);
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
-        }
-
-        public override float Process(float sample)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Reset()
-        {
         }
     }
 }

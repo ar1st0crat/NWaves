@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using NWaves.Filters.Base;
-using NWaves.Filters.BiQuad;
 using NWaves.Operations.Convolution;
 using NWaves.Operations.Tsm;
 using NWaves.Signals;
@@ -208,6 +207,9 @@ namespace NWaves.Operations
                 case TsmAlgorithm.PhaseVocoderPhaseLocking:
                     stretchFilter = new PhaseLockingVocoder(stretch, hopSize, windowSize);
                     break;
+                case TsmAlgorithm.PaulStetch:
+                    stretchFilter = new PaulStretch(stretch, hopSize, windowSize);
+                    break;
                 default:
                     stretchFilter = new Wsola(stretch, windowSize, hopSize);
                     break;
@@ -233,17 +235,19 @@ namespace NWaves.Operations
             }
 
             IFilter stretchFilter;
-            int frameSize;
+
+            var frameSize = MathUtils.NextPowerOfTwo(1024 * signal.SamplingRate / 16000);
 
             switch (algorithm)
             {
                 case TsmAlgorithm.PhaseVocoder:
-                    frameSize = MathUtils.NextPowerOfTwo(1024 * signal.SamplingRate / 16000);
                     stretchFilter = new PhaseVocoder(stretch, frameSize / 10, frameSize);
                     break;
                 case TsmAlgorithm.PhaseVocoderPhaseLocking:
-                    frameSize = MathUtils.NextPowerOfTwo(1024 * signal.SamplingRate / 16000);
                     stretchFilter = new PhaseLockingVocoder(stretch, frameSize / 4, frameSize);
+                    break;
+                case TsmAlgorithm.PaulStetch:
+                    stretchFilter = new PaulStretch(stretch, frameSize / 8, frameSize * 4);
                     break;
                 default:
                     stretchFilter = new Wsola(stretch);

@@ -40,6 +40,8 @@ namespace NWaves.DemoForms
             this.stopFilteredButton = new System.Windows.Forms.Button();
             this.applyEffectButton = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.maxDelayTextBox = new System.Windows.Forms.TextBox();
             this.flangerRadioButton = new System.Windows.Forms.RadioButton();
             this.label18 = new System.Windows.Forms.Label();
             this.dryTextBox = new System.Windows.Forms.TextBox();
@@ -90,8 +92,6 @@ namespace NWaves.DemoForms
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.signalAfterFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
             this.signalBeforeFilteringPanel = new NWaves.DemoForms.UserControls.SignalPlot();
-            this.label2 = new System.Windows.Forms.Label();
-            this.maxDelayTextBox = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -245,6 +245,23 @@ namespace NWaves.DemoForms
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Sound Effects";
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(570, 96);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(71, 17);
+            this.label2.TabIndex = 47;
+            this.label2.Text = "Max delay";
+            // 
+            // maxDelayTextBox
+            // 
+            this.maxDelayTextBox.Location = new System.Drawing.Point(647, 93);
+            this.maxDelayTextBox.Name = "maxDelayTextBox";
+            this.maxDelayTextBox.Size = new System.Drawing.Size(41, 22);
+            this.maxDelayTextBox.TabIndex = 46;
+            this.maxDelayTextBox.Text = "0,003";
+            // 
             // flangerRadioButton
             // 
             this.flangerRadioButton.AutoSize = true;
@@ -335,7 +352,8 @@ namespace NWaves.DemoForms
             this.tsmComboBox.Items.AddRange(new object[] {
             "Phase Vocoder",
             "Phase Vocoder (Phase Locking)",
-            "WSOLA"});
+            "WSOLA",
+            "Paul stretch"});
             this.tsmComboBox.Location = new System.Drawing.Point(687, 142);
             this.tsmComboBox.Name = "tsmComboBox";
             this.tsmComboBox.Size = new System.Drawing.Size(245, 24);
@@ -711,23 +729,6 @@ namespace NWaves.DemoForms
             this.signalBeforeFilteringPanel.Size = new System.Drawing.Size(461, 153);
             this.signalBeforeFilteringPanel.Stride = 256;
             this.signalBeforeFilteringPanel.TabIndex = 20;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(570, 96);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(71, 17);
-            this.label2.TabIndex = 47;
-            this.label2.Text = "Max delay";
-            // 
-            // maxDelayTextBox
-            // 
-            this.maxDelayTextBox.Location = new System.Drawing.Point(647, 93);
-            this.maxDelayTextBox.Name = "maxDelayTextBox";
-            this.maxDelayTextBox.Size = new System.Drawing.Size(41, 22);
-            this.maxDelayTextBox.TabIndex = 46;
-            this.maxDelayTextBox.Text = "0,003";
             // 
             // EffectsForm
             // 

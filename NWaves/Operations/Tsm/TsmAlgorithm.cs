@@ -21,18 +21,8 @@
         Wsola = 2,
 
         /// <summary>
-        /// Pitch-Synchronous Overlap-Add
+        /// Paul stretch
         /// </summary>
-        Psola = 3,
-
-        /// <summary>
-        /// Phase Vocoder with Synchronized Overlap-Add
-        /// </summary>
-        Pvsola = 4,
-
-        /// <summary>
-        /// Synchronized Overlap-Add, Fixed Synthesis
-        /// </summary>
-        Solafs = 5
+        PaulStetch = 3
     }
 }
