@@ -31,8 +31,8 @@ namespace NWaves.Signals.Builders
         {
             ParameterSetters = new Dictionary<string, Action<double>>
             {
-                {"low, lo, lower",  param => _low = param},
-                {"high, hi, upper", param => _high = param},
+                {"low, lo, min",    param => _low = param},
+                {"high, hi, max",   param => _high = param},
                 {"frequency, freq", param => { _frequency = param; _cycles = SamplingRate / _frequency; _n = (int)(_cycles / 2); }},
             };
 

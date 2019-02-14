@@ -76,7 +76,8 @@ namespace NWaves.DemoForms
                 case "Sinusoid":
                     signalBuilder = new SineBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("amp", 0.2f)
+                                    .SetParameter("low", -0.4f)
+                                    .SetParameter("high",  0.4f)
                                     .SetParameter("freq", 233/*Hz*/)
                                     .OfLength(sampleCount)
                                     .SampledAt(samplingRate)
@@ -119,7 +120,8 @@ namespace NWaves.DemoForms
                 case "Pulse Wave":
                     signalBuilder = new PulseWaveBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("amp", 0.5f)
+                                    .SetParameter("min", 0)
+                                    .SetParameter("max", 0.5f)
                                     .SetParameter("pulse", 0.007f/*sec*/)
                                     .SetParameter("period", 0.020f/*sec*/)
                                     .OfLength(sampleCount)
@@ -131,7 +133,8 @@ namespace NWaves.DemoForms
                 case "Chirp":
                     signalBuilder = new ChirpBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("amp", 0.75f)
+                                    .SetParameter("min", -0.3f)
+                                    .SetParameter("max", 0.3f)
                                     .OfLength(sampleCount)
                                     .RepeatedTimes(3)
                                     .SampledAt(samplingRate)
@@ -141,7 +144,8 @@ namespace NWaves.DemoForms
                 case "Sinc":
                     signalBuilder = new SincBuilder();
                     _signal2 = signalBuilder
-                                    .SetParameter("amp", 2)
+                                    .SetParameter("min", 0)
+                                    .SetParameter("max", 0.5f)
                                     .SetParameter("freq", 700/*Hz*/)
                                     .OfLength(sampleCount)
                                     .SampledAt(samplingRate)

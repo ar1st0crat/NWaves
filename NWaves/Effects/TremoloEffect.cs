@@ -10,12 +10,17 @@ namespace NWaves.Effects
         /// <summary>
         /// Modulation frequency
         /// </summary>
-        public float Frequency { get; }
+        public float Frequency { set { Lfo.SetParameter("freq", value); } }
 
         /// <summary>
         /// Tremolo index (modulation index)
         /// </summary>
-        public float TremoloIndex { get; }
+        public float TremoloIndex { set { Lfo.SetParameter("min", 0).SetParameter("max", value * 2); } }
+
+        /// <summary>
+        /// LFO
+        /// </summary>
+        public SignalBuilder Lfo { get; set; }
 
         /// <summary>
         /// Sampling rate
@@ -31,13 +36,22 @@ namespace NWaves.Effects
         public TremoloEffect(int samplingRate, float frequency = 10/*Hz*/, float tremoloIndex = 0.5f)
         {
             _fs = samplingRate;
+            
+            Lfo = new CosineBuilder().SampledAt(samplingRate);
+
             Frequency = frequency;
             TremoloIndex = tremoloIndex;
+        }
 
-            _lfo = new CosineBuilder()
-                            .SetParameter("amp", tremoloIndex)
-                            .SetParameter("freq", frequency)
-                            .SampledAt(samplingRate);
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="samplingRate"></param>
+        /// <param name="lfo"></param>
+        public TremoloEffect(int samplingRate, SignalBuilder lfo)
+        {
+            _fs = samplingRate;
+            Lfo = lfo;
         }
 
         /// <summary>
@@ -48,14 +62,13 @@ namespace NWaves.Effects
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var output = sample * (1 + _lfo.NextSample());
+            var output = sample * Lfo.NextSample();
             return output * Wet + sample * Dry;
         }
 
         public override void Reset()
         {
+            Lfo.Reset();
         }
-
-        private SignalBuilder _lfo;
     }
 }

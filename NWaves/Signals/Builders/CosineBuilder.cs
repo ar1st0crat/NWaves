@@ -10,9 +10,14 @@ namespace NWaves.Signals.Builders
     public class CosineBuilder : SignalBuilder
     {
         /// <summary>
-        /// Amplitude of the sinusoid
+        /// Lower amplitude level
         /// </summary>
-        private double _amplitude;
+        private double _low;
+
+        /// <summary>
+        /// Upper amplitude level
+        /// </summary>
+        private double _high;
 
         /// <summary>
         /// Frequency of the sinusoid (as a fraction of sampling frequency)
@@ -31,12 +36,14 @@ namespace NWaves.Signals.Builders
         {
             ParameterSetters = new Dictionary<string, Action<double>>
             {
-                { "amplitude, amp, gain", param => _amplitude = param },
-                { "frequency, freq",      param => _frequency = param },
-                { "phase, phi",           param => _phase = param }
+                { "low, lo, min",    param => _low = param },
+                { "high, hi, max",   param => _high = param },
+                { "frequency, freq", param => _frequency = param },
+                { "phase, phi",      param => _phase = param }
             };
 
-            _amplitude = 1.0;
+            _low = -1.0;
+            _high = 1.0;
             _frequency = 0.0;
             _phase = 0.0;
         }
@@ -50,9 +57,14 @@ namespace NWaves.Signals.Builders
         /// <returns></returns>
         public override float NextSample()
         {
-            var sample = (float)(_amplitude * Math.Cos(2 * Math.PI * _frequency / SamplingRate * _n + _phase));
+            var sample = Math.Cos(2 * Math.PI * _frequency / SamplingRate * _n + _phase);
+
+            // map it to [min, max] range:
+
+            sample = _low + (_high - _low) * (1 + sample) / 2;
+
             _n++;
-            return sample;
+            return (float)sample;
         }
 
         public override void Reset()

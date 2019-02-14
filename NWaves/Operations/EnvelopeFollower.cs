@@ -9,6 +9,48 @@ namespace NWaves.Operations
     public class EnvelopeFollower : IOnlineFilter
     {
         /// <summary>
+        /// Attack time
+        /// </summary>
+        public float AttackTime
+        {
+            set
+            {
+                _ga = (float)Math.Exp(-1.0 / (value * _fs));
+            }
+        }
+
+        /// <summary>
+        /// Release time
+        /// </summary>
+        public float ReleaseTime
+        {
+            set
+            {
+                _gr = (float)Math.Exp(-1.0 / (value * _fs));
+            }
+        }
+
+        /// <summary>
+        /// Current envelope sample
+        /// </summary>
+        private float _env;
+
+        /// <summary>
+        /// Attack coefficient
+        /// </summary>
+        private float _ga;
+
+        /// <summary>
+        /// Release coefficient
+        /// </summary>
+        private float _gr;
+
+        /// <summary>
+        /// Sampling rate
+        /// </summary>
+        private int _fs;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="samplingRate"></param>
@@ -16,8 +58,9 @@ namespace NWaves.Operations
         /// <param name="releaseTime"></param>
         public EnvelopeFollower(int samplingRate, float attackTime = 0.01f, float releaseTime = 0.05f)
         {
-            _ga = (float)Math.Exp(-1.0 / (attackTime * samplingRate));
-            _gr = (float)Math.Exp(-1.0 / (releaseTime * samplingRate));
+            _fs = samplingRate;
+            AttackTime = attackTime;
+            ReleaseTime = releaseTime;
         }
 
         /// <summary>
@@ -38,20 +81,5 @@ namespace NWaves.Operations
         {
             _env = 0;
         }
-
-        /// <summary>
-        /// Current envelope sample
-        /// </summary>
-        private float _env;
-
-        /// <summary>
-        /// Attack coefficient
-        /// </summary>
-        private float _ga;
-
-        /// <summary>
-        /// Release coefficient
-        /// </summary>
-        private float _gr;
     }
 }

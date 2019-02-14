@@ -11,17 +11,18 @@ namespace NWaves.Effects
         /// <summary>
         /// Input gain
         /// </summary>
-        public float InputGain { get; }
+        public float InputGain { get; set; }
 
         /// <summary>
         /// Output gain
         /// </summary>
-        public float OutputGain { get; }
+        public float OutputGain { get; set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="gain"></param>
+        /// <param name="inputGain"></param>
+        /// <param name="outputGain"></param>
         public OverdriveEffect(float inputGain, float outputGain = 0.4f)
         {
             InputGain = inputGain;

@@ -13,14 +13,35 @@ namespace NWaves.Effects
     public class FlangerEffect : AudioEffect
     {
         /// <summary>
-        /// Max delay (in seconds)
-        /// </summary>
-        public float MaxDelay { get; }
-
-        /// <summary>
         /// LFO frequency
         /// </summary>
-        public float LfoFrequency { get; }
+        public float LfoFrequency { set { Lfo.SetParameter("freq", value); } }
+
+        /// <summary>
+        /// Max delay (in seconds)
+        /// </summary>
+        public float MaxDelay
+        {
+            set
+            {
+                _maxDelayPos = (int)(Math.Ceiling(_fs * value));
+                _delayLine = new float[_maxDelayPos + 1];
+            }
+        }
+
+        /// <summary>
+        /// LFO
+        /// </summary>
+        private SignalBuilder _lfo;
+        public SignalBuilder Lfo
+        {
+            get { return _lfo; }
+            set
+            {
+                _lfo = value;
+                _lfo.SetParameter("min", 0.0).SetParameter("max", 1.0);
+            }
+        }
 
         /// <summary>
         /// Sampling rate
@@ -36,14 +57,11 @@ namespace NWaves.Effects
         public FlangerEffect(int samplingRate, float maxDelay = 0.003f/*sec*/, float lfoFrequency = 1/*Hz*/)
         {
             _fs = samplingRate;
-            MaxDelay = maxDelay;
-            
-            _lfo = new SineBuilder()
-                            .SetParameter("freq", lfoFrequency)
-                            .SampledAt(samplingRate);
 
-            _maxDelayPos = (int)(Math.Ceiling(samplingRate * maxDelay));
-            _delayLine = new float[_maxDelayPos + 1];
+            Lfo = new SineBuilder().SampledAt(samplingRate);
+
+            MaxDelay = maxDelay;
+            LfoFrequency = lfoFrequency;
         }
 
         /// <summary>
@@ -53,7 +71,7 @@ namespace NWaves.Effects
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var preciseDelay = (_lfo.NextSample() + 1) / 2 * _maxDelayPos;
+            var preciseDelay = Lfo.NextSample() * _maxDelayPos;
 
             var delay = (int)preciseDelay;
             var fracDelay = preciseDelay - delay;
@@ -85,9 +103,9 @@ namespace NWaves.Effects
             {
                 _delayLine[i] = 0;
             }
-        }
 
-        private SignalBuilder _lfo;
+            Lfo.Reset();
+        }
 
         private float[] _delayLine;
         private int _maxDelayPos;

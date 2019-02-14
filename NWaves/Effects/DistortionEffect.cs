@@ -11,15 +11,15 @@ namespace NWaves.Effects
         /// <summary>
         /// Amount of distortion
         /// </summary>
-        public float Gain { get; }
+        public float InputGain { get; set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="gain"></param>
-        public DistortionEffect(float gain = 20.0f)
+        /// <param name="inputGain"></param>
+        public DistortionEffect(float inputGain = 20.0f)
         {
-            Gain = gain;
+            InputGain = inputGain;
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace NWaves.Effects
         /// <returns>Output sample</returns>
         public override float Process(float sample)
         {
-            var q = Gain * sample;
+            var q = InputGain * sample;
             var output = Math.Sign(q) * (1 - Math.Exp(-Math.Abs(q)));
             return (float)(output * Wet + sample * Dry);
         }

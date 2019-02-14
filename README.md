@@ -29,7 +29,7 @@ Already available:
 - [x] perceptual features (loudness, sharpness)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking (autocorrelation, YIN, ZCR + Schmitt trigger, HSS/HPS, cepstrum)
-- [x] time scale modification (phase vocoder, PV with identity phase locking, WSOLA)
+- [x] time scale modification (phase vocoder, PV with identity phase locking, WSOLA, PaulStretch)
 - [x] simple resampling, interpolation, decimation
 - [x] bandlimited resampling
 - [x] noise reduction (spectral subtraction, sciPy-style Wiener filtering)
@@ -156,16 +156,16 @@ The ```DiscreteSignal``` class is a wrapper around array of floats, since for mo
 
 DiscreteSignal sinusoid = 
 	new SineBuilder()
-		.SetParameter("amplitude", 1.2)
 		.SetParameter("frequency", 500.0/*Hz*/)
+        .SetParameter("phase", Math.PI / 6)
 		.OfLength(1000)
 		.SampledAt(44100/*Hz*/)
 		.Build();
 
 DiscreteSignal noise = 
 	new PinkNoiseBuilder()
-		.SetParameter("min", -1.5)
-		.SetParameter("max", 1.5)
+		.SetParameter("min", -2.5)
+		.SetParameter("max", 2.5)
 		.OfLength(800)
 		.SampledAt(44100)
 		.DelayedBy(200)
@@ -173,9 +173,9 @@ DiscreteSignal noise =
 
 DiscreteSignal noisy = 
 	new SineBuilder()
-		.SetParameter("amp", 3.0)
+		.SetParameter("min", -10.0)
+        .SetParameter("max", 10.0)
 		.SetParameter("freq", 1200.0/*Hz*/)
-		.SetParameter("phase", Math.PI/3)
 		.OfLength(1000)
 		.SampledAt(44100)
 		.SuperimposedWith(noise)
@@ -435,7 +435,7 @@ filtered = parallel.ApplyTo(signal);
 // audio effects:
 
 var pitchShift = new PitchShiftEffect(1.2);
-var wahwah = new WahWahEffect(lfoFrequency: 2/*Hz*/);
+var wahwah = new WahwahEffect(lfoFrequency: 2/*Hz*/);
 
 var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
 

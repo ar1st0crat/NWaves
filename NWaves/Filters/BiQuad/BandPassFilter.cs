@@ -56,5 +56,16 @@ namespace NWaves.Filters.BiQuad
 
             return new TransferFunction(b, a);
         }
+
+        /// <summary>
+        /// Change filter parameters (preserving its state)
+        /// </summary>
+        /// <param name="freq"></param>
+        /// <param name="q"></param>
+        public void Change(double freq, double q = 1)
+        {
+            MakeTf(freq, q, _b, _a);
+            Normalize();
+        }
     }
 }

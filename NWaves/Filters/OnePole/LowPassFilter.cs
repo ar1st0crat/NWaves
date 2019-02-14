@@ -42,5 +42,16 @@ namespace NWaves.Filters.OnePole
 
             return new TransferFunction(b, a);
         }
+
+        /// <summary>
+        /// Change filter parameters (preserving its state)
+        /// </summary>
+        /// <param name="freq"></param>
+        /// <param name="q"></param>
+        public void Change(double freq)
+        {
+            MakeTf(freq, _b, _a);
+            Normalize();
+        }
     }
 }

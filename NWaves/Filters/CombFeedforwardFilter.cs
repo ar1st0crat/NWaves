@@ -95,5 +95,18 @@ namespace NWaves.Filters
 
             return output;
         }
+
+        /// <summary>
+        /// Change coefficients (preserving the state)
+        /// </summary>
+        /// <param name="b0"></param>
+        /// <param name="bm"></param>
+        public void Change(double b0, double bm)
+        {
+            _kernel[0] = b0;
+            _kernel[_delay] = bm;
+            _kernel32[0] = (float)b0;
+            _kernel32[_delay] = (float)bm;
+        }
     }
 }

@@ -5,6 +5,7 @@ namespace NWaves.Filters.BiQuad
 {
     /// <summary>
     /// BiQuad peaking EQ filter.
+    /// 
     /// The coefficients are calculated automatically according to 
     /// audio-eq-cookbook by R.Bristow-Johnson and WebAudio API.
     /// </summary>
@@ -60,6 +61,18 @@ namespace NWaves.Filters.BiQuad
             MakeTf(freq, q, gain, b, a);
 
             return new TransferFunction(b, a);
+        }
+
+        /// <summary>
+        /// Change filter parameters (preserving its state)
+        /// </summary>
+        /// <param name="freq"></param>
+        /// <param name="q"></param>
+        /// <param name="gain"></param>
+        public void Change(double freq, double q = 1, double gain = 1.0)
+        {
+            MakeTf(freq, q, gain, _b, _a);
+            Normalize();
         }
     }
 }

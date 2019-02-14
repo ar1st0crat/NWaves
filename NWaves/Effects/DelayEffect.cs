@@ -9,19 +9,33 @@ namespace NWaves.Effects
     public class DelayEffect : AudioEffect
     {
         /// <summary>
-        /// Echo length (in seconds)
+        /// Delay length (in seconds)
         /// </summary>
-        public float Length { get; }
+        public float Length { set { _filter = new CombFeedforwardFilter((int)(value * _fs), bm: _decay); } }
 
         /// <summary>
         /// Decay
         /// </summary>
-        public float Decay { get; }
+        private float _decay;
+        public float Decay
+        {
+            get { return _decay; }
+            set
+            {
+                _decay = value;
+                _filter.Change(1, _decay);
+            }
+        }
 
         /// <summary>
         /// Feedforward comb filter
         /// </summary>
         private CombFeedforwardFilter _filter;
+
+        /// <summary>
+        /// Sampling rate
+        /// </summary>
+        private int _fs;
 
         /// <summary>
         /// Constructor
@@ -31,10 +45,9 @@ namespace NWaves.Effects
         /// <param name="decay"></param>
         public DelayEffect(int samplingRate, float length, float decay)
         {
+            _fs = samplingRate;
             Length = length;
             Decay = decay;
-
-            _filter = new CombFeedforwardFilter((int)(length * samplingRate), bm: decay);
         }
 
         public override float Process(float sample)

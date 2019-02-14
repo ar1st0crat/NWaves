@@ -11,17 +11,27 @@ namespace NWaves.Effects
         /// <summary>
         /// Q
         /// </summary>
-        public float Q { get; }
+        public float Q { get; set; }
 
         /// <summary>
         /// Min LFO frequency
         /// </summary>
-        public float MinFrequency { get; }
+        public float MinFrequency { get; set; }
 
         /// <summary>
         /// Max LFO frequency
         /// </summary>
-        public float MaxFrequency { get; }
+        public float MaxFrequency { get; set; }
+
+        /// <summary>
+        /// Attack time
+        /// </summary>
+        public float AttackTime { set { _envelopeFollower.AttackTime = value; } }
+
+        /// <summary>
+        /// Release time
+        /// </summary>
+        public float ReleaseTime { set { _envelopeFollower.ReleaseTime = value; } }
 
         /// <summary>
         /// Sampling rate
@@ -40,14 +50,21 @@ namespace NWaves.Effects
         /// <param name="minFrequency"></param>
         /// <param name="maxFrequency"></param>
         /// <param name="q"></param>
-        public AutowahEffect(int samplingRate, float minFrequency = 30, float maxFrequency = 2000, float q = 0.5f)
+        /// <param name="attackTime"></param>
+        /// <param name="releaseTime"></param>
+        public AutowahEffect(int samplingRate,
+                             float minFrequency = 30,
+                             float maxFrequency = 2000,
+                             float q = 0.5f,
+                             float attackTime = 0.01f,
+                             float releaseTime = 0.05f)
         {
             _fs = samplingRate;
             MinFrequency = minFrequency;
             MaxFrequency = maxFrequency;
             Q = q;
 
-            _envelopeFollower = new EnvelopeFollower(samplingRate);
+            _envelopeFollower = new EnvelopeFollower(samplingRate, attackTime, releaseTime);
         }
 
         /// <summary>

@@ -12,37 +12,37 @@ namespace NWaves.Effects
         /// <summary>
         /// Input gain (amount of distortion)
         /// </summary>
-        public float InputGain { get; }
+        public float InputGain { get; set; }
 
         /// <summary>
         /// Output gain
         /// </summary>
-        public float OutputGain { get; }
+        public float OutputGain { get; set; }
 
         /// <summary>
         /// Work point.
         /// Controls the linearity of the transfer function for low input levels.
         /// More negative - more linear.
         /// </summary>
-        public float Q { get; }
+        public float Q { get; set; }
 
         /// <summary>
         /// Distortion's character.
         /// Higher number - harder distortion.
         /// </summary>
-        public float Dist { get; }
+        public float Dist { get; set; }
 
         /// <summary>
         /// Filter coefficient (close to 1.0) defining placement of poles 
         /// in the HP filter that removes DC component.
         /// </summary>
-        public float Rh { get; }
+        public float Rh { get; set; }
 
         /// <summary>
         /// Filter coefficient (in range (0, 1)) defining placement of pole 
         /// in the LP filter used to simulate capacitances in tube amplifier.
         /// </summary>
-        public float Rl { get; }
+        public float Rl { get; set; }
 
         /// <summary>
         /// Internal filter for output signal 

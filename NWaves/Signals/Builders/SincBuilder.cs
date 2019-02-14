@@ -10,9 +10,14 @@ namespace NWaves.Signals.Builders
     public class SincBuilder : SignalBuilder
     {
         /// <summary>
-        /// Amplitude of sinc
+        /// Lower amplitude level
         /// </summary>
-        private double _amplitude;
+        private double _low;
+
+        /// <summary>
+        /// Upper amplitude level
+        /// </summary>
+        private double _high;
 
         /// <summary>
         /// Frequency of the sinc (as a fraction of sampling frequency)
@@ -26,11 +31,13 @@ namespace NWaves.Signals.Builders
         {
             ParameterSetters = new Dictionary<string, Action<double>>
             {
-                { "amplitude, amp, gain", param => _amplitude = param },
-                { "frequency, freq",      param => _frequency = param }
+                { "low, lo, min",    param => _low = param },
+                { "high, hi, max",   param => _high = param },
+                { "frequency, freq", param => _frequency = param }
             };
 
-            _amplitude = 1.0;
+            _low = -1.0;
+            _high = 1.0;
             _frequency = 0.0;
         }
 
@@ -43,7 +50,7 @@ namespace NWaves.Signals.Builders
         /// <returns></returns>
         public override float NextSample()
         {
-            var sample = (float)(_amplitude * MathUtils.Sinc(_n * _frequency / SamplingRate));
+            var sample = (float)(_low + (_high - _low) * MathUtils.Sinc(_n * _frequency / SamplingRate));
             _n++;
             return sample;
         }

@@ -11,22 +11,27 @@ namespace NWaves.Effects
         /// <summary>
         /// Q
         /// </summary>
-        public float Q { get; }
+        public float Q { get; set; }
 
         /// <summary>
         /// LFO frequency
         /// </summary>
-        public float LfoFrequency { get; }
+        public float LfoFrequency { set { Lfo.SetParameter("freq", value); } }
 
         /// <summary>
         /// Min LFO frequency
         /// </summary>
-        public float MinFrequency { get; }
+        public float MinFrequency { set { Lfo.SetParameter("min", value); } }
 
         /// <summary>
         /// Max LFO frequency
         /// </summary>
-        public float MaxFrequency { get; }
+        public float MaxFrequency { set { Lfo.SetParameter("max", value); } }
+
+        /// <summary>
+        /// LFO
+        /// </summary>
+        public SignalBuilder Lfo { get; set; }
 
         /// <summary>
         /// Sampling rate
@@ -34,26 +39,49 @@ namespace NWaves.Effects
         private int _fs;
 
         /// <summary>
+        /// Notch filter with varying center frequency
+        /// </summary>
+        private NotchFilter _filter;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="samplingRate"></param>
+        /// <param name="q"></param>
         /// <param name="lfoFrequency"></param>
         /// <param name="minFrequency"></param>
         /// <param name="maxFrequency"></param>
-        /// <param name="q"></param>
-        public PhaserEffect(int samplingRate, float lfoFrequency = 1.0f, float minFrequency = 300, float maxFrequency = 3000, float q = 0.5f)
+        public PhaserEffect(int samplingRate,
+                            float lfoFrequency = 1.0f,
+                            float minFrequency = 300,
+                            float maxFrequency = 3000,
+                            float q = 0.5f)
         {
             _fs = samplingRate;
+            
+            Lfo = new TriangleWaveBuilder().SampledAt(samplingRate);
+            
             LfoFrequency = lfoFrequency;
             MinFrequency = minFrequency;
             MaxFrequency = maxFrequency;
             Q = q;
 
-            _lfo = new TriangleWaveBuilder()
-                                .SetParameter("lo", MinFrequency)
-                                .SetParameter("hi", MaxFrequency)
-                                .SetParameter("freq", LfoFrequency)
-                                .SampledAt(samplingRate);
+            _filter = new NotchFilter(Lfo.NextSample() / _fs, Q);
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="samplingRate"></param>
+        /// <param name="lfo"></param>
+        /// <param name="q"></param>
+        public PhaserEffect(int samplingRate, SignalBuilder lfo, float q = 0.5f)
+        {
+            _fs = samplingRate;
+            Q = q;
+            Lfo = lfo;
+
+            _filter = new NotchFilter(Lfo.NextSample() / _fs, Q);
         }
 
         /// <summary>
@@ -63,34 +91,17 @@ namespace NWaves.Effects
         /// <returns>Output sample</returns>
         public override float Process(float sample)
         {
-            NotchFilter.MakeTf(_lfo.NextSample() / _fs, Q, _b, _a);
+            var output = _filter.Process(sample);
 
-            var output = (float)((_b[0] * sample + _b[1] * _in1 + _b[2] * _in2 - _a[1] * _out1 - _a[2] * _out2) / _a[0]);
-
-            _in2 = _in1;
-            _in1 = sample;
-            _out2 = _out1;
-            _out1 = output;
+            _filter.Change(Lfo.NextSample() / _fs, Q);     // vary notch filter coefficients
 
             return output * Wet + sample * Dry;
         }
 
         public override void Reset()
         {
-            _in1 = _in2 = _out1 = _out2 = 0;
+            _filter.Reset();
+            Lfo.Reset();
         }
-
-        private SignalBuilder _lfo;
-
-        private double[] _b = new double[3];
-        private double[] _a = new double[3];
-
-        /// <summary>
-        /// Delay line
-        /// </summary>
-        private float _in1;
-        private float _in2;
-        private float _out1;
-        private float _out2;
     }
 }

@@ -7,6 +7,7 @@ using NWaves.Filters.Base;
 using NWaves.Operations;
 using NWaves.Operations.Tsm;
 using NWaves.Signals;
+using NWaves.Signals.Builders;
 using NWaves.Transforms;
 
 namespace NWaves.DemoForms
@@ -143,7 +144,14 @@ namespace NWaves.DemoForms
                 var minFrequency = float.Parse(minFreqTextBox.Text);
                 var maxFrequency = float.Parse(maxFreqTextBox.Text);
                 var q = float.Parse(lfoQTextBox.Text);
-                effect = new PhaserEffect(fs, lfoFrequency, minFrequency, maxFrequency, q);
+                
+                var lfo = new SawtoothBuilder()
+                                    .SetParameter("freq", lfoFrequency)
+                                    .SetParameter("min", minFrequency)
+                                    .SetParameter("max", maxFrequency)
+                                    .SampledAt(_signal.SamplingRate);
+
+                effect = new PhaserEffect(fs, lfo, q);
             }
 
             if (effect != null)

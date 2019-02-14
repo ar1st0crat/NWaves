@@ -10,9 +10,14 @@ namespace NWaves.Signals.Builders
     public class PulseWaveBuilder : SignalBuilder
     {
         /// <summary>
-        /// Amplitude
+        /// Lower amplitude level
         /// </summary>
-        private double _amplitude;
+        private double _low;
+
+        /// <summary>
+        /// Upper amplitude level
+        /// </summary>
+        private double _high;
 
         /// <summary>
         /// Pulse duration
@@ -31,12 +36,14 @@ namespace NWaves.Signals.Builders
         {
             ParameterSetters = new Dictionary<string, Action<double>>
             {
-                { "amplitude, amp, a", param => _amplitude = param },
-                { "pulse, width", param => _pulse = param },
-                { "period, t", param => _period = param }
+                { "low, lo, min",  param => _low = param },
+                { "high, hi, max", param => _high = param },
+                { "pulse, width",  param => _pulse = param },
+                { "period, t",     param => _period = param }
             };
 
-            _amplitude = 1.0;
+            _low = -1.0;
+            _high = 1.0;
             _pulse = 0.0;
             _period = 0.0;
         }
@@ -47,7 +54,7 @@ namespace NWaves.Signals.Builders
         /// <returns></returns>
         public override float NextSample()
         {
-            var sample = _n <= (int)(_pulse * SamplingRate) ? _amplitude : 0;
+            var sample = _n <= (int)(_pulse * SamplingRate) ? _high : _low;
 
             if (++_n == (int)(_period * SamplingRate))
             {
