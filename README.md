@@ -53,7 +53,7 @@ NWaves was initially intended for research, visualizing and teaching basics of D
 
 ## Quickstart
 
-### Working with 1d signals using DiscreteSignal class
+### Working with 1d signals and DiscreteSignal class
 
 ```C#
 
@@ -155,31 +155,31 @@ The ```DiscreteSignal``` class is a wrapper around array of floats, since for mo
 ```C#
 
 DiscreteSignal sinusoid = 
-	new SineBuilder()
-		.SetParameter("frequency", 500.0/*Hz*/)
+    new SineBuilder()
+        .SetParameter("frequency", 500.0/*Hz*/)
         .SetParameter("phase", Math.PI / 6)
-		.OfLength(1000)
-		.SampledAt(44100/*Hz*/)
-		.Build();
+        .OfLength(1000)
+        .SampledAt(44100/*Hz*/)
+        .Build();
 
 DiscreteSignal noise = 
-	new PinkNoiseBuilder()
-		.SetParameter("min", -2.5)
-		.SetParameter("max", 2.5)
-		.OfLength(800)
-		.SampledAt(44100)
-		.DelayedBy(200)
-		.Build();
+    new PinkNoiseBuilder()
+        .SetParameter("min", -2.5)
+        .SetParameter("max", 2.5)
+        .OfLength(800)
+        .SampledAt(44100)
+        .DelayedBy(200)
+        .Build();
 
 DiscreteSignal noisy = 
-	new SineBuilder()
-		.SetParameter("min", -10.0)
+    new SineBuilder()
+        .SetParameter("min", -10.0)
         .SetParameter("max", 10.0)
-		.SetParameter("freq", 1200.0/*Hz*/)
-		.OfLength(1000)
-		.SampledAt(44100)
-		.SuperimposedWith(noise)
-		.Build();
+        .SetParameter("freq", 1200.0/*Hz*/)
+        .OfLength(1000)
+        .SampledAt(44100)
+        .SuperimposedWith(noise)
+        .Build();
 
 ```
 
@@ -189,8 +189,8 @@ Signal builders can also act as real-time generators of samples:
 
 DiscreteSignal lfo = 
     new TriangleWaveBuilder()
-        .SetParameter("low", 100)
-        .SetParameter("high", 1500)
+        .SetParameter("min", 100)
+        .SetParameter("max", 1500)
         .SetParameter("frequency", 2.0/*Hz*/)
         .SampledAt(16000/*Hz*/);
 
@@ -231,10 +231,17 @@ using (var stream = new FileStream("sample.wav", FileMode.Open))
 
 ```C#
 
-using (var stream = new FileStream("saved.wav", FileMode.Create))
+using (var stream = new FileStream("saved_mono.wav", FileMode.Create))
 {
 	var waveFile = new WaveFile(signal);
 	waveFile.SaveTo(stream);
+}
+
+
+using (var stream = new FileStream("saved_stereo.wav", FileMode.Create))
+{
+    var waveFile = new WaveFile(new [] { signal1, signal2 });
+    waveFile.SaveTo(stream);
 }
 
 ```
@@ -395,7 +402,7 @@ var poles = filter.Tf.Poles;
 
 var firFilter = DesignFilter.Fir(43, magnitudeResponse);
 
-var lowpassFilter = DesignFilter.FirLp(43, 0.12);
+var lowpassFilter = DesignFilter.FirLp(43, 0.12f);
 var highpassFilter = DesignFilter.LpToHp(lowpassFilter);
 
 var kernel = lowpassFilter.Tf.Numerator;
@@ -518,7 +525,7 @@ The property ```(Ola|Ols)BlockConvoler.HopSize``` returns this value. So you mig
 
 ```C#
 
-var firstCount = Math.Min(HopSize, signal.Length);
+var firstCount = Math.Min(HopSize - 1, signal.Length);
 
 int i = 0, j = 0;
 

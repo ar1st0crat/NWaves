@@ -32,14 +32,16 @@ namespace NWaves.DemoForms
             var modulationIndex = float.Parse(modulationIndexTextBox.Text);
 
             var carrier = new CosineBuilder()
-                                    .SetParameter("amp", carrierAmplitude)
+                                    .SetParameter("min", -carrierAmplitude)
+                                    .SetParameter("max",  carrierAmplitude)
                                     .SetParameter("freq", carrierFrequency)
                                     .OfLength(1024)
                                     .SampledAt(16000)
                                     .Build();
 
             var baseband = new CosineBuilder()
-                                    .SetParameter("amp", modulationIndex)
+                                    .SetParameter("min", -modulationIndex)
+                                    .SetParameter("max",  modulationIndex)
                                     .SetParameter("freq", modulationFrequency)
                                     .OfLength(1024)
                                     .SampledAt(16000)
