@@ -244,10 +244,10 @@ namespace NWaves.Operations
                     stretchFilter = new PhaseVocoder(stretch, frameSize / 10, frameSize);
                     break;
                 case TsmAlgorithm.PhaseVocoderPhaseLocking:
-                    stretchFilter = new PhaseLockingVocoder(stretch, frameSize / 4, frameSize);
+                    stretchFilter = new PhaseLockingVocoder(stretch, frameSize / 8, frameSize);
                     break;
                 case TsmAlgorithm.PaulStetch:
-                    stretchFilter = new PaulStretch(stretch, frameSize / 8, frameSize * 4);
+                    stretchFilter = new PaulStretch(stretch, frameSize / 10, frameSize * 4);
                     break;
                 default:
                     stretchFilter = new Wsola(stretch);

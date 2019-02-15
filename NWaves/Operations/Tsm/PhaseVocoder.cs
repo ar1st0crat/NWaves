@@ -44,9 +44,9 @@ namespace NWaves.Operations.Tsm
         private readonly float[] _window;
 
         /// <summary>
-        /// Window coefficients squared
+        /// ISTFT normalization gain
         /// </summary>
-        private readonly float[] _windowSquared;
+        private readonly float _gain;
 
         /// <summary>
         /// Linearly spaced frequencies
@@ -93,7 +93,8 @@ namespace NWaves.Operations.Tsm
             
             _fft = new Fft(_fftSize);
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
-            _windowSquared = _window.Select(w => w * w).ToArray();
+
+            _gain = 2 / (_fftSize * _window.Select(w => w * w).Sum() / _hopSynthesis);
 
             _omega = Enumerable.Range(0, _fftSize / 2 + 1)
                                .Select(f => 2 * Math.PI * f / _fftSize)
@@ -119,8 +120,6 @@ namespace NWaves.Operations.Tsm
             var input = signal.Samples;
             var output = new float[(int)(input.Length * _stretch) + _fftSize];
 
-            var windowSum = new float[output.Length];
-
             var posSynthesis = 0;
             for (var posAnalysis = 0; posAnalysis + _fftSize < input.Length; posAnalysis += _hopAnalysis)
             {
@@ -128,7 +127,7 @@ namespace NWaves.Operations.Tsm
                 _zeroblock.FastCopyTo(_im, _fftSize);
 
                 _re.ApplyWindow(_window);
-                
+
                 _fft.Direct(_re, _im);
 
                 for (var j = 0; j < _fftSize / 2 + 1; j++)
@@ -160,16 +159,19 @@ namespace NWaves.Operations.Tsm
                 for (var j = 0; j < _re.Length; j++)
                 {
                     output[posSynthesis + j] += _re[j] * _window[j];
-                    windowSum[posSynthesis + j] += _windowSquared[j];
+                }
+
+                for (var j = 0; j < _hopSynthesis; j++)
+                {
+                    output[posSynthesis + j] *= _gain;
                 }
 
                 posSynthesis += _hopSynthesis;
             }
 
-            for (var j = 0; j < output.Length; j++)
+            for (; posSynthesis < output.Length; posSynthesis++)
             {
-                if (windowSum[j] < 1e-3) continue;
-                output[j] /= windowSum[j] * (_fftSize / 2 + 1);
+                output[posSynthesis] *= _gain;
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);

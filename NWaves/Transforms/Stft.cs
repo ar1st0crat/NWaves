@@ -44,10 +44,9 @@ namespace NWaves.Transforms
         private readonly float[] _windowSamples;
 
         /// <summary>
-        /// Window coefficients squared
+        /// ISTFT normalization gain
         /// </summary>
-        private readonly float[] _windowSquared;
-
+        private readonly float _gain;
 
         /// <summary>
         /// Constructor with necessary parameters
@@ -66,9 +65,8 @@ namespace NWaves.Transforms
             _windowSize = windowSize;
             _window = window;
             _windowSamples = Window.OfType(_window, _windowSize);
-            _windowSquared = _windowSamples.Select(w => w * w).ToArray();
 
-            // TODO: pad center!
+            _gain = 1 / (_fftSize * _windowSamples.Select(w => w * w).Sum() / _hopSize);
         }
 
         /// <summary>
@@ -109,8 +107,7 @@ namespace NWaves.Transforms
         {
             var spectraCount = stft.Count;
             var output = new float[spectraCount * _hopSize + _windowSize];
-            var windowSum = new float[output.Length];
-
+            
             var re = new float[_windowSize];
             var im = new float[_windowSize];
 
@@ -127,16 +124,19 @@ namespace NWaves.Transforms
                 for (var j = 0; j < re.Length; j++)
                 {
                     output[pos + j] += re[j] * _windowSamples[j];
-                    windowSum[pos + j] += _windowSquared[j];
+                }
+
+                for (var j = 0; j < _hopSize; j++)
+                {
+                    output[pos + j] *= _gain;
                 }
 
                 pos += _hopSize;
             }
 
-            for (var j = 0; j < output.Length; j++)
+            for (var j = 0; j < _windowSize; j++)
             {
-                if (windowSum[j] < 1e-10) continue;
-                output[j] /= (windowSum[j] * _fftSize);
+                output[pos + j] *= _gain;
             }
 
             return output;

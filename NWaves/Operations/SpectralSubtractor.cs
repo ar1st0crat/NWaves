@@ -36,11 +36,11 @@ namespace NWaves.Operations
         /// Window coefficients
         /// </summary>
         private readonly float[] _window;
-
+        
         /// <summary>
-        /// Window coefficients squared
+        /// ISTFT normalization gain
         /// </summary>
-        private readonly float[] _windowSquared;
+        private readonly float _gain;
 
         /// <summary>
         /// Accumulated noise
@@ -80,7 +80,8 @@ namespace NWaves.Operations
 
             _fft = new Fft(_fftSize);
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
-            _windowSquared = _window.Select(w => w * w).ToArray();
+
+            _gain = 2 / (_fftSize * _window.Select(w => w * w).Sum() / _hopSize);
 
             _noiseAcc = new float[_fftSize / 2 + 1];
             _noiseEstimate = new float[_fftSize / 2 + 1];
@@ -145,9 +146,8 @@ namespace NWaves.Operations
             const float k = (alphaMin - alphaMax) / (snrMax - snrMin);
             const float b = alphaMax - k * snrMin;
 
-            var windowSum = new float[output.Length];
-
-            for (var pos = 0; pos + _fftSize < input.Length; pos += _hopSize)
+            var pos = 0;
+            for (; pos + _fftSize < input.Length; pos += _hopSize)
             {
                 input.FastCopyTo(_re, _fftSize, pos);
                 _zeroblock.FastCopyTo(_im, _fftSize);
@@ -184,14 +184,17 @@ namespace NWaves.Operations
                 for (var j = 0; j < _re.Length; j++)
                 {
                     output[pos + j] += _re[j] * _window[j];
-                    windowSum[pos + j] += _windowSquared[j];
+                }
+
+                for (var j = 0; j < _hopSize; j++)
+                {
+                    output[pos + j] *= _gain;
                 }
             }
 
-            for (var j = 0; j < output.Length; j++)
+            for (; pos < output.Length; pos++)
             {
-                if (windowSum[j] < 1e-3) continue;
-                output[j] /= (windowSum[j] * _fftSize / 2);
+                output[pos] *= _gain;
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);

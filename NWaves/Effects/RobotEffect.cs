@@ -4,6 +4,7 @@ using NWaves.Transforms;
 using NWaves.Utils;
 using NWaves.Windows;
 using System;
+using System.Linq;
 
 namespace NWaves.Effects
 {
@@ -34,6 +35,11 @@ namespace NWaves.Effects
         private readonly float[] _window;
 
         /// <summary>
+        /// ISTFT normalization gain
+        /// </summary>
+        private readonly float _gain;
+
+        /// <summary>
         /// Internal buffer for real parts of analyzed block
         /// </summary>
         private float[] _re;
@@ -60,6 +66,8 @@ namespace NWaves.Effects
 
             _fft = new Fft(_fftSize);
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
+
+            _gain = (float)(2 * Math.PI / (_fftSize * _window.Select(w => w * w).Sum() / _hopSize));
 
             _re = new float[_fftSize];
             _im = new float[_fftSize];
@@ -100,16 +108,22 @@ namespace NWaves.Effects
 
                 for (var j = 0; j < _re.Length; j++)
                 {
-                    output[posSynthesis + j] += (float)(_re[j] * 2 * Math.PI * _window[j]);
+                    output[posSynthesis + j] += _re[j] * _window[j];
+                }
+
+                for (var j = 0; j < _hopSize; j++)
+                {
+                    output[posSynthesis + j] *= _gain;
+                    output[j] = Wet * output[j] + Dry * input[j];
                 }
 
                 posSynthesis += _hopSize;
             }
 
-            for (var j = 0; j < output.Length; j++)
+            for (; posSynthesis < output.Length; posSynthesis++)
             {
-                output[j] /= (float)(_fftSize / 2 * Math.PI);
-                output[j] = Wet * output[j] + Dry * input[j];
+                output[posSynthesis] *= _gain;
+                output[posSynthesis] = Wet * output[posSynthesis] + Dry * input[posSynthesis];
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
