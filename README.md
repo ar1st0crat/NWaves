@@ -1,6 +1,7 @@
 # NWaves
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![NuGet](https://img.shields.io/nuget/dt/NWaves.svg?style=flat)
 
 ![logo](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/logo_draft.bmp)
 
@@ -49,6 +50,9 @@ Planned:
 ## Philosophy of NWaves
 
 NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and were first designed mostly for offline processing (now some online methods are also available). It doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C/C++ or Asm, but it's not that *very* slow for many purposes either.
+
+
+[Read wiki documentation](https://github.com/ar1st0crat/NWaves/wiki)
 
 
 ## Quickstart
@@ -147,7 +151,7 @@ var copy = new DiscreteSignal(signal.SamplingRate, signal.Samples, allocateNew: 
 
 ```
 
-The ```DiscreteSignal``` class is a wrapper around array of floats, since for most purposes 32bit precision is sufficient and leads to better performance in terms of speed and memory usage. However, alternative versions of functions dealing with double arrays are also available. For instance, filter design and analysis is done with double precision and filtering is carried out with single precision by default. See more in tutorial (*coming soon*).
+The ```DiscreteSignal``` class is a wrapper around array of floats, since for most purposes 32bit precision is sufficient and leads to better performance in terms of speed and memory usage. However, alternative versions of functions dealing with double arrays are also available. For instance, filter design and analysis is done with double precision and filtering is carried out with single precision by default. See more in [documentation](https://github.com/ar1st0crat/NWaves/wiki).
 
 
 ### Signal builders
@@ -187,12 +191,12 @@ Signal builders can also act as real-time generators of samples:
 
 ```C#
 
-DiscreteSignal lfo = 
+SignalBuilder lfo = 
     new TriangleWaveBuilder()
-        .SetParameter("min", 100)
-        .SetParameter("max", 1500)
-        .SetParameter("frequency", 2.0/*Hz*/)
-        .SampledAt(16000/*Hz*/);
+            .SetParameter("min", 100)
+            .SetParameter("max", 1500)
+            .SetParameter("frequency", 2.0/*Hz*/)
+            .SampledAt(16000/*Hz*/);
 
 while (...)
 {
@@ -629,7 +633,7 @@ player.Stop();
 
 // recording
 
-IAudioRecorder = new MciAudioRecorder();
+IAudioRecorder recorder = new MciAudioRecorder();
 
 // ...in some event handler
 recorder.StartRecording(16000);
