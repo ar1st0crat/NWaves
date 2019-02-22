@@ -5,7 +5,7 @@
 
 ![logo](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/logo_draft.bmp)
 
-NWaves is a .NET library for 1d signal processing focused specifically on audio processing.
+NWaves is a .NET library for 1D signal processing focused specifically on audio processing.
 
 ## Main features 
 
@@ -57,102 +57,31 @@ NWaves was initially intended for research, visualizing and teaching basics of D
 
 ## Quickstart
 
-### Working with 1d signals and DiscreteSignal class
+### Working with 1D signals
 
 ```C#
+// Create signal from samples repeated 100 times
 
-// Create signal { 0.75, 0.75, 0.75, 0.75, 0.75 } sampled at 8 kHz:
+float[] samples = new [] { 0.5f, 0.2f, -0.3f, 1.2f, 1.6f, -1.8f, 0.3f, -0.2f };
 
-var constants = new DiscreteSignal(8000, 5, 0.75f);
+var s = new DiscreteSignal(8000, samples).Repeat(100);
 
+var length = s.Length;
+var duration = s.Duration;
 
-// Create signal { 0.0, 1.0, 2.0, ..., 99.0 } sampled at 22050 Hz
+var echoSignal = s + s.Delay(50);
 
-var linear = new DiscreteSignal(22050, Enumerable.Range(0, 100));
+var marginSignal = s.First(64).Concatenate(s.Last(64));
 
+var repeatMiddle = s[400, 500].Repeat(10);
 
-// Create signal { 1.0, 0.0 } sampled at 800 Hz
+var mean = s.Samples.Average();
+var sigma = s.Samples.Average(x => (x - mean) * (x - mean));
 
-var bits = new DiscreteSignal(800, new float [] { 1, 0 });
-
-
-// Create one more signal from samples repeated 3 times
-
-var samples = new [] { 0.5f, 0.2f, -0.3f, 1.2f, 1.6f, -1.8f, 0.3f, -0.2f };
-var signal = new DiscreteSignal(16000, samples).Repeat(3);
-
-
-// DiscreteSignal samples are mutable by design:
-
-signal[2] = 1.27f;
-signal[3] += 0.5f;
-
-
-// slices (as in Python: "signal[6:18]")
-
-var middle = signal[6, 18];
-
-// specific slices:
-
-var starting = signal.First(10);	// Python analog is 'signal[:10]'
-var ending = signal.Last(10);		// Python analog is 'signal[-10:]'
-
-
-// We can get the entire array of samples anytime
-// (keeping in mind that it's mutable, i.e. it's not(!) IReadOnlyList)
-
-var samples = signal.Samples;
-
-
-// repeat signal 100 times {1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, ...}
-
-var bitStream = bits.Repeat(100);
-
-
-// delay by 1000 samples and -500 samples (ahead)
-
-var delayed = signal1.Delay(1000);
-var front = signal1.Delay(-500);
-
-
-// concatenate signals
-
-var concat = signal1.Concatenate(signal2);
-
-
-// add signals element-wise 
-// (sizes don't need to fit; broadcasting takes place)
-
-var combination = signal1 + signal2;
-// or
-var combination = signal1.Superimpose(signal2);
-
-
-// amplify / attenuate
-
-bits.Amplify(10);		// in-place
-bits.Attenuate(10);		// in-place
-
-var bitStream = bits * 10;		// new signal
-
-
-// add constant 0.5 to each sample
-
-var offset = signal1 + 0.5f;
-
-
-// make a deep copy of a signal
-
-var copy = signal.Copy();
-
-// equivalent to:
-
-var copy = new DiscreteSignal(signal.SamplingRate, signal.Samples, allocateNew: true);
+var normSignal = s - mean;
+normSignal.Attenuate(sigma);
 
 ```
-
-The ```DiscreteSignal``` class is a wrapper around array of floats, since for most purposes 32bit precision is sufficient and leads to better performance in terms of speed and memory usage. However, alternative versions of functions dealing with double arrays are also available. For instance, filter design and analysis is done with double precision and filtering is carried out with single precision by default. See more in [documentation](https://github.com/ar1st0crat/NWaves/wiki).
-
 
 ### Signal builders
 
@@ -167,7 +96,7 @@ DiscreteSignal sinusoid =
         .Build();
 
 DiscreteSignal noise = 
-    new PinkNoiseBuilder()
+    new RedNoiseBuilder()
         .SetParameter("min", -2.5)
         .SetParameter("max", 2.5)
         .OfLength(800)
@@ -198,7 +127,7 @@ SignalBuilder lfo =
             .SetParameter("frequency", 2.0/*Hz*/)
             .SampledAt(16000/*Hz*/);
 
-while (...)
+//while (...)
 {
     var sample = lfo.NextSample();
     //...
@@ -207,44 +136,32 @@ while (...)
 ```
 
 
-### Loading signals from wave files:
+### Signals and wave files:
 
 ```C#
+
+DiscreteSignal left, right;
+
+// load
 
 using (var stream = new FileStream("sample.wav", FileMode.Open))
 {
-	var waveFile = new WaveFile(stream);
-
-	// address signals with Channels enum (Left, Right, Average, Interleave):
-
-	var signalLeft = waveFile[Channels.Left];
-	var signalRight = waveFile[Channels.Right];
-	var signalAverage = waveFile[Channels.Average];
-	var signalInterleaved = waveFile[Channels.Interleave];
-	
-	// or simply like this:
-
-	signalLeft = waveFile.Signals[0];
-	signalRight = waveFile.Signals[1];
+    var waveFile = new WaveFile(stream);
+    left = waveFile[Channels.Left];
+    right = waveFile[Channels.Right];
 }
 
-```
-
-
-### Saving signals to wave files:
-
-```C#
+// save
 
 using (var stream = new FileStream("saved_mono.wav", FileMode.Create))
 {
-	var waveFile = new WaveFile(signal);
+	var waveFile = new WaveFile(left);
 	waveFile.SaveTo(stream);
 }
 
-
 using (var stream = new FileStream("saved_stereo.wav", FileMode.Create))
 {
-    var waveFile = new WaveFile(new [] { signal1, signal2 });
+    var waveFile = new WaveFile(new [] { left, right });
     waveFile.SaveTo(stream);
 }
 
@@ -254,17 +171,12 @@ using (var stream = new FileStream("saved_stereo.wav", FileMode.Create))
 ### Transforms:
 
 ```C#
-
 // For each transform there's a corresponding transformer object.
 // Each transformer object has Direct() and Inverse() methods.
-
 
 // Complex FFT transformer:
 
 var fft = new Fft(1024);
-
-
-// 1) Handling complex arrays directly:
 
 float[] real = signal.First(1024).Samples;
 float[] imag = new float [1024];
@@ -277,10 +189,7 @@ fft.Direct(real, imag);
 // in-place IFFT
 fft.Inverse(real, imag);
 
-
-// 2) Often we don't need to deal with complex arrays
-//    and we don't want to transform samples in-place;
-//    instead we need some real-valued post-processed results of complex fft:
+// post-processed FFT:
 
 var magnitudeSpectrum = 
     fft.MagnitudeSpectrum(signal[1000, 2024]);
@@ -295,86 +204,58 @@ var logPowerSpectrum =
        .ToArray();
 
 
-
-// Cepstral transformer:
-
-var ct = new CepstralTransform(20, fftSize: 512);
-var cepstrum = ct.Direct(signal);
-
-
-// Hilbert transformer
-
-var ht = new HilbertTransform(1024);
-var result = ht.Direct(doubleSamples);
-
-// HilbertTransform class also provides method
-// for computing complex analytic signal.
-// Thus, previous line is equivalent to:
-
-var result = ht.AnalyticSignal(doubleSamples).Imag;
-
-// by default HilbertTransformer works with double precision;
-// this code is for floats:
-// var ht = new HilbertTransform(1024, doublePrecision: false);
-// var result = ht.AnalyticSignal(floatSamples).Item2;
-
-
-// in previous five cases the result of each transform was
-// a newly created object of DiscreteSignal class.
-
-// If the sequence of blocks must be processed then 
-// it's better to work with reusable arrays in memory
-// (all intermediate results will also be stored in reusable arrays):
-
-var spectrum = new float[1024];
-var cepstrum = new float[20];
-
-fft.PowerSpectrum(signal[1000, 2024].Samples, spectrum);
-// do something with spectrum
-
-fft.PowerSpectrum(signal[2024, 3048].Samples, spectrum);
-// do something with spectrum
-
-fft.PowerSpectrum(signal[3048, 4072].Samples, spectrum);
-// do something with spectrum
-
-ct.Direct(signal[5000, 5512].Samples, cepstrum)
-// do something with cepstrum
-
-//...
-
-
 // Short-Time Fourier Transform:
 
-var stft = new Stft(1024, 512, WindowTypes.Hamming);
+var stft = new Stft(1024, 256, WindowTypes.Hamming);
 var timefreq = stft.Direct(signal);
 var reconstructed = stft.Inverse(timefreq);
 
-var spectrogram = stft.Spectrogram(4096, 1024);
+var spectrogram = stft.Spectrogram(signal);
 
+
+// Cepstral transformer:
+
+var ct = new CepstralTransform(24, fftSize: 512);
+var cepstrum = ct.Direct(signal);
 ```
 
 
 ### Operations:
 
 ```C#
+// convolution
 
-// the following four operations are based on FFT convolution:
+var conv = Operation.Convolve(signal, kernel);
+var xcorr = Operation.CrossCorrelate(signal1, signal2);
 
-var filteredSignal = Operation.Convolve(signal, kernel);
-var correlated = Operation.CrossCorrelate(signal1, signal2);
+// block convolution
 
-// block convolution (each block contains 4096 samples)
+var filtered = Operation.BlockConvolve(signal, kernel, 4096, FilteringMethod.OverlapAdd);
 
-var olaFiltered = Operation.BlockConvolve(signal, kernel, 4096, FilteringMethod.OverlapAdd);
-var olsFiltered = Operation.BlockConvolve(signal, kernel, 4096, FilteringMethod.OverlapSave);
+// resampling
 
-// resampling:
+var resampled = Operation.Resample(signal, 22050);
+var interpolated = Operation.Interpolate(signal, 3);
+var decimated = Operation.Decimate(signal, 2);
+var updown = Operation.ResampleUpDown(signal, 3, 2);
 
-var resampled = Operation.Resample(signal, 16000);
-var decimated = Operation.Decimate(signal, 3);
-var interpolated = Operation.Interpolate(signal, 4);
+// time scale modification
 
+var stretch = Operation.TimeStretch(signal, 0.7, TsmAlgorithm.PhaseVocoderPhaseLocking);
+var cool = Operation.TimeStretch(signal, 16, TsmAlgorithm.PaulStretch);
+
+// envelope following
+
+var envelope = Operation.Envelope(signal);
+
+// rectification
+
+var halfRect = Operation.HalfRectify(signal);
+var fullRect = Operation.FullRectify(signal);
+
+// spectral subtraction
+
+var clean = Operation.SpectralSubtract(signal, noise);
 ```
 
 
@@ -392,27 +273,11 @@ var notchedSignal = notchFilter.ApplyTo(signal);
 
 // filter analysis:
 
-var filter = new IirFilter(new [] {1, 0.5, 0.2}, new [] {1, -0.8, 0.3});
+var filter = new IirFilter(new [] { 1, 0.5, 0.2 }, new [] { 1, -0.8, 0.3 });
 
 var impulseResponse = filter.ImpulseResponse();
 var magnitudeResponse = filter.FrequencyResponse().Magnitude;
 var phaseResponse = filter.FrequencyResponse().Phase;
-
-var zeros = filter.Tf.Zeros;
-var poles = filter.Tf.Poles;
-
-
-// some filter design:
-
-var firFilter = DesignFilter.Fir(43, magnitudeResponse);
-
-var lowpassFilter = DesignFilter.FirLp(43, 0.12f);
-var highpassFilter = DesignFilter.LpToHp(lowpassFilter);
-
-var kernel = lowpassFilter.Tf.Numerator;
-
-
-// transfer function:
 
 var transferFunction = lowPassFilter.Tf;
 
@@ -423,6 +288,25 @@ var poles = transferFunction.Poles;
 
 var gd = transferFunction.GroupDelay();
 var pd = transferFunction.PhaseDelay();
+
+
+// some filter design:
+
+var lpFilter = DesignFilter.FirLp(345, 0.15f);
+
+// HP filter can be obtained from LP with the same cutoff frequency:
+var hpFilter = DesignFilter.LpToHp(lpFilter);
+
+// and vice versa:
+var lowpass  = DesignFilter.HpToLp(hpFilter);
+
+// design BP filter
+var bpFilter = DesignFilter.FirBp(123, 0.05f, 0.15f);
+
+// design BR filter
+var brFilter = DesignFilter.FirBr(201, 0.08f, 0.23f, WindowTypes.Kaiser);
+
+var kernel = lowpass.Tf.Numerator;
 
 
 // sequence of filters:
@@ -445,8 +329,8 @@ filtered = parallel.ApplyTo(signal);
 
 // audio effects:
 
-var pitchShift = new PitchShiftEffect(1.2);
-var wahwah = new WahwahEffect(lfoFrequency: 2/*Hz*/);
+var pitchShift = new PitchShiftEffect(signal.SamplingRate, 1.2);
+var wahwah = new WahwahEffect(signal.SamplingRate,, lfoFrequency: 2/*Hz*/);
 
 var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
 
@@ -456,7 +340,7 @@ var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
 ### Online processing
 
 Online processing is supported by all classes that implement the ```IOnlineFilter``` interface.
-Currently, all filters, block convolvers (```OlaBlockConvolver```, ```OlsBlockConvolver```) and audio effects contain the ```Process(sample)``` and ```Process(buffer)``` methods responsible for online processing.
+Currently, all filters, block convolvers (```OlaBlockConvolver```, ```OlsBlockConvolver```) and audio effects contain the ```Process(sample)``` and ```Process(bufferIn, bufferOut)``` methods responsible for online processing.
 
 Simply prepare necessary buffers or just use them if they come from another part of your system:
 
@@ -468,7 +352,7 @@ float[] output;
 
 void NewChunkAvailable(float[] chunk)
 {
-	filter.Process(chunk, output);
+    filter.Process(chunk, output);
 }
 
 ```
@@ -481,25 +365,6 @@ var outputSample = filter.Process(sample);
 
 ```
 
-For another demo let's emulate the frame-by-frame online processing in a loop:
-
-```C#
-
-var frameSize = 128;
-
-// big input array (we'll process it frame-by-frame in a loop)
-var input = signal.Samples;
-
-// big resulting array that will be filled more and more after processing each frame
-var output = new float[input.Length];
-
-for (int i = 0; i + frameSize < input.Length; i += frameSize)
-{
-	filter.Process(input, output, frameSize, inputPos: i, outputPos: i);
-}
-
-```
-
 Block convolvers:
 
 ```C#
@@ -508,48 +373,18 @@ Block convolvers:
 
 FirFilter filter = new FirFilter(kernel);
 
-var blockConvolver = OlaBlockConvolver.FromFilter(filter, 16384);
+var blockConvolver = OlaBlockConvolver.FromFilter(filter, 4096);
 
 // processing loop:
 // while new input sample is available
 {
-	var outputSample = blockConvolver.Process(sample);
+    var outputSample = blockConvolver.Process(sample);
 }
 
 // or:
 // while new input buffer is available
 {
     blockConvolver.Process(input, output);
-}
-
-```
-
-In case of block convolvers note that the output will always be "late" by ```FftSize-KernelSize+1``` samples.
-The property ```(Ola|Ols)BlockConvoler.HopSize``` returns this value. So you might want to process first ```HopSize``` samples without storing the result anywhere (the samples will just get into delay line). For example, this is how offline method ```ApplyTo``` is implemented for block convolvers:
-
-```C#
-
-var firstCount = Math.Min(HopSize - 1, signal.Length);
-
-int i = 0, j = 0;
-
-for (; i < firstCount; i++)    // first HopSize samples are just placed in the delay line
-{
-    Process(signal[i]);
-}
-
-var filtered = new float[signal.Length + _kernel.Length - 1];
-
-for (; i < signal.Length; i++, j++)    // process
-{
-    filtered[j] = Process(signal[i]);
-}
-
-var lastCount = firstCount + _kernel.Length - 1;
-
-for (i = 0; i < lastCount; i++, j++)    // get last 'late' samples
-{
-    filtered[j] = Process(0.0f);
 }
 
 ```
@@ -561,7 +396,7 @@ See also OnlineDemoForm code.
 
 ### Feature extractors
 
-Highly customizable feature extractors are available for offline and online processing.
+Highly customizable feature extractors are available for offline and online processing (MFCC family, LPC, pitch and lot of others).
 
 ```C#
 
@@ -574,13 +409,12 @@ var lpcVectors = lpcExtractor.ComputeFrom(signal).Take(15);
 var mfccExtractor = new MfccExtractor(sr, 13, filterbankSize: 24, preEmphasis: 0.95);
 var mfccVectors = mfccExtractor.ParallelComputeFrom(signal);
 
-/* equivalent to:
+// equivalent to:
 
 var mfccExtractor = new MfccExtractor(sr, 13, filterbankSize: 24);
 var preEmphasis = new PreEmphasisFilter(0.95);
 var mfccVectors = mfccExtractor.ParallelComputeFrom(preEmphasis.ApplyTo(signal));
 
-*/
 
 var tdExtractor = new TimeDomainFeaturesExtractor(sr, "all", frameDuration, hopDuration);
 var spectralExtractor = new SpectralFeaturesExtractor(sr, "centroid, flatness, c1+c2+c3", 0.032, 0.015);
@@ -597,21 +431,23 @@ var pnccExtractor = new PnccExtractor(sr, 13);
 var pnccVectors = pnccExtractor.ComputeFrom(signal, /*from*/1000, /*to*/10000 /*sample*/);
 FeaturePostProcessing.NormalizeMean(pnccVectors);
 
+
+// serialization
+
 using (var csvFile = new FileStream("mfccs.csv", FileMode.Create))
 {
-	var serializer = new CsvFeatureSerializer(mfccVectors);
-	await serializer.SerializeAsync(csvFile);
+    var serializer = new CsvFeatureSerializer(mfccVectors);
+    await serializer.SerializeAsync(csvFile);
 }
 
 ```
 
 
-### Playing and recording (Windows only)
+### Playing and recording
 
-```MciAudioPlayer``` and ```MciAudioRecorder``` work only with Windows, since they use winmm.dll and MCI commands
+```MciAudioPlayer``` and ```MciAudioRecorder``` work only at Windows-side, since they use winmm.dll and MCI commands.
 
 ```C#
-
 IAudioPlayer player = new MciAudioPlayer();
 
 // play entire file
@@ -640,45 +476,6 @@ recorder.StartRecording(16000);
 
 // ...in some event handler
 recorder.StopRecording("temp.wav");
-
-```
-
-Playing audio from buffers in memory is implied by design but it's not implemented in ```MciAudioPlayer```. If you want to use NWaves library alone, there's a possible workaround: in the calling code the signal can be saved to a temporary wave file, and then player can play this file.
-
-```C#
-
-// this won't work, unfortunately:
-
-// await player.PlayAsync(signal);
-// await player.PlayAsync(signal, 16000, 32000);
-
-
-// looks not so cool, but at least it works:
-
-// create temporary file
-var filename = string.format("{0}.wav", Guid.NewGuid());
-using (var stream = new FileStream(filename, FileMode.Create))
-{
-	var waveFile = new WaveFile(signal);
-	waveFile.SaveTo(stream);
-}
-
-await player.PlayAsync(filename);
-
-// cleanup temporary file
-File.Delete(filename);
-
-```
-
-I have also included a very simple wrapper around ```System.Media.SoundPlayer``` - the ```MemoryStreamPlayer``` class. This class implements the same ```IAudioPlayer``` interface as ```MciAudioPlayer``` and can be used at Windows-client side. You can find it in DemoForms project.
-
-```C#
-
-// use MemoryStreamPlayer class:
-
-var player = new MemoryStreamPlayer();
-await player.PlayAsync(signal);
-
 ```
 
 ### Demos
