@@ -182,7 +182,7 @@ namespace NWaves.FeatureExtractors
             : base(samplingRate, frameDuration, hopDuration)
         {
             FeatureCount = featureCount;
-            FeatureCount = featureCount;
+
             _power = power;
 
             if (filterbank == null)
@@ -213,7 +213,7 @@ namespace NWaves.FeatureExtractors
                 _fftSize = 2 * (filterbank[0].Length - 1);
             }
 
-            _fft = new Fft(fftSize);
+            _fft = new Fft(_fftSize);
             _dct = new Dct2(_filterbankSize, FeatureCount);
 
             _preEmphasis = (float)preEmphasis;
