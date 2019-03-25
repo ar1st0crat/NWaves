@@ -4,6 +4,7 @@ using NWaves.Signals;
 using NWaves.Utils;
 using NWaves.Windows;
 using System;
+using System.Linq;
 
 namespace NWaves.Operations.Tsm
 {
@@ -66,7 +67,7 @@ namespace NWaves.Operations.Tsm
             _hopAnalysis = Math.Max(hopAnalysis, 10);
             _hopSynthesis = (int)(_hopAnalysis * stretch);
             _maxDelta = maxDelta > 2 ? maxDelta : _hopSynthesis + _hopSynthesis % 1;
-
+            
             _userParameters = true;
 
             PrepareConvolver();
@@ -136,7 +137,7 @@ namespace NWaves.Operations.Tsm
 
             if (signal.SamplingRate != 22050 && !_userParameters)
             {
-                var factor = (float) signal.SamplingRate / 22050;
+                var factor = (float)signal.SamplingRate / 22050;
 
                 _windowSize = (int)(_windowSize * factor);
                 _hopAnalysis = (int)(_hopAnalysis * factor);
@@ -146,19 +147,20 @@ namespace NWaves.Operations.Tsm
                 PrepareConvolver();
             }
 
+            var window = Window.OfType(WindowTypes.Hann, _windowSize);
+            var gain = _hopSynthesis / window.Select(w => w * w).Sum() * 0.75f;
+
             // and now WSOLA:
 
             var input = signal.Samples;
             var output = new float[(int)(_stretch * (input.Length + _windowSize))];
 
-            var window = Window.OfType(WindowTypes.Hann, _windowSize);
-            var windowSum = new float[output.Length];
-
             var current = new float[_windowSize + _maxDelta];
             var prev = new float[_windowSize];
 
-            for (int posAnalysis = 0,
-                     posSynthesis = 0;
+            int posSynthesis = 0;
+
+            for (int posAnalysis = 0;
                      posAnalysis + _windowSize + _maxDelta + _hopSynthesis < input.Length;
                      posAnalysis += _hopAnalysis,
                      posSynthesis += _hopSynthesis)
@@ -180,18 +182,15 @@ namespace NWaves.Operations.Tsm
 
                 for (var j = 0; j < size; j++)
                 {
-                    current[delta + j] *= window[j];
-                    output[posSynthesis + j] += current[delta + j];
-                    windowSum[posSynthesis + j] += window[j];
+                    output[posSynthesis + j] += current[delta + j] * window[j];
+                }
+
+                for (var j = 0; j < _hopSynthesis; j++)
+                {
+                    output[posSynthesis + j] *= gain;
                 }
 
                 input.FastCopyTo(prev, _windowSize, posAnalysis + delta - _maxDelta / 2 + _hopSynthesis);
-            }
-
-            for (var j = 0; j < output.Length; j++)
-            {
-                if (windowSum[j] < 1e-2) continue;
-                output[j] /= windowSum[j];
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);

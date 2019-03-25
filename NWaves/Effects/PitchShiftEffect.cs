@@ -38,7 +38,7 @@ namespace NWaves.Effects
         /// <param name="shift"></param>
         /// <param name="fftSize"></param>
         /// <param name="tsm"></param>
-        public PitchShiftEffect(double shift, int fftSize = 512, int hopSize = 128, TsmAlgorithm tsm = TsmAlgorithm.Wsola)
+        public PitchShiftEffect(double shift, int fftSize = 1024, int hopSize = 128, TsmAlgorithm tsm = TsmAlgorithm.PhaseVocoderPhaseLocking)
         {
             _shift = shift;
             _fftSize = fftSize;

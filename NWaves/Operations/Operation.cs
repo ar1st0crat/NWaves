@@ -190,7 +190,7 @@ namespace NWaves.Operations
                                                  double stretch,
                                                  int windowSize,
                                                  int hopSize,
-                                                 TsmAlgorithm algorithm = TsmAlgorithm.Wsola)
+                                                 TsmAlgorithm algorithm = TsmAlgorithm.PhaseVocoderPhaseLocking)
         {
             if (Math.Abs(stretch - 1.0) < 1e-10)
             {
@@ -227,7 +227,7 @@ namespace NWaves.Operations
         /// <returns>Time stretched signal</returns>
         public static DiscreteSignal TimeStretch(DiscreteSignal signal,
                                                  double stretch,
-                                                 TsmAlgorithm algorithm = TsmAlgorithm.Wsola)
+                                                 TsmAlgorithm algorithm = TsmAlgorithm.PhaseVocoderPhaseLocking)
         {
             if (Math.Abs(stretch - 1.0) < 1e-10)
             {
@@ -321,7 +321,7 @@ namespace NWaves.Operations
         /// <param name="signal1"></param>
         /// <param name="signal2"></param>
         /// <returns></returns>
-        public static DiscreteSignal ConvolveDirect(DiscreteSignal signal1, DiscreteSignal signal2)
+        static DiscreteSignal ConvolveDirect(DiscreteSignal signal1, DiscreteSignal signal2)
         {
             var a = signal1.Samples;
             var b = signal2.Samples;
@@ -349,7 +349,7 @@ namespace NWaves.Operations
         /// <param name="signal1"></param>
         /// <param name="signal2"></param>
         /// <returns></returns>
-        public static DiscreteSignal CrossCorrelateDirect(DiscreteSignal signal1, DiscreteSignal signal2)
+        static DiscreteSignal CrossCorrelateDirect(DiscreteSignal signal1, DiscreteSignal signal2)
         {
             var a = signal1.Samples;
             var b = signal2.Samples;
