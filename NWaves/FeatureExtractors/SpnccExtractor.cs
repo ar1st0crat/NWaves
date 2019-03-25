@@ -130,7 +130,7 @@ namespace NWaves.FeatureExtractors
                               double highFreq = 6800,
                               int filterbankSize = 40,
                               float[][] filterbank = null,
-                              int fftSize = 1024,
+                              int fftSize = 0,
                               double preEmphasis = 0.0,
                               WindowTypes window = WindowTypes.Hamming)
 

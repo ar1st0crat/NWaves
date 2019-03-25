@@ -165,11 +165,11 @@ namespace NWaves.FeatureExtractors.Multi
                 featureList = FeatureSet;
             }
 
-            var features = featureList.Split(',', '+', '-', ';', ':');
+            var features = featureList.Split(',', '+', '-', ';', ':')
+                                      .Select(f => f.Trim().ToLower());
 
-            _extractors = features.Select<string, Func<float[], float[], float>>(f =>
+            _extractors = features.Select<string, Func<float[], float[], float>>(feature =>
             {
-                var feature = f.Trim().ToLower();
                 switch (feature)
                 {
                     case "sc":
@@ -289,11 +289,11 @@ namespace NWaves.FeatureExtractors.Multi
                 featureList = HarmonicSet;
             }
 
-            var features = featureList.Split(',', '+', '-', ';', ':');
+            var features = featureList.Split(',', '+', '-', ';', ':')
+                                      .Select(f => f.Trim().ToLower());
 
-            _harmonicExtractors = features.Select<string, Func<float[], int[], float[], float>>(f =>
+            _harmonicExtractors = features.Select<string, Func<float[], int[], float[], float>>(feature =>
             {
-                var feature = f.Trim().ToLower();
                 switch (feature)
                 {
                     case "hc":
@@ -390,7 +390,7 @@ namespace NWaves.FeatureExtractors.Multi
 
             var featureVectors = new List<FeatureVector>();
 
-            var pitchPos = startSample / HopSize;
+            var pitchPos = 0;
 
             var i = startSample;
             while (i + FrameSize < endSample)

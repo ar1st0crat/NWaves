@@ -4,7 +4,7 @@ using NWaves.FeatureExtractors.Base;
 using NWaves.Operations.Convolution;
 using NWaves.Utils;
 
-namespace NWaves.Features
+namespace NWaves.FeatureExtractors
 {
     /// <summary>
     /// Pitch extractor calls autocorrelation method since it's best in terms of universality and quality.

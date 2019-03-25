@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NWaves.Signals;
-using NWaves.Utils;
 
 namespace NWaves.FeatureExtractors.Base
 {
@@ -134,6 +133,7 @@ namespace NWaves.FeatureExtractors.Base
             return ComputeFrom(signal, 0, signal.Length);
         }
 
+
         #region parallelization
 
         /// <summary>
@@ -151,10 +151,12 @@ namespace NWaves.FeatureExtractors.Base
         /// <summary>
         /// Parallel computation (returns chunks of fecture vector lists)
         /// </summary>
-        /// <param name="signal"></param>
+        /// <param name="samples"></param>
+        /// <param name="startSample"></param>
+        /// <param name="endSample"></param>
         /// <param name="parallelThreads"></param>
         /// <returns></returns>
-        public virtual List<FeatureVector>[] ParallelChunksComputeFrom(DiscreteSignal signal, int parallelThreads = 0)
+        public virtual List<FeatureVector>[] ParallelChunksComputeFrom(float[] samples, int startSample, int endSample, int parallelThreads = 0)
         {
             if (!IsParallelizable())
             {
@@ -162,7 +164,7 @@ namespace NWaves.FeatureExtractors.Base
             }
 
             var threadCount = parallelThreads > 0 ? parallelThreads : Environment.ProcessorCount;
-            var chunkSize = signal.Length / threadCount;
+            var chunkSize = (endSample - startSample) / threadCount;
 
             var extractors = new FeatureExtractor[threadCount];
             extractors[0] = this;
@@ -178,7 +180,7 @@ namespace NWaves.FeatureExtractors.Base
 
             var hopCount = (chunkSize - FrameSize) / HopSize;
 
-            var lastPosition = 0;
+            var lastPosition = startSample;
             for (var i = 0; i < threadCount; i++)
             {
                 startPositions[i] = lastPosition;
@@ -186,7 +188,7 @@ namespace NWaves.FeatureExtractors.Base
                 lastPosition = endPositions[i] - FrameSize;
             }
 
-            endPositions[threadCount - 1] = signal.Length;
+            endPositions[threadCount - 1] = endSample;
 
             // =========================== actual parallel computing ===========================
 
@@ -194,7 +196,7 @@ namespace NWaves.FeatureExtractors.Base
 
             Parallel.For(0, threadCount, i =>
             {
-                featureVectors[i] = extractors[i].ComputeFrom(signal, startPositions[i], endPositions[i]);
+                featureVectors[i] = extractors[i].ComputeFrom(samples, startPositions[i], endPositions[i]);
             });
 
             return featureVectors;
@@ -203,11 +205,15 @@ namespace NWaves.FeatureExtractors.Base
         /// <summary>
         /// Parallel computation (joins chunks of feature vector lists into one list)
         /// </summary>
-        /// <param name="signal"></param>
+        /// <param name="samples"></param>
+        /// <param name="startSample"></param>
+        /// <param name="endSample"></param>
+        /// <param name="parallelThreads"></param>
         /// <returns></returns>
-        public virtual List<FeatureVector> ParallelComputeFrom(DiscreteSignal signal)
+        public virtual List<FeatureVector> ParallelComputeFrom(float[] samples, int startSample, int endSample, int parallelThreads = 0)
         {
-            var chunks = ParallelChunksComputeFrom(signal);
+            var chunks = ParallelChunksComputeFrom(samples, startSample, endSample, parallelThreads);
+
             var featureVectors = new List<FeatureVector>();
 
             foreach (var vectors in chunks)
@@ -216,6 +222,41 @@ namespace NWaves.FeatureExtractors.Base
             }
 
             return featureVectors;
+        }
+
+        /// <summary>
+        /// Parallel computation (joins chunks of feature vector lists into one list)
+        /// </summary>
+        /// <param name="samples"></param>
+        /// <param name="parallelThreads"></param>
+        /// <returns></returns>
+        public virtual List<FeatureVector> ParallelComputeFrom(float[] samples, int parallelThreads = 0)
+        {
+            return ParallelComputeFrom(samples, 0, samples.Length, parallelThreads);
+        }
+
+        /// <summary>
+        /// Compute the sequence of feature vectors from some fragment of a signal
+        /// </summary>
+        /// <param name="signal">Discrete real-valued signal</param>
+        /// <param name="startSample">The offset (position) of the first sample for processing</param>
+        /// <param name="endSample">The offset (position) of the last sample for processing</param>
+        /// <param name="parallelThreads">Number of threads</param>
+        /// <returns>Sequence of feature vectors</returns>
+        public List<FeatureVector> ParallelComputeFrom(DiscreteSignal signal, int startSample, int endSample, int parallelThreads = 0)
+        {
+            return ParallelComputeFrom(signal.Samples, startSample, endSample, parallelThreads);
+        }
+
+        /// <summary>
+        /// Compute the sequence of feature vectors from the entire DiscreteSignal
+        /// </summary>
+        /// <param name="signal">Discrete real-valued signal</param>
+        /// <param name="parallelThreads">Number of threads</param>
+        /// <returns>Sequence of feature vectors</returns>
+        public List<FeatureVector> ParallelComputeFrom(DiscreteSignal signal, int parallelThreads = 0)
+        {
+            return ParallelComputeFrom(signal.Samples, 0, signal.Length, parallelThreads);
         }
 
         #endregion

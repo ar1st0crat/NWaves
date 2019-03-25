@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using NWaves.Audio;
+using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
 using NWaves.FeatureExtractors.Multi;
 using NWaves.Signals;
@@ -50,7 +51,7 @@ namespace NWaves.DemoForms
             var freqs = new[] { 300f, 600, 1000, 2000, 4000, 7000 };
 
             var pitchExtractor = new PitchExtractor(_signal.SamplingRate, frameDuration, hopDuration, high: 900/*Hz*/);
-            var pitchTrack = pitchExtractor.ComputeFrom(_signal)
+            var pitchTrack = pitchExtractor.ParallelComputeFrom(_signal)
                                            .Select(p => p.Features[0])
                                            .ToArray();
 

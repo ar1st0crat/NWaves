@@ -55,11 +55,11 @@ namespace NWaves.FeatureExtractors.Multi
                 featureList = FeatureSet;
             }
 
-            var features = featureList.Split(',', '+', '-', ';', ':');
+            var features = featureList.Split(',', '+', '-', ';', ':')
+                                      .Select(f => f.Trim().ToLower());
 
-            _extractors = features.Select<string, Func<DiscreteSignal, int, int, float>>(f =>
+            _extractors = features.Select<string, Func<DiscreteSignal, int, int, float>>(feature =>
             {
-                var feature = f.Trim().ToLower();
                 switch (feature)
                 {
                     case "e":
