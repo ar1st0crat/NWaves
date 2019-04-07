@@ -142,6 +142,7 @@ namespace NWaves.FeatureExtractors
                         var y = _block[k] - prevSample * _preEmphasis;
                         prevSample = _block[k];
                         _block[k] = y;
+                        _reversed[k] = y;
                     }
                     prevSample = samples[i + hopSize - 1];
                 }
