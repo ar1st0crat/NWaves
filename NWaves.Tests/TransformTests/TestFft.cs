@@ -38,5 +38,19 @@ namespace NWaves.Tests.TransformTests
                 Assert.That(cmpx.Imaginary, Is.EqualTo(4).Within(1e-6));
             });
         }
+
+        [Test]
+        public void TestHartley()
+        {
+            float[] re = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+            float[] im = new float[16];
+
+            var dht = new HartleyTransform(16);
+
+            dht.Direct(re);
+            dht.Inverse(re);
+
+            Assert.That(re, Is.EqualTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16f }).Within(1e-4));
+        }
     }
 }

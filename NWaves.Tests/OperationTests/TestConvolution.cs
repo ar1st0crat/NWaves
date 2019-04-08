@@ -21,14 +21,6 @@ namespace NWaves.Tests.OperationTests
         }
 
         [Test]
-        public void TestDirectConvolution()
-        {
-            var conv = Operation.ConvolveDirect(_input, _kernel);
-
-            Assert.That(conv.Samples, Is.EqualTo(_output.Samples).Within(1e-7));
-        }
-
-        [Test]
         public void TestFftCrossCorrelation()
         {
             var conv = Operation.CrossCorrelate(_input, _kernel);
