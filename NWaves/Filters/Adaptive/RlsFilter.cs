@@ -1,72 +1,155 @@
-﻿using System;
-using System.Linq;
-using NWaves.Signals;
-
-namespace NWaves.Filters.Adaptive
+﻿namespace NWaves.Filters.Adaptive
 {
-    ///// <summary>
-    ///// Adaptive filter (Recursive Least-Squares algorithm)
-    ///// </summary>
-    //private class RlsFilter
-    //{
-    //    /// <summary>
-    //    /// 
-    //    /// </summary>
-    //    private readonly int _order;
+    /// <summary>
+    /// Adaptive filter (Recursive-Least-Squares algorithm)
+    /// </summary>
+    public class RlsFilter : AdaptiveFilter
+    {
+        /// <summary>
+        /// Lambda
+        /// </summary>
+        private readonly float _lambda;
 
-    //    /// <summary>
-    //    /// 
-    //    /// </summary>
-    //    private readonly float _mu;
+        /// <summary>
+        /// Inverse corr matrix
+        /// </summary>
+        private float[,] _p;
 
-    //    /// <summary>
-    //    /// Constructor
-    //    /// </summary>
-    //    public RlsFilter(int order, float mu)
-    //    {
-    //        _order = order;
-    //        _mu = mu;
-    //    }
+        /// <summary>
+        /// Matrix of gain coefficients
+        /// </summary>
+        private float[] _gains;
 
-    //    /// <summary>
-    //    /// 
-    //    /// </summary>
-    //    /// <param name="signal"></param>
-    //    /// <param name="desired"></param>
-    //    /// <returns></returns>
-    //    public DiscreteSignal Adapt(DiscreteSignal signal, DiscreteSignal desired)
-    //    {
-    //        var rand = new Random();
-    //        var kernel = Enumerable.Range(0, _order)
-    //                               .Select(k => (float)(1.0 + rand.NextDouble()))
-    //                               .ToArray();
+        /// <summary>
+        /// Temporary matrices for calculations
+        /// </summary>
+        private float[,] _dp, _tmp;
 
-    //        var input = signal.Samples;
-    //        var output = new float[input.Length];
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="order"></param>
+        /// <param name="mu"></param>
+        /// <param name="weights"></param>
+        /// <param name="leakage"></param>
+        /// <param name="lambda"></param>
+        /// <param name="initCoeff"></param>
+        public RlsFilter(int order,
+                         float mu = 0.1f,
+                         float[] weights = null,
+                         float lambda = 0.99f,
+                         float initCoeff = 1e2f)
+            : base(order, weights)
+        {
+            _lambda = lambda;
 
-    //        var pos = _order;
+            _p = new float[_order, _order];
+            for (var i = 0; i < _order; i++)
+            {
+                _p[i, i] = initCoeff;
+            }
 
-    //        for (var i = 0; i + _order < input.Length; i++)
-    //        {
-    //            var y = 0.0f;
-    //            for (var j = 0; j < _order; j++)
-    //            {
-    //                y += input[i + j] * kernel[_order - j];
-    //            }
+            _gains = new float[_order];
+            _dp = new float[_order, _order];
+            _tmp = new float[_order, _order];
+        }
 
-    //            output[pos] = y;
+        /// <summary>
+        /// Process input and desired samples
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="desired"></param>
+        /// <returns></returns>
+        public override float Process(float input, float desired)
+        {
+            // =========== calculate gain coefficients ===========
+            // ===========   p*x / (lambda + xT*p*x)   ===========
 
-    //            var error = desired[i] - y;
+            var g = _lambda;
 
-    //            var k = 1.0f;
+            for (var i = 0; i < _order; i++)
+            {
+                _gains[i] = 0;
+            }
 
-    //            for (var j = 0; j < _order; j++)
-    //            {
-    //                kernel[j] += k * error;
-    //            }
-    //        }
+            var pos = 0;
 
-    //        return new DiscreteSignal(signal.SamplingRate, output);
-    //    }
-    //}
+            for (var i = 0; i < _order; i++)    // calculate  p*x
+            {
+                pos = 0;
+                for (var k = _delayLineOffset; k < _order; k++, pos++)
+                {
+                    _gains[i] += _p[i, pos] * _x[k];
+                }
+                for (var k = 0; k < _delayLineOffset; k++, pos++)
+                {
+                    _gains[i] += _p[i, pos] * _x[k];
+                }
+            }
+
+            pos = 0;
+            for (var k = _delayLineOffset; k < _order; k++, pos++)      // calculate xT*p*x
+            {
+                g += _x[k] * _gains[pos];
+            }
+            for (var k = 0; k < _delayLineOffset; k++, pos++)
+            {
+                g += _x[k] * _gains[pos];
+            }
+
+            for (var i = 0; i < _order; i++)
+            {
+                _gains[i] /= g;
+            }
+
+            // ============ update inv corr matrix ================
+            // ========== (p - gain*xT*p) / lambda ================
+
+            for (var i = 0; i < _order; i++)        // calculate  _tmp = gain * xT
+            {
+                pos = 0;
+                for (var k = _delayLineOffset; k < _w.Length; k++, pos++)
+                {
+                    _tmp[i, pos] = _gains[i] * _x[k];
+                }
+                for (var k = 0; k < _delayLineOffset; k++, pos++)
+                {
+                    _tmp[i, pos] = _gains[i] * _x[k];
+                }
+            }
+
+            for (var i = 0; i < _order; i++)        // calculate  _dp = _tmp * p
+            {
+                for (var j = 0; j < _order; j++)
+                {
+                    for (var k = 0; k < _order; k++)
+                    {
+                        _dp[i, j] = _tmp[i, k] * _p[k, j];
+                    }
+                }
+            }
+
+            for (var i = 0; i < _order; i++)        // update inv corr matrix
+            {
+                for (var j = 0; j < _order; j++)
+                {
+                    _p[i, j] = (_p[i, j] - _dp[i, j]) / _lambda;
+                }
+            }
+
+
+            // ================= update weights ===================
+
+            var y = Process(input);
+
+            var e = desired - y;
+
+            for (var i = 0; i < _order; i++)
+            {
+                _w[i] += _gains[i] * e;
+            }
+
+            return y;
+        }
+    }
 }

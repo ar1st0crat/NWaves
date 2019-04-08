@@ -36,6 +36,7 @@ Already available:
 - [x] noise reduction (spectral subtraction, sciPy-style Wiener filtering)
 - [x] envelope following
 - [x] sound effects (delay, echo, tremolo, wahwah, phaser, vibrato, flanger, pitch shift, sound morphing, robotize, whisperize)
+- [x] adaptive filtering (LMS, NLMS, LMF, RLS)
 - [x] simple modulation/demodulation (AM, ring, FM, PM)
 - [x] simple audio playback and recording
 
@@ -44,7 +45,6 @@ Planned:
 - [ ] sound synthesis (wavetable, ADSR, etc.)
 - [ ] more sound effects (reverb, chorus, etc.)
 - [ ] more transforms (CQT, DWT, Mellin, Hartley, Haar, Hadamard)
-- [ ] more operations (adaptive filtering, Gabor filter)
 
 
 ## Philosophy of NWaves

@@ -1,9 +1,9 @@
 ﻿namespace NWaves.Filters.Adaptive
 {
     /// <summary>
-    /// Adaptive filter (Least-Mean-Squares algorithm)
+    /// Adaptive filter (Least-Mean-Fourth algorithm)
     /// </summary>
-    public class LmsFilter : AdaptiveFilter
+    public class LmfFilter : AdaptiveFilter
     {
         /// <summary>
         /// Mu
@@ -22,7 +22,7 @@
         /// <param name="mu"></param>
         /// <param name="weights"></param>
         /// <param name="leakage"></param>
-        public LmsFilter(int order,
+        public LmfFilter(int order,
                          float mu = 0.1f,
                          float[] weights = null,
                          float leakage = 0)
@@ -43,10 +43,10 @@
             var y = Process(input);
 
             var e = desired - y;
-            
+
             for (var i = 0; i < _order; i++)
             {
-                _w[i] = (1 - _leakage * _mu) * _w[i] + _mu * e * _x[i];
+                _w[i] = (1 - _leakage * _mu) * _w[i] + 4 * _mu * e * e * e * _x[i];
             }
 
             return y;

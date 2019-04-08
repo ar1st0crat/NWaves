@@ -1,9 +1,11 @@
-﻿namespace NWaves.Filters.Adaptive
+﻿using System;
+
+namespace NWaves.Filters.Adaptive
 {
     /// <summary>
-    /// Adaptive filter (Least-Mean-Squares algorithm)
+    /// Adaptive filter (Sign Least-Mean-Squares algorithm)
     /// </summary>
-    public class LmsFilter : AdaptiveFilter
+    public class SignLmsFilter : AdaptiveFilter
     {
         /// <summary>
         /// Mu
@@ -22,10 +24,10 @@
         /// <param name="mu"></param>
         /// <param name="weights"></param>
         /// <param name="leakage"></param>
-        public LmsFilter(int order,
-                         float mu = 0.1f,
-                         float[] weights = null,
-                         float leakage = 0)
+        public SignLmsFilter(int order,
+                             float mu = 0.02f,
+                             float[] weights = null,
+                             float leakage = 0)
             : base(order, weights)
         {
             _mu = mu;
@@ -43,10 +45,10 @@
             var y = Process(input);
 
             var e = desired - y;
-            
+
             for (var i = 0; i < _order; i++)
             {
-                _w[i] = (1 - _leakage * _mu) * _w[i] + _mu * e * _x[i];
+                _w[i] = (1 - _leakage * _mu) * _w[i] + _mu * Math.Sign(e) * Math.Sign(_x[i]);
             }
 
             return y;

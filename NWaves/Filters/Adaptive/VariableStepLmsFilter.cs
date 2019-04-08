@@ -1,14 +1,17 @@
-﻿namespace NWaves.Filters.Adaptive
+﻿using NWaves.Utils;
+using System.Linq;
+
+namespace NWaves.Filters.Adaptive
 {
     /// <summary>
-    /// Adaptive filter (Least-Mean-Squares algorithm)
+    /// Adaptive filter (Least-Mean-Squares with variable steps)
     /// </summary>
-    public class LmsFilter : AdaptiveFilter
+    public class VariableStepLmsFilter : AdaptiveFilter
     {
         /// <summary>
         /// Mu
         /// </summary>
-        private readonly float _mu;
+        private readonly float[] _mu;
 
         /// <summary>
         /// Leakage
@@ -22,13 +25,15 @@
         /// <param name="mu"></param>
         /// <param name="weights"></param>
         /// <param name="leakage"></param>
-        public LmsFilter(int order,
-                         float mu = 0.1f,
-                         float[] weights = null,
-                         float leakage = 0)
+        public VariableStepLmsFilter(int order,
+                                     float[] mu = null,
+                                     float[] weights = null,
+                                     float leakage = 0)
             : base(order, weights)
         {
-            _mu = mu;
+            _mu = mu ?? Enumerable.Repeat(0.1f, order).ToArray();
+            Guard.AgainstInequality(order, _mu.Length, "Filter order", "Steps array size");
+
             _leakage = leakage;
         }
 
@@ -43,10 +48,10 @@
             var y = Process(input);
 
             var e = desired - y;
-            
+
             for (var i = 0; i < _order; i++)
             {
-                _w[i] = (1 - _leakage * _mu) * _w[i] + _mu * e * _x[i];
+                _w[i] = (1 - _leakage * _mu[i]) * _w[i] + _mu[i] * e * _x[i];
             }
 
             return y;

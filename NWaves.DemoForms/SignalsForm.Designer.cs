@@ -73,6 +73,7 @@ namespace NWaves.DemoForms
             this.noiseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.modulationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.onlineToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.adaptiveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
@@ -307,7 +308,8 @@ namespace NWaves.DemoForms
             this.featuresToolStripMenuItem,
             this.noiseToolStripMenuItem,
             this.modulationToolStripMenuItem,
-            this.onlineToolStripMenuItem});
+            this.onlineToolStripMenuItem,
+            this.adaptiveToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1207, 28);
@@ -472,6 +474,13 @@ namespace NWaves.DemoForms
             this.onlineToolStripMenuItem.Text = "&Online";
             this.onlineToolStripMenuItem.Click += new System.EventHandler(this.onlineToolStripMenuItem_Click);
             // 
+            // adaptiveToolStripMenuItem
+            // 
+            this.adaptiveToolStripMenuItem.Name = "adaptiveToolStripMenuItem";
+            this.adaptiveToolStripMenuItem.Size = new System.Drawing.Size(81, 24);
+            this.adaptiveToolStripMenuItem.Text = "Adaptive";
+            this.adaptiveToolStripMenuItem.Click += new System.EventHandler(this.adaptiveToolStripMenuItem_Click);
+            // 
             // label4
             // 
             this.label4.AutoSize = true;
@@ -618,6 +627,7 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem onlineToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem modulationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem adaptiveToolStripMenuItem;
     }
 }
 

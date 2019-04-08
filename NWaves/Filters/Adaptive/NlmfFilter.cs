@@ -1,14 +1,21 @@
-﻿namespace NWaves.Filters.Adaptive
+﻿using System.Linq;
+
+namespace NWaves.Filters.Adaptive
 {
     /// <summary>
-    /// Adaptive filter (Least-Mean-Squares algorithm)
+    /// Adaptive filter (Normalized Least-Mean-Fourth algorithm + Epsilon)
     /// </summary>
-    public class LmsFilter : AdaptiveFilter
+    public class NlmfFilter : AdaptiveFilter
     {
         /// <summary>
         /// Mu
         /// </summary>
         private readonly float _mu;
+
+        /// <summary>
+        /// Epsilon
+        /// </summary>
+        private readonly float _eps;
 
         /// <summary>
         /// Leakage
@@ -22,13 +29,15 @@
         /// <param name="mu"></param>
         /// <param name="weights"></param>
         /// <param name="leakage"></param>
-        public LmsFilter(int order,
-                         float mu = 0.1f,
-                         float[] weights = null,
-                         float leakage = 0)
+        public NlmfFilter(int order,
+                          float mu = 0.1f,
+                          float eps = 1,
+                          float[] weights = null,
+                          float leakage = 0)
             : base(order, weights)
         {
             _mu = mu;
+            _eps = eps;
             _leakage = leakage;
         }
 
@@ -43,10 +52,12 @@
             var y = Process(input);
 
             var e = desired - y;
-            
+
+            var norm = _eps + _x.Sum(x => x * x);
+
             for (var i = 0; i < _order; i++)
             {
-                _w[i] = (1 - _leakage * _mu) * _w[i] + _mu * e * _x[i];
+                _w[i] = (1 - _leakage * _mu) * _w[i] + 4 * _mu * e * e * e * _x[i] / norm;
             }
 
             return y;

@@ -446,6 +446,11 @@ namespace NWaves.DemoForms
             new OnlineDemoForm().ShowDialog();
         }
 
+        private void adaptiveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new AdaptiveFiltersForm().ShowDialog();
+        }
+
         #endregion
     }
 }
