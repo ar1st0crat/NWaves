@@ -144,7 +144,13 @@ namespace NWaves.FeatureExtractors
                         _block[k] = y;
                         _reversed[k] = y;
                     }
-                    prevSample = samples[i + hopSize - 1];
+                    
+                    // prepare initial sample for the next iteration (if there is one)
+
+                    if (i + hopSize - 1 < samples.Length)
+                    {
+                        prevSample = samples[i + hopSize - 1];
+                    }   
                 }
                 
                 // 1) apply window
