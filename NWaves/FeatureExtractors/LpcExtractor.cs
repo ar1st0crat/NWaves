@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Operations.Convolution;
-using NWaves.Signals;
 using NWaves.Utils;
 using NWaves.Windows;
 
@@ -125,13 +125,13 @@ namespace NWaves.FeatureExtractors
 
             var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
 
-            var i = startSample;
-            while (i + frameSize < endSample)
+            var lastSample = endSample - Math.Max(frameSize, hopSize);
+
+            for (var i = startSample; i < lastSample; i += hopSize)
             {
                 // prepare all blocks in memory for the current step:
 
                 samples.FastCopyTo(_block, frameSize, i);
-                samples.FastCopyTo(_reversed, frameSize, i);
 
                 // 0) pre-emphasis (if needed)
 
@@ -142,17 +142,18 @@ namespace NWaves.FeatureExtractors
                         var y = _block[k] - prevSample * _preEmphasis;
                         prevSample = _block[k];
                         _block[k] = y;
-                        _reversed[k] = y;
                     }
                     prevSample = samples[i + hopSize - 1];
                 }
-                
+
                 // 1) apply window
 
                 if (_window != WindowTypes.Rectangular)
                 {
                     _block.ApplyWindow(_windowSamples);
                 }
+
+                _block.FastCopyTo(_reversed, frameSize);
 
                 // 2) autocorrelation
 
@@ -171,8 +172,6 @@ namespace NWaves.FeatureExtractors
                     Features = a,
                     TimePosition = (double) i / SamplingRate
                 });
-
-                i += hopSize;
             }
 
             return featureVectors;

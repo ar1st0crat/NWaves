@@ -257,16 +257,18 @@ namespace NWaves.FeatureExtractors
 
                 var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
 
+                var lastSample = endSample - Math.Max(frameSize, hopSize);
+
                 // ===================== compute local FFTs (do STFT) =======================
 
-                while (i + frameSize < endSample)
+                for (i = startSample; i < lastSample; i += hopSize)
                 {
                     _zeroblock.FastCopyTo(_block, _zeroblock.Length);
                     samples.FastCopyTo(_block, frameSize, i);
 
                     // 0) pre-emphasis (if needed)
 
-                    if (_preEmphasis > 0.0)
+                    if (_preEmphasis > 1e-10)
                     {
                         for (var k = 0; k < frameSize; k++)
                         {
@@ -299,8 +301,6 @@ namespace NWaves.FeatureExtractors
                         _envelopes[n][en] = _filteredSpectrum[n];
                     }
                     en++;
-
-                    i += hopSize;
                 }
             }
             else

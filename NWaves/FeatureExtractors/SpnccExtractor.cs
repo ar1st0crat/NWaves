@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NWaves.Signals;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Filters.Fda;
 using NWaves.Transforms;
@@ -219,18 +218,18 @@ namespace NWaves.FeatureExtractors
 
             var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
 
-            var i = startSample;
-            while (i + FrameSize < endSample)
+            var lastSample = endSample - Math.Max(frameSize, hopSize);
+
+            for (var i = startSample; i < lastSample; i += hopSize)
             {
                 // prepare next block for processing
 
                 _zeroblock.FastCopyTo(_block, _zeroblock.Length);
                 samples.FastCopyTo(_block, frameSize, i);
 
-
                 // 0) pre-emphasis (if needed)
 
-                if (_preEmphasis > 0.0)
+                if (_preEmphasis > 1e-10)
                 {
                     for (var k = 0; k < frameSize; k++)
                     {
@@ -241,7 +240,6 @@ namespace NWaves.FeatureExtractors
                     prevSample = samples[i + hopSize - 1];
                 }
 
-
                 // 1) apply window
 
                 if (_window != WindowTypes.Rectangular)
@@ -249,16 +247,13 @@ namespace NWaves.FeatureExtractors
                     _block.ApplyWindow(_windowSamples);
                 }
 
-
                 // 2) calculate power spectrum
 
                 _fft.PowerSpectrum(_block, _spectrum);
 
-
                 // 3) apply gammatone filterbank
 
                 FilterBanks.Apply(FilterBank, _spectrum, _filteredSpectrum);
-
 
                 // 4) mean power normalization:
 
@@ -274,7 +269,6 @@ namespace NWaves.FeatureExtractors
                 {
                     _filteredSpectrum[j] *= meanPower / mean;
                 }
-                
 
                 // 5) nonlinearity (power ^ d     or     Log10)
 
@@ -293,22 +287,18 @@ namespace NWaves.FeatureExtractors
                     }
                 }
 
-
                 // 6) dct-II (normalized)
 
                 var spnccs = new float[FeatureCount];
                 _dct.DirectN(_filteredSpectrum, spnccs);
-
 
                 // add pncc vector to output sequence
 
                 featureVectors.Add(new FeatureVector
                 {
                     Features = spnccs,
-                    TimePosition = (double) i / SamplingRate
+                    TimePosition = (double)i / SamplingRate
                 });
-
-                i += hopSize;
             }
 
             return featureVectors;

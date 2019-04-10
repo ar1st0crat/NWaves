@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Filters.Fda;
-using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
 using NWaves.Windows;
@@ -206,18 +206,18 @@ namespace NWaves.FeatureExtractors
 
             var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
 
-            var i = startSample;
-            while (i + frameSize < endSample)
+            var lastSample = endSample - Math.Max(frameSize, hopSize);
+
+            for (var i = startSample; i < lastSample; i += hopSize)
             {
                 // prepare next block for processing
 
                 _zeroblock.FastCopyTo(_block, _fftSize);
                 samples.FastCopyTo(_block, _windowSamples.Length, i);
 
-
                 // 0) pre-emphasis (if needed)
 
-                if (_preEmphasis > 0.0)
+                if (_preEmphasis > 1e-10)
                 {
                     for (var k = 0; k < frameSize; k++)
                     {
@@ -228,7 +228,6 @@ namespace NWaves.FeatureExtractors
                     prevSample = samples[i + hopSize - 1];
                 }
 
-
                 // 1) apply window
 
                 if (_window != WindowTypes.Rectangular)
@@ -236,22 +235,18 @@ namespace NWaves.FeatureExtractors
                     _block.ApplyWindow(_windowSamples);
                 }
 
-
                 // 2) calculate power spectrum
 
                 _fft.PowerSpectrum(_block, _spectrum);
-
 
                 // 3) apply mel filterbank and take log() of the result
 
                 FilterBanks.ApplyAndLog(FilterBank, _spectrum, _logMelSpectrum);
 
-
                 // 4) dct-II
 
                 var mfccs = new float[FeatureCount];
                 _dct.Direct(_logMelSpectrum, mfccs);
-
 
                 // 5) (optional) liftering
 
@@ -260,7 +255,6 @@ namespace NWaves.FeatureExtractors
                     mfccs.ApplyWindow(_lifterCoeffs);
                 }
 
-
                 // add mfcc vector to output sequence
 
                 featureVectors.Add(new FeatureVector
@@ -268,8 +262,6 @@ namespace NWaves.FeatureExtractors
                     Features = mfccs,
                     TimePosition = (double) i / SamplingRate
                 });
-
-                i += hopSize;
             }
 
             return featureVectors;

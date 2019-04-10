@@ -402,18 +402,12 @@ Highly customizable feature extractors are available for offline and online proc
 
 var sr = signal.SamplingRate;
 
-var lpcExtractor = new LpcExtractor(sr, 16, frameSize: 0.032/*sec*/, hopSize: 0.015/*sec*/);
-var lpcVectors = lpcExtractor.ComputeFrom(signal).Take(15);
+var lpcExtractor = new LpcExtractor(sr, 16, 0.032/*sec*/, 0.015/*sec*/);
+var lpcVectors = lpcExtractor.ComputeFrom(signal);
 
 
 var mfccExtractor = new MfccExtractor(sr, 13, filterbankSize: 24, preEmphasis: 0.95);
 var mfccVectors = mfccExtractor.ParallelComputeFrom(signal);
-
-// equivalent to:
-
-var mfccExtractor = new MfccExtractor(sr, 13, filterbankSize: 24);
-var preEmphasis = new PreEmphasisFilter(0.95);
-var mfccVectors = mfccExtractor.ParallelComputeFrom(preEmphasis.ApplyTo(signal));
 
 
 var tdExtractor = new TimeDomainFeaturesExtractor(sr, "all", frameDuration, hopDuration);
@@ -442,6 +436,29 @@ using (var csvFile = new FileStream("mfccs.csv", FileMode.Create))
 
 ```
 
+Pre-processing
+
+```C#
+
+// Many extractors allow setting pre-emphasis coefficient.
+
+// This is equivalent to applying pre-emphasis filter:
+
+var mfccExtractor = new MfccExtractor(sr, 13, filterbankSize: 24);
+var pre = new PreEmphasisFilter(0.95);
+
+// option 1:
+// ApplyTo() will create new signal (allocate new memory)
+var mfccVectors = mfccExtractor.ParallelComputeFrom(pre.ApplyTo(signal));
+
+// option 2:
+// process array or DiscreteSignal samples in-place:
+
+for (var i = 0; i < signal.Length; i++)
+{
+    signal[i] = pre.Process(signal[i]);
+}
+```
 
 ### Playing and recording
 

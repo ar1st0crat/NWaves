@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Operations.Convolution;
 using NWaves.Utils;
+using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors
 {
@@ -48,6 +49,21 @@ namespace NWaves.FeatureExtractors
         private readonly float _high;
 
         /// <summary>
+        /// Type of the window function
+        /// </summary>
+        private readonly WindowTypes _window;
+
+        /// <summary>
+        /// Window samples
+        /// </summary>
+        private readonly float[] _windowSamples;
+
+        /// <summary>
+        /// Pre-emphasis coefficient
+        /// </summary>
+        private readonly float _preEmphasis;
+
+        /// <summary>
         /// Internal convolver
         /// </summary>
         private Convolver _convolver;
@@ -78,11 +94,21 @@ namespace NWaves.FeatureExtractors
                               double frameDuration = 0.0256/*sec*/,
                               double hopDuration = 0.010/*sec*/,
                               float low = 80,
-                              float high = 400)
+                              float high = 400,
+                              double preEmphasis = 0,
+                              WindowTypes window = WindowTypes.Rectangular)
             : base(samplingRate, frameDuration, hopDuration)
         {
             _low = low;
             _high = high;
+
+            _window = window;
+            if (_window != WindowTypes.Rectangular)
+            {
+                _windowSamples = Window.OfType(_window, FrameSize);
+            }
+
+            _preEmphasis = (float)preEmphasis;
 
             var fftSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
             _convolver = new Convolver(fftSize);
@@ -105,19 +131,50 @@ namespace NWaves.FeatureExtractors
 
             var samplingRate = SamplingRate;
             var frameSize = FrameSize;
+            var hopSize = HopSize;
 
             var pitches = new List<FeatureVector>();
 
             var pitch1 = (int)(samplingRate / _high);    // 2,5 ms = 400Hz
             var pitch2 = (int)(samplingRate / _low);     // 12,5 ms = 80Hz
 
-            var i = startSample;
-            while (i + frameSize < endSample)
+            var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
+
+            var lastSample = endSample - Math.Max(frameSize, hopSize);
+
+            for (var i = startSample; i < lastSample; i += hopSize)
             {
+                // prepare all blocks in memory for the current step:
+
                 samples.FastCopyTo(_block, frameSize, i);
-                samples.FastCopyTo(_reversed, frameSize, i);
+                
+                // 0) pre-emphasis (if needed)
+
+                if (_preEmphasis > 1e-10)
+                {
+                    for (var k = 0; k < frameSize; k++)
+                    {
+                        var y = _block[k] - prevSample * _preEmphasis;
+                        prevSample = _block[k];
+                        _block[k] = y;
+                    }
+                    prevSample = samples[i + hopSize - 1];
+                }
+
+                // 1) apply window
+
+                if (_window != WindowTypes.Rectangular)
+                {
+                    _block.ApplyWindow(_windowSamples);
+                }
+
+                _block.FastCopyTo(_reversed, frameSize);
+
+                // 2) autocorrelation
 
                 _convolver.CrossCorrelate(_block, _reversed, _cc);
+
+                // 3) argmax of autocorrelation
 
                 var start = pitch1 + FrameSize - 1;
                 var end = Math.Min(start + pitch2, _cc.Length);
@@ -141,8 +198,6 @@ namespace NWaves.FeatureExtractors
                     Features = new float[] { f0 },
                     TimePosition = (double)i / SamplingRate
                 });
-
-                i += HopSize;
             }
 
             return pitches;

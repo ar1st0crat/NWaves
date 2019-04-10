@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NWaves.Signals;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Filters.Fda;
 using NWaves.Transforms;
@@ -270,12 +269,12 @@ namespace NWaves.FeatureExtractors
             var d = _power != 0 ? 1.0 / _power : 0.0;
 
             var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
-            
+
+            var lastSample = endSample - Math.Max(frameSize, hopSize);
+
             var featureVectors = new List<FeatureVector>();
 
-            var i = 0;
-            var timePos = startSample;
-            while (timePos + frameSize < endSample)
+            for (int timePos = startSample, i = 0; timePos < lastSample; timePos += hopSize, i++)
             {
                 // prepare next block for processing
 
@@ -302,16 +301,13 @@ namespace NWaves.FeatureExtractors
                     _block.ApplyWindow(_windowSamples);
                 }
 
-
                 // 2) calculate power spectrum
 
                 _fft.PowerSpectrum(_block, _spectrum);
 
-
                 // 3) apply gammatone filterbank
 
                 FilterBanks.Apply(FilterBank, _spectrum, _gammatoneSpectrum);
-
 
 
                 // =============================================================
@@ -428,7 +424,6 @@ namespace NWaves.FeatureExtractors
                     
                     // =============================================================
 
-
                     // 5) nonlinearity (power ^ d     or    Log10)
 
                     if (_power != 0)
@@ -450,7 +445,6 @@ namespace NWaves.FeatureExtractors
 
                     var pnccs = new float[FeatureCount];
                     _dct.DirectN(_smoothedSpectrum, pnccs);
-                    
 
                     // add pncc vector to output sequence
 
@@ -461,9 +455,15 @@ namespace NWaves.FeatureExtractors
                     });
                 }
 
-                i++;
-                
-                timePos += hopSize;
+                // first 2*M vectors are empty
+                else
+                {
+                    featureVectors.Add(new FeatureVector
+                    {
+                        Features = new float[FeatureCount],
+                        TimePosition = (double)timePos / SamplingRate
+                    });
+                }
             }
 
             return featureVectors;
