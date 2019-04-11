@@ -1,5 +1,4 @@
-﻿using NWaves.Filters.Base;
-using NWaves.Signals;
+﻿using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
 using NWaves.Windows;
@@ -23,6 +22,11 @@ namespace NWaves.Effects
         private readonly int _fftSize;
 
         /// <summary>
+        /// Size of frame overlap
+        /// </summary>
+        private readonly int _overlapSize;
+
+        /// <summary>
         /// Internal FFT transformer
         /// </summary>
         private readonly Fft _fft;
@@ -33,29 +37,29 @@ namespace NWaves.Effects
         private readonly float[] _window;
 
         /// <summary>
-        /// Internal buffer for real parts of analyzed block
+        /// Delay lines
         /// </summary>
-        private float[] _re1;
+        private float[] _dl1, _dl2;
 
         /// <summary>
-        /// Internal buffer for imaginary parts of analyzed block
+        /// Offset in the input delay line
         /// </summary>
-        private float[] _im1;
+        private int _inOffset;
 
         /// <summary>
-        /// Internal buffer for real parts of analyzed block
+        /// Offset in the output buffer
         /// </summary>
-        private float[] _re2;
+        private int _outOffset;
 
         /// <summary>
-        /// Internal buffer for imaginary parts of analyzed block
+        /// Internal buffers
         /// </summary>
-        private float[] _im2;
-
-        /// <summary>
-        /// Internal array of zeros for a quick memset
-        /// </summary>
-        private readonly float[] _zeroblock;
+        private float[] _re1, _re2;
+        private float[] _im1, _im2;
+        private float[] _filteredRe;
+        private float[] _filteredIm;
+        private float[] _zeroblock;
+        private float[] _lastSaved;
 
         /// <summary>
         /// Constuctor
@@ -66,102 +70,146 @@ namespace NWaves.Effects
         {
             _hopSize = hopSize;
             _fftSize = (fftSize > 0) ? fftSize : 8 * hopSize;
+            _overlapSize = _fftSize - _hopSize;
+
+            Guard.AgainstInvalidRange(_hopSize, _fftSize, "Hop size", "FFT size");
 
             _fft = new Fft(_fftSize);
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
 
+            _dl1 = new float[_fftSize];
             _re1 = new float[_fftSize];
             _im1 = new float[_fftSize];
+            _dl2 = new float[_fftSize];
             _re2 = new float[_fftSize];
             _im2 = new float[_fftSize];
+            _filteredRe = new float[_fftSize];
+            _filteredIm = new float[_fftSize];
             _zeroblock = new float[_fftSize];
+            _lastSaved = new float[_overlapSize];
         }
 
-        public DiscreteSignal ApplyTo(DiscreteSignal signal1,
-                                      DiscreteSignal signal2,
-                                      FilteringMethod method = FilteringMethod.Auto)
+        /// <summary>
+        /// Online processing (sample-by-sample)
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <param name="mix"></param>
+        /// <returns></returns>
+        public float Process(float sample, float mix)
+        {
+            _dl1[_inOffset] = sample;
+            _dl2[_inOffset] = mix;
+            _inOffset++;
+
+            if (_inOffset == _fftSize)
+            {
+                ProcessFrame();
+            }
+
+            return _filteredRe[_outOffset++];
+        }
+
+        /// <summary>
+        /// Process one frame (block)
+        /// </summary>
+        public void ProcessFrame()
+        {
+            _zeroblock.FastCopyTo(_im1, _fftSize);
+            _zeroblock.FastCopyTo(_im2, _fftSize);
+            _dl1.FastCopyTo(_re1, _fftSize);
+            _dl2.FastCopyTo(_re2, _fftSize);
+
+            _re1.ApplyWindow(_window);
+            _re2.ApplyWindow(_window);
+
+            _fft.Direct(_re1, _im1);
+            _fft.Direct(_re2, _im2);
+
+            for (var j = 0; j <= _fftSize / 2; j++)
+            {
+                var mag1 = Math.Sqrt(_re1[j] * _re1[j] + _im1[j] * _im1[j]);
+                var phase2 = Math.Atan2(_im2[j], _re2[j]);
+
+                _filteredRe[j] = (float)(mag1 * Math.Cos(phase2));
+                _filteredIm[j] = (float)(mag1 * Math.Sin(phase2));
+            }
+
+            for (var j = _fftSize / 2 + 1; j < _fftSize; j++)
+            {
+                _filteredRe[j] = _filteredIm[j] = 0.0f;
+            }
+
+            _fft.Inverse(_filteredRe, _filteredIm);
+
+            _filteredRe.ApplyWindow(_window);
+
+            for (var j = 0; j < _overlapSize; j++)
+            {
+                _filteredRe[j] += _lastSaved[j];
+            }
+
+            _filteredRe.FastCopyTo(_lastSaved, _overlapSize, _hopSize);
+
+            for (var i = 0; i < _filteredRe.Length; i++)        // Wet / Dry mix
+            {
+                _filteredRe[i] *= Wet / _fftSize;
+                _filteredRe[i] += _dl2[i] * Dry;
+            }
+
+            _dl1.FastCopyTo(_dl1, _overlapSize, _hopSize);
+            _dl2.FastCopyTo(_dl2, _overlapSize, _hopSize);
+
+            _inOffset = _overlapSize;
+            _outOffset = 0;
+        }
+
+        /// <summary>
+        /// Reset filter internals
+        /// </summary>
+        public override void Reset()
+        {
+            _inOffset = _overlapSize;
+            _outOffset = 0;
+
+            _zeroblock.FastCopyTo(_dl1, _dl1.Length);
+            _zeroblock.FastCopyTo(_re1, _re1.Length);
+            _zeroblock.FastCopyTo(_im1, _im1.Length);
+            _zeroblock.FastCopyTo(_dl2, _dl2.Length);
+            _zeroblock.FastCopyTo(_re2, _re2.Length);
+            _zeroblock.FastCopyTo(_im2, _im2.Length);
+            _zeroblock.FastCopyTo(_filteredRe, _filteredRe.Length);
+            _zeroblock.FastCopyTo(_filteredIm, _filteredIm.Length);
+            _zeroblock.FastCopyTo(_lastSaved, _lastSaved.Length);
+        }
+
+        /// <summary>
+        /// Offline processing
+        /// </summary>
+        /// <param name="signal1"></param>
+        /// <param name="signal2"></param>
+        /// <returns></returns>
+        public DiscreteSignal ApplyTo(DiscreteSignal signal1, DiscreteSignal signal2)
         {
             Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate, "1st signal sampling rate", "2nd signal sampling rate");
 
-            var input1 = signal1.Samples;
-            var input2 = signal2.Samples;
-            var output = new float[input1.Length];
+            var filtered = new float[signal1.Length];
 
-            var windowSum = new float[output.Length];
-
-            var posMorph = 0;
-            var endMorph = signal2.Length - _fftSize;
-
-            var posSynthesis = 0;
-
-            for (var posAnalysis = 0; posAnalysis + _fftSize < input1.Length; posAnalysis += _hopSize, posMorph += _hopSize)
+            for (int i = 0, j = 0; i < filtered.Length; i++, j++)
             {
-                input1.FastCopyTo(_re1, _fftSize, posAnalysis);
-                _zeroblock.FastCopyTo(_im1, _fftSize);
-
-                if (posMorph > endMorph)
+                if (j == signal2.Length)
                 {
-                    posMorph = 0;
+                    j = 0;
                 }
 
-                input2.FastCopyTo(_re2, _fftSize, posMorph);
-                _zeroblock.FastCopyTo(_im2, _fftSize);
-
-                _re1.ApplyWindow(_window);
-                _re2.ApplyWindow(_window);
-
-                _fft.Direct(_re1, _im1);
-                _fft.Direct(_re2, _im2);
-
-                for (var j = 0; j < _fftSize / 2 + 1; j++)
-                {
-                    var mag1 = Math.Sqrt(_re1[j] * _re1[j] + _im1[j] * _im1[j]);
-                    var phase1 = Math.Atan2(_im1[j], _re1[j]);
-                    var mag2 = Math.Sqrt(_re2[j] * _re2[j] + _im2[j] * _im2[j]);
-                    var phase2 = Math.Atan2(_im2[j], _re2[j]);
-
-                    _re1[j] = (float)(mag1 * Math.Cos(phase2));
-                    _im1[j] = (float)(mag1 * Math.Sin(phase2));
-                }
-
-                for (var j = _fftSize / 2 + 1; j < _fftSize; j++)
-                {
-                    _re1[j] = _im1[j] = 0.0f;
-                }
-
-                _fft.Inverse(_re1, _im1);
-
-                for (var j = 0; j < _re1.Length; j++)
-                {
-                    output[posSynthesis + j] += _re1[j] * _window[j];
-                }
-
-                posSynthesis += _hopSize;
+                filtered[i] = Process(signal1[i], signal2[j]);
             }
 
-            posMorph = 0;
-            for (var j = 0; j < output.Length; j++, posMorph++)
-            {
-                output[j] /= _fftSize;
-
-                if (posMorph > endMorph)
-                {
-                    posMorph = 0;
-                }
-
-                output[j] = Wet * output[j] + Dry * signal2[posMorph];
-            }
-
-            return new DiscreteSignal(signal1.SamplingRate, output);
+            return new DiscreteSignal(signal1.SamplingRate, filtered);
         }
 
         public override float Process(float sample)
         {
             throw new NotImplementedException();
-        }
-
-        public override void Reset()
-        {
         }
     }
 }

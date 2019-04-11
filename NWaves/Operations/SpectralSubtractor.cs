@@ -15,8 +15,16 @@ namespace NWaves.Operations
     /// "Enhancement of Speech Corrupted by Acoustic Noise".
     /// 
     /// </summary>
-    public class SpectralSubtractor : IFilter
+    public class SpectralSubtractor : IFilter, IOnlineFilter
     {
+        // Algorithm parameters
+
+        public float Beta { get; set; } = 0.009f;
+        public float AlphaMin { get; set; } = 2f;
+        public float AlphaMax { get; set; } = 5f;
+        public float SnrMin { get; set; } = -5f;
+        public float SnrMax { get; set; } = 20f;
+
         /// <summary>
         /// Hop size
         /// </summary>
@@ -26,6 +34,11 @@ namespace NWaves.Operations
         /// Size of FFT for analysis and synthesis
         /// </summary>
         private readonly int _fftSize;
+
+        /// <summary>
+        /// Size of frame overlap
+        /// </summary>
+        private readonly int _overlapSize;
 
         /// <summary>
         /// Internal FFT transformer
@@ -53,30 +66,43 @@ namespace NWaves.Operations
         private readonly float[] _noiseEstimate;
 
         /// <summary>
-        /// Internal buffer for real parts of analyzed block
+        /// Delay line
+        /// </summary>
+        private float[] _dl;
+
+        /// <summary>
+        /// Offset in the input delay line
+        /// </summary>
+        private int _inOffset;
+
+        /// <summary>
+        /// Offset in the output buffer
+        /// </summary>
+        private int _outOffset;
+
+        /// <summary>
+        /// Internal buffers
         /// </summary>
         private float[] _re;
-
-        /// <summary>
-        /// Internal buffer for imaginary parts of analyzed block
-        /// </summary>
         private float[] _im;
-
-        /// <summary>
-        /// Internal array of zeros for a quick memset
-        /// </summary>
-        private readonly float[] _zeroblock;
-
+        private float[] _filteredRe;
+        private float[] _filteredIm;
+        private float[] _zeroblock;
+        private float[] _lastSaved;
+        
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="noise"></param>
         /// <param name="fftSize"></param>
         /// <param name="hopSize"></param>
-        public SpectralSubtractor(DiscreteSignal noise, int fftSize = 1024, int hopSize = 410)
+        public SpectralSubtractor(DiscreteSignal noise, int fftSize = 1024, int hopSize = 128)
         {
+            Guard.AgainstInvalidRange(hopSize, fftSize, "Hop size", "FFT size");
+
             _fftSize = fftSize;
             _hopSize = hopSize;
+            _overlapSize = _fftSize - _hopSize;
 
             _fft = new Fft(_fftSize);
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
@@ -86,11 +112,17 @@ namespace NWaves.Operations
             _noiseAcc = new float[_fftSize / 2 + 1];
             _noiseEstimate = new float[_fftSize / 2 + 1];
 
+            _dl = new float[_fftSize];
             _re = new float[_fftSize];
             _im = new float[_fftSize];
+            _filteredRe = new float[_fftSize];
+            _filteredIm = new float[_fftSize];
             _zeroblock = new float[_fftSize];
+            _lastSaved = new float[_overlapSize];
 
             EstimateNoise(noise);
+
+            Reset();
         }
 
         /// <summary>
@@ -126,7 +158,94 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Spectral subtraction
+        /// Online processing (sample-by-sample)
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        public float Process(float sample)
+        {
+            _dl[_inOffset++] = sample;
+
+            if (_inOffset == _fftSize)
+            {
+                ProcessFrame();
+            }
+
+            return _filteredRe[_outOffset++] * _gain;
+        }
+
+        /// <summary>
+        /// Process one frame (block)
+        /// </summary>
+        public void ProcessFrame()
+        {
+            float k = (AlphaMin - AlphaMax) / (SnrMax - SnrMin);
+            float b = AlphaMax - k * SnrMin;
+
+            _zeroblock.FastCopyTo(_im, _fftSize);
+            _dl.FastCopyTo(_re, _fftSize);
+
+            _re.ApplyWindow(_window);
+
+            _fft.Direct(_re, _im);
+
+            for (var j = 0; j <= _fftSize / 2; j++)
+            {
+                var power = _re[j] * _re[j] + _im[j] * _im[j];
+                var phase = Math.Atan2(_im[j], _re[j]);
+
+                var noisePower = _noiseEstimate[j];
+
+                var snr = 10 * Math.Log10(power / noisePower);
+                var alpha = Math.Max(Math.Min(k * snr + b, AlphaMax), AlphaMin);
+
+                var diff = power - alpha * noisePower;
+
+                var mag = Math.Sqrt(Math.Max(diff, Beta * noisePower));
+
+                _filteredRe[j] = (float)(mag * Math.Cos(phase));
+                _filteredIm[j] = (float)(mag * Math.Sin(phase));
+            }
+
+            for (var j = _fftSize / 2 + 1; j < _fftSize; j++)
+            {
+                _filteredRe[j] = _filteredIm[j] = 0.0f;
+            }
+
+            _fft.Inverse(_filteredRe, _filteredIm);
+
+            _filteredRe.ApplyWindow(_window);
+
+            for (var j = 0; j < _overlapSize; j++)
+            {
+                _filteredRe[j] += _lastSaved[j];
+            }
+
+            _filteredRe.FastCopyTo(_lastSaved, _overlapSize, _hopSize);
+            _dl.FastCopyTo(_dl, _overlapSize, _hopSize);
+
+            _inOffset = _overlapSize;
+            _outOffset = 0;
+        }
+
+        /// <summary>
+        /// Reset filter internals
+        /// </summary>
+        public void Reset()
+        {
+            _inOffset = _overlapSize;
+            _outOffset = 0;
+
+            _zeroblock.FastCopyTo(_dl, _dl.Length);
+            _zeroblock.FastCopyTo(_re, _re.Length);
+            _zeroblock.FastCopyTo(_im, _im.Length);
+            _zeroblock.FastCopyTo(_filteredRe, _filteredRe.Length);
+            _zeroblock.FastCopyTo(_filteredIm, _filteredIm.Length);
+            _zeroblock.FastCopyTo(_lastSaved, _lastSaved.Length);
+        }
+
+        /// <summary>
+        /// Offline processing
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="method"></param>
@@ -134,70 +253,7 @@ namespace NWaves.Operations
         public DiscreteSignal ApplyTo(DiscreteSignal signal,
                                       FilteringMethod method = FilteringMethod.Auto)
         {
-            var input = signal.Samples;
-            var output = new float[input.Length];
-
-            const float beta = 0.009f;
-            const float alphaMin = 2f;
-            const float alphaMax = 5f;
-            const float snrMin = -5f;
-            const float snrMax = 20f;
-
-            const float k = (alphaMin - alphaMax) / (snrMax - snrMin);
-            const float b = alphaMax - k * snrMin;
-
-            var pos = 0;
-            for (; pos + _fftSize < input.Length; pos += _hopSize)
-            {
-                input.FastCopyTo(_re, _fftSize, pos);
-                _zeroblock.FastCopyTo(_im, _fftSize);
-
-                _re.ApplyWindow(_window);
-
-                _fft.Direct(_re, _im);
-
-                for (var j = 0; j <= _fftSize / 2; j++)
-                {
-                    var power = _re[j] * _re[j] + _im[j] * _im[j];
-                    var phase = Math.Atan2(_im[j], _re[j]);
-
-                    var noisePower = _noiseEstimate[j];
-
-                    var snr = 10 * Math.Log10(power / noisePower);
-                    var alpha = Math.Max(Math.Min(k * snr + b, alphaMax), alphaMin);
-
-                    var diff = power - alpha * noisePower;
-
-                    var mag = Math.Sqrt(Math.Max(diff, beta * noisePower));
-
-                    _re[j] = (float)(mag * Math.Cos(phase));
-                    _im[j] = (float)(mag * Math.Sin(phase));
-                }
-
-                for (var j = _fftSize / 2 + 1; j < _fftSize; j++)
-                {
-                    _re[j] = _im[j] = 0.0f;
-                }
-
-                _fft.Inverse(_re, _im);
-
-                for (var j = 0; j < _re.Length; j++)
-                {
-                    output[pos + j] += _re[j] * _window[j];
-                }
-
-                for (var j = 0; j < _hopSize; j++)
-                {
-                    output[pos + j] *= _gain;
-                }
-            }
-
-            for (; pos < output.Length; pos++)
-            {
-                output[pos] *= _gain;
-            }
-
-            return new DiscreteSignal(signal.SamplingRate, output);
+            return new DiscreteSignal(signal.SamplingRate, signal.Samples.Select(s => Process(s)));
         }
     }
 }

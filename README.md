@@ -458,6 +458,8 @@ for (var i = 0; i < signal.Length; i++)
 {
     signal[i] = pre.Process(signal[i]);
 }
+
+mfccVectors = mfccExtractor.ParallelComputeFrom(signal);
 ```
 
 ### Playing and recording
