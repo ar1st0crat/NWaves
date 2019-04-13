@@ -9,9 +9,7 @@ NWaves is a .NET library for 1D signal processing focused specifically on audio 
 
 ## Main features 
 
-Already available:
-
-- [x] major DSP transforms (FFT, DCT, STFT, Hilbert, Hartley, cepstral, Goertzel)
+- [x] major DSP transforms (FFT, DCT, STFT, Hilbert, Hartley, Mellin, cepstral, Goertzel)
 - [x] signal builders (sine/cosine, white/pink/red/Perlin noise, awgn, triangle, sawtooth, square, pulse, ramp, sinc)
 - [x] basic LTI digital filters (FIR, IIR, comb, moving average, pre/de-emphasis, DC removal, RASTA)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
@@ -39,12 +37,6 @@ Already available:
 - [x] adaptive filtering (LMS, NLMS, LMF, SignLMS, RLS)
 - [x] simple modulation/demodulation (AM, ring, FM, PM)
 - [x] simple audio playback and recording
-
-Planned:
-
-- [ ] sound synthesis (wavetable, ADSR, etc.)
-- [ ] more sound effects (reverb, chorus, etc.)
-- [ ] more transforms (CQT, DWT, Mellin, Haar, Hadamard)
 
 
 ## Philosophy of NWaves

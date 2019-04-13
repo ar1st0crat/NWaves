@@ -29,5 +29,15 @@ namespace NWaves.Utils
                 throw new ArgumentException($"{highName} must be greater than {lowName}!");
             }
         }
+
+        public static void AgainstNotPowerOfTwo(int n, string argName = "Parameter")
+        {
+            var pow = (int)Math.Log(n, 2);
+
+            if (n != 1 << pow)
+            {
+                throw new ArgumentException($"{argName} must be a power of 2!");
+            }
+        }
     }
 }

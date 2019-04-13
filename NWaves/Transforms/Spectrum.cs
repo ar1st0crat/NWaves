@@ -37,11 +37,7 @@ namespace NWaves.Transforms
         /// <param name="fftSize">Size of FFT</param>
         public Fft(int fftSize = 512)
         {
-            var pow = (int) Math.Log(fftSize, 2);
-            if (fftSize != 1 << pow)
-            {
-                throw new ArgumentException("FFT size must be a power of 2!");
-            }
+            Guard.AgainstNotPowerOfTwo(fftSize, "FFT size");
 
             _fftSize = fftSize;
             _realSpectrum = new float[fftSize];

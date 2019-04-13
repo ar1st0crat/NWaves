@@ -69,7 +69,9 @@ namespace NWaves.Effects
                                        .Select(s => (float)(_shift * s))    // [0.0, _shift, 2*_shift, ...]
                                        .ToArray();
 
-            var resampled = MathUtils.InterpolateLinear(x, stretched.Samples, xresampled);
+            var resampled = new float[xresampled.Length];
+
+            MathUtils.InterpolateLinear(x, stretched.Samples, xresampled, resampled);
 
             for (var i = 0; i < resampled.Length; i++)
             {

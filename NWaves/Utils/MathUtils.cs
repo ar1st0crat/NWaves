@@ -72,11 +72,10 @@ namespace NWaves.Utils
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="arg"></param>
+        /// <param name="interp"></param>
         /// <returns></returns>
-        public static float[] InterpolateLinear(float[] x, float[] y, float[] arg)
+        public static void InterpolateLinear(float[] x, float[] y, float[] arg, float[] interp)
         {
-            var interp = new float[arg.Length];
-
             var left = 0;
             var right = 1;
 
@@ -90,8 +89,6 @@ namespace NWaves.Utils
 
                 interp[i] = y[left] + (y[right] - y[left]) * (arg[i] - x[left]) / (x[right] - x[left]);
             }
-
-            return interp;
         }
 
         /// <summary>
