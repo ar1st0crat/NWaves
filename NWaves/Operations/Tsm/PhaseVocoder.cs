@@ -177,6 +177,15 @@ namespace NWaves.Operations.Tsm
             return new DiscreteSignal(signal.SamplingRate, output);
         }
 
+        public void Reset()
+        {
+            for (var i = 0; i < _phaseTotal.Length; i++)
+            {
+                _phaseTotal[i] = 0;
+                _prevPhase[i] = 0;
+            }
+        }
+
         /*
         /// <summary>
         /// Phase Vocoder algorithm (slower, but more readable for tutorial)

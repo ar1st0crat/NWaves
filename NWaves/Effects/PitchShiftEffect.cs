@@ -8,7 +8,7 @@ using NWaves.Utils;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Pitch Shift effect based on one of the available TSM algorithms
+    /// Pitch Shift effect based on one of the available TSM algorithms and linear interpolation
     /// </summary>
     public class PitchShiftEffect : AudioEffect
     {
@@ -38,7 +38,10 @@ namespace NWaves.Effects
         /// <param name="shift"></param>
         /// <param name="fftSize"></param>
         /// <param name="tsm"></param>
-        public PitchShiftEffect(double shift, int fftSize = 1024, int hopSize = 128, TsmAlgorithm tsm = TsmAlgorithm.PhaseVocoderPhaseLocking)
+        public PitchShiftEffect(double shift,
+                                int fftSize = 1024,
+                                int hopSize = 128,
+                                TsmAlgorithm tsm = TsmAlgorithm.PhaseVocoderPhaseLocking)
         {
             _shift = shift;
             _fftSize = fftSize;

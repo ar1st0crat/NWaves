@@ -1,6 +1,7 @@
 # NWaves
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![Version](https://img.shields.io/nuget/v/NWaves.svg?style=flat)
 ![NuGet](https://img.shields.io/nuget/dt/NWaves.svg?style=flat)
 
 ![logo](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/logo_draft.bmp)
