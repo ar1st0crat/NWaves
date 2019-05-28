@@ -37,12 +37,18 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// TF constructor from zeros/poles
         /// </summary>
-        /// <param name="zeros"></param>
-        /// <param name="poles"></param>
-        public TransferFunction(ComplexDiscreteSignal zeros, ComplexDiscreteSignal poles)
+        /// <param name="zeros">Zeros</param>
+        /// <param name="poles">Poles</param>
+        /// <param name="k">Gain</param>
+        public TransferFunction(ComplexDiscreteSignal zeros, ComplexDiscreteSignal poles, double k = 1)
         {
             Zeros = zeros;
             Poles = poles;
+
+            for (var i = 0; i < Numerator.Length; i++)
+            {
+                Numerator[i] *= k;
+            }
         }
 
         /// <summary>

@@ -9,6 +9,7 @@ using NWaves.Filters;
 using NWaves.Filters.Base;
 using NWaves.Filters.BiQuad;
 using NWaves.Filters.Fda;
+using NWaves.Filters.Iir;
 using NWaves.Operations;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -424,7 +425,7 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            _filter = new ButterworthFilter(freq, order);
+            _filter = new ButterworthHpFilter(freq, order);// (freq, 0.4, order);//, -0.1);
 
             filterParamsDataGrid.RowCount = 2;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";

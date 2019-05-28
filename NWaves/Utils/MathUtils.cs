@@ -52,6 +52,16 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Inverse sinh
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static double Asinh(double x)
+        {
+            return Math.Log(x + Math.Sqrt(x * x + 1));
+        }
+
+        /// <summary>
         /// Diff signal (1st order derivative)
         /// </summary>
         /// <param name="samples"></param>

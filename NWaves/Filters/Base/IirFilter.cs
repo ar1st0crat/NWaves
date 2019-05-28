@@ -97,6 +97,7 @@ namespace NWaves.Filters.Base
         {
             B = tf.Numerator;
             A = tf.Denominator;
+            Tf = tf;
             ResetInternals();
         }
 
