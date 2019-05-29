@@ -9,7 +9,6 @@ using NWaves.Filters;
 using NWaves.Filters.Base;
 using NWaves.Filters.BiQuad;
 using NWaves.Filters.Fda;
-using NWaves.Filters.Iir;
 using NWaves.Operations;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -102,6 +101,12 @@ namespace NWaves.DemoForms
                     break;
                 case "Butterworth":
                     AnalyzeButterworthFilter();
+                    break;
+                case "Chebyshev-I":
+                    AnalyzeChebyshevIFilter();
+                    break;
+                case "Chebyshev-II":
+                    AnalyzeChebyshevIIFilter();
                     break;
                 case "Custom LP/HP":
                     AnalyzeCustomLpFilter();
@@ -323,7 +328,7 @@ namespace NWaves.DemoForms
                     _filter = new HighPassFilter(freq, q);
                     break;
                 case "BiQuad BP":
-                    _filter = new BandPassFilter(freq, q);
+                    _filter = new Filters.BiQuad.BandPassFilter(freq, q);
                     break;
                 case "BiQuad notch":
                     _filter = new NotchFilter(freq, q);
@@ -425,7 +430,53 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            _filter = new ButterworthHpFilter(freq, order);// (freq, 0.4, order);//, -0.1);
+            _filter = new Filters.Butterworth.BandPassFilter(freq, 0.4, order);//, -0.1);
+
+            filterParamsDataGrid.RowCount = 2;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = freq;
+        }
+
+        private void AnalyzeChebyshevIFilter()
+        {
+            var order = 6;
+            var freq = 0.2;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                freq = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            _filter = new Filters.ChebyshevI.HighPassFilter(freq, order);
+
+            filterParamsDataGrid.RowCount = 2;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = freq;
+        }
+
+        private void AnalyzeChebyshevIIFilter()
+        {
+            var order = 4;
+            var freq = 0.25;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                freq = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            _filter = new Filters.ChebyshevII.BandStopFilter(freq, 0.4, order);
 
             filterParamsDataGrid.RowCount = 2;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";

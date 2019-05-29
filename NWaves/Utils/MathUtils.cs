@@ -102,6 +102,33 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Bilinear transform (in-place)
+        /// </summary>
+        /// <param name="re"></param>
+        /// <param name="im"></param>
+        public static void BilinearTransform(double[] re, double[] im)
+        {
+            for (var k = 0; k < re.Length; k++)
+            {
+                var den = (1 - re[k]) * (1 - re[k]) + im[k] * im[k];
+                re[k] = (1 - re[k] * re[k] - im[k] * im[k]) / den;
+                im[k] = 2 * im[k] / den;
+            }
+
+            // equivalent to:
+
+            //for (var k = 0; k < re.Length; k++)
+            //{
+            //      var c1 = new Complex(1 + re[k],  im[k]);
+            //      var c2 = new Complex(1 - re[k], -im[k]);
+            //      var c = c1 / c2;
+
+            //      re[k] = c.Real;
+            //      im[k] = c.Imaginary;
+            //}
+        }
+
+        /// <summary>
         /// Unwrap (phase)
         /// </summary>
         /// <param name="phase"></param>

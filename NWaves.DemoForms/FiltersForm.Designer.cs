@@ -145,7 +145,7 @@ namespace NWaves.DemoForms
             // autoToolStripMenuItem
             // 
             this.autoToolStripMenuItem.Name = "autoToolStripMenuItem";
-            this.autoToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
+            this.autoToolStripMenuItem.Size = new System.Drawing.Size(265, 26);
             this.autoToolStripMenuItem.Text = "Auto";
             this.autoToolStripMenuItem.Click += new System.EventHandler(this.autoToolStripMenuItem_Click);
             // 
@@ -153,7 +153,7 @@ namespace NWaves.DemoForms
             // 
             this.overlapAddToolStripMenuItem.Name = "overlapAddToolStripMenuItem";
             this.overlapAddToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.A)));
-            this.overlapAddToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
+            this.overlapAddToolStripMenuItem.Size = new System.Drawing.Size(265, 26);
             this.overlapAddToolStripMenuItem.Text = "Overlap-&Add";
             this.overlapAddToolStripMenuItem.Click += new System.EventHandler(this.overlapAddToolStripMenuItem_Click);
             // 
@@ -161,7 +161,7 @@ namespace NWaves.DemoForms
             // 
             this.overlapSaveToolStripMenuItem.Name = "overlapSaveToolStripMenuItem";
             this.overlapSaveToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.S)));
-            this.overlapSaveToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
+            this.overlapSaveToolStripMenuItem.Size = new System.Drawing.Size(265, 26);
             this.overlapSaveToolStripMenuItem.Text = "Overlap-&Save";
             this.overlapSaveToolStripMenuItem.Click += new System.EventHandler(this.overlapSaveToolStripMenuItem_Click);
             // 
@@ -176,7 +176,7 @@ namespace NWaves.DemoForms
             // framebyFrameToolStripMenuItem
             // 
             this.framebyFrameToolStripMenuItem.Name = "framebyFrameToolStripMenuItem";
-            this.framebyFrameToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
+            this.framebyFrameToolStripMenuItem.Size = new System.Drawing.Size(265, 26);
             this.framebyFrameToolStripMenuItem.Text = "Frame-by-Frame";
             this.framebyFrameToolStripMenuItem.Click += new System.EventHandler(this.framebyFrameToolStripMenuItem_Click);
             // 
@@ -253,6 +253,8 @@ namespace NWaves.DemoForms
             "DC removal",
             "RASTA",
             "Butterworth",
+            "Chebyshev-I",
+            "Chebyshev-II",
             "Custom LP/HP",
             "Custom BP/BR"});
             this.filterTypesComboBox.Location = new System.Drawing.Point(12, 50);
@@ -447,6 +449,7 @@ namespace NWaves.DemoForms
             this.spectrogramAfterFilteringPanel.ColorMapName = "magma";
             this.spectrogramAfterFilteringPanel.Location = new System.Drawing.Point(499, 566);
             this.spectrogramAfterFilteringPanel.Markline = null;
+            this.spectrogramAfterFilteringPanel.MarklineThickness = 0;
             this.spectrogramAfterFilteringPanel.Name = "spectrogramAfterFilteringPanel";
             this.spectrogramAfterFilteringPanel.Size = new System.Drawing.Size(490, 149);
             this.spectrogramAfterFilteringPanel.Spectrogram = null;
@@ -474,6 +477,7 @@ namespace NWaves.DemoForms
             this.spectrogramBeforeFilteringPanel.ColorMapName = "magma";
             this.spectrogramBeforeFilteringPanel.Location = new System.Drawing.Point(13, 566);
             this.spectrogramBeforeFilteringPanel.Markline = null;
+            this.spectrogramBeforeFilteringPanel.MarklineThickness = 0;
             this.spectrogramBeforeFilteringPanel.Name = "spectrogramBeforeFilteringPanel";
             this.spectrogramBeforeFilteringPanel.Size = new System.Drawing.Size(480, 148);
             this.spectrogramBeforeFilteringPanel.Spectrogram = null;
@@ -510,7 +514,7 @@ namespace NWaves.DemoForms
             this.phaseResponsePanel.AutoScroll = true;
             this.phaseResponsePanel.BackColor = System.Drawing.SystemColors.Window;
             this.phaseResponsePanel.ForeColor = System.Drawing.Color.Blue;
-           this.phaseResponsePanel.Location = new System.Drawing.Point(219, 231);
+            this.phaseResponsePanel.Location = new System.Drawing.Point(219, 231);
             this.phaseResponsePanel.Name = "phaseResponsePanel";
             this.phaseResponsePanel.PaddingX = 30;
             this.phaseResponsePanel.PaddingY = 20;

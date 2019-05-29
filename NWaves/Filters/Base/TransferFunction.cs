@@ -39,16 +39,10 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="zeros">Zeros</param>
         /// <param name="poles">Poles</param>
-        /// <param name="k">Gain</param>
-        public TransferFunction(ComplexDiscreteSignal zeros, ComplexDiscreteSignal poles, double k = 1)
+        public TransferFunction(ComplexDiscreteSignal zeros, ComplexDiscreteSignal poles)
         {
             Zeros = zeros;
             Poles = poles;
-
-            for (var i = 0; i < Numerator.Length; i++)
-            {
-                Numerator[i] *= k;
-            }
         }
 
         /// <summary>
@@ -132,6 +126,24 @@ namespace NWaves.Filters.Base
 
             return new ComplexDiscreteSignal(1, roots.Select(r => r.Real),
                                                 roots.Select(r => r.Imaginary));
+        }
+
+        /// <summary>
+        /// Normalize frequency response at given frequency
+        /// (normalize coefficients to map frequency response onto [0, 1])
+        /// </summary>
+        /// <param name="freq"></param>
+        public void NormalizeAt(double freq)
+        {
+            var w = Complex.FromPolarCoordinates(1, freq);
+
+            var gain = Complex.Abs(MathUtils.EvaluatePolynomial(Denominator, w) / 
+                                   MathUtils.EvaluatePolynomial(Numerator, w));
+
+            for (var i = 0; i < Numerator.Length; i++)
+            {
+                Numerator[i] *= gain;
+            }
         }
 
         /// <summary>
