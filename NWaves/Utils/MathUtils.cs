@@ -62,6 +62,31 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Factorial
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static double Factorial(int n)
+        {
+            var f = 1.0;
+
+            for (var i = 2; i <= n; f *= i++) ;
+
+            return f;
+        }
+
+        /// <summary>
+        /// Binomial coefficient
+        /// </summary>
+        /// <param name="k"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static double BinomialCoefficient(int k, int n)
+        {
+            return Factorial(n) / (Factorial(k) * Factorial(n - k));
+        }
+
+        /// <summary>
         /// Diff signal (1st order derivative)
         /// </summary>
         /// <param name="samples"></param>

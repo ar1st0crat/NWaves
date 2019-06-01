@@ -199,8 +199,9 @@ namespace NWaves.Filters.Fda
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="poles"></param>
+        /// <param name="zeros"></param>
         /// <returns></returns>
-        public static TransferFunction IirLpTf(double freq, Complex[] poles)
+        public static TransferFunction IirLpTf(double freq, Complex[] poles, Complex[] zeros = null)
         {
             var order = poles.Length;
 

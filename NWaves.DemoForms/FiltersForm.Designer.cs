@@ -255,6 +255,8 @@ namespace NWaves.DemoForms
             "Butterworth",
             "Chebyshev-I",
             "Chebyshev-II",
+            "Bessel",
+            "Thiran",
             "Custom LP/HP",
             "Custom BP/BR"});
             this.filterTypesComboBox.Location = new System.Drawing.Point(12, 50);
@@ -514,7 +516,12 @@ namespace NWaves.DemoForms
             this.phaseResponsePanel.AutoScroll = true;
             this.phaseResponsePanel.BackColor = System.Drawing.SystemColors.Window;
             this.phaseResponsePanel.ForeColor = System.Drawing.Color.Blue;
+            this.phaseResponsePanel.Gain = null;
+            this.phaseResponsePanel.Legend = null;
+            this.phaseResponsePanel.Line = null;
             this.phaseResponsePanel.Location = new System.Drawing.Point(219, 231);
+            this.phaseResponsePanel.Mark = null;
+            this.phaseResponsePanel.Markline = null;
             this.phaseResponsePanel.Name = "phaseResponsePanel";
             this.phaseResponsePanel.PaddingX = 30;
             this.phaseResponsePanel.PaddingY = 20;
@@ -528,7 +535,12 @@ namespace NWaves.DemoForms
             this.magnitudeResponsePanel.AutoScroll = true;
             this.magnitudeResponsePanel.BackColor = System.Drawing.SystemColors.Window;
             this.magnitudeResponsePanel.ForeColor = System.Drawing.Color.Blue;
+            this.magnitudeResponsePanel.Gain = null;
+            this.magnitudeResponsePanel.Legend = null;
+            this.magnitudeResponsePanel.Line = null;
             this.magnitudeResponsePanel.Location = new System.Drawing.Point(219, 50);
+            this.magnitudeResponsePanel.Mark = null;
+            this.magnitudeResponsePanel.Markline = null;
             this.magnitudeResponsePanel.Name = "magnitudeResponsePanel";
             this.magnitudeResponsePanel.PaddingX = 30;
             this.magnitudeResponsePanel.PaddingY = 20;

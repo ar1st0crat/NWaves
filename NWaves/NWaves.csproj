@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Filters\Bessel\" />
     <Folder Include="Properties\" />
   </ItemGroup>
 

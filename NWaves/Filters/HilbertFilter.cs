@@ -28,7 +28,7 @@ namespace NWaves.Filters
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
-        private static IEnumerable<double> MakeKernel(int size)
+        public static IEnumerable<double> MakeKernel(int size)
         {
             var kernel = new double[size];
 

@@ -108,6 +108,12 @@ namespace NWaves.DemoForms
                 case "Chebyshev-II":
                     AnalyzeChebyshevIIFilter();
                     break;
+                case "Bessel":
+                    AnalyzeBesselFilter();
+                    break;
+                case "Thiran":
+                    AnalyzeThiranFilter();
+                    break;
                 case "Custom LP/HP":
                     AnalyzeCustomLpFilter();
                     break;
@@ -483,6 +489,52 @@ namespace NWaves.DemoForms
             filterParamsDataGrid.Rows[0].Cells[1].Value = order;
             filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
             filterParamsDataGrid.Rows[1].Cells[1].Value = freq;
+        }
+
+        private void AnalyzeBesselFilter()
+        {
+            var order = 4;
+            var freq = 0.15;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                freq = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            _filter = new Filters.Bessel.LowPassFilter(freq, order);
+
+            filterParamsDataGrid.RowCount = 2;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = freq;
+        }
+
+        private void AnalyzeThiranFilter()
+        {
+            var order = 10;
+            var delta = 10.3;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                delta = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            _filter = new ThiranFilter(order, order + delta);
+
+            filterParamsDataGrid.RowCount = 2;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "delta";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = delta;
         }
 
         private void AnalyzeCustomLpFilter()
