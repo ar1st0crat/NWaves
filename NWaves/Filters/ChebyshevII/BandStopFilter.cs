@@ -17,7 +17,7 @@ namespace NWaves.Filters.ChebyshevII
         /// <param name="f1"></param>
         /// <param name="f2"></param>
         /// <param name="order"></param>
-        public BandStopFilter(double f1, double f2, int order, double ripple = -0.1) : base(MakeTf(f1, f2, order, ripple))
+        public BandStopFilter(double f1, double f2, int order, double ripple = 0.1) : base(MakeTf(f1, f2, order, ripple))
         {
         }
 
@@ -28,7 +28,7 @@ namespace NWaves.Filters.ChebyshevII
         /// <param name="f2"></param>
         /// <param name="order"></param>
         /// <returns></returns>
-        private static TransferFunction MakeTf(double freq1, double freq2, int order, double ripple = -0.1)
+        private static TransferFunction MakeTf(double freq1, double freq2, int order, double ripple = 0.1)
         {
             // Calculation of filter coefficients is based on Neil Robertson's post:
             // https://www.dsprelated.com/showarticle/1131.php

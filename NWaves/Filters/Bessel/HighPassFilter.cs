@@ -1,5 +1,6 @@
 ﻿using NWaves.Filters.Base;
 using NWaves.Filters.Fda;
+using System;
 
 namespace NWaves.Filters.Bessel
 {

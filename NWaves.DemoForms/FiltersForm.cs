@@ -87,6 +87,9 @@ namespace NWaves.DemoForms
                 case "Moving average recursive":
                     AnalyzeRecursiveMovingAverageFilter();
                     break;
+                case "Savitzky-Golay":
+                    AnalyzeSavitzkyGolayFilter();
+                    break;
                 case "Pre-emphasis":
                     AnalyzePreemphasisFilter();
                     break;
@@ -399,6 +402,24 @@ namespace NWaves.DemoForms
             orderDenominatorTextBox.Text = "0";
 
             _filter = new MovingAverageRecursiveFilter(size);
+
+            filterParamsDataGrid.RowCount = 1;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "size";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = size;
+        }
+
+        private void AnalyzeSavitzkyGolayFilter()
+        {
+            var size = 9;
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                size = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (size - 1).ToString();
+            orderDenominatorTextBox.Text = "0";
+
+            _filter = new SavitzkyGolayFilter(size);
 
             filterParamsDataGrid.RowCount = 1;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "size";

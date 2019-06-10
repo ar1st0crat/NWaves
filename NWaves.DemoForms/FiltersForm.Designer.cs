@@ -248,6 +248,7 @@ namespace NWaves.DemoForms
             "Comb feed-back",
             "Moving average",
             "Moving average recursive",
+            "Savitzky-Golay",
             "Pre-emphasis",
             "De-emphasis",
             "DC removal",

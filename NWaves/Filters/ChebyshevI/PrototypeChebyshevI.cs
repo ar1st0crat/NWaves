@@ -6,9 +6,9 @@ namespace NWaves.Filters.ChebyshevI
 {
     public static class PrototypeChebyshevI
     {
-        public static Complex[] Poles(int order, double ripple = -0.1)
+        public static Complex[] Poles(int order, double ripple = 0.1)
         {
-            var eps = Math.Sqrt(Math.Pow(10, -ripple / 10) - 1);
+            var eps = Math.Sqrt(Math.Pow(10, ripple / 10) - 1);
             var s = MathUtils.Asinh(1 / eps) / order;
             var sinh = Math.Sinh(s);
             var cosh = Math.Cosh(s);

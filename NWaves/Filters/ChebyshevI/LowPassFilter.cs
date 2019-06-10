@@ -14,7 +14,7 @@ namespace NWaves.Filters.ChebyshevI
         /// <param name="freq"></param>
         /// <param name="order"></param>
         /// <param name="ripple"></param>
-        public LowPassFilter(double freq, int order, double ripple = -0.1) : base(MakeTf(freq, order, ripple))
+        public LowPassFilter(double freq, int order, double ripple = 0.1) : base(MakeTf(freq, order, ripple))
         {
         }
 
@@ -24,7 +24,7 @@ namespace NWaves.Filters.ChebyshevI
         /// <param name="freq"></param>
         /// <param name="order"></param>
         /// <returns></returns>
-        private static TransferFunction MakeTf(double freq, int order, double ripple = -0.1)
+        private static TransferFunction MakeTf(double freq, int order, double ripple = 0.1)
         {
             return DesignFilter.IirLpTf(freq, PrototypeChebyshevI.Poles(order, ripple));
         }

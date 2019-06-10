@@ -144,7 +144,7 @@ namespace NWaves.Filters.Fda
 
         /// <summary>
         /// Method for making LP filter from the linear-phase HP filter
-        /// (no different from LpToHp method)
+        /// (not different from LpToHp method)
         /// </summary>
         /// <param name="filter"></param>
         /// <returns></returns>
@@ -208,14 +208,14 @@ namespace NWaves.Filters.Fda
             var re = new double[order];
             var im = new double[order];
 
-            var scaleFreq = Math.Tan(Math.PI * freq);
+            var warpedFreq = Math.Tan(Math.PI * freq);
 
             // 1) poles of analog filter (scaled)
 
             for (var k = 0; k < order; k++)
             {
-                re[k] = scaleFreq * poles[k].Real;
-                im[k] = scaleFreq * poles[k].Imaginary;
+                re[k] = warpedFreq * poles[k].Real;
+                im[k] = warpedFreq * poles[k].Imaginary;
             }
 
             // 2) switch to z-domain
@@ -244,13 +244,13 @@ namespace NWaves.Filters.Fda
             var re = new double[order];
             var im = new double[order];
 
-            var scaleFreq = Math.Tan(Math.PI * freq);
+            var warpedFreq = Math.Tan(Math.PI * freq);
 
             // 1) poles of analog filter (scaled)
 
             for (var k = 0; k < order; k++)
             {
-                var p = scaleFreq / poles[k];
+                var p = warpedFreq / poles[k];
 
                 re[k] = p.Real;
                 im[k] = p.Imaginary;
@@ -285,11 +285,11 @@ namespace NWaves.Filters.Fda
 
             var centerFreq = 2 * Math.PI * (freq1 + freq2) / 2;
 
-            var f1 = Math.Tan(Math.PI * freq1);
-            var f2 = Math.Tan(Math.PI * freq2);
+            var warpedFreq1 = Math.Tan(Math.PI * freq1);
+            var warpedFreq2 = Math.Tan(Math.PI * freq2);
 
-            var f0 = Math.Sqrt(f1 * f2);
-            var bw = f2 - f1;
+            var f0 = Math.Sqrt(warpedFreq1 * warpedFreq2);
+            var bw = warpedFreq2 - warpedFreq1;
 
             // 1) poles of analog filter (scaled)
 
