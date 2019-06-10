@@ -12,12 +12,13 @@ NWaves is a .NET library for 1D signal processing focused specifically on audio 
 
 - [x] major DSP transforms (FFT, DCT, STFT, Hilbert, Hartley, Mellin, cepstral, Goertzel)
 - [x] signal builders (sine, white/pink/red/Perlin noise, awgn, triangle, sawtooth, square, pulse, ramp, ADSR, wavetable)
-- [x] basic LTI digital filters (FIR, IIR, comb, moving average, pre/de-emphasis, DC removal, RASTA)
+- [x] basic LTI digital filters (moving average, comb, Savitzky-Golay, pre/de-emphasis, DC removal, RASTA)
+- [x] FIR/IIR filtering (offline and online)
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
+- [x] IIR filters (Bessel, Butterworth, Chebyshev I & II, Thiran)
 - [x] basic operations (convolution, cross-correlation, rectification, amplification)
 - [x] block convolution (overlap-add / overlap-save offline and online)
-- [x] FIR/IIR filtering (offline and online)
 - [x] basic filter design & analysis (group delay, zeros/poles, window-sinc, BP, BR, HP from/to LP, combining filters)
 - [x] non-linear filters (median filter, overdrive and distortion effects)
 - [x] windowing functions (Hamming, Blackman, Hann, Gaussian, Kaiser, KBD, triangular, Lanczos, flat-top, Bartlett-Hann)
@@ -323,7 +324,7 @@ filtered = parallel.ApplyTo(signal);
 // audio effects:
 
 var pitchShift = new PitchShiftEffect(signal.SamplingRate, 1.2);
-var wahwah = new WahwahEffect(signal.SamplingRate,, lfoFrequency: 2/*Hz*/);
+var wahwah = new WahwahEffect(signal.SamplingRate, lfoFrequency: 2/*Hz*/);
 
 var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
 
