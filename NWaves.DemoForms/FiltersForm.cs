@@ -87,6 +87,9 @@ namespace NWaves.DemoForms
                 case "Moving average recursive":
                     AnalyzeRecursiveMovingAverageFilter();
                     break;
+                case "Savitzky-Golay":
+                    AnalyzeSavitzkyGolayFilter();
+                    break;
                 case "Pre-emphasis":
                     AnalyzePreemphasisFilter();
                     break;
@@ -101,6 +104,18 @@ namespace NWaves.DemoForms
                     break;
                 case "Butterworth":
                     AnalyzeButterworthFilter();
+                    break;
+                case "Chebyshev-I":
+                    AnalyzeChebyshevIFilter();
+                    break;
+                case "Chebyshev-II":
+                    AnalyzeChebyshevIIFilter();
+                    break;
+                case "Bessel":
+                    AnalyzeBesselFilter();
+                    break;
+                case "Thiran":
+                    AnalyzeThiranFilter();
                     break;
                 case "Custom LP/HP":
                     AnalyzeCustomLpFilter();
@@ -322,7 +337,7 @@ namespace NWaves.DemoForms
                     _filter = new HighPassFilter(freq, q);
                     break;
                 case "BiQuad BP":
-                    _filter = new BandPassFilter(freq, q);
+                    _filter = new Filters.BiQuad.BandPassFilter(freq, q);
                     break;
                 case "BiQuad notch":
                     _filter = new NotchFilter(freq, q);
@@ -393,6 +408,24 @@ namespace NWaves.DemoForms
             filterParamsDataGrid.Rows[0].Cells[1].Value = size;
         }
 
+        private void AnalyzeSavitzkyGolayFilter()
+        {
+            var size = 9;
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                size = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (size - 1).ToString();
+            orderDenominatorTextBox.Text = "0";
+
+            _filter = new SavitzkyGolayFilter(size);
+
+            filterParamsDataGrid.RowCount = 1;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "size";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = size;
+        }
+
         private void AnalyzePreemphasisFilter()
         {
             var pre = 0.95;
@@ -424,13 +457,105 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            _filter = new ButterworthFilter(freq, order);
+            _filter = new Filters.Butterworth.BandPassFilter(freq, 0.4, order);//, -0.1);
 
             filterParamsDataGrid.RowCount = 2;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
             filterParamsDataGrid.Rows[0].Cells[1].Value = order;
             filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
             filterParamsDataGrid.Rows[1].Cells[1].Value = freq;
+        }
+
+        private void AnalyzeChebyshevIFilter()
+        {
+            var order = 6;
+            var freq = 0.2;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                freq = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            _filter = new Filters.ChebyshevI.HighPassFilter(freq, order);
+
+            filterParamsDataGrid.RowCount = 2;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = freq;
+        }
+
+        private void AnalyzeChebyshevIIFilter()
+        {
+            var order = 4;
+            var freq = 0.25;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                freq = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            _filter = new Filters.ChebyshevII.BandStopFilter(freq, 0.4, order);
+
+            filterParamsDataGrid.RowCount = 2;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = freq;
+        }
+
+        private void AnalyzeBesselFilter()
+        {
+            var order = 4;
+            var freq = 0.15;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                freq = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            _filter = new Filters.Bessel.LowPassFilter(freq, order);
+
+            filterParamsDataGrid.RowCount = 2;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = freq;
+        }
+
+        private void AnalyzeThiranFilter()
+        {
+            var order = 10;
+            var delta = 10.3;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                delta = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            _filter = new ThiranFilter(order, order + delta);
+
+            filterParamsDataGrid.RowCount = 2;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "delta";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = delta;
         }
 
         private void AnalyzeCustomLpFilter()

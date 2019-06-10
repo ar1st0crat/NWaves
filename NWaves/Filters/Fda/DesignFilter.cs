@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Numerics;
 using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Transforms;
@@ -143,7 +144,7 @@ namespace NWaves.Filters.Fda
 
         /// <summary>
         /// Method for making LP filter from the linear-phase HP filter
-        /// (no different from LpToHp method)
+        /// (not different from LpToHp method)
         /// </summary>
         /// <param name="filter"></param>
         /// <returns></returns>
@@ -189,5 +190,197 @@ namespace NWaves.Filters.Fda
             var filter2 = LpToHp(FirLpSinc(order, freq2, window));
             return filter1 + filter2;
         }
+
+
+        #region design transfer functions for IIR pole filters (Butterworth, Chebyshev, etc.)
+
+        /// <summary>
+        /// Design TF for low-pass pole filter
+        /// </summary>
+        /// <param name="freq"></param>
+        /// <param name="poles"></param>
+        /// <param name="zeros"></param>
+        /// <returns></returns>
+        public static TransferFunction IirLpTf(double freq, Complex[] poles, Complex[] zeros = null)
+        {
+            var order = poles.Length;
+
+            var re = new double[order];
+            var im = new double[order];
+
+            var warpedFreq = Math.Tan(Math.PI * freq);
+
+            // 1) poles of analog filter (scaled)
+
+            for (var k = 0; k < order; k++)
+            {
+                re[k] = warpedFreq * poles[k].Real;
+                im[k] = warpedFreq * poles[k].Imaginary;
+            }
+
+            // 2) switch to z-domain
+
+            MathUtils.BilinearTransform(re, im);
+
+            // 3) return TF with normalized coefficients
+
+            var tf = new TransferFunction(new ComplexDiscreteSignal(1, Enumerable.Repeat(-1.0, order)),
+                                          new ComplexDiscreteSignal(1, re, im));
+            tf.NormalizeAt(0);
+
+            return tf;
+        }
+
+        /// <summary>
+        /// Design TF for high-pass pole filter
+        /// </summary>
+        /// <param name="freq">Cutoff frequency in range [0, 0.5]</param>
+        /// <param name="poles">Analog prototype poles</param>
+        /// <returns></returns>
+        public static TransferFunction IirHpTf(double freq, Complex[] poles)
+        {
+            var order = poles.Length;
+
+            var re = new double[order];
+            var im = new double[order];
+
+            var warpedFreq = Math.Tan(Math.PI * freq);
+
+            // 1) poles of analog filter (scaled)
+
+            for (var k = 0; k < order; k++)
+            {
+                var p = warpedFreq / poles[k];
+
+                re[k] = p.Real;
+                im[k] = p.Imaginary;
+            }
+
+            // 2) switch to z-domain
+
+            MathUtils.BilinearTransform(re, im);
+
+            // 3) return TF with normalized coefficients
+
+            var tf = new TransferFunction(new ComplexDiscreteSignal(1, Enumerable.Repeat(1.0, order)),
+                                          new ComplexDiscreteSignal(1, re, im));
+            tf.NormalizeAt(Math.PI);
+
+            return tf;
+        }
+
+        /// <summary>
+        /// Design TF for band-pass pole filter
+        /// </summary>
+        /// <param name="freq1">Left cutoff frequency in range [0, 0.5]</param>
+        /// <param name="freq2">Right cutoff frequency in range [0, 0.5]</param>
+        /// <param name="poles">Analog prototype poles</param>
+        /// <returns></returns>
+        public static TransferFunction IirBpTf(double freq1, double freq2, Complex[] poles)
+        {
+            var order = poles.Length;
+
+            var re = new double[order * 2];
+            var im = new double[order * 2];
+
+            var centerFreq = 2 * Math.PI * (freq1 + freq2) / 2;
+
+            var warpedFreq1 = Math.Tan(Math.PI * freq1);
+            var warpedFreq2 = Math.Tan(Math.PI * freq2);
+
+            var f0 = Math.Sqrt(warpedFreq1 * warpedFreq2);
+            var bw = warpedFreq2 - warpedFreq1;
+
+            // 1) poles of analog filter (scaled)
+
+            for (var k = 0; k < order; k++)
+            {
+                var alpha = bw / 2 * poles[k];
+                var beta = Complex.Sqrt(1 - Complex.Pow(f0 / alpha, 2));
+
+                var p1 = alpha * (1 + beta);
+                re[k] = p1.Real;
+                im[k] = p1.Imaginary;
+
+                var p2 = alpha * (1 - beta);
+                re[order + k] = p2.Real;
+                im[order + k] = p2.Imaginary;
+            }
+
+            // 2) switch to z-domain
+
+            MathUtils.BilinearTransform(re, im);
+
+            // 3) return TF with normalized coefficients
+
+            var z = Enumerable.Repeat(-1.0, order).Concat(Enumerable.Repeat(1.0, order)).ToArray();
+
+            var tf = new TransferFunction(new ComplexDiscreteSignal(1, z),
+                                          new ComplexDiscreteSignal(1, re, im));
+            tf.NormalizeAt(centerFreq);
+
+            return tf;
+        }
+
+        /// <summary>
+        /// Design TF for band-reject pole filter
+        /// </summary>
+        /// <param name="freq1">Left cutoff frequency in range [0, 0.5]</param>
+        /// <param name="freq2">Right cutoff frequency in range [0, 0.5]</param>
+        /// <param name="poles">Analog prototype poles</param>
+        /// <returns></returns>
+        public static TransferFunction IirBsTf(double freq1, double freq2, Complex[] poles)
+        {
+            // Calculation of filter coefficients is based on Neil Robertson's post:
+            // https://www.dsprelated.com/showarticle/1131.php
+            
+            var order = poles.Length;
+
+            var re = new double[order * 2];
+            var im = new double[order * 2];
+            var zr = new double[order * 2];
+            var zi = new double[order * 2];
+
+            var centerFreq = 2 * Math.PI * (freq1 + freq2) / 2;
+
+            var f0 = Math.Tan(Math.PI * (freq1 + (freq2 - freq1) / 2));
+            var f1 = Math.Tan(Math.PI * freq1);
+            var f2 = f0 * f0 / f1;
+            var bw = f2 - f1;
+
+            // 1) zeros and poles of analog filter (scaled)
+
+            for (var k = 0; k < order; k++)
+            {
+                var alpha = bw / 2 / poles[k];
+                var beta = Complex.Sqrt(1 - Complex.Pow(f0 / alpha, 2));
+
+                var p1 = alpha * (1 + beta);
+                re[k] = p1.Real;
+                im[k] = p1.Imaginary;
+                zr[k] = Math.Cos(centerFreq);
+                zi[k] = Math.Sin(centerFreq);
+
+                var p2 = alpha * (1 - beta);
+                re[order + k] = p2.Real;
+                im[order + k] = p2.Imaginary;
+                zr[order + k] = Math.Cos(-centerFreq);
+                zi[order + k] = Math.Sin(-centerFreq);
+            }
+
+            // 2) switch to z-domain
+
+            MathUtils.BilinearTransform(re, im);
+
+            // 3) return TF with normalized coefficients
+
+            var tf = new TransferFunction(new ComplexDiscreteSignal(1, zr, zi),
+                                          new ComplexDiscreteSignal(1, re, im));
+            tf.NormalizeAt(0);
+
+            return tf;
+        }
+
+        #endregion
     }
 }

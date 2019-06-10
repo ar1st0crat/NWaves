@@ -52,6 +52,41 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Inverse sinh
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static double Asinh(double x)
+        {
+            return Math.Log(x + Math.Sqrt(x * x + 1));
+        }
+
+        /// <summary>
+        /// Factorial
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static double Factorial(int n)
+        {
+            var f = 1.0;
+
+            for (var i = 2; i <= n; f *= i++) ;
+
+            return f;
+        }
+
+        /// <summary>
+        /// Binomial coefficient
+        /// </summary>
+        /// <param name="k"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static double BinomialCoefficient(int k, int n)
+        {
+            return Factorial(n) / (Factorial(k) * Factorial(n - k));
+        }
+
+        /// <summary>
         /// Diff signal (1st order derivative)
         /// </summary>
         /// <param name="samples"></param>
@@ -89,6 +124,33 @@ namespace NWaves.Utils
 
                 interp[i] = y[left] + (y[right] - y[left]) * (arg[i] - x[left]) / (x[right] - x[left]);
             }
+        }
+
+        /// <summary>
+        /// Bilinear transform (in-place)
+        /// </summary>
+        /// <param name="re"></param>
+        /// <param name="im"></param>
+        public static void BilinearTransform(double[] re, double[] im)
+        {
+            for (var k = 0; k < re.Length; k++)
+            {
+                var den = (1 - re[k]) * (1 - re[k]) + im[k] * im[k];
+                re[k] = (1 - re[k] * re[k] - im[k] * im[k]) / den;
+                im[k] = 2 * im[k] / den;
+            }
+
+            // equivalent to:
+
+            //for (var k = 0; k < re.Length; k++)
+            //{
+            //      var c1 = new Complex(1 + re[k],  im[k]);
+            //      var c2 = new Complex(1 - re[k], -im[k]);
+            //      var c = c1 / c2;
+
+            //      re[k] = c.Real;
+            //      im[k] = c.Imaginary;
+            //}
         }
 
         /// <summary>
