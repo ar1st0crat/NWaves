@@ -1,11 +1,8 @@
 ﻿using NWaves.Filters.Base;
 using NWaves.Filters.Fda;
 
-namespace NWaves.Filters.ChebyshevII
+namespace NWaves.Filters.Elliptic
 {
-    /// <summary>
-    /// Low-pass Chebyshev-II filter
-    /// </summary>
     public class LowPassFilter : IirFilter
     {
         /// <summary>
@@ -14,7 +11,8 @@ namespace NWaves.Filters.ChebyshevII
         /// <param name="freq"></param>
         /// <param name="order"></param>
         /// <param name="ripple"></param>
-        public LowPassFilter(double freq, int order, double ripple = 0.1) : base(MakeTf(freq, order, ripple))
+        public LowPassFilter(double freq, int order, double ripplePass = 0.05, double rippleStop = 0.1) : 
+            base(MakeTf(freq, order, ripplePass, rippleStop))
         {
         }
 
@@ -24,11 +22,11 @@ namespace NWaves.Filters.ChebyshevII
         /// <param name="freq"></param>
         /// <param name="order"></param>
         /// <returns></returns>
-        private static TransferFunction MakeTf(double freq, int order, double ripple = 0.1)
+        private static TransferFunction MakeTf(double freq, int order, double ripplePass = 0.05, double rippleStop = 0.1)
         {
             return DesignFilter.IirLpTf(freq,
-                                        PrototypeChebyshevII.Poles(order, ripple),
-                                        PrototypeChebyshevII.Zeros(order));
+                                        PrototypeElliptic.Poles(order, ripplePass, rippleStop),
+                                        PrototypeElliptic.Zeros(order, ripplePass, rippleStop));
         }
     }
 }

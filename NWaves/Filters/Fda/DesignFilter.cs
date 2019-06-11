@@ -197,16 +197,18 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Design TF for low-pass pole filter
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="poles"></param>
-        /// <param name="zeros"></param>
-        /// <returns></returns>
+        /// <param name="freq">Cutoff frequency in range [0, 0.5]</param>
+        /// <param name="poles">Analog prototype poles</param>
+        /// <param name="zeros">Analog prototype zeros</param>
+        /// <returns>Transfer function</returns>
         public static TransferFunction IirLpTf(double freq, Complex[] poles, Complex[] zeros = null)
         {
             var order = poles.Length;
 
-            var re = new double[order];
-            var im = new double[order];
+            var pre = new double[order];
+            var pim = new double[order];
+            var zre = new double[order];
+            var zim = new double[order];
 
             var warpedFreq = Math.Tan(Math.PI * freq);
 
@@ -214,18 +216,43 @@ namespace NWaves.Filters.Fda
 
             for (var k = 0; k < order; k++)
             {
-                re[k] = warpedFreq * poles[k].Real;
-                im[k] = warpedFreq * poles[k].Imaginary;
+                var p = warpedFreq * poles[k];
+                pre[k] = p.Real;
+                pim[k] = p.Imaginary;
             }
 
             // 2) switch to z-domain
 
-            MathUtils.BilinearTransform(re, im);
+            MathUtils.BilinearTransform(pre, pim);
+
+
+            // === if zeros are also specified do the same steps 1-2 with zeros ===
+
+            if (zeros != null)
+            {
+                for (var k = 0; k < order; k++)
+                {
+                    var z = warpedFreq * zeros[k];
+                    zre[k] = z.Real;
+                    zim[k] = z.Imaginary;
+                }
+
+                MathUtils.BilinearTransform(zre, zim);
+            }
+            // otherwise just set all to -1
+            else
+            {
+                zre = Enumerable.Repeat(-1.0, order).ToArray();
+            }
+
+            // ===
+
+
 
             // 3) return TF with normalized coefficients
 
-            var tf = new TransferFunction(new ComplexDiscreteSignal(1, Enumerable.Repeat(-1.0, order)),
-                                          new ComplexDiscreteSignal(1, re, im));
+            var tf = new TransferFunction(new ComplexDiscreteSignal(1, zre, zim),
+                                          new ComplexDiscreteSignal(1, pre, pim));
             tf.NormalizeAt(0);
 
             return tf;
@@ -236,13 +263,16 @@ namespace NWaves.Filters.Fda
         /// </summary>
         /// <param name="freq">Cutoff frequency in range [0, 0.5]</param>
         /// <param name="poles">Analog prototype poles</param>
-        /// <returns></returns>
-        public static TransferFunction IirHpTf(double freq, Complex[] poles)
+        /// <param name="zeros">Analog prototype zeros</param>
+        /// <returns>Transfer function</returns>
+        public static TransferFunction IirHpTf(double freq, Complex[] poles, Complex[] zeros = null)
         {
             var order = poles.Length;
 
-            var re = new double[order];
-            var im = new double[order];
+            var pre = new double[order];
+            var pim = new double[order];
+            var zre = new double[order];
+            var zim = new double[order];
 
             var warpedFreq = Math.Tan(Math.PI * freq);
 
@@ -251,19 +281,41 @@ namespace NWaves.Filters.Fda
             for (var k = 0; k < order; k++)
             {
                 var p = warpedFreq / poles[k];
-
-                re[k] = p.Real;
-                im[k] = p.Imaginary;
+                pre[k] = p.Real;
+                pim[k] = p.Imaginary;
             }
 
             // 2) switch to z-domain
 
-            MathUtils.BilinearTransform(re, im);
+            MathUtils.BilinearTransform(pre, pim);
+
+
+            // === if zeros are also specified do the same steps 1-2 with zeros ===
+
+            if (zeros != null)
+            {
+                for (var k = 0; k < order; k++)
+                {
+                    var z = warpedFreq / zeros[k];
+                    zre[k] = z.Real;
+                    zim[k] = z.Imaginary;
+                }
+
+                MathUtils.BilinearTransform(zre, zim);
+            }
+            // otherwise just set all to -1
+            else
+            {
+                zre = Enumerable.Repeat(1.0, order).ToArray();
+            }
+
+            // ===
+
 
             // 3) return TF with normalized coefficients
 
-            var tf = new TransferFunction(new ComplexDiscreteSignal(1, Enumerable.Repeat(1.0, order)),
-                                          new ComplexDiscreteSignal(1, re, im));
+            var tf = new TransferFunction(new ComplexDiscreteSignal(1, zre, zim),
+                                          new ComplexDiscreteSignal(1, pre, pim));
             tf.NormalizeAt(Math.PI);
 
             return tf;
@@ -275,13 +327,16 @@ namespace NWaves.Filters.Fda
         /// <param name="freq1">Left cutoff frequency in range [0, 0.5]</param>
         /// <param name="freq2">Right cutoff frequency in range [0, 0.5]</param>
         /// <param name="poles">Analog prototype poles</param>
-        /// <returns></returns>
-        public static TransferFunction IirBpTf(double freq1, double freq2, Complex[] poles)
+        /// <param name="zeros">Analog prototype zeros</param>
+        /// <returns>Transfer function</returns>
+        public static TransferFunction IirBpTf(double freq1, double freq2, Complex[] poles, Complex[] zeros = null)
         {
             var order = poles.Length;
 
-            var re = new double[order * 2];
-            var im = new double[order * 2];
+            var pre = new double[order * 2];
+            var pim = new double[order * 2];
+            var zre = new double[order * 2];
+            var zim = new double[order * 2];
 
             var centerFreq = 2 * Math.PI * (freq1 + freq2) / 2;
 
@@ -299,24 +354,52 @@ namespace NWaves.Filters.Fda
                 var beta = Complex.Sqrt(1 - Complex.Pow(f0 / alpha, 2));
 
                 var p1 = alpha * (1 + beta);
-                re[k] = p1.Real;
-                im[k] = p1.Imaginary;
+                pre[k] = p1.Real;
+                pim[k] = p1.Imaginary;
 
                 var p2 = alpha * (1 - beta);
-                re[order + k] = p2.Real;
-                im[order + k] = p2.Imaginary;
+                pre[order + k] = p2.Real;
+                pim[order + k] = p2.Imaginary;
             }
 
             // 2) switch to z-domain
 
-            MathUtils.BilinearTransform(re, im);
+            MathUtils.BilinearTransform(pre, pim);
+
+
+            // === if zeros are also specified do the same steps 1-2 with zeros ===
+
+            if (zeros != null)
+            {
+                for (var k = 0; k < order; k++)
+                {
+                    var alpha = bw / 2 * zeros[k];
+                    var beta = Complex.Sqrt(1 - Complex.Pow(f0 / alpha, 2));
+
+                    var z1 = alpha * (1 + beta);
+                    zre[k] = z1.Real;
+                    zim[k] = z1.Imaginary;
+
+                    var z2 = alpha * (1 - beta);
+                    zre[order + k] = z2.Real;
+                    zim[order + k] = z2.Imaginary;
+                }
+
+                MathUtils.BilinearTransform(zre, zim);
+            }
+            // otherwise just set all to -1
+            else
+            {
+                zre = Enumerable.Repeat(-1.0, order).Concat(Enumerable.Repeat(1.0, order)).ToArray();
+            }
+
+            // ===
+            
 
             // 3) return TF with normalized coefficients
 
-            var z = Enumerable.Repeat(-1.0, order).Concat(Enumerable.Repeat(1.0, order)).ToArray();
-
-            var tf = new TransferFunction(new ComplexDiscreteSignal(1, z),
-                                          new ComplexDiscreteSignal(1, re, im));
+            var tf = new TransferFunction(new ComplexDiscreteSignal(1, zre, zim),
+                                          new ComplexDiscreteSignal(1, pre, pim));
             tf.NormalizeAt(centerFreq);
 
             return tf;
@@ -328,18 +411,19 @@ namespace NWaves.Filters.Fda
         /// <param name="freq1">Left cutoff frequency in range [0, 0.5]</param>
         /// <param name="freq2">Right cutoff frequency in range [0, 0.5]</param>
         /// <param name="poles">Analog prototype poles</param>
-        /// <returns></returns>
-        public static TransferFunction IirBsTf(double freq1, double freq2, Complex[] poles)
+        /// <param name="zeros">Analog prototype zeros</param>
+        /// <returns>Transfer function</returns>
+        public static TransferFunction IirBsTf(double freq1, double freq2, Complex[] poles, Complex[] zeros = null)
         {
             // Calculation of filter coefficients is based on Neil Robertson's post:
             // https://www.dsprelated.com/showarticle/1131.php
             
             var order = poles.Length;
 
-            var re = new double[order * 2];
-            var im = new double[order * 2];
-            var zr = new double[order * 2];
-            var zi = new double[order * 2];
+            var pre = new double[order * 2];
+            var pim = new double[order * 2];
+            var zre = new double[order * 2];
+            var zim = new double[order * 2];
 
             var centerFreq = 2 * Math.PI * (freq1 + freq2) / 2;
 
@@ -347,6 +431,7 @@ namespace NWaves.Filters.Fda
             var f1 = Math.Tan(Math.PI * freq1);
             var f2 = f0 * f0 / f1;
             var bw = f2 - f1;
+
 
             // 1) zeros and poles of analog filter (scaled)
 
@@ -356,26 +441,52 @@ namespace NWaves.Filters.Fda
                 var beta = Complex.Sqrt(1 - Complex.Pow(f0 / alpha, 2));
 
                 var p1 = alpha * (1 + beta);
-                re[k] = p1.Real;
-                im[k] = p1.Imaginary;
-                zr[k] = Math.Cos(centerFreq);
-                zi[k] = Math.Sin(centerFreq);
+                pre[k] = p1.Real;
+                pim[k] = p1.Imaginary;
 
                 var p2 = alpha * (1 - beta);
-                re[order + k] = p2.Real;
-                im[order + k] = p2.Imaginary;
-                zr[order + k] = Math.Cos(-centerFreq);
-                zi[order + k] = Math.Sin(-centerFreq);
+                pre[order + k] = p2.Real;
+                pim[order + k] = p2.Imaginary;
             }
+
+
+            if (zeros != null)
+            {
+                for (var k = 0; k < order; k++)
+                {
+                    var alpha = bw / 2 / zeros[k];
+                    var beta = Complex.Sqrt(1 - Complex.Pow(f0 / alpha, 2));
+
+                    var z1 = alpha * (1 + beta);
+                    zre[k] = z1.Real;
+                    zim[k] = z1.Imaginary;
+
+                    var z2 = alpha * (1 - beta);
+                    zre[order + k] = z2.Real;
+                    zim[order + k] = z2.Imaginary;
+                }
+            }
+            else
+            {
+                for (var k = 0; k < order; k++)
+                {
+                    zre[k] = Math.Cos(centerFreq);
+                    zim[k] = Math.Sin(centerFreq);
+                    zre[order + k] = Math.Cos(-centerFreq);
+                    zim[order + k] = Math.Sin(-centerFreq);
+                }
+            }
+
 
             // 2) switch to z-domain
 
-            MathUtils.BilinearTransform(re, im);
+            MathUtils.BilinearTransform(pre, pim);
+            MathUtils.BilinearTransform(zre, zim);
 
             // 3) return TF with normalized coefficients
 
-            var tf = new TransferFunction(new ComplexDiscreteSignal(1, zr, zi),
-                                          new ComplexDiscreteSignal(1, re, im));
+            var tf = new TransferFunction(new ComplexDiscreteSignal(1, zre, zim),
+                                          new ComplexDiscreteSignal(1, pre, pim));
             tf.NormalizeAt(0);
 
             return tf;

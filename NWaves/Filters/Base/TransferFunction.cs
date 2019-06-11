@@ -74,6 +74,11 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
+        /// Gain ('k' in 'zpk' notation)
+        /// </summary>
+        public double Gain { get; set; } = 1;
+
+        /// <summary>
         /// Method for converting zeros(poles) to TF numerator(denominator)
         /// </summary>
         /// <param name="zp"></param>
