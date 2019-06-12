@@ -1,12 +1,26 @@
-﻿using System;
+﻿using NWaves.Utils;
+using System;
 using System.Numerics;
 
 namespace NWaves.Filters.Elliptic
 {
+    /// <summary>
+    /// Orfanidis, S. J. (2007). Lecture notes on elliptic filter design.
+    /// URL: http://www.ece.rutgers.edu/~orfanidi/ece521/notes.pdf
+    /// </summary>
     public static class PrototypeElliptic
     {
-        public static Complex[] Poles(int order, double ripplePass = 0.005, double rippleStop = 0.05)
+        /// <summary>
+        /// Poles 
+        /// </summary>
+        /// <param name="order"></param>
+        /// <param name="ripplePass"></param>
+        /// <param name="rippleStop"></param>
+        /// <returns></returns>
+        public static Complex[] Poles(int order, double ripplePass = 1, double rippleStop = 20)
         {
+            Guard.AgainstInvalidRange(ripplePass, rippleStop, "ripple in passband", "ripple in stopband");
+
             var eps_p = Math.Sqrt(Math.Pow(10, ripplePass / 10) - 1);
             var eps_s = Math.Sqrt(Math.Pow(10, rippleStop / 10) - 1);
 
@@ -39,8 +53,10 @@ namespace NWaves.Filters.Elliptic
             return poles;
         }
 
-        public static Complex[] Zeros(int order, double ripplePass = 0.005, double rippleStop = 0.05)
+        public static Complex[] Zeros(int order, double ripplePass = 1, double rippleStop = 20)
         {
+            Guard.AgainstInvalidRange(ripplePass, rippleStop, "ripple in passband", "ripple in stopband");
+
             var eps_p = Math.Sqrt(Math.Pow(10, ripplePass / 10) - 1);
             var eps_s = Math.Sqrt(Math.Pow(10, rippleStop / 10) - 1);
 
@@ -56,7 +72,6 @@ namespace NWaves.Filters.Elliptic
             }
             kp = Complex.Pow(k1 * k1, order / 2) * Complex.Pow(kp, 4);
 
-            //var k = Math.Sqrt(1 - Complex.Abs(kp * kp));
             var k = Math.Sqrt(1 - Complex.Abs(kp) * Complex.Abs(kp));
             var k_landen = Landen(k);
 
@@ -66,12 +81,18 @@ namespace NWaves.Filters.Elliptic
             {
                 var w = (2 * i + 1.0) / order;
 
-                zeros[i] = -1 / (k * Cde(w, k_landen));
+                zeros[i] = new Complex(0, -1 / (k * Cde(w, k_landen)).Real);
             }
 
             return zeros;
         }
 
+        /// <summary>
+        /// Landen sequence
+        /// </summary>
+        /// <param name="k"></param>
+        /// <param name="iterCount"></param>
+        /// <returns></returns>
         public static double[] Landen(double k, int iterCount = 5)
         {
             var coeffs = new double[iterCount];
@@ -86,43 +107,59 @@ namespace NWaves.Filters.Elliptic
             return coeffs;
         }
 
+        /// <summary>
+        /// cde function
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="landen"></param>
+        /// <returns></returns>
         public static Complex Cde(Complex x, double[] landen)
         {
-            var winv = 1 / Complex.Cos(x * Math.PI / 2);
+            var invX = 1 / Complex.Cos(x * Math.PI / 2);
 
             for (var i = landen.Length - 1; i >= 0; i--)
             {
-                winv = 1 / (1 + landen[i]) * (winv + landen[i] / winv);
+                invX = 1 / (1 + landen[i]) * (invX + landen[i] / invX);
             }
 
-            return 1 / winv;
+            return 1 / invX;
         }
 
+        /// <summary>
+        /// sne function
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="landen"></param>
+        /// <returns></returns>
         public static Complex Sne(Complex x, double[] landen)
         {
-            var winv = 1 / Complex.Sin(x * Math.PI / 2);
+            var invX = 1 / Complex.Sin(x * Math.PI / 2);
 
             for (var i = landen.Length - 1; i >= 0; i--)
             {
-                winv = 1 / (1 + landen[i]) * (winv + landen[i] / winv);
+                invX = 1 / (1 + landen[i]) * (invX + landen[i] / invX);
             }
 
-            return 1 / winv;
+            return 1 / invX;
         }
 
-        public static Complex Asne(Complex x, double k)
+        /// <summary>
+        /// Inverse sne function
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="k"></param>
+        /// <param name="iterCount"></param>
+        /// <returns></returns>
+        public static Complex Asne(Complex x, double k, int iterCount = 5)
         {
-            Complex xprev = double.NaN;
-
-            while (Complex.Abs(x - xprev) > 1e-5)
-            //for (var i = 1; i <= 5; i++)
+            for (var i = 1; i <= iterCount; i++)
             {
-                xprev = x;
-                var kprev = k;
+                var prevX = x;
+                var prevK = k;
 
                 k = Math.Pow(k / (1 + Math.Sqrt(1 - k * k)), 2);
 
-                x = 2 * x / ((1 + k) * (1 + Complex.Sqrt(1 - kprev * kprev * x * x)));
+                x = 2 * x / ((1 + k) * (1 + Complex.Sqrt(1 - prevK * prevK * x * x)));
             }
 
             return 2 * Complex.Asin(x) / Math.PI;

@@ -194,6 +194,7 @@ namespace NWaves.Filters.Fda
 
         #region design transfer functions for IIR pole filters (Butterworth, Chebyshev, etc.)
 
+
         /// <summary>
         /// Design TF for low-pass pole filter
         /// </summary>
@@ -203,18 +204,14 @@ namespace NWaves.Filters.Fda
         /// <returns>Transfer function</returns>
         public static TransferFunction IirLpTf(double freq, Complex[] poles, Complex[] zeros = null)
         {
-            var order = poles.Length;
-
-            var pre = new double[order];
-            var pim = new double[order];
-            var zre = new double[order];
-            var zim = new double[order];
-
+            var pre = new double[poles.Length];
+            var pim = new double[poles.Length];
+            
             var warpedFreq = Math.Tan(Math.PI * freq);
 
             // 1) poles of analog filter (scaled)
 
-            for (var k = 0; k < order; k++)
+            for (var k = 0; k < poles.Length; k++)
             {
                 var p = warpedFreq * poles[k];
                 pre[k] = p.Real;
@@ -228,9 +225,14 @@ namespace NWaves.Filters.Fda
 
             // === if zeros are also specified do the same steps 1-2 with zeros ===
 
+            double[] zre, zim;
+
             if (zeros != null)
             {
-                for (var k = 0; k < order; k++)
+                zre = new double[zeros.Length];
+                zim = new double[zeros.Length];
+
+                for (var k = 0; k < zeros.Length; k++)
                 {
                     var z = warpedFreq * zeros[k];
                     zre[k] = z.Real;
@@ -239,10 +241,11 @@ namespace NWaves.Filters.Fda
 
                 MathUtils.BilinearTransform(zre, zim);
             }
-            // otherwise just set all to -1
+            // otherwise create zeros (same amount as poles) and set them all to -1
             else
             {
-                zre = Enumerable.Repeat(-1.0, order).ToArray();
+                zre = Enumerable.Repeat(-1.0, poles.Length).ToArray();
+                zim = new double[poles.Length];
             }
 
             // ===
@@ -267,18 +270,14 @@ namespace NWaves.Filters.Fda
         /// <returns>Transfer function</returns>
         public static TransferFunction IirHpTf(double freq, Complex[] poles, Complex[] zeros = null)
         {
-            var order = poles.Length;
-
-            var pre = new double[order];
-            var pim = new double[order];
-            var zre = new double[order];
-            var zim = new double[order];
+            var pre = new double[poles.Length];
+            var pim = new double[poles.Length];
 
             var warpedFreq = Math.Tan(Math.PI * freq);
 
             // 1) poles of analog filter (scaled)
 
-            for (var k = 0; k < order; k++)
+            for (var k = 0; k < poles.Length; k++)
             {
                 var p = warpedFreq / poles[k];
                 pre[k] = p.Real;
@@ -292,9 +291,14 @@ namespace NWaves.Filters.Fda
 
             // === if zeros are also specified do the same steps 1-2 with zeros ===
 
+            double[] zre, zim;
+
             if (zeros != null)
             {
-                for (var k = 0; k < order; k++)
+                zre = new double[zeros.Length];
+                zim = new double[zeros.Length];
+
+                for (var k = 0; k < zeros.Length; k++)
                 {
                     var z = warpedFreq / zeros[k];
                     zre[k] = z.Real;
@@ -303,10 +307,11 @@ namespace NWaves.Filters.Fda
 
                 MathUtils.BilinearTransform(zre, zim);
             }
-            // otherwise just set all to -1
+            // otherwise create zeros (same amount as poles) and set them all to -1
             else
             {
-                zre = Enumerable.Repeat(1.0, order).ToArray();
+                zre = Enumerable.Repeat(1.0, poles.Length).ToArray();
+                zim = new double[poles.Length];
             }
 
             // ===
@@ -331,12 +336,10 @@ namespace NWaves.Filters.Fda
         /// <returns>Transfer function</returns>
         public static TransferFunction IirBpTf(double freq1, double freq2, Complex[] poles, Complex[] zeros = null)
         {
-            var order = poles.Length;
+            Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
 
-            var pre = new double[order * 2];
-            var pim = new double[order * 2];
-            var zre = new double[order * 2];
-            var zim = new double[order * 2];
+            var pre = new double[poles.Length * 2];
+            var pim = new double[poles.Length * 2];
 
             var centerFreq = 2 * Math.PI * (freq1 + freq2) / 2;
 
@@ -348,7 +351,7 @@ namespace NWaves.Filters.Fda
 
             // 1) poles of analog filter (scaled)
 
-            for (var k = 0; k < order; k++)
+            for (var k = 0; k < poles.Length; k++)
             {
                 var alpha = bw / 2 * poles[k];
                 var beta = Complex.Sqrt(1 - Complex.Pow(f0 / alpha, 2));
@@ -358,8 +361,8 @@ namespace NWaves.Filters.Fda
                 pim[k] = p1.Imaginary;
 
                 var p2 = alpha * (1 - beta);
-                pre[order + k] = p2.Real;
-                pim[order + k] = p2.Imaginary;
+                pre[poles.Length + k] = p2.Real;
+                pim[poles.Length + k] = p2.Imaginary;
             }
 
             // 2) switch to z-domain
@@ -369,9 +372,14 @@ namespace NWaves.Filters.Fda
 
             // === if zeros are also specified do the same steps 1-2 with zeros ===
 
+            double[] zre, zim;
+
             if (zeros != null)
             {
-                for (var k = 0; k < order; k++)
+                zre = new double[zeros.Length];
+                zim = new double[zeros.Length];
+
+                for (var k = 0; k < zeros.Length; k++)
                 {
                     var alpha = bw / 2 * zeros[k];
                     var beta = Complex.Sqrt(1 - Complex.Pow(f0 / alpha, 2));
@@ -381,16 +389,19 @@ namespace NWaves.Filters.Fda
                     zim[k] = z1.Imaginary;
 
                     var z2 = alpha * (1 - beta);
-                    zre[order + k] = z2.Real;
-                    zim[order + k] = z2.Imaginary;
+                    zre[zeros.Length + k] = z2.Real;
+                    zim[zeros.Length + k] = z2.Imaginary;
                 }
 
                 MathUtils.BilinearTransform(zre, zim);
             }
-            // otherwise just set all to -1
+            // otherwise create zeros (same amount as poles) and set them all to [-1, -1, -1, ..., 1, 1, 1]
             else
             {
-                zre = Enumerable.Repeat(-1.0, order).Concat(Enumerable.Repeat(1.0, order)).ToArray();
+                zre = Enumerable.Repeat(-1.0, poles.Length)
+                                .Concat(Enumerable.Repeat(1.0, poles.Length))
+                                .ToArray();
+                zim = new double[poles.Length * 2];
             }
 
             // ===
@@ -415,16 +426,14 @@ namespace NWaves.Filters.Fda
         /// <returns>Transfer function</returns>
         public static TransferFunction IirBsTf(double freq1, double freq2, Complex[] poles, Complex[] zeros = null)
         {
+            Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
+
             // Calculation of filter coefficients is based on Neil Robertson's post:
             // https://www.dsprelated.com/showarticle/1131.php
+
+            var pre = new double[poles.Length * 2];
+            var pim = new double[poles.Length * 2];
             
-            var order = poles.Length;
-
-            var pre = new double[order * 2];
-            var pim = new double[order * 2];
-            var zre = new double[order * 2];
-            var zim = new double[order * 2];
-
             var centerFreq = 2 * Math.PI * (freq1 + freq2) / 2;
 
             var f0 = Math.Tan(Math.PI * (freq1 + (freq2 - freq1) / 2));
@@ -433,9 +442,9 @@ namespace NWaves.Filters.Fda
             var bw = f2 - f1;
 
 
-            // 1) zeros and poles of analog filter (scaled)
+            // 1) poles and zeros of analog filter (scaled)
 
-            for (var k = 0; k < order; k++)
+            for (var k = 0; k < poles.Length; k++)
             {
                 var alpha = bw / 2 / poles[k];
                 var beta = Complex.Sqrt(1 - Complex.Pow(f0 / alpha, 2));
@@ -445,14 +454,25 @@ namespace NWaves.Filters.Fda
                 pim[k] = p1.Imaginary;
 
                 var p2 = alpha * (1 - beta);
-                pre[order + k] = p2.Real;
-                pim[order + k] = p2.Imaginary;
+                pre[poles.Length + k] = p2.Real;
+                pim[poles.Length + k] = p2.Imaginary;
             }
 
+            // 2) switch to z-domain
+
+            MathUtils.BilinearTransform(pre, pim);
+
+
+            // === if zeros are also specified do the same steps 1-2 with zeros ===
+
+            double[] zre, zim;
 
             if (zeros != null)
             {
-                for (var k = 0; k < order; k++)
+                zre = new double[zeros.Length * 2];
+                zim = new double[zeros.Length * 2];
+
+                for (var k = 0; k < zeros.Length; k++)
                 {
                     var alpha = bw / 2 / zeros[k];
                     var beta = Complex.Sqrt(1 - Complex.Pow(f0 / alpha, 2));
@@ -462,26 +482,29 @@ namespace NWaves.Filters.Fda
                     zim[k] = z1.Imaginary;
 
                     var z2 = alpha * (1 - beta);
-                    zre[order + k] = z2.Real;
-                    zim[order + k] = z2.Imaginary;
+                    zre[zeros.Length + k] = z2.Real;
+                    zim[zeros.Length + k] = z2.Imaginary;
                 }
+
+                MathUtils.BilinearTransform(zre, zim);
             }
+            // otherwise create zeros (same amount as poles) and set the following values:
             else
             {
-                for (var k = 0; k < order; k++)
+                zre = new double[poles.Length * 2];
+                zim = new double[poles.Length * 2];
+
+                for (var k = 0; k < poles.Length; k++)
                 {
                     zre[k] = Math.Cos(centerFreq);
                     zim[k] = Math.Sin(centerFreq);
-                    zre[order + k] = Math.Cos(-centerFreq);
-                    zim[order + k] = Math.Sin(-centerFreq);
+                    zre[poles.Length + k] = Math.Cos(-centerFreq);
+                    zim[poles.Length + k] = Math.Sin(-centerFreq);
                 }
             }
 
+            // ===
 
-            // 2) switch to z-domain
-
-            MathUtils.BilinearTransform(pre, pim);
-            MathUtils.BilinearTransform(zre, zim);
 
             // 3) return TF with normalized coefficients
 

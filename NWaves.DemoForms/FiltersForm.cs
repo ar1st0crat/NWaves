@@ -105,6 +105,9 @@ namespace NWaves.DemoForms
                 case "Butterworth":
                     AnalyzeButterworthFilter();
                     break;
+                case "Elliptic":
+                    AnalyzeEllipticFilter();
+                    break;
                 case "Chebyshev-I":
                     AnalyzeChebyshevIFilter();
                     break;
@@ -127,7 +130,7 @@ namespace NWaves.DemoForms
             
             magnitudeResponsePanel.Line = _filter.FrequencyResponse().Magnitude.ToFloats();
             UpdatePhaseResponse();
-            
+
             if (_filter.Tf.Numerator.Length + _filter.Tf.Denominator.Length < 50)
             {
                 poleZeroPanel.Zeros = _filter.Tf.Zeros;
@@ -458,6 +461,29 @@ namespace NWaves.DemoForms
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
             _filter = new Filters.Butterworth.BandPassFilter(freq, 0.4, order);//, -0.1);
+
+            filterParamsDataGrid.RowCount = 2;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "freq";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = freq;
+        }
+
+        private void AnalyzeEllipticFilter()
+        {
+            var order = 4;
+            var freq = 0.15;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                freq = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            _filter = new Filters.Elliptic.HighPassFilter(freq, order);
 
             filterParamsDataGrid.RowCount = 2;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";

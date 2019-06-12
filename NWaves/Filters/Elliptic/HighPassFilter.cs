@@ -3,7 +3,7 @@ using NWaves.Filters.Fda;
 
 namespace NWaves.Filters.Elliptic
 {
-    public class LowPassFilter : IirFilter
+    public class HighPassFilter : IirFilter
     {
         /// <summary>
         /// Constructor
@@ -12,7 +12,7 @@ namespace NWaves.Filters.Elliptic
         /// <param name="order"></param>
         /// <param name="ripplePass"></param>
         /// <param name="rippleStop"></param>
-        public LowPassFilter(double freq, int order, double ripplePass = 1, double rippleStop = 20) : 
+        public HighPassFilter(double freq, int order, double ripplePass = 1, double rippleStop = 20) :
             base(MakeTf(freq, order, ripplePass, rippleStop))
         {
         }
@@ -27,7 +27,7 @@ namespace NWaves.Filters.Elliptic
         /// <returns></returns>
         private static TransferFunction MakeTf(double freq, int order, double ripplePass = 1, double rippleStop = 20)
         {
-            return DesignFilter.IirLpTf(freq,
+            return DesignFilter.IirHpTf(freq,
                                         PrototypeElliptic.Poles(order, ripplePass, rippleStop),
                                         PrototypeElliptic.Zeros(order, ripplePass, rippleStop));
         }
