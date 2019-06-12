@@ -376,8 +376,8 @@ namespace NWaves.Filters.Fda
 
             if (zeros != null)
             {
-                zre = new double[zeros.Length];
-                zim = new double[zeros.Length];
+                zre = new double[zeros.Length * 2];
+                zim = new double[zeros.Length * 2];
 
                 for (var k = 0; k < zeros.Length; k++)
                 {
