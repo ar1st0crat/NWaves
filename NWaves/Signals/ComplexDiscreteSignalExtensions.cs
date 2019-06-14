@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
 using NWaves.Utils;
 
 namespace NWaves.Signals
@@ -323,6 +325,19 @@ namespace NWaves.Signals
             }
 
             return magnitude;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public static IEnumerable<Complex> ToComplexNumbers(this ComplexDiscreteSignal signal)
+        {
+            for (var i = 0; i < signal.Length; i++)
+            {
+                yield return new Complex(signal.Real[i], signal.Imag[i]);
+            }
         }
     }
 }
