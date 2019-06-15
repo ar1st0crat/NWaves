@@ -522,11 +522,21 @@ namespace NWaves.Filters.Fda
         #region second order sections
 
         /// <summary>
+        /// Second-order sections to zpk.
+        /// </summary>
+        /// <param name="sos"></param>
+        /// <returns></returns>
+        public static TransferFunction SosToTf(TransferFunction[] sos)
+        {
+            return sos.Aggregate((tf, s) => tf * s);
+        }
+
+        /// <summary>
         /// Zpk to second-order sections.
         /// </summary>
         /// <param name="tf">Transfer function</param>
         /// <returns>Array of SOS transfer functions</returns>
-        public static TransferFunction[] ZpToSos(TransferFunction tf)
+        public static TransferFunction[] TfToSos(TransferFunction tf)
         {
             var zeros = tf.Zeros.ToComplexNumbers().ToList();
             var poles = tf.Poles.ToComplexNumbers().ToList();
@@ -554,7 +564,9 @@ namespace NWaves.Filters.Fda
 
             var sos = new TransferFunction[sosCount];
 
-            for (var i = 0; i < sosCount; i++)
+            // reverse order of sections
+
+            for (var i = sosCount - 1; i >= 0; i--)
             {
                 Complex z1, z2, p1, p2;
 
@@ -628,9 +640,7 @@ namespace NWaves.Filters.Fda
                 var zs = new ComplexDiscreteSignal(1, new[] { z1.Real, z2.Real }, new[] { z1.Imaginary, z2.Imaginary });
                 var ps = new ComplexDiscreteSignal(1, new[] { p1.Real, p2.Real }, new[] { p1.Imaginary, p2.Imaginary });
 
-                // reverse order of sections
-
-                sos[sosCount - 1- i] = new TransferFunction(zs, ps) { Gain = gains[i] };
+                sos[i] = new TransferFunction(zs, ps, gains[i]);
             }
 
             return sos;

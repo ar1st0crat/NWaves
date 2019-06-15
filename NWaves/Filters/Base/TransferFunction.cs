@@ -39,8 +39,10 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="zeros">Zeros</param>
         /// <param name="poles">Poles</param>
-        public TransferFunction(ComplexDiscreteSignal zeros, ComplexDiscreteSignal poles)
+        /// <param name="gain"></param>
+        public TransferFunction(ComplexDiscreteSignal zeros, ComplexDiscreteSignal poles, double gain = 1.0)
         {
+            Gain = gain;
             Zeros = zeros;
             Poles = poles;
         }
@@ -51,11 +53,19 @@ namespace NWaves.Filters.Base
         private ComplexDiscreteSignal _zeros;
         public ComplexDiscreteSignal Zeros
         {
-            get { return _zeros ?? TfToZp(Numerator); }
+            get
+            {
+                return _zeros ?? TfToZp(Numerator);
+            }
             private set
             {
                 _zeros = value;
                 Numerator = _zeros != null ? ZpToTf(_zeros) : new[] { 1.0 };
+
+                for (var i = 0; i < Numerator.Length; i++)
+                {
+                    Numerator[i] *= Gain;
+                }
             }
         }
 
@@ -65,7 +75,10 @@ namespace NWaves.Filters.Base
         private ComplexDiscreteSignal _poles;
         public ComplexDiscreteSignal Poles
         {
-            get { return _poles ?? TfToZp(Denominator); }
+            get
+            {
+                return _poles ?? TfToZp(Denominator);
+            }
             private set
             {
                 _poles = value;
@@ -76,7 +89,7 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Gain ('k' in 'zpk' notation)
         /// </summary>
-        public double Gain { get; set; } = 1;
+        public double Gain { get; private set; } = 1.0;
 
         /// <summary>
         /// Method for converting zeros(poles) to TF numerator(denominator)

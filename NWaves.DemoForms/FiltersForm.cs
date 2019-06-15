@@ -540,23 +540,6 @@ namespace NWaves.DemoForms
 
         private void AnalyzeBesselFilter()
         {
-            // TODO: move it to tests
-
-            //var zs = new ComplexDiscreteSignal(1, new[] { 1, 0.5, -0.3, 0.2, 0.5, 0.2 }, new[] { 0, 0.2, 0, -0.9, -0.2, 0.9 });
-            //var ps = new ComplexDiscreteSignal(1, new[] { 1, 0.2, 0.5, -0.9, 0.6, 0.1, -0.9 }, new[] { 0, 0, 0, 0.2, 0, 0, -0.2 });
-
-            //var tfs = DesignFilter.ZpToSos(new TransferFunction(zs, ps));
-
-            //var s = "";
-
-            //for (var i = 0; i < tfs.Length; i++)
-            //{
-            //    s += $"{tfs[i].Numerator[0]} {tfs[i].Numerator[1]} {tfs[i].Numerator[2]}\n";
-            //    s += $"{tfs[i].Denominator[0]} {tfs[i].Denominator[1]} {tfs[i].Denominator[2]}\n\n";
-            //}
-
-            //MessageBox.Show(s);
-
             var order = 4;
             var freq = 0.15;
 
