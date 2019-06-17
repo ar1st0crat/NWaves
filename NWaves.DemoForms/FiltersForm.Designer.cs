@@ -75,6 +75,8 @@ namespace NWaves.DemoForms
             this.poleZeroPanel = new NWaves.DemoForms.UserControls.PoleZeroPlot();
             this.phaseResponsePanel = new NWaves.DemoForms.UserControls.LinePlot();
             this.magnitudeResponsePanel = new NWaves.DemoForms.UserControls.LinePlot();
+            this.label9 = new System.Windows.Forms.Label();
+            this.zpIterationsTextBox = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.filterParamsDataGrid)).BeginInit();
             this.SuspendLayout();
@@ -220,7 +222,7 @@ namespace NWaves.DemoForms
             // 
             // analyzeFilterButton
             // 
-            this.analyzeFilterButton.Location = new System.Drawing.Point(13, 322);
+            this.analyzeFilterButton.Location = new System.Drawing.Point(13, 338);
             this.analyzeFilterButton.Name = "analyzeFilterButton";
             this.analyzeFilterButton.Size = new System.Drawing.Size(189, 52);
             this.analyzeFilterButton.TabIndex = 6;
@@ -279,7 +281,7 @@ namespace NWaves.DemoForms
             this.filterParamsDataGrid.Location = new System.Drawing.Point(13, 108);
             this.filterParamsDataGrid.Name = "filterParamsDataGrid";
             this.filterParamsDataGrid.RowTemplate.Height = 24;
-            this.filterParamsDataGrid.Size = new System.Drawing.Size(189, 208);
+            this.filterParamsDataGrid.Size = new System.Drawing.Size(189, 224);
             this.filterParamsDataGrid.TabIndex = 8;
             // 
             // Param
@@ -299,18 +301,18 @@ namespace NWaves.DemoForms
             // 
             this.numeratorListBox.FormattingEnabled = true;
             this.numeratorListBox.ItemHeight = 16;
-            this.numeratorListBox.Location = new System.Drawing.Point(797, 258);
+            this.numeratorListBox.Location = new System.Drawing.Point(797, 290);
             this.numeratorListBox.Name = "numeratorListBox";
-            this.numeratorListBox.Size = new System.Drawing.Size(75, 116);
+            this.numeratorListBox.Size = new System.Drawing.Size(75, 100);
             this.numeratorListBox.TabIndex = 10;
             // 
             // denominatorListBox
             // 
             this.denominatorListBox.FormattingEnabled = true;
             this.denominatorListBox.ItemHeight = 16;
-            this.denominatorListBox.Location = new System.Drawing.Point(913, 258);
+            this.denominatorListBox.Location = new System.Drawing.Point(913, 290);
             this.denominatorListBox.Name = "denominatorListBox";
-            this.denominatorListBox.Size = new System.Drawing.Size(76, 116);
+            this.denominatorListBox.Size = new System.Drawing.Size(76, 100);
             this.denominatorListBox.TabIndex = 11;
             // 
             // label1
@@ -334,7 +336,7 @@ namespace NWaves.DemoForms
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(775, 258);
+            this.label3.Location = new System.Drawing.Point(775, 290);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(16, 17);
             this.label3.TabIndex = 14;
@@ -343,7 +345,7 @@ namespace NWaves.DemoForms
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(891, 258);
+            this.label4.Location = new System.Drawing.Point(891, 290);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(16, 17);
             this.label4.TabIndex = 15;
@@ -439,9 +441,9 @@ namespace NWaves.DemoForms
             "Phase unwrapped",
             "Group delay",
             "Phase delay"});
-            this.phaseViewComboBox.Location = new System.Drawing.Point(402, 205);
+            this.phaseViewComboBox.Location = new System.Drawing.Point(219, 217);
             this.phaseViewComboBox.Name = "phaseViewComboBox";
-            this.phaseViewComboBox.Size = new System.Drawing.Size(140, 24);
+            this.phaseViewComboBox.Size = new System.Drawing.Size(538, 24);
             this.phaseViewComboBox.TabIndex = 25;
             this.phaseViewComboBox.Text = "Phase unwrapped";
             this.phaseViewComboBox.SelectedIndexChanged += new System.EventHandler(this.phaseViewComboBox_SelectedIndexChanged);
@@ -518,7 +520,7 @@ namespace NWaves.DemoForms
             this.phaseResponsePanel.AutoScroll = true;
             this.phaseResponsePanel.BackColor = System.Drawing.SystemColors.Window;
             this.phaseResponsePanel.ForeColor = System.Drawing.Color.Blue;
-            this.phaseResponsePanel.Location = new System.Drawing.Point(219, 231);
+            this.phaseResponsePanel.Location = new System.Drawing.Point(219, 247);
             this.phaseResponsePanel.Name = "phaseResponsePanel";
             this.phaseResponsePanel.PaddingX = 30;
             this.phaseResponsePanel.PaddingY = 20;
@@ -541,11 +543,29 @@ namespace NWaves.DemoForms
             this.magnitudeResponsePanel.TabIndex = 0;
             this.magnitudeResponsePanel.Thickness = 1;
             // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(773, 257);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(131, 17);
+            this.label9.TabIndex = 26;
+            this.label9.Text = "Zero/pole iterations";
+            // 
+            // zpIterationsTextBox
+            // 
+            this.zpIterationsTextBox.Location = new System.Drawing.Point(910, 256);
+            this.zpIterationsTextBox.Name = "zpIterationsTextBox";
+            this.zpIterationsTextBox.Size = new System.Drawing.Size(79, 22);
+            this.zpIterationsTextBox.TabIndex = 27;
+            // 
             // FiltersForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1001, 729);
+            this.Controls.Add(this.zpIterationsTextBox);
+            this.Controls.Add(this.label9);
             this.Controls.Add(this.phaseViewComboBox);
             this.Controls.Add(this.changeOrderButton);
             this.Controls.Add(this.label8);
@@ -631,5 +651,7 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.ComboBox phaseViewComboBox;
         private System.Windows.Forms.ToolStripMenuItem framebyFrameToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem autoToolStripMenuItem;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox zpIterationsTextBox;
     }
 }

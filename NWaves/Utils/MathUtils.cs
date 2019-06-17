@@ -296,12 +296,41 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Modified Bessel function of the 1st kind (Taylor series, not very precise method)
+        /// </summary>
+        /// <param name="x">x</param>
+        /// <returns>I0(x)</returns>
+        public static double I0(double x)
+        {
+            double y = 1.0;
+            double prev = 1.0;
+            double summand = 0;
+
+            var i = 1;
+
+            while (Math.Abs(prev) > 1e-20)
+            {
+                summand = prev * x * x / (4 * i * i);
+                y += summand;
+                prev = summand;
+                i++;
+            }
+
+            return y;
+        }
+
+
+        #region polynomials
+
+        public const int PolyRootsIterations = 25000;
+
+        /// <summary>
         /// Method implementing Durand-Kerner algorithm for finding complex roots of polynomials.
-        /// Works for polynomials of order up to approx. 45. 
+        /// Works for polynomials of order up to approx. 50. 
         /// </summary>
         /// <param name="a">Polynomial coefficients</param>
         /// <returns></returns>
-        public static Complex[] PolynomialRoots(double[] a)
+        public static Complex[] PolynomialRoots(double[] a, int maxIterations = PolyRootsIterations)
         {
             var n = a.Length;
             if (n <= 1)
@@ -309,13 +338,13 @@ namespace NWaves.Utils
                 return null;
             }
 
-            const int maxIterations = 10000;
+            var c1 = Complex.One;
 
             var rootsPrev = new Complex[a.Length - 1];
             var roots = new Complex[a.Length - 1];
 
             var result = new Complex(0.4, 0.9);
-            rootsPrev[0] = Complex.One;
+            rootsPrev[0] = c1;
 
             for (var i = 1; i < rootsPrev.Length; i++)
             {
@@ -327,7 +356,7 @@ namespace NWaves.Utils
             {
                 for (int i = 0; i < rootsPrev.Length; i++)
                 {
-                    result = Complex.One;
+                    result = c1;
 
                     for (int j = 0; j < rootsPrev.Length; j++)
                     {
@@ -358,7 +387,7 @@ namespace NWaves.Utils
         /// <param name="b">Second array</param>
         /// <param name="tolerance">Tolerance level</param>
         /// <returns>true if arrays are equal</returns>
-        private static bool ArraysAreEqual(Complex[] a, Complex[] b, double tolerance = 1e-14)
+        private static bool ArraysAreEqual(Complex[] a, Complex[] b, double tolerance = 1e-16)
         {
             for (var i = 0; i < a.Length; i++)
             {
@@ -428,28 +457,6 @@ namespace NWaves.Utils
             return new [] { q, r };
         }
 
-        /// <summary>
-        /// Modified Bessel function of the 1st kind (Taylor series, not very precise method)
-        /// </summary>
-        /// <param name="x">x</param>
-        /// <returns>I0(x)</returns>
-        public static double I0(double x)
-        {
-            double y = 1.0;
-            double prev = 1.0;
-            double summand = 0;
-
-            var i = 1;
-
-            while (Math.Abs(prev) > 1e-20)
-            {
-                summand = prev * x * x / (4 * i * i);
-                y += summand;
-                prev = summand;
-                i++;
-            }
-
-            return y;
-        }
+        #endregion
     }
 }

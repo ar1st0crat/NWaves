@@ -24,6 +24,11 @@ namespace NWaves.Filters.Base
         public double[] Denominator { get; private set; }
 
         /// <summary>
+        /// Max iterations for calculating zeros/poles (roots of polynomials): 25000 by default
+        /// </summary>
+        public int CalculateZpIterations { get; set; } = MathUtils.PolyRootsIterations;
+
+        /// <summary>
         /// TF constructor from numerator/denominator
         /// </summary>
         /// <param name="numerator"></param>
@@ -55,7 +60,7 @@ namespace NWaves.Filters.Base
         {
             get
             {
-                return _zeros ?? TfToZp(Numerator);
+                return _zeros ?? TfToZp(Numerator, CalculateZpIterations);
             }
             private set
             {
@@ -77,7 +82,7 @@ namespace NWaves.Filters.Base
         {
             get
             {
-                return _poles ?? TfToZp(Denominator);
+                return _poles ?? TfToZp(Denominator, CalculateZpIterations);
             }
             private set
             {
@@ -133,14 +138,14 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="tf"></param>
         /// <returns></returns>
-        public static ComplexDiscreteSignal TfToZp(double[] tf)
+        public static ComplexDiscreteSignal TfToZp(double[] tf, int maxIterations = MathUtils.PolyRootsIterations)
         {
             if (tf.Length <= 1)
             {
                 return null;
             }
 
-            var roots = MathUtils.PolynomialRoots(tf);
+            var roots = MathUtils.PolynomialRoots(tf, maxIterations);
 
             return new ComplexDiscreteSignal(1, roots.Select(r => r.Real),
                                                 roots.Select(r => r.Imaginary));

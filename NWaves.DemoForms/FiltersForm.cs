@@ -45,6 +45,8 @@ namespace NWaves.DemoForms
 
             signalBeforeFilteringPanel.Gain = 80;
             signalAfterFilteringPanel.Gain = 80;
+
+            zpIterationsTextBox.Text = MathUtils.PolyRootsIterations.ToString();
         }
 
         private void buttonAnalyzeFilter_Click(object sender, EventArgs e)
@@ -131,14 +133,19 @@ namespace NWaves.DemoForms
             magnitudeResponsePanel.Line = _filter.FrequencyResponse().Magnitude.ToFloats();
             UpdatePhaseResponse();
 
-            if (_filter.Tf.Numerator.Length + _filter.Tf.Denominator.Length < 50)
+            var tf = _filter.Tf;
+
+            // adjust this if you need finer precision:
+            tf.CalculateZpIterations = int.Parse(zpIterationsTextBox.Text);
+
+            if (tf.Numerator.Length + tf.Denominator.Length < 70)
             {
-                poleZeroPanel.Zeros = _filter.Tf.Zeros;
-                poleZeroPanel.Poles = _filter.Tf.Poles;
+                poleZeroPanel.Zeros = tf.Zeros;
+                poleZeroPanel.Poles = tf.Poles;
             }
 
-            numeratorListBox.DataSource = _filter.Tf.Numerator;
-            denominatorListBox.DataSource = _filter.Tf.Denominator;
+            numeratorListBox.DataSource = tf.Numerator;
+            denominatorListBox.DataSource = tf.Denominator;
 
             //using (var csv = new FileStream("fir.csv", FileMode.Open))
             //{
