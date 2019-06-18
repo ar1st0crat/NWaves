@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using NWaves.Audio;
-using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Windows;

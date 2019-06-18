@@ -451,6 +451,11 @@ namespace NWaves.DemoForms
             new AdaptiveFiltersForm().ShowDialog();
         }
 
+        private void hpssToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new HpssForm().ShowDialog();
+        }
+
         #endregion
     }
 }

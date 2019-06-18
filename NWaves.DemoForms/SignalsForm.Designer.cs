@@ -80,6 +80,7 @@ namespace NWaves.DemoForms
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.stftButton = new System.Windows.Forms.Button();
+            this.hpssToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -304,7 +305,8 @@ namespace NWaves.DemoForms
             this.noiseToolStripMenuItem,
             this.modulationToolStripMenuItem,
             this.onlineToolStripMenuItem,
-            this.adaptiveToolStripMenuItem});
+            this.adaptiveToolStripMenuItem,
+            this.hpssToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1207, 28);
@@ -531,6 +533,13 @@ namespace NWaves.DemoForms
             this.stftButton.UseVisualStyleBackColor = true;
             this.stftButton.Click += new System.EventHandler(this.stftButton_Click);
             // 
+            // hpssToolStripMenuItem
+            // 
+            this.hpssToolStripMenuItem.Name = "hpssToolStripMenuItem";
+            this.hpssToolStripMenuItem.Size = new System.Drawing.Size(53, 24);
+            this.hpssToolStripMenuItem.Text = "&Hpss";
+            this.hpssToolStripMenuItem.Click += new System.EventHandler(this.hpssToolStripMenuItem_Click);
+            // 
             // SignalsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -623,6 +632,7 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.ToolStripMenuItem onlineToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem modulationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem adaptiveToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem hpssToolStripMenuItem;
     }
 }
 

@@ -123,7 +123,7 @@ namespace NWaves.Operations
 
             var percussiveSpectrogram = new MagnitudePhaseList
             {
-                Magnitudes = harmonicMagnitudes,
+                Magnitudes = percussiveMagnitudes,
                 Phases = harmonicSpectrogram.Phases
             };
 
@@ -157,12 +157,12 @@ namespace NWaves.Operations
 
         private float WienerMask1(float h, float p)
         {
-            return h / (h + p);
+            return h + p > 1e-10 ? h / (h + p) : 0;
         }
 
         private float WienerMask2(float h, float p)
         {
-            return h * h / (h * h + p * p);
+            return h + p > 1e-10 ? h * h / (h * h + p * p) : 0;
         }
     }
 

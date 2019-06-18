@@ -76,6 +76,12 @@
     <Compile Include="FiltersForm.Designer.cs">
       <DependentUpon>FiltersForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="HpssForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HpssForm.Designer.cs">
+      <DependentUpon>HpssForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="LpcForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -174,6 +180,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FiltersForm.resx">
       <DependentUpon>FiltersForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HpssForm.resx">
+      <DependentUpon>HpssForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LpcForm.resx">
       <DependentUpon>LpcForm.cs</DependentUpon>

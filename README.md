@@ -43,9 +43,11 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install 
 - [x] time scale modification (phase vocoder, PV with identity phase locking, WSOLA, PaulStretch)
 - [x] simple resampling, interpolation, decimation
 - [x] bandlimited resampling
+- [x] polyphase filters
 - [x] noise reduction (spectral subtraction, sciPy-style Wiener filtering)
 - [x] envelope following
 - [x] sound effects (delay, echo, tremolo, wahwah, phaser, vibrato, flanger, pitch shift, sound morphing, robotize, whisperize)
+- [x] harmonic/percussive separation
 - [x] adaptive filtering (LMS, NLMS, LMF, SignLMS, RLS)
 - [x] simple modulation/demodulation (AM, ring, FM, PM)
 - [x] simple audio playback and recording

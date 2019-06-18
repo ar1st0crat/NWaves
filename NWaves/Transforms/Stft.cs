@@ -136,7 +136,7 @@ namespace NWaves.Transforms
 
                 // windowing and reconstruction
                 
-                for (var j = 0; j < _re.Length; j++)
+                for (var j = 0; j < _windowSize; j++)
                 {
                     output[pos + j] += _re[j] * _windowSamples[j];
                 }
@@ -302,7 +302,7 @@ namespace NWaves.Transforms
 
                 // windowing and reconstruction
 
-                for (var j = 0; j < _re.Length; j++)
+                for (var j = 0; j < _windowSize; j++)
                 {
                     output[pos + j] += _re[j] * _windowSamples[j];
                 }
