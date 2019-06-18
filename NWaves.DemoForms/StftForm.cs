@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using NWaves.Audio;
+using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Windows;
@@ -16,6 +17,7 @@ namespace NWaves.DemoForms
 
         private Stft _stft;
         private List<float[]> _spectrogram;
+        private WindowTypes _windowType = WindowTypes.Hann;
 
         private string _waveFileName;
         private short _bitDepth;
@@ -50,7 +52,7 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Average];
             }
 
-            _stft = new Stft(1024, 256);
+            _stft = new Stft(512, 128, _windowType);
 
             var processed = _stft.Inverse(_stft.Direct(_signal));
             _processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
@@ -66,13 +68,18 @@ namespace NWaves.DemoForms
 
         private async void playToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            await _player.PlayAsync(_signal, _bitDepth);
+        }
+
+        private async void play2ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
             await _player.PlayAsync(_processedSignal, _bitDepth);
         }
 
         private void windowsComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var windowType = (WindowTypes)windowsComboBox.SelectedIndex;
-            windowPlot.Line = Window.OfType(windowType, 256);
+            _windowType = (WindowTypes)windowsComboBox.SelectedIndex;
+            windowPlot.Line = Window.OfType(_windowType, 256);
         }
     }
 }

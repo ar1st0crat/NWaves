@@ -49,6 +49,14 @@ namespace NWaves.Transforms
         private readonly float _gain;
 
         /// <summary>
+        /// Internal buffers
+        /// </summary>
+        private float[] _re;
+        private float[] _im;
+        private float[] _zeroblock;
+
+
+        /// <summary>
         /// Constructor with necessary parameters
         /// </summary>
         /// <param name="windowSize">Size of window</param>
@@ -66,7 +74,11 @@ namespace NWaves.Transforms
             _window = window;
             _windowSamples = Window.OfType(_window, _windowSize);
 
-            _gain = 1 / (_fftSize * _windowSamples.Select(w => w * w).Sum() / _hopSize);
+            _re = new float[_fftSize];
+            _im = new float[_fftSize];
+            _zeroblock = new float[_fftSize];
+
+            _gain = (float)(Math.Sqrt(2))/2 / (_fftSize * _windowSamples.Select(w => w * w).Sum() / _hopSize);
         }
 
         /// <summary>
@@ -77,22 +89,28 @@ namespace NWaves.Transforms
         /// <returns>STFT of the signal</returns>
         public List<Tuple<float[], float[]>> Direct(float[] samples)
         {
-            var stft = new List<Tuple<float[], float[]>>();
+            // pre-allocate memory:
 
-            for (var pos = 0; pos + _windowSize < samples.Length; pos += _hopSize)
+            var len = (samples.Length - _windowSize) / _hopSize;
+
+            var stft = new List<Tuple<float[], float[]>>();
+            for (var i = 0; i <= len; i++)
             {
-                var re = new float[_fftSize];
-                var im = new float[_fftSize];
-                samples.FastCopyTo(re, _windowSize, pos);
+                stft.Add(new Tuple<float[], float[]>(new float[_fftSize], new float[_fftSize]));
+            }
+
+            // stft:
+
+            for (int pos = 0, i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
+            {
+                samples.FastCopyTo(stft[i].Item1, _windowSize, pos);
 
                 if (_window != WindowTypes.Rectangular)
                 {
-                    re.ApplyWindow(_windowSamples);
+                    _re.ApplyWindow(_windowSamples);
                 }
                 
-                _fft.Direct(re, im);
-
-                stft.Add(new Tuple<float[], float[]>(re, im));
+                _fft.Direct(stft[i].Item1, stft[i].Item2);
             }
 
             return stft;
@@ -106,24 +124,21 @@ namespace NWaves.Transforms
         public float[] Inverse(List<Tuple<float[], float[]>> stft)
         {
             var spectraCount = stft.Count;
-            var output = new float[spectraCount * _hopSize + _windowSize];
-            
-            var re = new float[_windowSize];
-            var im = new float[_windowSize];
+            var output = new float[spectraCount * _hopSize + _fftSize];
 
             var pos = 0;
             for (var i = 0; i < spectraCount; i++)
             {
-                stft[i].Item1.FastCopyTo(re, _windowSize);
-                stft[i].Item2.FastCopyTo(im, _windowSize);
+                stft[i].Item1.FastCopyTo(_re, _fftSize);
+                stft[i].Item2.FastCopyTo(_im, _fftSize);
 
-                _fft.Inverse(re, im);
+                _fft.Inverse(_re, _im);
 
                 // windowing and reconstruction
                 
-                for (var j = 0; j < re.Length; j++)
+                for (var j = 0; j < _re.Length; j++)
                 {
-                    output[pos + j] += re[j] * _windowSamples[j];
+                    output[pos + j] += _re[j] * _windowSamples[j];
                 }
 
                 for (var j = 0; j < _hopSize; j++)
@@ -160,25 +175,29 @@ namespace NWaves.Transforms
         /// <returns>Spectrogram of the signal</returns>
         public List<float[]> Spectrogram(float[] samples)
         {
-            var block = new float[_fftSize];
-            var zeroblock = new float[_fftSize];
+            // pre-allocate memory:
+
+            var len = (samples.Length - _windowSize) / _hopSize;
 
             var spectrogram = new List<float[]>();
-
-            for (var pos = 0; pos + _windowSize < samples.Length; pos += _hopSize)
+            for (var i = 0; i <= len; i++)
             {
-                zeroblock.FastCopyTo(block, _fftSize);
-                samples.FastCopyTo(block, _windowSize, pos);
+                spectrogram.Add(new float[_fftSize / 2 + 1]);
+            }
+
+            // spectrogram:
+
+            for (int pos = 0, i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
+            {
+                _zeroblock.FastCopyTo(_re, _fftSize);
+                samples.FastCopyTo(_re, _windowSize, pos);
                 
                 if (_window != WindowTypes.Rectangular)
                 {
-                    block.ApplyWindow(_windowSamples);
+                    _re.ApplyWindow(_windowSamples);
                 }
 
-                var spectrum = new float[_fftSize / 2 + 1];
-                _fft.PowerSpectrum(block, spectrum);
-
-                spectrogram.Add(spectrum);
+                _fft.PowerSpectrum(_re, spectrogram[i]);
             }
 
             return spectrogram;
@@ -193,5 +212,121 @@ namespace NWaves.Transforms
         {
             return Spectrogram(signal.Samples);
         }
+
+        /// <summary>
+        /// Method for computing a spectrogram as arrays of Magnitude and Phase.
+        /// </summary>
+        /// <param name="samples">The samples of signal</param>
+        /// <returns>Magnitude-Phase spectrogram of the signal</returns>
+        public MagnitudePhaseList MagnitudePhaseSpectrogram(float[] samples)
+        {
+            // pre-allocate memory:
+
+            var mag = new List<float[]>();
+            var phase = new List<float[]>();
+
+            var len = (samples.Length - _windowSize) / _hopSize;
+
+            for (var i = 0; i <= len; i++)
+            {
+                mag.Add(new float[_fftSize / 2 + 1]);
+                phase.Add(new float[_fftSize / 2 + 1]);
+            }
+
+            // magnitude-phase spectrogram:
+
+            for (int pos = 0, i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
+            {
+                _zeroblock.FastCopyTo(_re, _fftSize);
+                _zeroblock.FastCopyTo(_im, _fftSize);
+                samples.FastCopyTo(_re, _windowSize, pos);
+
+                if (_window != WindowTypes.Rectangular)
+                {
+                    _re.ApplyWindow(_windowSamples);
+                }
+
+                _fft.Direct(_re, _im);
+
+                for (var j = 0; j <= _fftSize / 2; j++)
+                {
+                    mag[i][j] = (float)(Math.Sqrt(_re[j] * _re[j] + _im[j] * _im[j]));
+                    phase[i][j] = (float)(Math.Atan2(_im[j], _re[j]));
+                }
+            }
+
+            return new MagnitudePhaseList { Magnitudes = mag, Phases = phase };
+        }
+
+        /// <summary>
+        /// Overloaded method for DiscreteSignal as an input
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <returns>Magnitude-Phase spectrogram of the signal</returns>
+        public MagnitudePhaseList MagnitudePhaseSpectrogram(DiscreteSignal signal)
+        {
+            return MagnitudePhaseSpectrogram(signal.Samples);
+        }
+
+        /// <summary>
+        /// Reconstruct samples from magnitude-phase spectrogram
+        /// </summary>
+        /// <param name="spectrogram"></param>
+        /// <returns></returns>
+        public float[] ReconstructMagnitudePhase(MagnitudePhaseList spectrogram)
+        {
+            var spectraCount = spectrogram.Magnitudes.Count;
+            var output = new float[spectraCount * _hopSize + _windowSize];
+
+            var mag = spectrogram.Magnitudes;
+            var phase = spectrogram.Phases;
+
+            var pos = 0;
+            for (var i = 0; i < spectraCount; i++)
+            {
+                if (_windowSize < _fftSize)
+                {
+                    _zeroblock.FastCopyTo(_re, _fftSize);
+                    _zeroblock.FastCopyTo(_im, _fftSize);
+                }
+
+                for (var j = 0; j <= _fftSize / 2; j++)
+                {
+                    _re[j] = (float)(mag[i][j] * Math.Cos(phase[i][j]));
+                    _im[j] = (float)(mag[i][j] * Math.Sin(phase[i][j]));
+                    _re[_fftSize - 1 - j] = _re[j];
+                    _im[_fftSize - 1 - j] = _im[j];
+                }
+
+                _fft.Inverse(_re, _im);
+
+                // windowing and reconstruction
+
+                for (var j = 0; j < _re.Length; j++)
+                {
+                    output[pos + j] += _re[j] * _windowSamples[j];
+                }
+
+                for (var j = 0; j < _hopSize; j++)
+                {
+                    output[pos + j] *= _gain;
+                }
+
+                pos += _hopSize;
+            }
+
+            for (var j = 0; j < _windowSize; j++)
+            {
+                output[pos + j] *= _gain;
+            }
+
+            return output;
+        }
+    }
+
+    public struct MagnitudePhaseList
+    {
+        public List<float[]> Magnitudes { get; set; }
+        public List<float[]> Phases { get; set; }
     }
 }

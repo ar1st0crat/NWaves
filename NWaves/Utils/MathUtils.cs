@@ -391,9 +391,7 @@ namespace NWaves.Utils
         {
             for (var i = 0; i < a.Length; i++)
             {
-                var delta = a[i] - b[i];
-
-                if (Math.Abs(delta.Real) > tolerance || Math.Abs(delta.Imaginary) > tolerance)
+                if (Complex.Abs(a[i] - b[i]) > tolerance)
                 {
                     return false;
                 }

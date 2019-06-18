@@ -8,6 +8,16 @@
 
 NWaves is a .NET library for 1D signal processing focused specifically on audio processing.
 
+## Releases
+
+NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install it via
+
+```PM> Install-Package NWaves```
+
+[Read wiki documentation](https://github.com/ar1st0crat/NWaves/wiki)
+
+[Changelog](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
+
 ## Main features 
 
 - [x] major DSP transforms (FFT, DCT, STFT, Hilbert, Hartley, Mellin, cepstral, Goertzel)
@@ -44,9 +54,6 @@ NWaves is a .NET library for 1D signal processing focused specifically on audio 
 ## Philosophy of NWaves
 
 NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and were first designed mostly for offline processing (now some online methods are also available). It doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C/C++ or Asm, but it's not that *very* slow for many purposes either.
-
-
-[Read wiki documentation](https://github.com/ar1st0crat/NWaves/wiki)
 
 
 ## Quickstart
@@ -149,8 +156,8 @@ using (var stream = new FileStream("sample.wav", FileMode.Open))
 
 using (var stream = new FileStream("saved_mono.wav", FileMode.Create))
 {
-	var waveFile = new WaveFile(left);
-	waveFile.SaveTo(stream);
+    var waveFile = new WaveFile(left);
+    waveFile.SaveTo(stream);
 }
 
 using (var stream = new FileStream("saved_stereo.wav", FileMode.Create))
@@ -408,8 +415,8 @@ var tdExtractor = new TimeDomainFeaturesExtractor(sr, "all", frameDuration, hopD
 var spectralExtractor = new SpectralFeaturesExtractor(sr, "centroid, flatness, c1+c2+c3", 0.032, 0.015);
 
 var vectors = FeaturePostProcessing.Join(
-				tdExtractor.ParallelComputeFrom(signal), 
-				spectralExtractor.ParallelComputeFrom(signal));
+                tdExtractor.ParallelComputeFrom(signal), 
+                spectralExtractor.ParallelComputeFrom(signal));
 
 // each vector will contain 1) all time-domain features (energy, rms, entropy, zcr)
 //                          2) specified spectral features

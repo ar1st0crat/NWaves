@@ -50,7 +50,7 @@ namespace NWaves.Filters
 
             int i = 0, j = 0;
 
-            for (i = 0; i < Size / 2; i++)    // then feed first samples
+            for (i = 0; i < Size / 2; i++)    // feed first samples
             {
                 Process(input[i]);
             }
