@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NWaves.Filters.Base;
 
@@ -34,11 +33,6 @@ namespace NWaves.Filters
         /// <returns></returns>
         private static IEnumerable<double> MakeKernel(int size)
         {
-            if (size % 2 == 0)
-            {
-                throw new ArgumentException("Size of the filter must be an odd number!");
-            }
-
             return Enumerable.Repeat(1.0 / size, size);
         }
     }

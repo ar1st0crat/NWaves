@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using NWaves.Filters.Base;
 using NWaves.Signals;
 
@@ -43,11 +42,6 @@ namespace NWaves.Filters
         /// <returns></returns>
         private static TransferFunction MakeTf(int size)
         {
-            if (size % 2 == 0)
-            {
-                throw new ArgumentException("Size of the filter must be an odd number!");
-            }
-
             var b = Enumerable.Repeat(0.0, size + 1).ToArray();
             b[0] = 1.0 / size;
             b[size] = -1.0 / size;

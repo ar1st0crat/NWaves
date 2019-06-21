@@ -14,6 +14,7 @@ using NWaves.Transforms;
 using NWaves.Utils;
 using HighPassFilter = NWaves.Filters.BiQuad.HighPassFilter;
 using LowPassFilter = NWaves.Filters.BiQuad.LowPassFilter;
+using System.Linq;
 
 namespace NWaves.DemoForms
 {
@@ -122,6 +123,9 @@ namespace NWaves.DemoForms
                 case "Thiran":
                     AnalyzeThiranFilter();
                     break;
+                case "Equiripple":
+                    AnalyzeEquirippleFilter();
+                    break;
                 case "Custom LP/HP":
                     AnalyzeCustomLpFilter();
                     break;
@@ -129,7 +133,7 @@ namespace NWaves.DemoForms
                     AnalyzeCustomBandpassFilter();
                     break;
             }
-            
+
             magnitudeResponsePanel.Line = _filter.FrequencyResponse().Magnitude.ToFloats();
             UpdatePhaseResponse();
 
@@ -589,6 +593,41 @@ namespace NWaves.DemoForms
             filterParamsDataGrid.Rows[0].Cells[1].Value = order;
             filterParamsDataGrid.Rows[1].Cells[0].Value = "delta";
             filterParamsDataGrid.Rows[1].Cells[1].Value = delta;
+        }
+
+        private void AnalyzeEquirippleFilter()
+        {
+            var order = 65;
+            var fp = 0.15;
+            var fa = 0.17;
+            var ripplePass = 0.25;
+            var rippleStop = 0.75;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                fp = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+                fa = Convert.ToDouble(filterParamsDataGrid.Rows[2].Cells[1].Value);
+                ripplePass = Convert.ToDouble(filterParamsDataGrid.Rows[3].Cells[1].Value);
+                rippleStop = Convert.ToDouble(filterParamsDataGrid.Rows[4].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            _filter = DesignFilter.FirLpEquiripple(fp, fa, ripplePass, rippleStop, order);
+
+            filterParamsDataGrid.RowCount = 5;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "fp";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = fp;
+            filterParamsDataGrid.Rows[2].Cells[0].Value = "fa";
+            filterParamsDataGrid.Rows[2].Cells[1].Value = fa;
+            filterParamsDataGrid.Rows[3].Cells[0].Value = "rp";
+            filterParamsDataGrid.Rows[3].Cells[1].Value = ripplePass;
+            filterParamsDataGrid.Rows[4].Cells[0].Value = "rs";
+            filterParamsDataGrid.Rows[4].Cells[1].Value = rippleStop;
         }
 
         private void AnalyzeCustomLpFilter()

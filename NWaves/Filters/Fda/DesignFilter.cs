@@ -16,7 +16,7 @@ namespace NWaves.Filters.Fda
     public static class DesignFilter
     {
         /// <summary>
-        /// FIR filter design using window method
+        /// FIR filter design using frequency sampling method
         /// </summary>
         /// <param name="order">Filter order</param>
         /// <param name="magnitudeResponse">Magnitude response</param>
@@ -59,7 +59,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// FIR filter design using window method
+        /// FIR filter design using frequency sampling method
         /// </summary>
         /// <param name="order">Filter order</param>
         /// <param name="frequencyResponse">Complex frequency response</param>
@@ -72,7 +72,6 @@ namespace NWaves.Filters.Fda
 
         /// <summary>
         /// Method for ideal lowpass FIR filter design using window method
-        /// (and sinc-window by default).
         /// </summary>
         /// <param name="order"></param>
         /// <param name="freq"></param>
@@ -107,7 +106,7 @@ namespace NWaves.Filters.Fda
         /// <param name="freq"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        private static FirFilter FirLpSinc(int order, double freq, WindowTypes window = WindowTypes.Blackman)
+        public static FirFilter FirLpSinc(int order, double freq, WindowTypes window = WindowTypes.Blackman)
         {
             if (order % 2 == 0)
             {
@@ -130,6 +129,24 @@ namespace NWaves.Filters.Fda
 
             return new FirFilter(kernel);
         }
+
+        /// <summary>
+        /// Design equiripple FIR filter using Remez (Parks-McClellan) algorithm
+        /// </summary>
+        /// <param name="fp"></param>
+        /// <param name="fa"></param>
+        /// <param name="ripplePass"></param>
+        /// <param name="rippleStop"></param>
+        /// <param name="order"></param>
+        /// <returns></returns>
+        public static FirFilter FirLpEquiripple(double fp, double fa, double ripplePass, double rippleStop, int order = 0)
+        {
+            return new Remez(fp, fa, ripplePass, rippleStop, order).Design();
+        }
+
+
+
+        #region Convert LowPass to other band forms
 
         /// <summary>
         /// Method for making HP filter from the linear-phase LP filter
@@ -191,6 +208,8 @@ namespace NWaves.Filters.Fda
             var filter2 = LpToHp(FirLpSinc(order, freq2, window));
             return filter1 + filter2;
         }
+
+        #endregion
 
 
         #region design transfer functions for IIR pole filters (Butterworth, Chebyshev, etc.)
