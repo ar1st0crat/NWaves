@@ -29,7 +29,7 @@ namespace NWaves.Filters
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="size">size of the filter (must be odd number)</param>
+        /// <param name="size">size of the filter</param>
         public MovingAverageRecursiveFilter(int size = 9) : base(MakeTf(size))
         {
             Size = size;

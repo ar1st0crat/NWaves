@@ -39,5 +39,13 @@ namespace NWaves.Utils
                 throw new ArgumentException($"{argName} must be a power of 2!");
             }
         }
+
+        public static void AgainstEvenNumber(int n, string argName = "Parameter")
+        {
+            if (n % 2 == 0)
+            {
+                throw new ArgumentException($"{argName} must be an odd number!");
+            }
+        }
     }
 }

@@ -25,10 +25,7 @@ namespace NWaves.Filters.Fda
         /// <returns>FIR filter kernel</returns>
         public static FirFilter Fir(int order, double[] magnitudeResponse, double[] phaseResponse = null, WindowTypes window = WindowTypes.Blackman)
         {
-            if (order % 2 == 0)
-            {
-                throw new ArgumentException("The order of a filter must be an odd number!");
-            }
+            Guard.AgainstEvenNumber(order, "The order of the filter");
 
             var fftSize = MathUtils.NextPowerOfTwo(magnitudeResponse.Length);
             
@@ -71,47 +68,15 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method for ideal lowpass FIR filter design using window method
-        /// </summary>
-        /// <param name="order"></param>
-        /// <param name="freq"></param>
-        /// <param name="sinc"></param>
-        /// <param name="window"></param>
-        /// <returns></returns>
-        public static FirFilter FirLp(int order, double freq, bool sinc = true, WindowTypes window = WindowTypes.Blackman)
-        {
-            if (sinc)
-            {
-                return FirLpSinc(order, freq, window);
-            }
-
-            var fftSize = Math.Max(512, MathUtils.NextPowerOfTwo(order * 4));
-
-            var magnitudeResponse = new double[fftSize];
-            var phaseResponse = new double[fftSize];
-
-            var cutoffPos = (int)(freq * fftSize);
-            for (var i = 0; i < cutoffPos; i++)
-            {
-                magnitudeResponse[i] = 1.0;
-            }
-
-            return Fir(order, magnitudeResponse, phaseResponse, window);
-        }
-
-        /// <summary>
         /// Method for ideal lowpass FIR filter design using sinc-window method
         /// </summary>
         /// <param name="order"></param>
         /// <param name="freq"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static FirFilter FirLpSinc(int order, double freq, WindowTypes window = WindowTypes.Blackman)
+        public static FirFilter FirWin(int order, double freq, WindowTypes window = WindowTypes.Blackman)
         {
-            if (order % 2 == 0)
-            {
-                throw new ArgumentException("The order of a filter must be an odd number!");
-            }
+            Guard.AgainstEvenNumber(order, "The order of the filter");
 
             var kernel = new double[order];
 
@@ -139,12 +104,11 @@ namespace NWaves.Filters.Fda
         /// <param name="rippleStop"></param>
         /// <param name="order"></param>
         /// <returns></returns>
-        public static FirFilter FirLpEquiripple(double fp, double fa, double ripplePass, double rippleStop, int order = 0)
+        public static FirFilter FirEquiripple(double fp, double fa, double ripplePass = 1, double rippleStop = 20, int order = 0)
         {
-            return new Remez(fp, fa, ripplePass, rippleStop, order).Design();
+            return new Remez(new[] { 0, fp, fa, 0.5 }, new[] { ripplePass, rippleStop }, order).Design();
         }
-
-
+        
 
         #region Convert LowPass to other band forms
 
@@ -183,8 +147,8 @@ namespace NWaves.Filters.Fda
         {
             Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
 
-            var filter1 = LpToHp(FirLpSinc(order, freq1, window));
-            var filter2 = FirLpSinc(order, freq2, window);
+            var filter1 = LpToHp(FirWin(order, freq1, window));
+            var filter2 = FirWin(order, freq2, window);
 
             var filter = filter1 * filter2;
             var kernel = filter.Tf.Numerator;
@@ -204,8 +168,8 @@ namespace NWaves.Filters.Fda
         {
             Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
 
-            var filter1 = FirLpSinc(order, freq1, window);
-            var filter2 = LpToHp(FirLpSinc(order, freq2, window));
+            var filter1 = FirWin(order, freq1, window);
+            var filter2 = LpToHp(FirWin(order, freq2, window));
             return filter1 + filter2;
         }
 

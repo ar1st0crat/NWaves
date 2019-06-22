@@ -1,5 +1,6 @@
 ﻿using NWaves.Filters.Base;
 using NWaves.Signals;
+using NWaves.Utils;
 using System;
 
 namespace NWaves.Filters
@@ -27,10 +28,7 @@ namespace NWaves.Filters
         /// <param name="noise"></param>
         public WienerFilter(int size = 3, double noise = 0.0)
         {
-            if (size % 2 == 0)
-            {
-                throw new ArgumentException("Size of the filter must be an odd number!");
-            }
+            Guard.AgainstEvenNumber(size, "The size of the filter");
 
             _size = size;
             _noise = noise;

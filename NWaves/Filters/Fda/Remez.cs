@@ -1,4 +1,5 @@
 ﻿using NWaves.Filters.Base;
+using NWaves.Utils;
 using System;
 using System.Linq;
 
@@ -9,13 +10,50 @@ namespace NWaves.Filters.Fda
     /// </summary>
     public class Remez
     {
+        /// <summary>
+        /// Filter order
+        /// </summary>
         public int Order { get; private set; }
-        public int K { get; private set; }
 
-        private readonly double _fp;
-        private readonly double _fa;
-        private readonly double _d1;
-        private readonly double _d2;
+        /// <summary>
+        /// Number of iterations
+        /// </summary>
+        public int Iterations { get; private set; }
+
+        /// <summary>
+        /// Number of extremal frequencies
+        /// </summary>
+        public int L { get; private set; }
+
+        /// <summary>
+        /// Extremal frequencies
+        /// </summary>
+        public double[] Extrs { get; private set; }
+
+        /// <summary>
+        /// Array of errors
+        /// </summary>
+        public double[] Error { get; private set; }
+
+        /// <summary>
+        /// Interpolated frequency response
+        /// </summary>
+        public double[] FrequencyResponse { get; private set; }
+
+        /// <summary>
+        /// Passband / stopband frequencies
+        /// </summary>
+        private readonly double[] _freqs;
+
+        /// <summary>
+        /// Passband / stopband frequencies (one freq in LP/HP case and two freqs in BP/BS case)
+        /// </summary>
+        private readonly double _fp1, _fp2, _fa1, _fa2;
+
+        /// <summary>
+        /// Ripples in bands (two ripples in LP/HP case and three ripples in BP/BS case)
+        /// </summary>
+        private readonly double _d1, _d2, _d3;
 
         /// <summary>
         /// Grid frequencies (including transition bands)
@@ -23,102 +61,167 @@ namespace NWaves.Filters.Fda
         private readonly double[] _grid;
 
         /// <summary>
-        /// Extremal frequencies
-        /// </summary>
-        public readonly double[] _extrs;
-
-        /// <summary>
-        /// Interpolated frequency response
-        /// </summary>
-        public readonly double[] _freqResponse;
-
-        /// <summary>
         /// Points for interpolation
         /// </summary>
         private readonly double[] _points;
 
         /// <summary>
-        /// 
+        /// Beta coefficients used in Lagrange interpolation
         /// </summary>
         private readonly double[] _betas;
 
         /// <summary>
-        /// Array of errors
-        /// </summary>
-        public readonly double[] _error;
-
-        /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="fp"></param>
-        /// <param name="fa"></param>
-        /// <param name="ripplePass"></param>
-        /// <param name="rippleStop"></param>
+        /// <param name="freqs"></param>
+        /// <param name="ripples"></param>
         /// <param name="order"></param>
-        public Remez(double fp, double fa, double ripplePass, double rippleStop, int order = 0)
+        /// <param name="type"></param>
+        /// <param name="gridDensity"></param>
+        public Remez(double[] freqs, double[] ripples, int order, BandForm type = BandForm.LowPass, int gridDensity = 8)
         {
-            Order = order > 0 ? order : EstimateOrder();
+            Guard.AgainstEvenNumber(order, "The order of the filter");
+            Order = order;
 
-            _fp = fp;// 0.175;
-            _fa = fa;// 0.185;
-            _d1 = ripplePass; // (10 ** (50/20) - 1) / (10 ** (50/20) + 1)
-            _d2 = rippleStop; // 10 ** (-20/20)
+            _freqs = freqs;
 
-            var n = 8 * Order;
+            // make uniform frequency grid: ===============================
 
-            var L = (Order - 1) / 2;
-            K = L + 3;
-
-            // ========================== Make initial grid: =========================
-
-            var r = (Order + 1) / 2;
-            var b1 = fp;
-            var b2 = 0.5 - fa;
-            var w0 = (b1 + b2) / (r - 1);
-            var m1 = b1 / w0 + 0.5;
-            var m2 = r - m1;
-            var w1 = b1 / m1;
-            var w2 = b2 / m2;
+            var n = Order * gridDensity;
 
             var step = 0.5 / (n - 1);
             _grid = Enumerable.Range(0, n).Select(g => g * step).ToArray();
 
-            _extrs = new double[K];
+            // ============================================================
 
-            var i = 0;
-            var freq = 0.0;
-            while (freq <= fp)
+            switch (type)
             {
-                _extrs[i++] = freq;
-                freq += w1;
+                case BandForm.LowPass:
+                    _fp1 = freqs[1];
+                    _fa1 = freqs[2];
+                    _d1 = PassbandDeltaFromDb(ripples[0]);
+                    _d2 = StopbandDeltaFromDb(ripples[1]);
+                    EvaluateError = EvaluateErrorLp;
+                    ExtremalResponse = ExtremalResponseLp;
+                    ErrorWeight = ErrorWeightLp;
+                    break;
+                case BandForm.HighPass:
+                    _fa1 = freqs[1];
+                    _fp1 = freqs[2];
+                    _d1 = StopbandDeltaFromDb(ripples[0]);
+                    _d2 = PassbandDeltaFromDb(ripples[1]);
+                    EvaluateError = EvaluateErrorHp;
+                    ExtremalResponse = ExtremalResponseHp;
+                    ErrorWeight = ErrorWeightHp;
+                    break;
+                case BandForm.BandPass:
+                    _fa1 = freqs[1];
+                    _fp1 = freqs[2];
+                    _fp2 = freqs[3];
+                    _fa2 = freqs[4];
+                    _d1 = StopbandDeltaFromDb(ripples[0]);
+                    _d2 = PassbandDeltaFromDb(ripples[1]);
+                    _d3 = StopbandDeltaFromDb(ripples[2]);
+                    EvaluateError = EvaluateErrorBp;
+                    ExtremalResponse = ExtremalResponseBp;
+                    ErrorWeight = ErrorWeightBp;
+                    break;
+                case BandForm.BandStop:
+                    _fp1 = freqs[1];
+                    _fa1 = freqs[2];
+                    _fa2 = freqs[3];
+                    _fp2 = freqs[4];
+                    _d1 = PassbandDeltaFromDb(ripples[0]);
+                    _d2 = StopbandDeltaFromDb(ripples[1]);
+                    _d3 = PassbandDeltaFromDb(ripples[2]);
+                    EvaluateError = EvaluateErrorBs;
+                    ExtremalResponse = ExtremalResponseBs;
+                    ErrorWeight = ErrorWeightBs;
+                    break;
             }
-            freq = fa;
-            while (freq < 0.5)
-            {
-                _extrs[i++] = freq;
-                freq += w2;
-            }
-            _extrs[_extrs.Length - 1] = 0.5;
 
-            // =======================================================================
+            L = (Order - 1) / 2 + _freqs.Length / 2 + 1;// 3;
 
-            _points = new double[K];
-            _betas = new double[K];
-            _freqResponse = new double[n];
-            _error = new double[n];
+            FrequencyResponse = new double[n];
+            Error = new double[n];
+            Extrs = new double[L];
+            _points = new double[L];
+            _betas = new double[L];
         }
 
         /// <summary>
-        /// 
+        /// Uniform initialization of extremal frequencies
         /// </summary>
-        /// <returns></returns>
-        public FirFilter Design()
+        private void InitExtrema()
         {
+            var r = (Order + 1) / 2;
+
+            var bw = new double[_freqs.Length / 2];
+            var m = new double[bw.Length];
+            var w = new double[bw.Length];
+
+            for (var k = 0; k < bw.Length; k++)
+            {
+                bw[k] = _freqs[2 * k + 1] - _freqs[2 * k];
+            }
+
+            var w0 = (bw.Sum()) / (r + 1 - bw.Length);
+
+            var i = 0;
+            var sum = 0.0;
+            for (; i < bw.Length - 1; i++)
+            {
+                m[i] = bw[i] / w0 + 0.5;
+                sum += m[i];
+            }
+            m[i] = r - sum;
+
+            for (i = 0; i < bw.Length; i++)
+            {
+                w[i] = bw[i] / m[i];
+            }
+
+            i = 0;
+            var fi = 0;
+            var bi = 0;
+            var freq = 0.0;
+            while (fi < _freqs.Length)
+            {
+                freq = _freqs[fi++];
+                while (freq < _freqs[fi])
+                {
+                    Extrs[i++] = freq;
+                    freq += w[bi];
+                }
+                Extrs[i - 1] = _freqs[fi];
+                fi++;
+                bi++;
+            }
+
+            Extrs[Extrs.Length - 1] = 0.5;
+
+            if (Extrs[Extrs.Length - 2] == 0.5)
+            {
+                Extrs[Extrs.Length - 2] = (0.5 + Extrs[Extrs.Length - 3]) / 2;
+            }
+
+            L = (Order - 1) / 2 + _freqs.Length / 2 + 1;
+        }
+
+        /// <summary>
+        /// Design optimal equiripple filter
+        /// </summary>
+        /// <param name="maxIterations">Max number of iterations</param>
+        /// <returns></returns>
+        public FirFilter Design(int maxIterations = 150)
+        {
+            InitExtrema();
+
             var n = _grid.Length;
 
             var prevDelta = 1.0;
-
-            for (var iter = 0; iter < 50; iter++)
+            
+            for (Iterations = 0; Iterations < maxIterations; Iterations++)
             {
                 // 1) compute delta: ===========================================
 
@@ -126,12 +229,12 @@ namespace NWaves.Filters.Fda
                 var den = 0.0;
                 var sign = 1;
 
-                for (var i = 0; i < K; i++)
+                for (var i = 0; i < L; i++)
                 {
-                    var gamma = Gamma(i, K);
+                    var gamma = Gamma(i, L);
 
-                    var desired = _extrs[i] <= _fp ? 1 : 0;
-                    var weightInv = _extrs[i] <= _fp ? _d1 / _d2 : 1;
+                    var desired = ExtremalResponse(i);
+                    var weightInv = ErrorWeight(i);
                     num += gamma * desired;
                     den += sign * gamma * weightInv;
                     sign = -sign;
@@ -142,72 +245,66 @@ namespace NWaves.Filters.Fda
                 // 2) compute points for interpolation: ============================
 
                 sign = 1;
-                for (var i = 0; i < K; i++)
+                for (var i = 0; i < L; i++)
                 {
-                    var desired = _extrs[i] <= _fp ? 1 : 0;
-                    var weightInv = _extrs[i] <= _fp ? _d1 / _d2 : 1;
+                    var desired = ExtremalResponse(i);
+                    var weightInv = ErrorWeight(i);
 
                     _points[i] = desired - sign * delta * weightInv;
                     sign = -sign;
 
-                    _betas[i] = Gamma(i, K - 1);
+                    _betas[i] = Gamma(i, L - 1);
                 }
 
                 // 3) interpolate: =================================================
 
-                for (var i = 0; i < _freqResponse.Length; i++)
+                for (var i = 0; i < FrequencyResponse.Length; i++)
                 {
-                    _freqResponse[i] = -1;
+                    FrequencyResponse[i] = -1;
                 }
                 var epos = 0;
-                for (var i = 0; i < K; i++)
+                for (var i = 0; i < L; i++)
                 {
-                    var pos = Math.Min((int)(2 * _extrs[i] * n), n - 1);
-                    _freqResponse[pos] = _points[epos++];
-
-                    //if (epos == K) break;
+                    var pos = Math.Min((int)(2 * Extrs[i] * n), n - 1);
+                    FrequencyResponse[pos] = _points[epos++];
                 }
 
                 for (var i = 0; i < _grid.Length; i++)
                 {
-                    if (_freqResponse[i] == -1) _freqResponse[i] = Lagrange(_grid[i], K - 1);
+                    if (FrequencyResponse[i] == -1) FrequencyResponse[i] = Lagrange(_grid[i], L - 1);
                 }
 
                 // 4) evaluate error (excluding transition band): ==================
 
-                for (var i = 0; i < _grid.Length; i++)
-                {
-                    if (_grid[i] < _fp || _grid[i] > _fa)
-                    {
-                        var desired = _grid[i] <= _fp ? 1 : 0;
-                        var weight = _grid[i] <= _fp ? _d2 / _d1 : 1;
-
-                        _error[i] = Math.Abs(weight * (desired - _freqResponse[i]));
-                    }
-                }
+                EvaluateError();
 
                 // 5) find extrema in error function (array): ==================================
 
                 // don't touch first and last extrema positions, so start k from 1
 
                 var k = 1;
-                for (var i = 1; i < _error.Length - 1; i++)
+                for (var i = 1; i < Error.Length - 1; i++)
                 {
-                    if (_error[i] > _error[i - 1] && _error[i] > _error[i + 1] && k < _extrs.Length)
+                    if (Error[i] > Error[i - 1] && Error[i] > Error[i + 1] && k < Extrs.Length)
                     {
-                        _extrs[k++] = _grid[i++];  // insert to extrs
+                        Extrs[k++] = _grid[i++];  // insert to extrs
                     }
                 }
-                if (k < _extrs.Length) _extrs[k++] = _grid[n - 1];
+                if (k < Extrs.Length)
+                {
+                    Extrs[k++] = _grid[n - 1];
+                }
 
-                K = Math.Min(k, K);
+                L = Math.Min(k, L);
+
+                Extrs[L - 1] = _grid[n - 1];
 
 
                 // 6) check if we should continue iterations: ==================================
 
                 // actually the stopping condition is different, but this one is also OK:
 
-                if (Math.Abs(delta - prevDelta) < 1e-24) break;
+                if (Math.Abs(delta - prevDelta) < 1e-25) break;
 
                 prevDelta = delta;
             }
@@ -219,11 +316,14 @@ namespace NWaves.Filters.Fda
 
             var halfOrder = Order / 2 + 1;
 
+            // optional: pre-calculate lagrange interpolated values ============
+
             var lagr = new double[halfOrder];
             for (var i = 1; i < halfOrder; i++)
             {
-                lagr[i] = Lagrange((double)i / Order, K - 1);
+                lagr[i] = Lagrange((double)i / Order, L - 1);
             }
+            // =================================================================
 
             for (var k = 0; k < halfOrder; k++)
             {
@@ -233,16 +333,163 @@ namespace NWaves.Filters.Fda
                     sum += lagr[i] * Math.Cos(2 * Math.PI * i * k / Order);
                 }
 
-                kernel[halfOrder - 1 + k] = kernel[halfOrder - 1 - k] = (_freqResponse[0] + 2 * sum) / Order;
+                kernel[halfOrder - 1 + k] = kernel[halfOrder - 1 - k] = (FrequencyResponse[0] + 2 * sum) / Order;
             }
 
             return new FirFilter(kernel);
         }
 
-        public int EstimateOrder()
+        private readonly Func<int, int> ExtremalResponse;
+
+        private int ExtremalResponseLp(int idx) => Extrs[idx] <= _fp1 ? 1 : 0;
+        private int ExtremalResponseHp(int idx) => Extrs[idx] >= _fp1 ? 1 : 0;
+        private int ExtremalResponseBp(int idx) => Extrs[idx] >= _fp1 && Extrs[idx] <= _fp2 ? 1 : 0;
+        private int ExtremalResponseBs(int idx) => Extrs[idx] <= _fp1 && Extrs[idx] >= _fp2 ? 1 : 0;
+
+        private readonly Func<int, double> ErrorWeight;
+
+        private double ErrorWeightLp(int idx) => Extrs[idx] <= _fp1 ? _d1 / _d2 : 1;
+        private double ErrorWeightHp(int idx) => Extrs[idx] >= _fp1 ? _d1 / _d2 : 1;
+        private double ErrorWeightBp(int idx) => Extrs[idx] >= _fp1 && Extrs[idx] <= _fp2 ? 1 : 1;
+        private double ErrorWeightBs(int idx) => Extrs[idx] <= _fp1 && Extrs[idx] >= _fp2 ? 1 : 1;
+
+        private readonly Action EvaluateError;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void EvaluateErrorLp()
         {
-            return 0;
+            for (var i = 0; i < _grid.Length; i++)
+            {
+                if (_grid[i] < _fp1 || _grid[i] > _fa1)
+                {
+                    var desired = _grid[i] <= _fp1 ? 1 : 0;
+                    var weight = _grid[i] <= _fp1 ? _d2 / _d1 : 1;
+
+                    Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
+                }
+            }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void EvaluateErrorHp()
+        {
+            for (var i = 0; i < _grid.Length; i++)
+            {
+                if (_grid[i] > _fp1 || _grid[i] < _fa1)
+                {
+                    var desired = _grid[i] >= _fp1 ? 1 : 0;
+                    var weight = _grid[i] >= _fp1 ? _d1 / _d2 : 1;
+
+                    Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void EvaluateErrorBp()
+        {
+            int desired;
+            double weight;
+
+            for (var i = 0; i < _grid.Length; i++)
+            {
+                if (_grid[i] < _fa1)
+                {
+                    desired = 0;
+                    weight = _d1;
+                }
+                else if (_grid[i] > _fp1 && _grid[i] < _fp2)
+                {
+                    desired = 1;
+                    weight = _d2;
+                }
+                else if (_grid[i] > _fa2)
+                {
+                    desired = 0;
+                    weight = _d3;
+                }
+                else continue;
+
+                Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void EvaluateErrorBs()
+        {
+            int desired;
+            double weight;
+
+            for (var i = 0; i < _grid.Length; i++)
+            {
+                if (_grid[i] < _fp1)
+                {
+                    desired = 1;
+                    weight = _d1;
+                }
+                else if (_grid[i] > _fa1 && _grid[i] < _fa2)
+                {
+                    desired = 0;
+                    weight = _d2;
+                }
+                else if (_grid[i] > _fp2)
+                {
+                    desired = 1;
+                    weight = _d3;
+                }
+                else continue;
+
+                Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
+            }
+        }
+
+        /// <summary>
+        /// Estimate filter order according to [Herrman et al., 1973].
+        /// Section 8.2.7 in Proakis & Manolakis book.
+        /// </summary>
+        /// <param name="fp"></param>
+        /// <param name="fa"></param>
+        /// <param name="ripplePass"></param>
+        /// <param name="rippleStop"></param>
+        /// <returns></returns>
+        public static int EstimateOrder(double fp, double fa, double ripplePass, double rippleStop)
+        {
+            var rp = PassbandDeltaFromDb(ripplePass);
+            var rs = StopbandDeltaFromDb(rippleStop);
+
+            if (rp < rs)
+            {
+                var tmp = rp;
+                rp = rs;
+                rs = tmp;
+            }
+
+            var bw = fa - fp;
+
+            var d = (0.005309 * Math.Log10(rp) * Math.Log10(rp) + 0.07114 * Math.Log10(rp) - 0.4761) * Math.Log10(rs) -
+                    (0.00266 * Math.Log10(rp) * Math.Log10(rp) + 0.5941 * Math.Log10(rp) + 0.4278);
+
+            var f = 0.51244 * (Math.Log10(rp) - Math.Log10(rs)) + 11.012;
+
+            var l = (int)((d - f * bw * bw) / bw + 1.5);
+
+            return l % 2 == 1 ? l : l + 1;
+        }
+
+        public static double PassbandDeltaFromDb(double db) => (Math.Pow(10, db / 20) - 1) / (Math.Pow(10, db / 20) + 1);
+
+        public static double StopbandDeltaFromDb(double db) => Math.Pow(10, -db / 20);
+
+
+        #region helping functions
 
         private double CosDifference(double f1, double f2) => Math.Cos(2 * Math.PI * f1) - Math.Cos(2 * Math.PI * f2);
 
@@ -251,7 +498,7 @@ namespace NWaves.Filters.Fda
             var prod = 1.0;
             for (var i = 0; i < n; i++)
             {
-                if (i != k) prod *= 1 / CosDifference(_extrs[k], _extrs[i]);
+                if (i != k) prod *= 1 / CosDifference(Extrs[k], Extrs[i]);
             }
             return prod;
         }
@@ -263,11 +510,13 @@ namespace NWaves.Filters.Fda
 
             for (var k = 0; k < n; k++)
             {
-                num += _points[k] * _betas[k] / CosDifference(freq, _extrs[k]);
-                den += _betas[k] / CosDifference(freq, _extrs[k]);
+                num += _points[k] * _betas[k] / CosDifference(freq, Extrs[k]);
+                den += _betas[k] / CosDifference(freq, Extrs[k]);
             }
 
             return num / den;
         }
+
+        #endregion
     }
 }

@@ -21,10 +21,7 @@ namespace NWaves.Filters
         /// <param name="size"></param>
         public MedianFilter(int size = 9)
         {
-            if (size % 2 == 0)
-            {
-                throw new ArgumentException("Size of the filter must be an odd number!");
-            }
+            Guard.AgainstEvenNumber(size, "The size of the filter");
 
             Size = size;
 

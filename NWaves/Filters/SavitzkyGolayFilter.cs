@@ -1,4 +1,5 @@
 ﻿using NWaves.Filters.Base;
+using NWaves.Utils;
 using System;
 
 namespace NWaves.Filters
@@ -31,10 +32,7 @@ namespace NWaves.Filters
         /// <returns></returns>
         private static double[] MakeKernel(int size, int deriv = 0)
         {
-            if (size % 2 == 0)
-            {
-                throw new ArgumentException("Size of the filter must be an odd number!");
-            }
+            Guard.AgainstEvenNumber(size, "The size of the filter");
 
             double[] kernel;
 

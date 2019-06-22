@@ -20,7 +20,7 @@ namespace NWaves.Filters
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="size">size of the filter (must be odd number)</param>
+        /// <param name="size">size of the filter</param>
         public MovingAverageFilter(int size = 9) : base(MakeKernel(size))
         {
             Size = size;

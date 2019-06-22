@@ -597,11 +597,11 @@ namespace NWaves.DemoForms
 
         private void AnalyzeEquirippleFilter()
         {
-            var order = 65;
-            var fp = 0.15;
-            var fa = 0.17;
-            var ripplePass = 0.25;
-            var rippleStop = 0.75;
+            var order = 35;
+            var fp = 0.19;
+            var fa = 0.21;
+            var ripplePass = 3.0;
+            var rippleStop = 20.0;
 
             if (filterParamsDataGrid.RowCount > 0)
             {
@@ -615,7 +615,17 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            _filter = DesignFilter.FirLpEquiripple(fp, fa, ripplePass, rippleStop, order);
+            var remez = new Remez(new[] { 0, fp, fa, 0.5 }, new[] { ripplePass, rippleStop }, order, BandForm.LowPass);
+            //var remez = new Remez(new[] { 0, fp, fa, 0.4, 0.42, 0.5 }, new[] { ripplePass, rippleStop, ripplePass }, order, BandForm.BandPass, 16);
+            _filter = remez.Design(maxIterations: 200);
+
+            var extrema = string.Join("\t", Enumerable.Range(0, remez.L).Select(e => remez.Extrs[e].ToString("F5")));
+            var message = $"Iterations: {remez.Iterations}\n\nEstimated order: {Remez.EstimateOrder(fp, fa, ripplePass, rippleStop)}\n\nExtrema:\n{extrema}";
+            MessageBox.Show(message);
+
+            // or simply design like this:
+
+            //_filter = DesignFilter.FirEquiripple(fp, fa, ripplePass, rippleStop, order);
 
             filterParamsDataGrid.RowCount = 5;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
@@ -644,7 +654,7 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            _filter = DesignFilter.FirLp(order, freq);
+            _filter = DesignFilter.FirWin(order, freq);
 
             filterParamsDataGrid.RowCount = 2;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
