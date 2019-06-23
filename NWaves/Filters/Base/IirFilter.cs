@@ -27,7 +27,6 @@ namespace NWaves.Filters.Base
             {
                 _a = value;
                 _a32 = _a.ToFloats();
-                if (_b != null) Tf = new TransferFunction(_b, _a);
             }
         }
 
@@ -51,8 +50,17 @@ namespace NWaves.Filters.Base
             {
                 _b = value;
                 _b32 = _b.ToFloats();
-                if (_a != null) Tf = new TransferFunction(_b, _a);
             }
+        }
+
+        /// <summary>
+        /// Transfer function (created lazily or set specifically if needed)
+        /// </summary>
+        private TransferFunction _tf;
+        public override TransferFunction Tf
+        {
+            get => _tf ?? new TransferFunction(_b, _a);
+            protected set => _tf = value;
         }
 
         /// <summary>
@@ -102,7 +110,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// 
+        /// Apply filter to entire signal (offline)
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="method"></param>

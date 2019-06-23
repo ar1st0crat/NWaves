@@ -26,7 +26,7 @@ namespace NWaves.Filters.BiQuad
         /// <param name="freq"></param>
         /// <param name="q"></param>
         /// <returns></returns>
-        public static void MakeTf(double freq, double q, double[] b, double[] a)
+        private static void MakeTf(double freq, double q, double[] b, double[] a)
         {
             var omega = 2 * Math.PI * freq;
             var alpha = Math.Sin(omega) / (2 * q);

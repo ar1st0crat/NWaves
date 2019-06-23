@@ -30,7 +30,7 @@ namespace NWaves.Filters
         /// <param name="order"></param>
         /// <param name="delta"></param>
         /// <returns></returns>
-        public static TransferFunction MakeTf(int order, double delta)
+        private static TransferFunction MakeTf(int order, double delta)
         {
             var a = Enumerable.Range(0, order + 1).Select(i => ThiranCoefficient(i, order, delta));
             var b = a.Reverse();

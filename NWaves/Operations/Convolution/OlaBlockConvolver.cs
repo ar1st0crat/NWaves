@@ -88,15 +88,24 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="kernel"></param>
+        /// <param name="fftSize"></param>
+        public OlaBlockConvolver(IEnumerable<double> kernel, int fftSize) : this(kernel.ToFloats(), fftSize)
+        {
+        }
+
+        /// <summary>
         /// Construct BlockConvolver from a specific FIR filter
         /// </summary>
         /// <param name="filter"></param>
         /// <param name="fftSize"></param>
         /// <returns></returns>
-        public static OlaBlockConvolver FromFilter(FirFilter filter, int fftSize)
+        public static OlaBlockConvolver FromFilter(FirFilter filter, int fftSize)    
         {
             fftSize = MathUtils.NextPowerOfTwo(fftSize);
-            return new OlaBlockConvolver(filter.ImpulseResponse().ToFloats(), fftSize);
+            return new OlaBlockConvolver(filter.Kernel, fftSize);
         }
 
         /// <summary>

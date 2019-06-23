@@ -12,12 +12,7 @@ namespace NWaves.Filters.Base
     public abstract class LtiFilter : IFilter, IOnlineFilter
     {
         /// <summary>
-        /// Transfer function
-        /// </summary>
-        public TransferFunction Tf { get; protected set; }
-
-        /// <summary>
-        /// The filtering algorithm that should be implemented by particular subclass
+        /// The offline filtering algorithm that should be implemented by particular subclass
         /// </summary>
         /// <param name="signal">Signal for filtering</param>
         /// <param name="method">General filtering strategy</param>
@@ -64,5 +59,15 @@ namespace NWaves.Filters.Base
             return new ComplexDiscreteSignal(1, real.Take(length / 2 + 1),
                                                 imag.Take(length / 2 + 1));
         }
+
+        /// <summary>
+        /// Transfer function.
+        /// 
+        /// It's made abstract as of ver.0.9.2 to allow subclasses using memory more efficiently.
+        /// It's supposed that subclasses will generate TransferFunction object on the fly (in most cases)
+        /// OR save it in internal field only if it was set specifically from outside.
+        /// The example of the latter case is when we set specific Tf with precomputed poles and zeros.
+        /// </summary>
+        public abstract TransferFunction Tf { get; protected set; }
     }
 }

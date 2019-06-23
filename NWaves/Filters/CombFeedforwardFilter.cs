@@ -22,7 +22,7 @@ namespace NWaves.Filters
         /// <param name="m">Delay</param>
         /// <param name="b0">Coefficient b0</param>
         /// <param name="bm">Coefficient bm</param>
-        public CombFeedforwardFilter(int m, double b0 = 1.0, double bm = 1.0) : base(MakeKernel(m, b0, bm))
+        public CombFeedforwardFilter(int m, double b0 = 1, double bm = 0.5) : base(MakeKernel(m, b0, bm))
         {
             _delay = m;
         }
@@ -59,8 +59,8 @@ namespace NWaves.Filters
             var input = signal.Samples;
             var output = new float[input.Length];
 
-            var b0 = _kernel32[0];
-            var bm = _kernel32[_delay];
+            var b0 = _kernel[0];
+            var bm = _kernel[_delay];
 
             for (var i = 0; i < _delay; i++)
             {
@@ -81,8 +81,8 @@ namespace NWaves.Filters
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var b0 = _kernel32[0];
-            var bm = _kernel32[_delay];
+            var b0 = _kernel[0];
+            var bm = _kernel[_delay];
 
             var output = b0 * sample + bm * _delayLine[_delayLineOffset];
 
@@ -103,10 +103,8 @@ namespace NWaves.Filters
         /// <param name="bm"></param>
         public void Change(double b0, double bm)
         {
-            _kernel[0] = b0;
-            _kernel[_delay] = bm;
-            _kernel32[0] = (float)b0;
-            _kernel32[_delay] = (float)bm;
+            _kernel[0] = (float)b0;
+            _kernel[_delay] = (float)bm;
         }
     }
 }

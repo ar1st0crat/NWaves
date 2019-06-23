@@ -615,9 +615,10 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            var remez = new Remez(new[] { 0, fp, fa, 0.5 }, new[] { ripplePass, rippleStop }, order, BandForm.LowPass);
-            //var remez = new Remez(new[] { 0, fp, fa, 0.4, 0.42, 0.5 }, new[] { ripplePass, rippleStop, ripplePass }, order, BandForm.BandPass, 16);
-            _filter = remez.Design(maxIterations: 200);
+            //var remez = new Remez(new[] { 0, fp, fa, 0.5 }, new[] { ripplePass, rippleStop }, order, BandForm.LowPass);
+            //var remez = new Remez(new[] { 0, fp, fa, 0.4, 0.42, 0.5 }, new[] { rippleStop, ripplePass, rippleStop }, order, BandForm.BandPass, 16);
+            var remez = new Remez(new[] { 0, fp, fa, 0.3, 0.31, 0.5 }, new[] { ripplePass, rippleStop, ripplePass }, order, BandForm.BandStop, 10);
+            _filter = new FirFilter(remez.Design(maxIterations: 200));
 
             var extrema = string.Join("\t", Enumerable.Range(0, remez.L).Select(e => remez.Extrs[e].ToString("F5")));
             var message = $"Iterations: {remez.Iterations}\n\nEstimated order: {Remez.EstimateOrder(fp, fa, ripplePass, rippleStop)}\n\nExtrema:\n{extrema}";
@@ -654,7 +655,7 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            _filter = DesignFilter.FirWin(order, freq);
+            _filter = new FirFilter(DesignFilter.FirWin(order, freq));
 
             filterParamsDataGrid.RowCount = 2;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
@@ -679,7 +680,7 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            _filter = DesignFilter.FirBp(order, freq1, freq2);
+            _filter = new FirFilter(DesignFilter.FirLpToBp(order, freq1, freq2));
 
             filterParamsDataGrid.RowCount = 3;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";

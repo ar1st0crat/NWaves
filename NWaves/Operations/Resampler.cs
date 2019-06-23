@@ -48,7 +48,9 @@ namespace NWaves.Operations
                                  2 * factor + 1 :
                                  MinResamplingFilterOrder;
 
-                lpFilter = DesignFilter.FirWin(filterSize, 0.5f / factor);
+                var tf = DesignFilter.FirWin(filterSize, 0.5f / factor);
+
+                lpFilter = new FirFilter(tf.Numerator);
             }
 
             return lpFilter.ApplyTo(new DiscreteSignal(signal.SamplingRate * factor, output));
@@ -76,7 +78,9 @@ namespace NWaves.Operations
 
             if (filter == null)
             {
-                lpFilter = DesignFilter.FirWin(filterSize, 0.5f / factor);
+                var tf = DesignFilter.FirWin(filterSize, 0.5f / factor);
+
+                lpFilter = new FirFilter(tf.Numerator);
 
                 signal = lpFilter.ApplyTo(signal);
             }
@@ -118,7 +122,10 @@ namespace NWaves.Operations
 
             if (g < 1 && filter == null)
             {
-                filter = DesignFilter.FirWin(MinResamplingFilterOrder, g / 2);
+                var tf = DesignFilter.FirWin(MinResamplingFilterOrder, g / 2);
+
+                filter = new FirFilter(tf.Numerator);
+
                 input = filter.ApplyTo(signal).Samples;
             }
 
@@ -187,7 +194,9 @@ namespace NWaves.Operations
                                  8 * factor + 1 :
                                  MinResamplingFilterOrder;
 
-                lpFilter = DesignFilter.FirWin(filterSize, 0.5f / factor);
+                var tf = DesignFilter.FirWin(filterSize, 0.5f / factor);
+
+                lpFilter = new FirFilter(tf.Numerator);
             }
 
             var upsampled = lpFilter.ApplyTo(new DiscreteSignal(signal.SamplingRate * up, output));

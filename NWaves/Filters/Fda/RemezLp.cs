@@ -150,7 +150,7 @@ namespace NWaves.Filters.Fda
         /// </summary>
         /// <param name="maxIterations">Max number of iterations</param>
         /// <returns></returns>
-        public FirFilter Design(int maxIterations = 150)
+        public TransferFunction Design(int maxIterations = 150)
         {
             InitExtrema();
 
@@ -282,7 +282,7 @@ namespace NWaves.Filters.Fda
                 kernel[halfOrder - 1 + k] = kernel[halfOrder - 1 - k] = (FrequencyResponse[0] + 2 * sum) / Order;
             }
 
-            return new FirFilter(kernel);
+            return new TransferFunction(kernel, new[] { 1.0 });
         }
 
         /// <summary>

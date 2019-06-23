@@ -51,8 +51,13 @@ namespace NWaves.DemoForms
             _fftSize = int.Parse(fftSizeTextBox.Text);
 
             chunkTimer.Interval = int.Parse(intervalTextBox.Text);
-            var filter = DesignFilter.FirWin(int.Parse(kernelSizeTextBox.Text), 0.2);
-            _blockConvolver = OlaBlockConvolver.FromFilter(filter, _fftSize);
+
+            var tf = DesignFilter.FirWin(int.Parse(kernelSizeTextBox.Text), 0.2);
+
+            _blockConvolver = new OlaBlockConvolver(tf.Numerator, _fftSize);
+            
+            // or equivalently:
+            //_blockConvolver = OlaBlockConvolver.FromFilter(new FirFilter(tf.Numerator), _fftSize);
 
             _output = new float[_blockConvolver.HopSize * 5];
         }

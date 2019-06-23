@@ -29,7 +29,7 @@ namespace NWaves.Filters.BiQuad
         /// <param name="gain"></param>
         /// <param name="b"></param>
         /// <param name="a"></param>
-        public static void MakeTf(double freq, double q, double gain, double[] b, double[] a)
+        private static void MakeTf(double freq, double q, double gain, double[] b, double[] a)
         {
             var ga = Math.Pow(10, gain / 40);
             var asqrt = Math.Sqrt(ga);

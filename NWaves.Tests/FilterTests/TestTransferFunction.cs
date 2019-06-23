@@ -34,8 +34,8 @@ namespace NWaves.Tests.FilterTests
 
             Assert.Multiple(() =>
             {
-                Assert.That(f.Tf.Numerator, Is.EqualTo(new[] { 2, -0.3, 0.06 }).Within(1e-10));
-                Assert.That(f.Tf.Denominator, Is.EqualTo(new[] { 1, -0.6 }).Within(1e-10));
+                Assert.That(f.Tf.Numerator, Is.EqualTo(new[] { 2, -0.3, 0.06 }).Within(1e-7));
+                Assert.That(f.Tf.Denominator, Is.EqualTo(new[] { 1, -0.6 }).Within(1e-7));
                 Assert.That(f, Is.TypeOf<IirFilter>());
             });
         }
@@ -50,7 +50,7 @@ namespace NWaves.Tests.FilterTests
 
             Assert.Multiple(() =>
             {
-                Assert.That(f.Tf.Numerator, Is.EqualTo(new[] { 2, -0.7 }).Within(1e-10));
+                Assert.That(f.Tf.Numerator, Is.EqualTo(new[] { 2, -0.7 }).Within(1e-7));
                 Assert.That(f, Is.TypeOf<FirFilter>());
             });
         }

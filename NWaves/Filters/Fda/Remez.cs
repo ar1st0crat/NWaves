@@ -6,7 +6,8 @@ using System.Linq;
 namespace NWaves.Filters.Fda
 {
     /// <summary>
-    /// Optimal equiripple filter designer based on Remez (Parks-McClellan) algorithm
+    /// Optimal equiripple filter designer based on Remez (Parks-McClellan) algorithm.
+    /// Supports all band forms: LP, HP, BP, BS.
     /// </summary>
     public class Remez
     {
@@ -140,7 +141,7 @@ namespace NWaves.Filters.Fda
                     break;
             }
 
-            L = (Order - 1) / 2 + _freqs.Length / 2 + 1;// 3;
+            L = (Order - 1) / 2 + _freqs.Length / 2 + 1;
 
             FrequencyResponse = new double[n];
             Error = new double[n];
@@ -154,8 +155,8 @@ namespace NWaves.Filters.Fda
         /// </summary>
         private void InitExtrema()
         {
-            var r = (Order + 1) / 2;
-
+            L = (Order - 1) / 2 + _freqs.Length / 2 + 1;
+            
             var bw = new double[_freqs.Length / 2];
             var m = new double[bw.Length];
             var w = new double[bw.Length];
@@ -165,47 +166,27 @@ namespace NWaves.Filters.Fda
                 bw[k] = _freqs[2 * k + 1] - _freqs[2 * k];
             }
 
-            var w0 = (bw.Sum()) / (r + 1 - bw.Length);
+            // uniform extrema in each band:
 
             var i = 0;
             var sum = 0.0;
             for (; i < bw.Length - 1; i++)
             {
-                m[i] = bw[i] / w0 + 0.5;
+                m[i] = (int)(2 * bw[i] * L);
                 sum += m[i];
             }
-            m[i] = r - sum;
+            m[i] = L - sum;
 
+            var j = 0;
             for (i = 0; i < bw.Length; i++)
             {
-                w[i] = bw[i] / m[i];
-            }
+                w[i] = bw[i] / (m[i] - 1);
 
-            i = 0;
-            var fi = 0;
-            var bi = 0;
-            var freq = 0.0;
-            while (fi < _freqs.Length)
-            {
-                freq = _freqs[fi++];
-                while (freq < _freqs[fi])
+                for (var k = 0; k < m[i]; k++)
                 {
-                    Extrs[i++] = freq;
-                    freq += w[bi];
+                    Extrs[j++] = _freqs[2 * i] + w[i] * k;
                 }
-                Extrs[i - 1] = _freqs[fi];
-                fi++;
-                bi++;
             }
-
-            Extrs[Extrs.Length - 1] = 0.5;
-
-            if (Extrs[Extrs.Length - 2] == 0.5)
-            {
-                Extrs[Extrs.Length - 2] = (0.5 + Extrs[Extrs.Length - 3]) / 2;
-            }
-
-            L = (Order - 1) / 2 + _freqs.Length / 2 + 1;
         }
 
         /// <summary>
@@ -213,7 +194,7 @@ namespace NWaves.Filters.Fda
         /// </summary>
         /// <param name="maxIterations">Max number of iterations</param>
         /// <returns></returns>
-        public FirFilter Design(int maxIterations = 150)
+        public TransferFunction Design(int maxIterations = 150)
         {
             InitExtrema();
 
@@ -223,7 +204,7 @@ namespace NWaves.Filters.Fda
             
             for (Iterations = 0; Iterations < maxIterations; Iterations++)
             {
-                // 1) compute delta: ===========================================
+                // 1) compute delta: =======================================================
 
                 var num = 0.0;
                 var den = 0.0;
@@ -242,7 +223,7 @@ namespace NWaves.Filters.Fda
 
                 var delta = num / den;
 
-                // 2) compute points for interpolation: ============================
+                // 2) compute points for interpolation: ======================================
 
                 sign = 1;
                 for (var i = 0; i < L; i++)
@@ -256,7 +237,7 @@ namespace NWaves.Filters.Fda
                     _betas[i] = Gamma(i, L - 1);
                 }
 
-                // 3) interpolate: =================================================
+                // 3) interpolate: ============================================================
 
                 for (var i = 0; i < FrequencyResponse.Length; i++)
                 {
@@ -274,7 +255,7 @@ namespace NWaves.Filters.Fda
                     if (FrequencyResponse[i] == -1) FrequencyResponse[i] = Lagrange(_grid[i], L - 1);
                 }
 
-                // 4) evaluate error (excluding transition band): ==================
+                // 4) evaluate error (excluding transition bands): =============================
 
                 EvaluateError();
 
@@ -336,120 +317,9 @@ namespace NWaves.Filters.Fda
                 kernel[halfOrder - 1 + k] = kernel[halfOrder - 1 - k] = (FrequencyResponse[0] + 2 * sum) / Order;
             }
 
-            return new FirFilter(kernel);
+            return new TransferFunction(kernel, new[] { 1.0 });
         }
 
-        private readonly Func<int, int> ExtremalResponse;
-
-        private int ExtremalResponseLp(int idx) => Extrs[idx] <= _fp1 ? 1 : 0;
-        private int ExtremalResponseHp(int idx) => Extrs[idx] >= _fp1 ? 1 : 0;
-        private int ExtremalResponseBp(int idx) => Extrs[idx] >= _fp1 && Extrs[idx] <= _fp2 ? 1 : 0;
-        private int ExtremalResponseBs(int idx) => Extrs[idx] <= _fp1 && Extrs[idx] >= _fp2 ? 1 : 0;
-
-        private readonly Func<int, double> ErrorWeight;
-
-        private double ErrorWeightLp(int idx) => Extrs[idx] <= _fp1 ? _d1 / _d2 : 1;
-        private double ErrorWeightHp(int idx) => Extrs[idx] >= _fp1 ? _d1 / _d2 : 1;
-        private double ErrorWeightBp(int idx) => Extrs[idx] >= _fp1 && Extrs[idx] <= _fp2 ? 1 : 1;
-        private double ErrorWeightBs(int idx) => Extrs[idx] <= _fp1 && Extrs[idx] >= _fp2 ? 1 : 1;
-
-        private readonly Action EvaluateError;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void EvaluateErrorLp()
-        {
-            for (var i = 0; i < _grid.Length; i++)
-            {
-                if (_grid[i] < _fp1 || _grid[i] > _fa1)
-                {
-                    var desired = _grid[i] <= _fp1 ? 1 : 0;
-                    var weight = _grid[i] <= _fp1 ? _d2 / _d1 : 1;
-
-                    Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
-                }
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void EvaluateErrorHp()
-        {
-            for (var i = 0; i < _grid.Length; i++)
-            {
-                if (_grid[i] > _fp1 || _grid[i] < _fa1)
-                {
-                    var desired = _grid[i] >= _fp1 ? 1 : 0;
-                    var weight = _grid[i] >= _fp1 ? _d1 / _d2 : 1;
-
-                    Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
-                }
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void EvaluateErrorBp()
-        {
-            int desired;
-            double weight;
-
-            for (var i = 0; i < _grid.Length; i++)
-            {
-                if (_grid[i] < _fa1)
-                {
-                    desired = 0;
-                    weight = _d1;
-                }
-                else if (_grid[i] > _fp1 && _grid[i] < _fp2)
-                {
-                    desired = 1;
-                    weight = _d2;
-                }
-                else if (_grid[i] > _fa2)
-                {
-                    desired = 0;
-                    weight = _d3;
-                }
-                else continue;
-
-                Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void EvaluateErrorBs()
-        {
-            int desired;
-            double weight;
-
-            for (var i = 0; i < _grid.Length; i++)
-            {
-                if (_grid[i] < _fp1)
-                {
-                    desired = 1;
-                    weight = _d1;
-                }
-                else if (_grid[i] > _fa1 && _grid[i] < _fa2)
-                {
-                    desired = 0;
-                    weight = _d2;
-                }
-                else if (_grid[i] > _fp2)
-                {
-                    desired = 1;
-                    weight = _d3;
-                }
-                else continue;
-
-                Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
-            }
-        }
 
         /// <summary>
         /// Estimate filter order according to [Herrman et al., 1973].
@@ -515,6 +385,123 @@ namespace NWaves.Filters.Fda
             }
 
             return num / den;
+        }
+
+        #endregion
+
+
+        #region Code that depends on the band form
+
+        private readonly Func<int, int> ExtremalResponse;
+
+        private int ExtremalResponseLp(int idx) => Extrs[idx] <= _fp1 ? 1 : 0;
+        private int ExtremalResponseHp(int idx) => Extrs[idx] >= _fp1 ? 1 : 0;
+        private int ExtremalResponseBp(int idx) => Extrs[idx] >= _fp1 && Extrs[idx] <= _fp2 ? 1 : 0;
+        private int ExtremalResponseBs(int idx) => Extrs[idx] <= _fp1 || Extrs[idx] >= _fp2 ? 1 : 0;
+
+        private readonly Func<int, double> ErrorWeight;
+
+        private double ErrorWeightLp(int idx) => Extrs[idx] <= _fp1 ? _d1 : _d2;
+        private double ErrorWeightHp(int idx) => Extrs[idx] >= _fp1 ? _d1 : _d2;
+        private double ErrorWeightBp(int idx) => Extrs[idx] <= _fp1 ? _d1 : Extrs[idx] <= _fp2 ? _d2 : _d3;
+        private double ErrorWeightBs(int idx) => Extrs[idx] <= _fp1 ? _d1 : Extrs[idx] <= _fp2 ? _d2 : _d3;
+
+        private readonly Action EvaluateError;
+
+        /// <summary>
+        /// Evaluate error for LP band form
+        /// </summary>
+        private void EvaluateErrorLp()
+        {
+            for (var i = 0; i < _grid.Length; i++)
+            {
+                if (_grid[i] < _fp1 || _grid[i] > _fa1)
+                {
+                    var desired = _grid[i] <= _fp1 ? 1 : 0;
+                    var weight = _grid[i] <= _fp1 ? _d2 / _d1 : 1;
+
+                    Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Evaluate error for HP band form
+        /// </summary>
+        private void EvaluateErrorHp()
+        {
+            for (var i = 0; i < _grid.Length; i++)
+            {
+                if (_grid[i] > _fp1 || _grid[i] < _fa1)
+                {
+                    var desired = _grid[i] >= _fp1 ? 1 : 0;
+                    var weight = _grid[i] >= _fp1 ? _d1 / _d2 : 1;
+
+                    Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Evaluate error for BP band form
+        /// </summary>
+        private void EvaluateErrorBp()
+        {
+            int desired;
+            double weight;
+
+            for (var i = 0; i < _grid.Length; i++)
+            {
+                if (_grid[i] < _fa1)
+                {
+                    desired = 0;
+                    weight = _d1;
+                }
+                else if (_grid[i] > _fp1 && _grid[i] < _fp2)
+                {
+                    desired = 1;
+                    weight = _d2;
+                }
+                else if (_grid[i] > _fa2)
+                {
+                    desired = 0;
+                    weight = _d3;
+                }
+                else continue;
+
+                Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
+            }
+        }
+
+        /// <summary>
+        /// Evaluate error for BS band form
+        /// </summary>
+        private void EvaluateErrorBs()
+        {
+            int desired;
+            double weight;
+
+            for (var i = 0; i < _grid.Length; i++)
+            {
+                if (_grid[i] < _fp1)
+                {
+                    desired = 1;
+                    weight = _d1;
+                }
+                else if (_grid[i] > _fa1 && _grid[i] < _fa2)
+                {
+                    desired = 0;
+                    weight = _d2;
+                }
+                else if (_grid[i] > _fp2)
+                {
+                    desired = 1;
+                    weight = _d3;
+                }
+                else continue;
+
+                Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
+            }
         }
 
         #endregion
