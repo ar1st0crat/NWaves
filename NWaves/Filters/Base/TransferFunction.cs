@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using NWaves.Operations;
@@ -96,77 +98,54 @@ namespace NWaves.Filters.Base
         /// </summary>
         public double Gain { get; private set; } = 1.0;
 
+
         /// <summary>
-        /// Method for converting zeros(poles) to TF numerator(denominator)
+        /// Evaluate impulse response
         /// </summary>
-        /// <param name="zp"></param>
+        /// <param name="length"></param>
         /// <returns></returns>
-        public static double[] ZpToTf(ComplexDiscreteSignal zp)
+        public double[] ImpulseResponse(int length = 512)
         {
-            if (zp == null)
+            if (Denominator.Length == 1)
             {
-                throw new ArgumentException("");
+                return Numerator.Length < length ? Numerator.PadZeros(length) : Numerator.FastCopy();
             }
-
-            var tf = new ComplexDiscreteSignal(1, new[] { 1.0, -zp.Real[0] },
-                                                  new[] { 0.0, -zp.Imag[0] });
-
-            for (var k = 1; k < zp.Length; k++)
+            else
             {
-                tf = Operation.Convolve(tf, new ComplexDiscreteSignal(1, 
-                                                  new[] { 1.0, -zp.Real[k] },
-                                                  new[] { 0.0, -zp.Imag[k] }));
-            }
+                var b = Numerator;
+                var a = Denominator;
 
-            return tf.Real;
+                var response = new double[length];
+
+                for (var n = 0; n < response.Length; n++)
+                {
+                    if (n < b.Length) response[n] = b[n];
+
+                    for (var m = 1; m < a.Length; m++)
+                    {
+                        if (n >= m) response[n] -= a[m] * response[n - m];
+                    }
+                }
+
+                return response;
+            }
         }
 
         /// <summary>
-        /// Method for converting zeros(poles) to TF numerator(denominator).
-        /// Zeros and poles are given as double arrays of real and imaginary parts of zeros(poles).
+        /// Evaluate frequency response
         /// </summary>
-        /// <param name="re"></param>
-        /// <param name="im"></param>
+        /// <param name="length"></param>
         /// <returns></returns>
-        public static double[] ZpToTf(double[] re, double[] im = null)
+        public ComplexDiscreteSignal FrequencyResponse(int length = 512)
         {
-            return ZpToTf(new ComplexDiscreteSignal(1, re, im));
-        }
+            var real = ImpulseResponse(length);
+            var imag = new double[length];
 
-        /// <summary>
-        /// Method for converting TF numerator(denominator) to zeros(poles)
-        /// </summary>
-        /// <param name="tf"></param>
-        /// <returns></returns>
-        public static ComplexDiscreteSignal TfToZp(double[] tf, int maxIterations = MathUtils.PolyRootsIterations)
-        {
-            if (tf.Length <= 1)
-            {
-                return null;
-            }
+            var fft = new Fft64(length);
+            fft.Direct(real, imag);
 
-            var roots = MathUtils.PolynomialRoots(tf, maxIterations);
-
-            return new ComplexDiscreteSignal(1, roots.Select(r => r.Real),
-                                                roots.Select(r => r.Imaginary));
-        }
-
-        /// <summary>
-        /// Normalize frequency response at given frequency
-        /// (normalize coefficients to map frequency response onto [0, 1])
-        /// </summary>
-        /// <param name="freq"></param>
-        public void NormalizeAt(double freq)
-        {
-            var w = Complex.FromPolarCoordinates(1, freq);
-
-            var gain = Complex.Abs(MathUtils.EvaluatePolynomial(Denominator, w) / 
-                                   MathUtils.EvaluatePolynomial(Numerator, w));
-
-            for (var i = 0; i < Numerator.Length; i++)
-            {
-                Numerator[i] *= gain;
-            }
+            return new ComplexDiscreteSignal(1, real.Take(length / 2 + 1),
+                                                imag.Take(length / 2 + 1));
         }
 
         /// <summary>
@@ -231,6 +210,100 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
+        /// Normalize frequency response at given frequency
+        /// (normalize coefficients to map frequency response onto [0, 1])
+        /// </summary>
+        /// <param name="freq"></param>
+        public void NormalizeAt(double freq)
+        {
+            var w = Complex.FromPolarCoordinates(1, freq);
+
+            var gain = Complex.Abs(MathUtils.EvaluatePolynomial(Denominator, w) /
+                                   MathUtils.EvaluatePolynomial(Numerator, w));
+
+            for (var i = 0; i < Numerator.Length; i++)
+            {
+                Numerator[i] *= gain;
+            }
+        }
+
+        /// <summary>
+        /// Normalize numerator and denominator by Denominator[0]
+        /// </summary>
+        public void Normalize()
+        {
+            var a0 = Denominator[0];
+
+            if (Math.Abs(a0) < 1e-10)
+            {
+                throw new ArgumentException("The first denominator coefficient can not be zero!");
+            }
+
+            for (var i = 0; i < Denominator.Length; i++)
+            {
+                Denominator[i] /= a0;
+            }
+
+            for (var i = 0; i < Numerator.Length; i++)
+            {
+                Numerator[i] /= a0;
+            }
+        }
+
+
+        /// <summary>
+        /// Method for converting zeros(poles) to TF numerator(denominator)
+        /// </summary>
+        /// <param name="zp"></param>
+        /// <returns></returns>
+        public static double[] ZpToTf(ComplexDiscreteSignal zp)
+        {
+            if (zp == null)
+            {
+                throw new ArgumentException("");
+            }
+
+            var tf = new ComplexDiscreteSignal(1, new[] { 1.0, -zp.Real[0] },
+                                                  new[] { 0.0, -zp.Imag[0] });
+
+            for (var k = 1; k < zp.Length; k++)
+            {
+                tf = Operation.Convolve(tf, new ComplexDiscreteSignal(1,
+                                                  new[] { 1.0, -zp.Real[k] },
+                                                  new[] { 0.0, -zp.Imag[k] }));
+            }
+
+            return tf.Real;
+        }
+
+        /// <summary>
+        /// Method for converting zeros(poles) to TF numerator(denominator).
+        /// Zeros and poles are given as double arrays of real and imaginary parts of zeros(poles).
+        /// </summary>
+        /// <param name="re"></param>
+        /// <param name="im"></param>
+        /// <returns></returns>
+        public static double[] ZpToTf(double[] re, double[] im = null) => ZpToTf(new ComplexDiscreteSignal(1, re, im));
+
+        /// <summary>
+        /// Method for converting TF numerator(denominator) to zeros(poles)
+        /// </summary>
+        /// <param name="tf"></param>
+        /// <returns></returns>
+        public static ComplexDiscreteSignal TfToZp(double[] tf, int maxIterations = MathUtils.PolyRootsIterations)
+        {
+            if (tf.Length <= 1)
+            {
+                return null;
+            }
+
+            var roots = MathUtils.PolynomialRoots(tf, maxIterations);
+
+            return new ComplexDiscreteSignal(1, roots.Select(r => r.Real),
+                                                roots.Select(r => r.Imaginary));
+        }
+
+        /// <summary>
         /// Sequential connection
         /// </summary>
         /// <param name="tf1"></param>
@@ -272,6 +345,46 @@ namespace NWaves.Filters.Base
             var den = Operation.Convolve(tf1.Denominator, tf2.Denominator);
 
             return new TransferFunction(num, den);
+        }
+
+        /// <summary>
+        /// Load TF numerator and denominator from csv file
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="delimiter"></param>
+        public static TransferFunction FromCsv(Stream stream, char delimiter = ',')
+        {
+            using (var reader = new StreamReader(stream))
+            {
+                var content = reader.ReadLine();
+                var numerator = content.Split(delimiter)
+                                       .Select(s => double.Parse(s, NumberStyles.Any, CultureInfo.InvariantCulture))
+                                       .ToArray();
+
+                content = reader.ReadLine();
+                var denominator = content.Split(delimiter)
+                                         .Select(s => double.Parse(s, NumberStyles.Any, CultureInfo.InvariantCulture))
+                                         .ToArray();
+
+                return new TransferFunction(numerator, denominator);
+            }
+        }
+
+        /// <summary>
+        /// Serialize TF numerator and denominator to csv file
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="delimiter"></param>
+        public void ToCsv(Stream stream, char delimiter = ',')
+        {
+            using (var writer = new StreamWriter(stream))
+            {
+                var content = string.Join(delimiter.ToString(), Numerator.Select(k => k.ToString(CultureInfo.InvariantCulture)));
+                writer.WriteLine(content);
+
+                content = string.Join(delimiter.ToString(), Denominator.Select(k => k.ToString(CultureInfo.InvariantCulture)));
+                writer.WriteLine(content);
+            }
         }
     }
 }

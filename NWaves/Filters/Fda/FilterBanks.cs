@@ -108,9 +108,9 @@ namespace NWaves.Filters.Fda
 
             for (var i = 0; i < filterBank.Length; i++)
             {
-                var filter = new FirFilter(DesignFilter.Fir(fftSize / 4 + 1, filterBank[i]));
+                var filterTf = new TransferFunction(DesignFilter.Fir(fftSize / 4 + 1, filterBank[i]));
 
-                filterBank[i] = filter.FrequencyResponse(fftSize).Magnitude.ToFloats();
+                filterBank[i] = filterTf.FrequencyResponse(fftSize).Magnitude.ToFloats();
 
                 // normalize gain to 1.0
 
@@ -147,7 +147,7 @@ namespace NWaves.Filters.Fda
                 var freq = center[i] / samplingRate;
                 var filter = new BandPassFilter(freq, 2.0);
 
-                filterBank[i] = filter.FrequencyResponse(fftSize).Magnitude.ToFloats();
+                filterBank[i] = filter.Tf.FrequencyResponse(fftSize).Magnitude.ToFloats();
             }
 
             return filterBank;

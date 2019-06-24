@@ -1,10 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using NWaves.Operations.Convolution;
 using NWaves.Signals;
-using NWaves.Transforms;
 using NWaves.Utils;
 
 namespace NWaves.Filters.Base
@@ -70,7 +67,7 @@ namespace NWaves.Filters.Base
         /// Constructor accepting the 64-bit kernel of a filter.
         /// 
         /// NOTE.
-        /// It will simply cast values to floats!
+        /// This will simply cast values to floats!
         /// If you need to preserve precision for filter design & analysis, use constructor with TransferFunction!
         /// 
         /// </summary>
@@ -80,7 +77,11 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Constructor accepting the transfer function
+        /// Constructor accepting the transfer function.
+        /// 
+        /// Coefficients (used for filtering) will be cast to floats anyway,
+        /// but filter will store the reference to TransferFunction object for FDA.
+        /// 
         /// </summary>
         /// <param name="kernel"></param>
         public FirFilter(TransferFunction tf) : this(tf.Numerator.ToFloats())
@@ -204,75 +205,8 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Reset filter
         /// </summary>
-        public override void Reset()
-        {
-            ResetInternals();
-        }
+        public override void Reset() => ResetInternals();
 
-        /// <summary>
-        /// Frequency response of an FIR filter is the FT of its impulse response
-        /// </summary>
-        public override ComplexDiscreteSignal FrequencyResponse(int length = 512)
-        {
-            var kernel = _tf != null ? _tf.Numerator : _kernel.ToDoubles();
-
-            var real = kernel.PadZeros(length);
-            var imag = new double[length];
-
-            var fft = new Fft64(length);
-            fft.Direct(real, imag);
-
-            return new ComplexDiscreteSignal(1, real.Take(length / 2 + 1),
-                                                imag.Take(length / 2 + 1));
-        }
-
-        /// <summary>
-        /// Impulse response of an FIR filter is its kernel
-        /// </summary>
-        public override double[] ImpulseResponse(int length = 512)
-        {
-            return _tf != null ? _tf.Numerator : _kernel.ToDoubles();
-        } 
-
-        /// <summary>
-        /// Convert to IIR filter
-        /// </summary>
-        /// <returns></returns>
-        public IirFilter AsIir()
-        {
-            var numerator = _tf != null ? _tf.Numerator : _kernel.ToDoubles();
-
-            return new IirFilter(numerator, new []{ 1.0 });
-        }
-
-        /// <summary>
-        /// Load kernel from csv file
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="delimiter"></param>
-        public static FirFilter FromCsv(Stream stream, char delimiter = ',')
-        {
-            using (var reader = new StreamReader(stream))
-            {
-                var content = reader.ReadToEnd();
-                var kernel = content.Split(delimiter).Select(s => float.Parse(s, NumberStyles.Any, CultureInfo.InvariantCulture));
-                return new FirFilter(kernel);
-            }
-        }
-
-        /// <summary>
-        /// Serialize kernel to csv file
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="delimiter"></param>
-        public void ToCsv(Stream stream, char delimiter = ',')
-        {
-            using (var writer = new StreamWriter(stream))
-            {
-                var content = string.Join(delimiter.ToString(), _kernel.Select(k => k.ToString(CultureInfo.InvariantCulture)));
-                writer.WriteLine(content);
-            }
-        }
 
         /// <summary>
         /// Sequential combination of two FIR filters (also an FIR filter)
@@ -280,11 +214,7 @@ namespace NWaves.Filters.Base
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
-        public static FirFilter operator *(FirFilter filter1, FirFilter filter2)
-        {
-            var tf = filter1.Tf * filter2.Tf;
-            return new FirFilter(tf.Numerator);
-        }
+        public static FirFilter operator *(FirFilter filter1, FirFilter filter2) => new FirFilter(filter1.Tf * filter2.Tf);
 
         /// <summary>
         /// Sequential combination of an FIR and IIR filter
@@ -292,11 +222,7 @@ namespace NWaves.Filters.Base
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
-        public static IirFilter operator *(FirFilter filter1, IirFilter filter2)
-        {
-            var tf = filter1.Tf * filter2.Tf;
-            return new IirFilter(tf.Numerator, tf.Denominator);
-        }
+        public static IirFilter operator *(FirFilter filter1, IirFilter filter2) => new IirFilter(filter1.Tf * filter2.Tf);
 
         /// <summary>
         /// Parallel combination of two FIR filters
@@ -304,11 +230,7 @@ namespace NWaves.Filters.Base
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
-        public static FirFilter operator +(FirFilter filter1, FirFilter filter2)
-        {
-            var tf = filter1.Tf + filter2.Tf;
-            return new FirFilter(tf.Numerator);
-        }
+        public static FirFilter operator +(FirFilter filter1, FirFilter filter2) => new FirFilter(filter1.Tf + filter2.Tf);
 
         /// <summary>
         /// Parallel combination of an FIR and IIR filter
@@ -316,10 +238,6 @@ namespace NWaves.Filters.Base
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
-        public static IirFilter operator +(FirFilter filter1, IirFilter filter2)
-        {
-            var tf = filter1.Tf + filter2.Tf;
-            return new IirFilter(tf.Numerator, tf.Denominator);
-        }
+        public static IirFilter operator +(FirFilter filter1, IirFilter filter2) => new IirFilter(filter1.Tf + filter2.Tf);
     }
 }

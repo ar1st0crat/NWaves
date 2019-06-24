@@ -1,16 +1,33 @@
-﻿using System.Linq;
-using NWaves.Signals;
-using NWaves.Transforms;
+﻿using NWaves.Signals;
 
 namespace NWaves.Filters.Base
 {
     /// <summary>
     /// Base class for all kinds of LTI filters.
-    /// Provides general algorithms for computing impulse and frequency responses
+    /// 
+    /// Provides abstract TransferFunction property
     /// and leaves methods ApplyTo() and Process() abstract.
     /// </summary>
     public abstract class LtiFilter : IFilter, IOnlineFilter
     {
+        /// <summary>
+        /// Transfer function.
+        /// 
+        /// It's made abstract as of ver.0.9.2 to allow subclasses using memory more efficiently.
+        /// It's supposed that subclasses will generate TransferFunction object on the fly from filter coeffs
+        /// OR aggregate it in internal field (only if it was set specifically from outside).
+        /// 
+        /// The example of the latter case is when we really need double precision for FDA
+        /// or when TF was generated from precomputed poles and zeros.
+        /// 
+        /// The general rule is:
+        /// 
+        /// "Use LtiFilter subclasses for FILTERING;
+        ///  Use TransferFunction class for FILTER DESIGN AND ANALYSIS".
+        ///  
+        /// </summary>
+        public abstract TransferFunction Tf { get; protected set; }
+
         /// <summary>
         /// The offline filtering algorithm that should be implemented by particular subclass
         /// </summary>
@@ -31,43 +48,5 @@ namespace NWaves.Filters.Base
         /// Reset filter (clear all internal buffers)
         /// </summary>
         public abstract void Reset();
-
-        /// <summary>
-        /// Returns the real-valued impulse response of a filter.
-        /// </summary>
-        /// <param name="length">
-        /// The length of an impulse reponse.
-        /// If the filter is IIR, then it's the length of truncated infinite impulse reponse.
-        /// </param>
-        public abstract double[] ImpulseResponse(int length = 512);
-
-        /// <summary>
-        /// Returns the complex frequency response of a filter.
-        /// 
-        /// Method calculates the Frequency Response of a filter
-        /// by taking FFT of an impulse response (possibly truncated).
-        /// </summary>
-        /// <param name="length">Number of frequency response samples</param>
-        public virtual ComplexDiscreteSignal FrequencyResponse(int length = 512)
-        {
-            var real = ImpulseResponse(length);
-            var imag = new double[length];
-
-            var fft = new Fft64(length);
-            fft.Direct(real, imag);
-
-            return new ComplexDiscreteSignal(1, real.Take(length / 2 + 1),
-                                                imag.Take(length / 2 + 1));
-        }
-
-        /// <summary>
-        /// Transfer function.
-        /// 
-        /// It's made abstract as of ver.0.9.2 to allow subclasses using memory more efficiently.
-        /// It's supposed that subclasses will generate TransferFunction object on the fly (in most cases)
-        /// OR save it in internal field only if it was set specifically from outside.
-        /// The example of the latter case is when we set specific Tf with precomputed poles and zeros.
-        /// </summary>
-        public abstract TransferFunction Tf { get; protected set; }
     }
 }

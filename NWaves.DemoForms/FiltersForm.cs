@@ -134,10 +134,24 @@ namespace NWaves.DemoForms
                     break;
             }
 
-            magnitudeResponsePanel.Line = _filter.FrequencyResponse().Magnitude.ToFloats();
-            UpdatePhaseResponse();
+            // we can load TF from csv file:
+
+            //using (var csv = new FileStream("fir.csv", FileMode.Open))
+            //{
+            //    _filter = new FirFilter(TransferFunction.FromCsv(csv));
+            //}
 
             var tf = _filter.Tf;
+
+            // we can save TF to csv file:
+
+            //using (var csv = new FileStream("fir.csv", FileMode.Create))
+            //{
+            //    tf.ToCsv(csv);
+            //}
+
+            magnitudeResponsePanel.Line = tf.FrequencyResponse().Magnitude.ToFloats();
+            UpdatePhaseResponse();
 
             // adjust this if you need finer precision:
             tf.CalculateZpIterations = int.Parse(zpIterationsTextBox.Text);
@@ -150,11 +164,6 @@ namespace NWaves.DemoForms
 
             numeratorListBox.DataSource = tf.Numerator;
             denominatorListBox.DataSource = tf.Denominator;
-
-            //using (var csv = new FileStream("fir.csv", FileMode.Open))
-            //{
-            //    _filter = FirFilter.FromCsv(csv);
-            //}
 
             Cursor.Current = Cursors.Default;
         }
@@ -217,7 +226,9 @@ namespace NWaves.DemoForms
 
         private void UpdatePhaseResponse()
         {
-            var fr = _filter.FrequencyResponse();
+            var tf = _filter.Tf;
+
+            var fr = tf.FrequencyResponse();
 
             switch (phaseViewComboBox.Text)
             {
@@ -225,12 +236,12 @@ namespace NWaves.DemoForms
                     phaseResponsePanel.Line = fr.PhaseUnwrapped.ToFloats();
                     break;
                 case "Group delay":
-                    phaseResponsePanel.Line = _filter.Tf.GroupDelay().ToFloats();
+                    phaseResponsePanel.Line = tf.GroupDelay().ToFloats();
                     // or like this:
                     // fr.GroupDelay.ToFloats();
                     break;
                 case "Phase delay":
-                    phaseResponsePanel.Line = _filter.Tf.PhaseDelay().ToFloats();
+                    phaseResponsePanel.Line = tf.PhaseDelay().ToFloats();
                     // or like this:
                     // fr.PhaseDelay.ToFloats();
                     break;
@@ -259,16 +270,22 @@ namespace NWaves.DemoForms
                     var param = filterParamsDataGrid.Rows[i].Cells[0].Value;
                     if (param.ToString().StartsWith("b"))
                     {
-                        b.Add(Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value));
+                        b.Add(Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value));
                     }
                     else
                     {
-                        a.Add(Convert.ToDouble(filterParamsDataGrid.Rows[i].Cells[1].Value));
+                        a.Add(Convert.ToSingle(filterParamsDataGrid.Rows[i].Cells[1].Value));
                     }
                 }
             }
 
+            // lose some precision:
+
             _filter = new IirFilter(b, a);
+
+            // double precision:
+
+            // _filter = new IirFilter(new TransferFunction(b.ToArray(), a.ToArray()));
 
             filterParamsDataGrid.RowCount = a.Count + b.Count;
             var pos = 0;
@@ -616,8 +633,8 @@ namespace NWaves.DemoForms
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
             //var remez = new Remez(new[] { 0, fp, fa, 0.5 }, new[] { ripplePass, rippleStop }, order, BandForm.LowPass);
-            //var remez = new Remez(new[] { 0, fp, fa, 0.4, 0.42, 0.5 }, new[] { rippleStop, ripplePass, rippleStop }, order, BandForm.BandPass, 16);
-            var remez = new Remez(new[] { 0, fp, fa, 0.3, 0.31, 0.5 }, new[] { ripplePass, rippleStop, ripplePass }, order, BandForm.BandStop, 10);
+            var remez = new Remez(new[] { 0, fp, fa, 0.4, 0.42, 0.5 }, new[] { rippleStop, ripplePass, rippleStop }, order, BandForm.BandPass, 16);
+            //var remez = new Remez(new[] { 0, fp, fa, 0.3, 0.31, 0.5 }, new[] { ripplePass, rippleStop, ripplePass }, order, BandForm.BandStop, 10);
             _filter = new FirFilter(remez.Design(maxIterations: 200));
 
             var extrema = string.Join("\t", Enumerable.Range(0, remez.L).Select(e => remez.Extrs[e].ToString("F5")));
@@ -686,6 +703,11 @@ namespace NWaves.DemoForms
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
             _filter = new FirFilter(DesignFilter.FirWinBp(order, freq1, freq2));
+
+            // for double precision and FDA:
+
+            //var tf = new TransferFunction(DesignFilter.FirWinBp(order, freq1, freq2));
+            //_filter = new FirFilter(tf);
 
             filterParamsDataGrid.RowCount = 3;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";

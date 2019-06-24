@@ -27,10 +27,7 @@ namespace NWaves.Filters.Base
         /// Add filter to the chain
         /// </summary>
         /// <param name="filter"></param>
-        public void Add(IOnlineFilter filter)
-        {
-            _filters.Add(filter);
-        }
+        public void Add(IOnlineFilter filter) => _filters.Add(filter);
 
         /// <summary>
         /// Process sample by the chain of filters

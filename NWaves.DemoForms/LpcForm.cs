@@ -78,9 +78,9 @@ namespace NWaves.DemoForms
             var gain = Math.Sqrt(vector[0]);
             vector[0] = 1.0;
 
-            var lpcFilter = new IirFilter(new[] { gain }, vector);
+            var lpcTf = new TransferFunction(new[] { gain }, vector);
 
-            return lpcFilter.FrequencyResponse().Power.ToFloats();
+            return lpcTf.FrequencyResponse().Power.ToFloats();
         }
 
         private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors, 

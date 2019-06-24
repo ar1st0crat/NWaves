@@ -62,7 +62,7 @@ namespace NWaves.Filters.Base
         protected int _delayLineOffsetB;
 
         /// <summary>
-        /// Parameterized constructor (from arrays of 32bit coefficients)
+        /// Parameterized constructor (from arrays of 32-bit coefficients)
         /// </summary>
         /// <param name="b">TF numerator coefficients</param>
         /// <param name="a">TF denominator coefficients</param>
@@ -74,7 +74,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Parameterized constructor (from arrays of 64 bit coefficients)
+        /// Parameterized constructor (from arrays of 64-bit coefficients)
         /// 
         /// NOTE.
         /// It will simply cast values to floats!
@@ -88,7 +88,11 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Parameterized constructor (from transfer function)
+        /// Parameterized constructor (from transfer function).
+        /// 
+        /// Coefficients (used for filtering) will be cast to floats anyway,
+        /// but filter will store the reference to TransferFunction object for FDA.
+        /// 
         /// </summary>
         /// <param name="tf">Transfer function</param>
         public IirFilter(TransferFunction tf) : this(tf.Numerator, tf.Denominator)
@@ -116,7 +120,7 @@ namespace NWaves.Filters.Base
                 {
                     var length = Math.Max(DefaultImpulseResponseLength, _a.Length + _b.Length);
                     var fftSize = MathUtils.NextPowerOfTwo(4 * length);
-                    var ir = new DiscreteSignal(signal.SamplingRate, ImpulseResponse(length).ToFloats());
+                    var ir = new DiscreteSignal(signal.SamplingRate, Tf.ImpulseResponse(length).ToFloats());
                     return Operation.BlockConvolve(signal, ir, fftSize, method);
                 }
                 default:
@@ -228,10 +232,7 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Reset filter
         /// </summary>
-        public override void Reset()
-        {
-            ResetInternals();
-        }
+        public override void Reset() => ResetInternals();
 
         /// <summary>
         /// Divide all filter coefficients by Tf.Denominator[0] if Tf is specified (double precision)
@@ -239,121 +240,42 @@ namespace NWaves.Filters.Base
         /// </summary>
         public void Normalize()
         {
-            var first = _tf != null ? _tf.Denominator[0] : _a[0];
+            var a0 = _a[0];
 
-            if (Math.Abs(first - 1.0) < 1e-10)
+            if (Math.Abs(a0 - 1.0) < 1e-10)
             {
                 return;
             }
 
-            if (Math.Abs(first) < 1e-10)
+            if (Math.Abs(a0) < 1e-10)
             {
                 throw new ArgumentException("The first A coefficient can not be zero!");
             }
 
-            if (_tf != null)
+            for (var i = 0; i < _a.Length; i++)
             {
-                for (var i = 0; i < _a.Length; i++)
-                {
-                    _tf.Denominator[i] /= first;
-                    _a[i] = (float)_tf.Denominator[i];
-                }
-
-                for (var i = 0; i < _b.Length; i++)
-                {
-                    _tf.Numerator[i] /= first;
-                    _b[i] = (float)_tf.Numerator[i];
-                }
+                _a[i] /= a0;
             }
-            else
+            for (var i = 0; i < _b.Length; i++)
             {
-                for (var i = 0; i < _a.Length; i++)
-                {
-                    _a[i] /= (float)first;
-                }
-
-                for (var i = 0; i < _b.Length; i++)
-                {
-                    _b[i] /= (float)first;
-                }
+                _b[i] /= a0;
             }
         }
 
         /// <summary>
-        /// Returns the real-valued impulse response of a filter.
-        /// 
-        /// Method calculates the Impulse Response of a filter
-        /// by feeding the unit impulse into it.
-        /// </summary>
-        /// <param name="length">
-        /// The length of an impulse reponse.
-        /// It's the length of truncated infinite impulse reponse.
-        /// </param>
-        public override double[] ImpulseResponse(int length = DefaultImpulseResponseLength)
-        {
-            var response = new double[length];
-            var impulse = new double[length];
-            impulse[0] = 1.0;
-
-            ApplyTo(impulse, response);
-
-            return response;
-        }
-
-        /// <summary>
-        /// Sequential combination of two IIR filters
+        /// Sequential combination of two IIR filters.
         /// </summary>
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
-        public static IirFilter operator *(IirFilter filter1, IirFilter filter2)
-        {
-            var tf = filter1.Tf * filter2.Tf;
-            return new IirFilter(tf.Numerator, tf.Denominator);
-        }
+        public static IirFilter operator *(IirFilter filter1, IirFilter filter2) => new IirFilter(filter1.Tf * filter2.Tf);
 
         /// <summary>
-        /// Parallel combination of an IIR and any LTI filter
+        /// Parallel combination of an IIR and any LTI filter.
         /// </summary>
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
-        public static IirFilter operator +(IirFilter filter1, LtiFilter filter2)
-        {
-            var tf = filter1.Tf + filter2.Tf;
-            return new IirFilter(tf.Numerator, tf.Denominator);
-        }
-
-        #region double precision computations
-
-        public void ApplyTo(double[] input, double[] output)
-        {
-            double[] a, b;
-
-            if (_tf != null)
-            {
-                a = _tf.Denominator;
-                b = _tf.Numerator;
-            }
-            else
-            {
-                a = _a.ToDoubles();
-                b = _b.ToDoubles();
-            }
-
-            for (var n = 0; n < input.Length; n++)
-            {
-                for (var k = 0; k < b.Length; k++)
-                {
-                    if (n >= k) output[n] += b[k] * input[n - k];
-                }
-                for (var m = 1; m < a.Length; m++)
-                {
-                    if (n >= m) output[n] -= a[m] * output[n - m];
-                }
-            }
-        }
-
-        #endregion
+        public static IirFilter operator +(IirFilter filter1, LtiFilter filter2) => new IirFilter(filter1.Tf + filter2.Tf);
     }
 }
