@@ -655,11 +655,11 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            _filter = new FirFilter(DesignFilter.FirWin(order, freq));
+            _filter = new FirFilter(DesignFilter.FirWinLp(order, freq));
 
             // for double precision and FDA:
 
-            //var tf = new TransferFunction(DesignFilter.FirWin(order, freq));
+            //var tf = new TransferFunction(DesignFilter.FirWinLp(order, freq));
             //_filter = new FirFilter(tf);
 
             filterParamsDataGrid.RowCount = 2;
@@ -685,7 +685,7 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            _filter = new FirFilter(DesignFilter.FirLpToBp(order, freq1, freq2));
+            _filter = new FirFilter(DesignFilter.FirWinBp(order, freq1, freq2));
 
             filterParamsDataGrid.RowCount = 3;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";

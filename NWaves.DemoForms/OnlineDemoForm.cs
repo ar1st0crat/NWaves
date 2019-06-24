@@ -52,7 +52,7 @@ namespace NWaves.DemoForms
 
             chunkTimer.Interval = int.Parse(intervalTextBox.Text);
 
-            var kernel = DesignFilter.FirWin(int.Parse(kernelSizeTextBox.Text), 0.2);
+            var kernel = DesignFilter.FirWinLp(int.Parse(kernelSizeTextBox.Text), 0.2);
 
             _blockConvolver = new OlaBlockConvolver(kernel, _fftSize);
             
