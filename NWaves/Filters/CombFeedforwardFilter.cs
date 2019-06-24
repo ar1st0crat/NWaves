@@ -33,11 +33,11 @@ namespace NWaves.Filters
         /// <param name="m">Delay</param>
         /// <param name="b0">Coefficient b0</param>
         /// <param name="bm">Coefficient bm</param>
-        private static double[] MakeKernel(int m, double b0, double bm)
+        private static float[] MakeKernel(int m, double b0, double bm)
         {
-            var kernel = new double[m + 1];
-            kernel[0] = b0;
-            kernel[m] = bm;
+            var kernel = new float[m + 1];
+            kernel[0] = (float)b0;
+            kernel[m] = (float)bm;
 
             return kernel;
         }

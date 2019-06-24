@@ -33,7 +33,7 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Transfer function (created lazily or set specifically if needed)
         /// </summary>
-        private TransferFunction _tf;
+        protected TransferFunction _tf;
         public override TransferFunction Tf
         {
             get => _tf ?? new TransferFunction(_kernel.ToDoubles(), new[] { 1.0 });
@@ -68,8 +68,11 @@ namespace NWaves.Filters.Base
 
         /// <summary>
         /// Constructor accepting the 64-bit kernel of a filter.
+        /// 
+        /// NOTE.
         /// It will simply cast values to floats!
         /// If you need to preserve precision for filter design & analysis, use constructor with TransferFunction!
+        /// 
         /// </summary>
         /// <param name="kernel"></param>
         public FirFilter(IEnumerable<double> kernel) : this(kernel.ToFloats())

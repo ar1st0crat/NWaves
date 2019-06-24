@@ -1,5 +1,4 @@
 using System;
-using NWaves.Filters.Base;
 
 namespace NWaves.Filters.BiQuad
 {
@@ -12,55 +11,57 @@ namespace NWaves.Filters.BiQuad
     public class PeakFilter : BiQuadFilter
     {
         /// <summary>
-        /// Constructor computes the filter coefficients.
+        /// Frequency
+        /// </summary>
+        public double Freq { get; protected set; }
+
+        /// <summary>
+        /// Q
+        /// </summary>
+        public double Q { get; protected set; }
+
+        /// <summary>
+        /// Gain
+        /// </summary>
+        public double Gain { get; protected set; }
+
+        /// <summary>
+        /// Constructor
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="q"></param>
         /// <param name="gain"></param>
-        public PeakFilter(double freq, double q = 1, double gain = 1.0) : base(MakeTf(freq, q, gain))
+        public PeakFilter(double freq, double q = 1, double gain = 1.0)
         {
-            Normalize();
+            SetCoefficients(freq, q, gain);
         }
 
         /// <summary>
-        /// TF generator
+        /// Set filter coefficients
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="q"></param>
         /// <param name="gain"></param>
-        /// <param name="b"></param>
-        /// <param name="a"></param>
-        private static void MakeTf(double freq, double q, double gain, double[] b, double[] a)
+        private void SetCoefficients(double freq, double q, double gain)
         {
+            Freq = freq;
+            Q = q;
+            Gain = gain;
+
             var ga = Math.Pow(10, gain / 40);
             var omega = 2 * Math.PI * freq;
             var alpha = Math.Sin(omega) / (2 * q);
             var cosw = Math.Cos(omega);
 
-            b[0] = 1 + alpha * ga;
-            b[1] = -2 * cosw;
-            b[2] = 1 - alpha * ga;
+            _b[0] = (float)(1 + alpha * ga);
+            _b[1] = (float)(-2 * cosw);
+            _b[2] = (float)(1 - alpha * ga);
 
-            a[0] = 1 + alpha / ga;
-            a[1] = -2 * cosw;
-            a[2] = 1 - alpha / ga;
-        }
+            _a[0] = (float)(1 + alpha / ga);
+            _a[1] = (float)(-2 * cosw);
+            _a[2] = (float)(1 - alpha / ga);
 
-        /// <summary>
-        /// TF generator
-        /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="q"></param>
-        /// <param name="gain"></param>
-        /// <returns>Transfer function</returns>
-        private static TransferFunction MakeTf(double freq, double q, double gain)
-        {
-            var b = new double[3];
-            var a = new double[3];
-
-            MakeTf(freq, q, gain, b, a);
-
-            return new TransferFunction(b, a);
+            Normalize();
         }
 
         /// <summary>
@@ -71,8 +72,7 @@ namespace NWaves.Filters.BiQuad
         /// <param name="gain"></param>
         public void Change(double freq, double q = 1, double gain = 1.0)
         {
-            MakeTf(freq, q, gain, _b, _a);
-            Normalize();
+            SetCoefficients(freq, q, gain);
         }
     }
 }

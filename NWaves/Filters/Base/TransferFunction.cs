@@ -33,10 +33,10 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="numerator"></param>
         /// <param name="denominator"></param>
-        public TransferFunction(double[] numerator, double[] denominator)
+        public TransferFunction(double[] numerator, double[] denominator = null)
         {
             Numerator = numerator;
-            Denominator = denominator;
+            Denominator = denominator ?? new double[] { 1.0 };
         }
 
         /// <summary>

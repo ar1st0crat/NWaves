@@ -14,60 +14,36 @@ namespace NWaves.Filters.Base
     {
         /// <summary>
         /// Denominator part coefficients in filter's transfer function 
-        /// (recursive part in difference equations)
+        /// (recursive part in difference equations).
+        /// 
+        /// NOTE.
+        /// These coefficients have single precision since they are used for filtering!
+        /// For filter design & analysis specify transfer function (Tf property).
+        /// 
         /// </summary>
-        protected double[] _a;
-        protected double[] A
-        {
-            get
-            {
-                return _a;
-            }
-            set
-            {
-                _a = value;
-                _a32 = _a.ToFloats();
-            }
-        }
-
-        /// <summary>
-        /// Float versions of denominator coefficients for filtering (by default)
-        /// </summary>
-        protected float[] _a32;
+        protected float[] _a;
 
         /// <summary>
         /// Numerator part coefficients in filter's transfer function 
         /// (non-recursive part in difference equations)
+        /// 
+        /// NOTE.
+        /// These coefficients have single precision since they are used for filtering!
+        /// For filter design & analysis specify transfer function (Tf property).
+        /// 
         /// </summary>
-        protected double[] _b;
-        protected double[] B
-        {
-            get
-            {
-                return _b;
-            }
-            set
-            {
-                _b = value;
-                _b32 = _b.ToFloats();
-            }
-        }
-
+        protected float[] _b;
+        
         /// <summary>
         /// Transfer function (created lazily or set specifically if needed)
         /// </summary>
-        private TransferFunction _tf;
+        protected TransferFunction _tf;
         public override TransferFunction Tf
         {
-            get => _tf ?? new TransferFunction(_b, _a);
+            get => _tf ?? new TransferFunction(_b.ToDoubles(), _a.ToDoubles());
             protected set => _tf = value;
         }
-
-        /// <summary>
-        /// Float versions of numerator coefficients for filtering (by default)
-        /// </summary>
-        protected float[] _b32;
-        
+       
         /// <summary>
         /// Default length of truncated impulse response
         /// </summary>
@@ -76,37 +52,48 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Internal buffers for delay lines
         /// </summary>
-        protected float[] _delayLineB;
         protected float[] _delayLineA;
+        protected float[] _delayLineB;
 
         /// <summary>
         /// Current offsets in delay lines
         /// </summary>
-        protected int _delayLineOffsetB;
         protected int _delayLineOffsetA;
+        protected int _delayLineOffsetB;
 
         /// <summary>
-        /// Parameterized constructor (from arrays of coefficients)
+        /// Parameterized constructor (from arrays of 32bit coefficients)
         /// </summary>
         /// <param name="b">TF numerator coefficients</param>
         /// <param name="a">TF denominator coefficients</param>
-        public IirFilter(IEnumerable<double> b, IEnumerable<double> a)
+        public IirFilter(IEnumerable<float> b, IEnumerable<float> a)
         {
-            B = b.ToArray();
-            A = a.ToArray();
+            _b = b.ToArray();
+            _a = a.ToArray();
             ResetInternals();
+        }
+
+        /// <summary>
+        /// Parameterized constructor (from arrays of 64 bit coefficients)
+        /// 
+        /// NOTE.
+        /// It will simply cast values to floats!
+        /// If you need to preserve precision for filter design & analysis, use constructor with TransferFunction!
+        /// 
+        /// </summary>
+        /// <param name="b">TF numerator coefficients</param>
+        /// <param name="a">TF denominator coefficients</param>
+        public IirFilter(IEnumerable<double> b, IEnumerable<double> a) : this(b.ToFloats(), a.ToFloats())
+        {
         }
 
         /// <summary>
         /// Parameterized constructor (from transfer function)
         /// </summary>
         /// <param name="tf">Transfer function</param>
-        public IirFilter(TransferFunction tf)
+        public IirFilter(TransferFunction tf) : this(tf.Numerator, tf.Denominator)
         {
-            B = tf.Numerator;
-            A = tf.Denominator;
             Tf = tf;
-            ResetInternals();
         }
 
         /// <summary>
@@ -146,31 +133,28 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var a = _a32;
-            var b = _b32;
-
             var output = 0.0f;
 
             _delayLineB[_delayLineOffsetB] = sample;
 
             var pos = 0;
-            for (var k = _delayLineOffsetB; k < b.Length; k++)
+            for (var k = _delayLineOffsetB; k < _b.Length; k++)
             {
-                output += b[pos++] * _delayLineB[k];
+                output += _b[pos++] * _delayLineB[k];
             }
             for (var k = 0; k < _delayLineOffsetB; k++)
             {
-                output += b[pos++] * _delayLineB[k];
+                output += _b[pos++] * _delayLineB[k];
             }
 
             pos = 1;
-            for (var p = _delayLineOffsetA + 1; p < a.Length; p++)
+            for (var p = _delayLineOffsetA + 1; p < _a.Length; p++)
             {
-                output -= a[pos++] * _delayLineA[p];
+                output -= _a[pos++] * _delayLineA[p];
             }
             for (var p = 0; p < _delayLineOffsetA; p++)
             {
-                output -= a[pos++] * _delayLineA[p];
+                output -= _a[pos++] * _delayLineA[p];
             }
 
             _delayLineA[_delayLineOffsetA] = output;
@@ -197,20 +181,18 @@ namespace NWaves.Filters.Base
         public DiscreteSignal ApplyFilterDirectly(DiscreteSignal signal)
         {
             var input = signal.Samples;
-            var a = _a32;
-            var b = _b32;
 
             var output = new float[input.Length];
 
             for (var n = 0; n < input.Length; n++)
             {
-                for (var k = 0; k < b.Length; k++)
+                for (var k = 0; k < _b.Length; k++)
                 {
-                    if (n >= k) output[n] += b[k] * input[n - k];
+                    if (n >= k) output[n] += _b[k] * input[n - k];
                 }
-                for (var m = 1; m < a.Length; m++)
+                for (var m = 1; m < _a.Length; m++)
                 {
-                    if (n >= m) output[n] -= a[m] * output[n - m];
+                    if (n >= m) output[n] -= _a[m] * output[n - m];
                 }
             }
 
@@ -252,11 +234,12 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Divide all filter coefficients by A[0]
+        /// Divide all filter coefficients by Tf.Denominator[0] if Tf is specified (double precision)
+        /// or by _a[0] otherwise (single precision)
         /// </summary>
         public void Normalize()
         {
-            var first = A[0];
+            var first = _tf != null ? _tf.Denominator[0] : _a[0];
 
             if (Math.Abs(first - 1.0) < 1e-10)
             {
@@ -267,17 +250,32 @@ namespace NWaves.Filters.Base
             {
                 throw new ArgumentException("The first A coefficient can not be zero!");
             }
-            
-            for (var i = 0; i < A.Length; i++)
-            {
-                A[i] /= first;
-                _a32[i] = (float) A[i];
-            }
 
-            for (var i = 0; i < B.Length; i++)
+            if (_tf != null)
             {
-                B[i] /= first;
-                _b32[i] = (float) B[i];
+                for (var i = 0; i < _a.Length; i++)
+                {
+                    _tf.Denominator[i] /= first;
+                    _a[i] = (float)_tf.Denominator[i];
+                }
+
+                for (var i = 0; i < _b.Length; i++)
+                {
+                    _tf.Numerator[i] /= first;
+                    _b[i] = (float)_tf.Numerator[i];
+                }
+            }
+            else
+            {
+                for (var i = 0; i < _a.Length; i++)
+                {
+                    _a[i] /= (float)first;
+                }
+
+                for (var i = 0; i < _b.Length; i++)
+                {
+                    _b[i] /= (float)first;
+                }
             }
         }
 
@@ -330,15 +328,28 @@ namespace NWaves.Filters.Base
 
         public void ApplyTo(double[] input, double[] output)
         {
+            double[] a, b;
+
+            if (_tf != null)
+            {
+                a = _tf.Denominator;
+                b = _tf.Numerator;
+            }
+            else
+            {
+                a = _a.ToDoubles();
+                b = _b.ToDoubles();
+            }
+
             for (var n = 0; n < input.Length; n++)
             {
-                for (var k = 0; k < _b.Length; k++)
+                for (var k = 0; k < b.Length; k++)
                 {
-                    if (n >= k) output[n] += _b[k] * input[n - k];
+                    if (n >= k) output[n] += b[k] * input[n - k];
                 }
-                for (var m = 1; m < _a.Length; m++)
+                for (var m = 1; m < a.Length; m++)
                 {
-                    if (n >= m) output[n] -= _a[m] * output[n - m];
+                    if (n >= m) output[n] -= a[m] * output[n - m];
                 }
             }
         }

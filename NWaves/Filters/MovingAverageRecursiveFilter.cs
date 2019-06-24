@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using NWaves.Filters.Base;
+﻿using NWaves.Filters.Base;
 using NWaves.Signals;
 
 namespace NWaves.Filters
@@ -30,7 +29,7 @@ namespace NWaves.Filters
         /// Constructor
         /// </summary>
         /// <param name="size">size of the filter</param>
-        public MovingAverageRecursiveFilter(int size = 9) : base(MakeTf(size))
+        public MovingAverageRecursiveFilter(int size = 9) : base(MakeNumerator(size), new[] { 1f, -1 })
         {
             Size = size;
         }
@@ -40,15 +39,14 @@ namespace NWaves.Filters
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
-        private static TransferFunction MakeTf(int size)
+        private static float[] MakeNumerator(int size)
         {
-            var b = Enumerable.Repeat(0.0, size + 1).ToArray();
-            b[0] = 1.0 / size;
-            b[size] = -1.0 / size;
+            var b = new float[size + 1];
 
-            var a = new[] { 1, -1.0 };
+            b[0] = 1f / size;
+            b[size] = -b[0];
 
-            return new TransferFunction(b, a);
+            return b;
         }
 
         /// <summary>
@@ -70,8 +68,8 @@ namespace NWaves.Filters
 
             var output = new float[input.Length];
 
-            var b0 = _b32[0];
-            var bs = _b32[Size];
+            var b0 = _b[0];
+            var bs = _b[Size];
 
             output[0] = input[0] * b0;
 
@@ -95,8 +93,8 @@ namespace NWaves.Filters
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var b0 = _b32[0];
-            var bs = _b32[Size];
+            var b0 = _b[0];
+            var bs = _b[Size];
 
             var output = b0 * sample + bs * _delayLineB[_delayLineOffsetB] + _out1;
 

@@ -149,8 +149,8 @@ namespace NWaves.Filters.Fda
         /// Design optimal equiripple filter
         /// </summary>
         /// <param name="maxIterations">Max number of iterations</param>
-        /// <returns></returns>
-        public TransferFunction Design(int maxIterations = 150)
+        /// <returns>Filter kernel</returns>
+        public double[] Design(int maxIterations = 150)
         {
             InitExtrema();
 
@@ -282,7 +282,7 @@ namespace NWaves.Filters.Fda
                 kernel[halfOrder - 1 + k] = kernel[halfOrder - 1 - k] = (FrequencyResponse[0] + 2 * sum) / Order;
             }
 
-            return new TransferFunction(kernel, new[] { 1.0 });
+            return kernel;
         }
 
         /// <summary>

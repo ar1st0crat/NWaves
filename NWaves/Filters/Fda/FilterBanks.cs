@@ -108,9 +108,7 @@ namespace NWaves.Filters.Fda
 
             for (var i = 0; i < filterBank.Length; i++)
             {
-                var tf = DesignFilter.Fir(fftSize / 4 + 1, filterBank[i].ToDoubles());
-
-                var filter = new FirFilter(tf);
+                var filter = new FirFilter(DesignFilter.Fir(fftSize / 4 + 1, filterBank[i].ToDoubles()));
 
                 filterBank[i] = filter.FrequencyResponse(fftSize).Magnitude.ToFloats();
 
@@ -476,8 +474,8 @@ namespace NWaves.Filters.Fda
                 var filter3 = new IirFilter(new[] { a0, a13, a2 }, new[] { b0, b1, b2 });
                 var filter4 = new IirFilter(new[] { a0, a14, a2 }, new[] { b0, b1, b2 });
 
-                var ir = new double[fftSize];
-                ir[0] = 1.0;
+                var ir = new DiscreteSignal(1, fftSize);
+                ir[0] = 1.0f;
 
                 // for doubles the following code will work ok
                 // (however there's a crucial lost of precision in case of floats):
@@ -487,17 +485,9 @@ namespace NWaves.Filters.Fda
 
                 // this code is ok both for floats and for doubles:
 
-                var ir1 = new double [fftSize];
-                var ir2 = new double [fftSize];
-                var ir3 = new double [fftSize];
-                var ir4 = new double [fftSize];
+                var chain = new FilterChain(new[] { filter1, filter2, filter3, filter4 });
 
-                filter1.ApplyTo(ir,  ir1);
-                filter2.ApplyTo(ir1, ir2);
-                filter3.ApplyTo(ir2, ir3);
-                filter4.ApplyTo(ir3, ir4);
-
-                var kernel = new DiscreteSignal(1, ir4.Select(s => (float)(s / gain)));
+                var kernel = chain.ApplyTo(ir);
                 
                 erbFilterBank[i] = fft.PowerSpectrum(kernel, false).Samples;
             }

@@ -22,11 +22,11 @@ namespace NWaves.Filters.Fda
         /// <param name="magnitudeResponse">Magnitude response</param>
         /// <param name="phaseResponse">Phase response</param>
         /// <param name="window">Window</param>
-        /// <returns>FIR filter transfer function</returns>
-        public static TransferFunction Fir(int order,
-                                           double[] magnitudeResponse,
-                                           double[] phaseResponse = null,
-                                           WindowTypes window = WindowTypes.Blackman)
+        /// <returns>FIR filter kernel</returns>
+        public static double[] Fir(int order,
+                                   double[] magnitudeResponse,
+                                   double[] phaseResponse = null,
+                                   WindowTypes window = WindowTypes.Blackman)
         {
             Guard.AgainstEvenNumber(order, "The order of the filter");
 
@@ -55,7 +55,7 @@ namespace NWaves.Filters.Fda
             
             kernel.ApplyWindow(window);
 
-            return new TransferFunction(kernel, new[] { 1.0 });
+            return kernel;
         }
 
         /// <summary>
@@ -64,8 +64,8 @@ namespace NWaves.Filters.Fda
         /// <param name="order">Filter order</param>
         /// <param name="frequencyResponse">Complex frequency response</param>
         /// <param name="window">Window</param>
-        /// <returns>FIR filter transfer function</returns>
-        public static TransferFunction Fir(int order, ComplexDiscreteSignal frequencyResponse, WindowTypes window = WindowTypes.Blackman)
+        /// <returns>FIR filter kernel</returns>
+        public static double[] Fir(int order, ComplexDiscreteSignal frequencyResponse, WindowTypes window = WindowTypes.Blackman)
         {
             return Fir(order, frequencyResponse.Real, frequencyResponse.Imag, window);
         }
@@ -77,7 +77,7 @@ namespace NWaves.Filters.Fda
         /// <param name="freq"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static TransferFunction FirWin(int order, double freq, WindowTypes window = WindowTypes.Blackman)
+        public static double[] FirWin(int order, double freq, WindowTypes window = WindowTypes.Blackman)
         {
             Guard.AgainstEvenNumber(order, "The order of the filter");
 
@@ -95,7 +95,7 @@ namespace NWaves.Filters.Fda
 
             kernel.ApplyWindow(window);
 
-            return new TransferFunction(kernel, new[] { 1.0 });
+            return kernel;
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace NWaves.Filters.Fda
         /// <param name="rippleStop"></param>
         /// <param name="order"></param>
         /// <returns></returns>
-        public static TransferFunction FirEquiripple(double fp, double fa, double ripplePass = 1, double rippleStop = 20, int order = 0)
+        public static double[] FirEquiripple(double fp, double fa, double ripplePass = 1, double rippleStop = 20, int order = 0)
         {
             return new Remez(new[] { 0, fp, fa, 0.5 }, new[] { ripplePass, rippleStop }, order).Design();
         }
@@ -118,24 +118,26 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Method for making HP filter from the linear-phase LP filter
         /// </summary>
-        /// <param name="filter"></param>
+        /// <param name="kernel"></param>
         /// <returns></returns>
-        public static TransferFunction FirLpToHp(TransferFunction tf)
+        public static double[] FirLpToHp(double[] kernel)
         {
-            var kernel = tf.Numerator.Select(k => -k).ToArray();
-            kernel[kernel.Length / 2] += 1.0;
-            return new TransferFunction(kernel, new[] { 1.0 });
+            Guard.AgainstEvenNumber(kernel.Length, "The order of the filter");
+
+            var kernelHp = kernel.Select(k => -k).ToArray();
+            kernelHp[kernelHp.Length / 2] += 1.0;
+            return kernelHp;
         }
 
         /// <summary>
         /// Method for making LP filter from the linear-phase HP filter
-        /// (not different from LpToHp method)
+        /// (not different from FirLpToHp method)
         /// </summary>
-        /// <param name="filter"></param>
+        /// <param name="kernel"></param>
         /// <returns></returns>
-        public static TransferFunction FirHpToLp(TransferFunction tf)
+        public static double[] FirHpToLp(double[] kernel)
         {
-            return FirLpToHp(tf);
+            return FirLpToHp(kernel);
         }
 
         /// <summary>
@@ -146,16 +148,16 @@ namespace NWaves.Filters.Fda
         /// <param name="freq2"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static TransferFunction FirLpToBp(int order, double freq1, double freq2, WindowTypes window = WindowTypes.Blackman)
+        public static double[] FirLpToBp(int order, double freq1, double freq2, WindowTypes window = WindowTypes.Blackman)
         {
             Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
 
-            var tf1 = FirLpToHp(FirWin(order, freq1, window));
-            var tf2 = FirWin(order, freq2, window);
+            var tf1 = new TransferFunction(FirLpToHp(FirWin(order, freq1, window)));
+            var tf2 = new TransferFunction(FirWin(order, freq2, window));
 
             var tf = tf1 * tf2;
 
-            return new TransferFunction(tf.Numerator.Skip(order/2).Take(order).ToArray(), new[] { 1.0 });
+            return tf.Numerator.Skip(order/2).Take(order).ToArray();
         }
 
         /// <summary>
@@ -166,14 +168,14 @@ namespace NWaves.Filters.Fda
         /// <param name="freq2"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static TransferFunction FirLpToBs(int order, double freq1, double freq2, WindowTypes window = WindowTypes.Blackman)
+        public static double[] FirLpToBs(int order, double freq1, double freq2, WindowTypes window = WindowTypes.Blackman)
         {
             Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
 
-            var tf1 = FirWin(order, freq1, window);
-            var tf2 = FirLpToHp(FirWin(order, freq2, window));
+            var tf1 = new TransferFunction(FirWin(order, freq1, window));
+            var tf2 = new TransferFunction(FirLpToHp(FirWin(order, freq2, window)));
 
-            return tf1 + tf2;
+            return (tf1 + tf2).Numerator;
         }
 
         #endregion

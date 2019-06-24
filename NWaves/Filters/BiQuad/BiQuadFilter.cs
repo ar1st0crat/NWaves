@@ -16,10 +16,24 @@ namespace NWaves.Filters.BiQuad
         private float _out2;
 
         /// <summary>
-        /// Constructor for subclasses
+        /// Constructor
         /// </summary>
-        /// <param name="tf"></param>
-        protected BiQuadFilter(TransferFunction tf) : base(tf)
+        protected BiQuadFilter() : base(new[] { 1.0, 0, 0 }, new[] { 1.0, 0, 0 })
+        {
+        }
+
+        /// <summary>
+        /// Constructor for user-defined TF
+        /// </summary>
+        /// <param name="b0"></param>
+        /// <param name="b1"></param>
+        /// <param name="b2"></param>
+        /// <param name="a0"></param>
+        /// <param name="a1"></param>
+        /// <param name="a2"></param>
+        protected BiQuadFilter(double b0, double b1, double b2,
+                               double a0, double a1, double a2) : 
+            base(new[] { b1, b1, b2 }, new[] { a0, a1, a2 })
         {
         }
 
@@ -30,7 +44,7 @@ namespace NWaves.Filters.BiQuad
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var output = _b32[0] * sample + _b32[1] * _in1 + _b32[2] * _in2 - _a32[1] * _out1 - _a32[2] * _out2;
+            var output = _b[0] * sample + _b[1] * _in1 + _b[2] * _in2 - _a[1] * _out1 - _a[2] * _out2;
 
             _in2 = _in1;
             _in1 = sample;

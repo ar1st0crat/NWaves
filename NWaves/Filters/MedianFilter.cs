@@ -1,5 +1,4 @@
-﻿using System;
-using NWaves.Filters.Base;
+﻿using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Utils;
 

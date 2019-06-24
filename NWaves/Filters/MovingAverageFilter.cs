@@ -31,9 +31,9 @@ namespace NWaves.Filters
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
-        private static IEnumerable<double> MakeKernel(int size)
+        private static IEnumerable<float> MakeKernel(int size)
         {
-            return Enumerable.Repeat(1.0 / size, size);
+            return Enumerable.Repeat(1f / size, size);
         }
     }
 }

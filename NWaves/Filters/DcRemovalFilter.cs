@@ -17,7 +17,7 @@ namespace NWaves.Filters
         /// Constructor creates simple 1st order recursive filter
         /// </summary>
         /// <param name="r">R coefficient (usually in [0.9, 1] range)</param>
-        public DcRemovalFilter(double r = 0.995) : base(new [] {1, -1.0}, new [] {1, -r})
+        public DcRemovalFilter(double r = 0.995) : base(new [] { 1.0, -1 }, new [] { 1.0, -r })
         {
         }
 
@@ -28,7 +28,7 @@ namespace NWaves.Filters
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var output = _b32[0] * sample + _b32[1] * _in1 - _a32[1] * _out1;
+            var output = _b[0] * sample + _b[1] * _in1 - _a[1] * _out1;
             _in1 = sample;
             _out1 = output;
 

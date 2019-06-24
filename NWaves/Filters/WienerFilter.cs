@@ -1,7 +1,6 @@
 ﻿using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Utils;
-using System;
 
 namespace NWaves.Filters
 {

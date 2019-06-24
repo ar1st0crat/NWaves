@@ -1,5 +1,4 @@
 ﻿using System;
-using NWaves.Filters.Base;
 
 namespace NWaves.Filters.BiQuad
 {
@@ -11,49 +10,48 @@ namespace NWaves.Filters.BiQuad
     public class LowPassFilter : BiQuadFilter
     {
         /// <summary>
-        /// Constructor computes the filter coefficients.
+        /// Frequency
+        /// </summary>
+        public double Freq { get; protected set; }
+
+        /// <summary>
+        /// Q
+        /// </summary>
+        public double Q { get; protected set; }
+
+        /// <summary>
+        /// Constructor
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="q"></param>
-        public LowPassFilter(double freq, double q = 1) : base(MakeTf(freq, q))
+        public LowPassFilter(double freq, double q = 1)
         {
-            Normalize();
+            SetCoefficients(freq, q);
         }
 
         /// <summary>
-        /// TF generator
+        /// Set filter coefficients
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="q"></param>
-        private static void MakeTf(double freq, double q, double[] b, double[] a)
+        private void SetCoefficients(double freq, double q)
         {
+            Freq = freq;
+            Q = q;
+
             var omega = 2 * Math.PI * freq;
             var alpha = Math.Sin(omega) / (2 * q);
             var cosw = Math.Cos(omega);
 
-            b[0] = (1 - cosw) / 2;
-            b[1] = 1 - cosw;
-            b[2] = b[0];
+            _b[0] = (float)((1 - cosw) / 2);
+            _b[1] = (float)(1 - cosw);
+            _b[2] = _b[0];
 
-            a[0] = 1 + alpha;
-            a[1] = -2 * cosw;
-            a[2] = 1 - alpha;
-        }
+            _a[0] = (float)(1 + alpha);
+            _a[1] = (float)(-2 * cosw);
+            _a[2] = (float)(1 - alpha);
 
-        /// <summary>
-        /// TF generator
-        /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="q"></param>
-        /// <returns></returns>
-        private static TransferFunction MakeTf(double freq, double q)
-        {
-            var b = new double[3];
-            var a = new double[3];
-
-            MakeTf(freq, q, b, a);
-
-            return new TransferFunction(b, a);
+            Normalize();
         }
 
         /// <summary>
@@ -63,8 +61,7 @@ namespace NWaves.Filters.BiQuad
         /// <param name="q"></param>
         public void Change(double freq, double q = 1)
         {
-            MakeTf(freq, q, _b, _a);
-            Normalize();
+            SetCoefficients(freq, q);
         }
     }
 }

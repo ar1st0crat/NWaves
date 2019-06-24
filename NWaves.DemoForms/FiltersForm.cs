@@ -657,6 +657,11 @@ namespace NWaves.DemoForms
 
             _filter = new FirFilter(DesignFilter.FirWin(order, freq));
 
+            // for double precision and FDA:
+
+            //var tf = new TransferFunction(DesignFilter.FirWin(order, freq));
+            //_filter = new FirFilter(tf);
+
             filterParamsDataGrid.RowCount = 2;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
             filterParamsDataGrid.Rows[0].Cells[1].Value = order;

@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using NWaves.Signals;
 
 namespace NWaves.Filters.Base
 {
     /// <summary>
     /// Chain of filters
     /// </summary>
-    public class FilterChain : IOnlineFilter
+    public class FilterChain : IFilter, IOnlineFilter
     {
         /// <summary>
         /// List of filters in the chain
@@ -57,6 +58,17 @@ namespace NWaves.Filters.Base
             {
                 filter.Reset();
             }
+        }
+
+        /// <summary>
+        /// Offline filtering
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
+        {
+            return new DiscreteSignal(signal.SamplingRate, signal.Samples.Select(s => Process(s)));
         }
     }
 }

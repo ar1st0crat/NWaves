@@ -1,5 +1,4 @@
 ﻿using System;
-using NWaves.Filters.Base;
 
 namespace NWaves.Filters.OnePole
 {
@@ -9,38 +8,31 @@ namespace NWaves.Filters.OnePole
     public class LowPassFilter : OnePoleFilter
     {
         /// <summary>
-        /// Constructor computes the filter coefficients.
+        /// Frequency
+        /// </summary>
+        public double Freq { get; protected set; }
+
+        /// <summary>
+        /// Constructor
         /// </summary>
         /// <param name="freq"></param>
-        public LowPassFilter(double freq) : base(MakeTf(freq))
+        public LowPassFilter(double freq)
         {
+            SetCoefficients(freq);
         }
 
         /// <summary>
-        /// TF generator
+        /// Set filter coefficients
         /// </summary>
         /// <param name="freq"></param>
-        public static void MakeTf(double freq, double[] b, double[] a)
+        private void SetCoefficients(double freq)
         {
-            a[0] = 1;
-            a[1] = -Math.Exp(-2 * Math.PI * freq);
+            Freq = freq;
 
-            b[0] = 1 + a[1];
-        }
+            _a[0] = 1;
+            _a[1] = (float)(-Math.Exp(-2 * Math.PI * freq));
 
-        /// <summary>
-        /// TF generator
-        /// </summary>
-        /// <param name="freq"></param>
-        /// <returns></returns>
-        private static TransferFunction MakeTf(double freq)
-        {
-            var b = new double[1];
-            var a = new double[2];
-
-            MakeTf(freq, b, a);
-
-            return new TransferFunction(b, a);
+            _b[0] = 1 + _a[1];
         }
 
         /// <summary>
@@ -50,8 +42,7 @@ namespace NWaves.Filters.OnePole
         /// <param name="q"></param>
         public void Change(double freq)
         {
-            MakeTf(freq, _b, _a);
-            Normalize();
+            SetCoefficients(freq);
         }
     }
 }

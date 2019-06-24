@@ -10,7 +10,7 @@ namespace NWaves.Filters
         /// <summary>
         /// Constructor
         /// </summary>
-        public RastaFilter() : base(new[] {0.2, 0.1, 0, -0.1, -0.2}, new [] {1, -0.98})
+        public RastaFilter(double pole = 0.98) : base(new[] { 0.2f, 0.1f, 0, -0.1f, -0.2f }, new[] { 1, -(float)pole })
         {
         }
     }
