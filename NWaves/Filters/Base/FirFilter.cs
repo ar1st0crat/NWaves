@@ -214,7 +214,12 @@ namespace NWaves.Filters.Base
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
-        public static FirFilter operator *(FirFilter filter1, FirFilter filter2) => new FirFilter(filter1.Tf * filter2.Tf);
+        public static FirFilter operator *(FirFilter filter1, FirFilter filter2)
+        {
+            var tf = filter1.Tf * filter2.Tf;
+
+            return new FirFilter(tf.Numerator);
+        }
 
         /// <summary>
         /// Sequential combination of an FIR and IIR filter
@@ -222,7 +227,12 @@ namespace NWaves.Filters.Base
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
-        public static IirFilter operator *(FirFilter filter1, IirFilter filter2) => new IirFilter(filter1.Tf * filter2.Tf);
+        public static IirFilter operator *(FirFilter filter1, IirFilter filter2)
+        {
+            var tf = filter1.Tf * filter2.Tf;
+
+            return new IirFilter(tf.Numerator, tf.Denominator);
+        }
 
         /// <summary>
         /// Parallel combination of two FIR filters
@@ -230,7 +240,12 @@ namespace NWaves.Filters.Base
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
-        public static FirFilter operator +(FirFilter filter1, FirFilter filter2) => new FirFilter(filter1.Tf + filter2.Tf);
+        public static FirFilter operator +(FirFilter filter1, FirFilter filter2)
+        {
+            var tf = filter1.Tf + filter2.Tf;
+
+            return new FirFilter(tf.Numerator);
+        }
 
         /// <summary>
         /// Parallel combination of an FIR and IIR filter
@@ -238,6 +253,11 @@ namespace NWaves.Filters.Base
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
-        public static IirFilter operator +(FirFilter filter1, IirFilter filter2) => new IirFilter(filter1.Tf + filter2.Tf);
+        public static IirFilter operator +(FirFilter filter1, IirFilter filter2)
+        {
+            var tf = filter1.Tf + filter2.Tf;
+
+            return new IirFilter(tf.Numerator, tf.Denominator);
+        }
     }
 }

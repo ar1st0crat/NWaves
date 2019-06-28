@@ -123,8 +123,11 @@ namespace NWaves.DemoForms
                 case "Thiran":
                     AnalyzeThiranFilter();
                     break;
-                case "Equiripple":
-                    AnalyzeEquirippleFilter();
+                case "Equiripple LP":
+                    AnalyzeEquirippleLpFilter();
+                    break;
+                case "Equiripple BS":
+                    AnalyzeEquirippleBsFilter();
                     break;
                 case "Custom LP/HP":
                     AnalyzeCustomLpFilter();
@@ -612,13 +615,13 @@ namespace NWaves.DemoForms
             filterParamsDataGrid.Rows[1].Cells[1].Value = delta;
         }
 
-        private void AnalyzeEquirippleFilter()
+        private void AnalyzeEquirippleLpFilter()
         {
-            var order = 35;
-            var fp = 0.19;
-            var fa = 0.21;
-            var ripplePass = 3.0;
-            var rippleStop = 20.0;
+            var order = 47;
+            var fp = 0.15;
+            var fa = 0.18;
+            var ripplePass = 1.0;   // dB
+            var rippleStop = 42.0;  // dB
 
             if (filterParamsDataGrid.RowCount > 0)
             {
@@ -632,18 +635,10 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            //var remez = new Remez(new[] { 0, fp, fa, 0.5 }, new[] { ripplePass, rippleStop }, order, BandForm.LowPass);
-            var remez = new Remez(new[] { 0, fp, fa, 0.4, 0.42, 0.5 }, new[] { rippleStop, ripplePass, rippleStop }, order, BandForm.BandPass, 16);
-            //var remez = new Remez(new[] { 0, fp, fa, 0.3, 0.31, 0.5 }, new[] { ripplePass, rippleStop, ripplePass }, order, BandForm.BandStop, 10);
-            _filter = new FirFilter(remez.Design(maxIterations: 200));
+            var wp = Remez.DbToPassbandWeight(ripplePass);
+            var wa = Remez.DbToStopbandWeight(rippleStop);
 
-            var extrema = string.Join("\t", Enumerable.Range(0, remez.L).Select(e => remez.Extrs[e].ToString("F5")));
-            var message = $"Iterations: {remez.Iterations}\n\nEstimated order: {Remez.EstimateOrder(fp, fa, ripplePass, rippleStop)}\n\nExtrema:\n{extrema}";
-            MessageBox.Show(message);
-
-            // or simply design like this:
-
-            //_filter = DesignFilter.FirEquiripple(fp, fa, ripplePass, rippleStop, order);
+            _filter = new FirFilter(DesignFilter.FirEquirippleLp(order, fp, fa, wp, wa));
 
             filterParamsDataGrid.RowCount = 5;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
@@ -656,6 +651,62 @@ namespace NWaves.DemoForms
             filterParamsDataGrid.Rows[3].Cells[1].Value = ripplePass;
             filterParamsDataGrid.Rows[4].Cells[0].Value = "rs";
             filterParamsDataGrid.Rows[4].Cells[1].Value = rippleStop;
+        }
+
+        private void AnalyzeEquirippleBsFilter()
+        {
+            var order = 51;
+            var fp1 = 0.19;
+            var fa1 = 0.21;
+            var fa2 = 0.39;
+            var fp2 = 0.41;
+            var ripplePass1 = 1.0;
+            var rippleStop = 24.0;
+            var ripplePass2 = 3.0;
+
+            if (filterParamsDataGrid.RowCount > 0)
+            {
+                order = Convert.ToInt32(filterParamsDataGrid.Rows[0].Cells[1].Value);
+                fp1 = Convert.ToDouble(filterParamsDataGrid.Rows[1].Cells[1].Value);
+                fa1 = Convert.ToDouble(filterParamsDataGrid.Rows[2].Cells[1].Value);
+                fa2 = Convert.ToDouble(filterParamsDataGrid.Rows[3].Cells[1].Value);
+                fp2 = Convert.ToDouble(filterParamsDataGrid.Rows[4].Cells[1].Value);
+                ripplePass1 = Convert.ToDouble(filterParamsDataGrid.Rows[5].Cells[1].Value);
+                rippleStop = Convert.ToDouble(filterParamsDataGrid.Rows[6].Cells[1].Value);
+                ripplePass2 = Convert.ToDouble(filterParamsDataGrid.Rows[7].Cells[1].Value);
+            }
+
+            orderNumeratorTextBox.Text = (order - 1).ToString();
+            orderDenominatorTextBox.Text = (order - 1).ToString();
+
+            var w1 = Remez.DbToPassbandWeight(ripplePass1);
+            var w2 = Remez.DbToStopbandWeight(rippleStop);
+            var w3 = Remez.DbToPassbandWeight(ripplePass2);
+
+            var remez = new Remez(order, new[] { 0, fp1, fa1, fa2, fp2, 0.5 }, new[] { 1, 0, 1.0 }, new[] { w1, w2, w3 });
+            _filter = new FirFilter(remez.Design());
+
+            //var extrema = string.Join("\t", Enumerable.Range(0, remez.K).Select(e => remez.ExtremalFrequencies[e].ToString("F5")));
+            //var message = $"Iterations: {remez.Iterations}\n\nEstimated order: {Remez.EstimateOrder(fp, fa, ripplePass, rippleStop)}\n\nExtrema:\n{extrema}";
+            //MessageBox.Show(message);
+
+            filterParamsDataGrid.RowCount = 8;
+            filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
+            filterParamsDataGrid.Rows[0].Cells[1].Value = order;
+            filterParamsDataGrid.Rows[1].Cells[0].Value = "fp1";
+            filterParamsDataGrid.Rows[1].Cells[1].Value = fp1;
+            filterParamsDataGrid.Rows[2].Cells[0].Value = "fa1";
+            filterParamsDataGrid.Rows[2].Cells[1].Value = fa1;
+            filterParamsDataGrid.Rows[3].Cells[0].Value = "fa2";
+            filterParamsDataGrid.Rows[3].Cells[1].Value = fa2;
+            filterParamsDataGrid.Rows[4].Cells[0].Value = "fp2";
+            filterParamsDataGrid.Rows[4].Cells[1].Value = fp2;
+            filterParamsDataGrid.Rows[5].Cells[0].Value = "rp1";
+            filterParamsDataGrid.Rows[5].Cells[1].Value = ripplePass1;
+            filterParamsDataGrid.Rows[6].Cells[0].Value = "rs";
+            filterParamsDataGrid.Rows[6].Cells[1].Value = rippleStop;
+            filterParamsDataGrid.Rows[7].Cells[0].Value = "rp2";
+            filterParamsDataGrid.Rows[7].Cells[1].Value = ripplePass2;
         }
 
         private void AnalyzeCustomLpFilter()

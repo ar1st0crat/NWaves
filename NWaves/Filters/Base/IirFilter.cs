@@ -260,15 +260,22 @@ namespace NWaves.Filters.Base
             {
                 _b[i] /= a0;
             }
+
+            _tf?.Normalize();
         }
 
         /// <summary>
-        /// Sequential combination of two IIR filters.
+        /// Sequential combination of an IIR filter and any LTI filter.
         /// </summary>
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
-        public static IirFilter operator *(IirFilter filter1, IirFilter filter2) => new IirFilter(filter1.Tf * filter2.Tf);
+        public static IirFilter operator *(IirFilter filter1, LtiFilter filter2)
+        {
+            var tf = filter1.Tf * filter2.Tf;
+
+            return new IirFilter(tf.Numerator, tf.Denominator);
+        }
 
         /// <summary>
         /// Parallel combination of an IIR and any LTI filter.
@@ -276,6 +283,11 @@ namespace NWaves.Filters.Base
         /// <param name="filter1"></param>
         /// <param name="filter2"></param>
         /// <returns></returns>
-        public static IirFilter operator +(IirFilter filter1, LtiFilter filter2) => new IirFilter(filter1.Tf + filter2.Tf);
+        public static IirFilter operator +(IirFilter filter1, LtiFilter filter2)
+        {
+            var tf = filter1.Tf + filter2.Tf;
+
+            return new IirFilter(tf.Numerator, tf.Denominator);
+        }
     }
 }

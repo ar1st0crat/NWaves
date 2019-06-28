@@ -24,7 +24,7 @@ namespace NWaves.Filters.OnePole
         /// </summary>
         /// <param name="b"></param>
         /// <param name="a"></param>
-        protected OnePoleFilter(double b, double a) : base(new[] { b }, new [] { 1.0, a })
+        public OnePoleFilter(double b, double a) : base(new[] { b }, new [] { 1.0, a })
         {
         }
 

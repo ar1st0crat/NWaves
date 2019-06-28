@@ -134,21 +134,65 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Design equiripple FIR filter using Remez (Parks-McClellan) algorithm
+        /// Design equiripple LP FIR filter using Remez (Parks-McClellan) algorithm
         /// </summary>
-        /// <param name="freqs">
-        /// Frequencies in range [0, 0.5].
-        /// 
-        /// Examples:
-        /// - lowpass: { 0, 0.2, 0.22, 0.5 }
-        /// - bandstop: { 0, 0.2, 0.22, 0.3, 0.31, 0.5 }
-        /// </param>
-        /// <param name="ripples"></param>
-        /// <param name="order"></param>
-        /// <returns></returns>
-        public static double[] FirEquiripple(double[] freqs, double[] ripples, int order = 0)
+        /// <param name="order">Order</param>
+        /// <param name="fp">Passband edge frequency</param>
+        /// <param name="fa">Stopband edge frequency</param>
+        /// <param name="wp">Passband weight</param>
+        /// <param name="wa">Stopband weight</param>
+        /// <returns>Filter kernel</returns>
+        public static double[] FirEquirippleLp(int order, double fp, double fa, double wp, double wa)
         {
-            return new Remez(freqs, ripples, order).Design();
+            return new Remez(order, new[] { 0, fp, fa, 0.5 }, new[] { 1, 0.0 }, new[] { wp, wa }).Design();
+        }
+
+        /// <summary>
+        /// Design equiripple HP FIR filter using Remez (Parks-McClellan) algorithm
+        /// </summary>
+        /// <param name="order">Order</param>
+        /// <param name="fa">Stopband edge frequency</param>
+        /// <param name="fp">Passband edge frequency</param>
+        /// <param name="wa">Stopband weight</param>
+        /// <param name="wp">Passband weight</param>
+        /// <returns>Filter kernel</returns>
+        public static double[] FirEquirippleHp(int order, double fa, double fp, double wa, double wp)
+        {
+            return new Remez(order, new[] { 0, fa, fp, 0.5 }, new[] { 0, 1.0 }, new[] { wa, wp }).Design();
+        }
+
+        /// <summary>
+        /// Design equiripple BP FIR filter using Remez (Parks-McClellan) algorithm
+        /// </summary>
+        /// <param name="order">Order</param>
+        /// <param name="fa1">Left stopband edge frequency</param>
+        /// <param name="fp1">Passband left edge frequency</param>
+        /// <param name="fp2">Passband right edge frequency</param>
+        /// <param name="fa2">Right stopband edge frequency</param>
+        /// <param name="wa1">Left stopband weight</param>
+        /// <param name="wp">Passband weight</param>
+        /// <param name="wa2">Right stopband weight</param>
+        /// <returns>Filter kernel</returns>
+        public static double[] FirEquirippleBp(int order, double fa1, double fp1, double fp2, double fa2, double wa1, double wp, double wa2)
+        {
+            return new Remez(order, new[] { 0, fa1, fp1, fp2, fa2, 0.5 }, new[] { 0, 1.0, 0 }, new[] { wa1, wp, wa2 }).Design();
+        }
+
+        /// <summary>
+        /// Design equiripple BS FIR filter using Remez (Parks-McClellan) algorithm
+        /// </summary>
+        /// <param name="order">Order</param>
+        /// <param name="fp1">Left passband edge frequency</param>
+        /// <param name="fa1">Stopband left edge frequency</param>
+        /// <param name="fa2">Stopband right edge frequency</param>
+        /// <param name="fp2">Right passband edge frequency</param>
+        /// <param name="wp1">Left passband weight</param>
+        /// <param name="wa">Stopband weight</param>
+        /// <param name="wp2">Right passband weight</param>
+        /// <returns>Filter kernel</returns>
+        public static double[] FirEquirippleBs(int order, double fp1, double fa1, double fa2, double fp2, double wp1, double wa, double wp2)
+        {
+            return new Remez(order, new[] { 0, fp1, fa1, fa2, fp2, 0.5 }, new[] { 1, 0.0, 1 }, new[] { wp1, wa, wp2 }).Design();
         }
 
         /// <summary>

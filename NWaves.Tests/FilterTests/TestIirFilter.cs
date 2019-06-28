@@ -24,7 +24,7 @@ namespace NWaves.Tests.FilterTests
         [Test]
         public void TestImpulseResponse()
         {
-            AssertFilterOutput(new DiscreteSignal(1, _filter.ImpulseResponse().ToFloats()));
+            AssertFilterOutput(new DiscreteSignal(1, _filter.Tf.ImpulseResponse().ToFloats()));
         }
 
         [Test]

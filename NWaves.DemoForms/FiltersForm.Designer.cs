@@ -261,7 +261,8 @@ namespace NWaves.DemoForms
             "Elliptic",
             "Bessel",
             "Thiran",
-            "Equiripple",
+            "Equiripple LP",
+            "Equiripple BS",
             "Custom LP/HP",
             "Custom BP/BR"});
             this.filterTypesComboBox.Location = new System.Drawing.Point(12, 50);

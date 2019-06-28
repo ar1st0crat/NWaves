@@ -1,5 +1,4 @@
-﻿using NWaves.Filters.Base;
-using NWaves.Utils;
+﻿using NWaves.Utils;
 using System;
 using System.Linq;
 
@@ -7,7 +6,25 @@ namespace NWaves.Filters.Fda
 {
     /// <summary>
     /// Optimal equiripple filter designer based on Remez (Parks-McClellan) algorithm.
-    /// Supports all band forms: LP, HP, BP, BS.
+    /// 
+    /// Example:
+    /// 
+    ///     var order = 57;
+    ///     var freqs = new double[] { 0, 0.15, 0.17, 0.5 };
+    ///     var response = new double[] { 1, 0 };
+    ///     var weights = new double[] { 0.001, 0.1 };
+    ///     
+    ///     var remez = new Remez(order, freqs, response, weights);
+    ///     
+    ///     var kernel = remez.Design();
+    ///     
+    ///     // We can monitor the following properties:
+    /// 
+    ///     remez.Iterations
+    ///     remez.ExtremalFrequencies
+    ///     remez.InterpolatedResponse
+    ///     remez.Error
+    /// 
     /// </summary>
     public class Remez
     {
@@ -22,14 +39,14 @@ namespace NWaves.Filters.Fda
         public int Iterations { get; private set; }
 
         /// <summary>
-        /// Number of extremal frequencies
+        /// Number of extremal frequencies (K = Order/2 + 2)
         /// </summary>
-        public int L { get; private set; }
+        public int K { get; private set; }
 
         /// <summary>
-        /// Extremal frequencies
+        /// Interpolated frequency response
         /// </summary>
-        public double[] Extrs { get; private set; }
+        public double[] InterpolatedResponse { get; private set; }
 
         /// <summary>
         /// Array of errors
@@ -37,29 +54,39 @@ namespace NWaves.Filters.Fda
         public double[] Error { get; private set; }
 
         /// <summary>
-        /// Interpolated frequency response
+        /// Extremal frequencies
         /// </summary>
-        public double[] FrequencyResponse { get; private set; }
+        public double[] ExtremalFrequencies => _extrs.Select(e => _grid[e]).ToArray();
+        
+        /// <summary>
+        /// Tolerance (for computing denominators)
+        /// </summary>
+        private const double Tolerance = 1e-7;
 
         /// <summary>
-        /// Passband / stopband frequencies
+        /// Indices of extremal frequencies in the grid
+        /// </summary>
+        private int[] _extrs;
+
+        /// <summary>
+        /// Grid
+        /// </summary>
+        private double[] _grid;
+
+        /// <summary>
+        /// Band edge frequencies
         /// </summary>
         private readonly double[] _freqs;
 
         /// <summary>
-        /// Passband / stopband frequencies (one freq in LP/HP case and two freqs in BP/BS case)
+        /// Desired frequency response on entire grid
         /// </summary>
-        private readonly double _fp1, _fp2, _fa1, _fa2;
+        private double[] _desired;
 
         /// <summary>
-        /// Ripples in bands (two ripples in LP/HP case and three ripples in BP/BS case)
+        /// Weights on entire grid
         /// </summary>
-        private readonly double _d1, _d2, _d3;
-
-        /// <summary>
-        /// Grid frequencies (including transition bands)
-        /// </summary>
-        private readonly double[] _grid;
+        private double[] _weights;
 
         /// <summary>
         /// Points for interpolation
@@ -67,87 +94,81 @@ namespace NWaves.Filters.Fda
         private readonly double[] _points;
 
         /// <summary>
-        /// Beta coefficients used in Lagrange interpolation
+        /// Gamma coefficients used in Lagrange interpolation
         /// </summary>
-        private readonly double[] _betas;
+        private readonly double[] _gammas;
+
+        /// <summary>
+        /// Precomputed cosines
+        /// </summary>
+        private readonly double[] _cosTable;
+
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="freqs"></param>
-        /// <param name="ripples"></param>
         /// <param name="order"></param>
-        /// <param name="type"></param>
+        /// <param name="freqs"></param>
+        /// <param name="desired"></param>
+        /// <param name="weights"></param>
         /// <param name="gridDensity"></param>
-        public Remez(double[] freqs, double[] ripples, int order, BandForm type = BandForm.LowPass, int gridDensity = 8)
+        public Remez(int order, double[] freqs, double[] desired, double[] weights, int gridDensity = 16)
         {
             Guard.AgainstEvenNumber(order, "The order of the filter");
             Order = order;
 
+            K = Order / 2 + 2;
+
             _freqs = freqs;
 
-            // make uniform frequency grid: ===============================
+            MakeGrid(desired, weights, gridDensity);
 
-            var n = Order * gridDensity;
+            InterpolatedResponse = new double[_grid.Length];
+            Error = new double[_grid.Length];
 
-            var step = 0.5 / (n - 1);
-            _grid = Enumerable.Range(0, n).Select(g => g * step).ToArray();
+            _extrs = new int[K];
+            _points = new double[K];
+            _gammas = new double[K];
+            _cosTable = new double[K];
+        }
 
-            // ============================================================
+        /// <summary>
+        /// Make grid (uniform in each band)
+        /// </summary>
+        /// <param name="gridDensity"></param>
+        private void MakeGrid(double[] desired, double[] weights, int gridDensity = 16)
+        {
+            var gridSize = 0;
+            var bandSizes = new int[_freqs.Length / 2];
 
-            switch (type)
+            var step = 0.5 / (gridDensity * (K - 1));
+
+            for (var i = 0; i < bandSizes.Length; i++)
             {
-                case BandForm.LowPass:
-                    _fp1 = freqs[1];
-                    _fa1 = freqs[2];
-                    _d1 = PassbandDeltaFromDb(ripples[0]);
-                    _d2 = StopbandDeltaFromDb(ripples[1]);
-                    EvaluateError = EvaluateErrorLp;
-                    ExtremalResponse = ExtremalResponseLp;
-                    ErrorWeight = ErrorWeightLp;
-                    break;
-                case BandForm.HighPass:
-                    _fa1 = freqs[1];
-                    _fp1 = freqs[2];
-                    _d1 = StopbandDeltaFromDb(ripples[0]);
-                    _d2 = PassbandDeltaFromDb(ripples[1]);
-                    EvaluateError = EvaluateErrorHp;
-                    ExtremalResponse = ExtremalResponseHp;
-                    ErrorWeight = ErrorWeightHp;
-                    break;
-                case BandForm.BandPass:
-                    _fa1 = freqs[1];
-                    _fp1 = freqs[2];
-                    _fp2 = freqs[3];
-                    _fa2 = freqs[4];
-                    _d1 = StopbandDeltaFromDb(ripples[0]);
-                    _d2 = PassbandDeltaFromDb(ripples[1]);
-                    _d3 = StopbandDeltaFromDb(ripples[2]);
-                    EvaluateError = EvaluateErrorBp;
-                    ExtremalResponse = ExtremalResponseBp;
-                    ErrorWeight = ErrorWeightBp;
-                    break;
-                case BandForm.BandStop:
-                    _fp1 = freqs[1];
-                    _fa1 = freqs[2];
-                    _fa2 = freqs[3];
-                    _fp2 = freqs[4];
-                    _d1 = PassbandDeltaFromDb(ripples[0]);
-                    _d2 = StopbandDeltaFromDb(ripples[1]);
-                    _d3 = PassbandDeltaFromDb(ripples[2]);
-                    EvaluateError = EvaluateErrorBs;
-                    ExtremalResponse = ExtremalResponseBs;
-                    ErrorWeight = ErrorWeightBs;
-                    break;
+                bandSizes[i] = (int)((_freqs[2 * i + 1] - _freqs[2 * i]) / step + 0.5);
+
+                gridSize += bandSizes[i];
             }
 
-            L = (Order - 1) / 2 + _freqs.Length / 2 + 1;
+            _grid = new double[gridSize];
+            _weights = new double[gridSize];
+            _desired = new double[gridSize];
 
-            FrequencyResponse = new double[n];
-            Error = new double[n];
-            Extrs = new double[L];
-            _points = new double[L];
-            _betas = new double[L];
+            var gi = 0;
+
+            for (var i = 0; i < bandSizes.Length; i++)
+            {
+                var freq = _freqs[2 * i];
+
+                for (var k = 0; k < bandSizes[i]; k++, gi++, freq += step)
+                {
+                    _grid[gi] = freq;
+                    _weights[gi] = weights[i];
+                    _desired[gi] = desired[i];
+                }
+
+                _grid[gi - 1] = _freqs[2 * i + 1];
+            }
         }
 
         /// <summary>
@@ -155,37 +176,11 @@ namespace NWaves.Filters.Fda
         /// </summary>
         private void InitExtrema()
         {
-            L = (Order - 1) / 2 + _freqs.Length / 2 + 1;
-            
-            var bw = new double[_freqs.Length / 2];
-            var m = new double[bw.Length];
-            var w = new double[bw.Length];
+            var n = _grid.Length;
 
-            for (var k = 0; k < bw.Length; k++)
+            for (var k = 0; k < K; k++)
             {
-                bw[k] = _freqs[2 * k + 1] - _freqs[2 * k];
-            }
-
-            // uniform extrema in each band:
-
-            var i = 0;
-            var sum = 0.0;
-            for (; i < bw.Length - 1; i++)
-            {
-                m[i] = (int)(2 * bw[i] * L);
-                sum += m[i];
-            }
-            m[i] = L - sum;
-
-            var j = 0;
-            for (i = 0; i < bw.Length; i++)
-            {
-                w[i] = bw[i] / (m[i] - 1);
-
-                for (var k = 0; k < m[i]; k++)
-                {
-                    Extrs[j++] = _freqs[2 * i] + w[i] * k;
-                }
+                _extrs[k] = (int)(k * (n - 1.0) / (K - 1));
             }
         }
 
@@ -194,132 +189,248 @@ namespace NWaves.Filters.Fda
         /// </summary>
         /// <param name="maxIterations">Max number of iterations</param>
         /// <returns>Filter kernel</returns>
-        public double[] Design(int maxIterations = 150)
+        public double[] Design(int maxIterations = 100)
         {
             InitExtrema();
 
-            var n = _grid.Length;
+            var extrCandidates = new int[2 * K];
 
-            var prevDelta = 1.0;
-            
             for (Iterations = 0; Iterations < maxIterations; Iterations++)
             {
-                // 1) compute delta: =======================================================
+                // 1) Update gamma coefficients for extremal frequencies and interpolation points
+                // 2) Compute delta
 
-                var num = 0.0;
-                var den = 0.0;
-                var sign = 1;
+                UpdateCoefficients();
 
-                for (var i = 0; i < L; i++)
+                // 3) interpolate: ==============================================================
+                
+                for (var i = 0; i < _grid.Length; i++)
                 {
-                    var gamma = Gamma(i, L);
-
-                    var desired = ExtremalResponse(i);
-                    var weightInv = ErrorWeight(i);
-                    num += gamma * desired;
-                    den += sign * gamma * weightInv;
-                    sign = -sign;
+                    InterpolatedResponse[i] = Lagrange(_grid[i]);
                 }
 
-                var delta = num / den;
-
-                // 2) compute points for interpolation: ======================================
-
-                sign = 1;
-                for (var i = 0; i < L; i++)
-                {
-                    var desired = ExtremalResponse(i);
-                    var weightInv = ErrorWeight(i);
-
-                    _points[i] = desired - sign * delta * weightInv;
-                    sign = -sign;
-
-                    _betas[i] = Gamma(i, L - 1);
-                }
-
-                // 3) interpolate: ============================================================
-
-                for (var i = 0; i < FrequencyResponse.Length; i++)
-                {
-                    FrequencyResponse[i] = -1;
-                }
-                var epos = 0;
-                for (var i = 0; i < L; i++)
-                {
-                    var pos = Math.Min((int)(2 * Extrs[i] * n), n - 1);
-                    FrequencyResponse[pos] = _points[epos++];
-                }
+                // 4) evaluate error on entire grid: ============================================
 
                 for (var i = 0; i < _grid.Length; i++)
                 {
-                    if (FrequencyResponse[i] == -1) FrequencyResponse[i] = Lagrange(_grid[i], L - 1);
+                    Error[i] = _weights[i] * (_desired[i] - InterpolatedResponse[i]);
                 }
 
-                // 4) evaluate error (excluding transition bands): =============================
+                // 5) find extrema in error function (array): ===================================
 
-                EvaluateError();
+                var extrCount = 0;
+                var n = _grid.Length;
 
-                // 5) find extrema in error function (array): ==================================
+                // first, simply find all peaks of error function
+                // (alternation theorem guarantees that there'll be at least K peaks):
 
-                // don't touch first and last extrema positions, so start k from 1
-
-                var k = 1;
-                for (var i = 1; i < Error.Length - 1; i++)
+                if (Math.Abs(Error[0]) > Math.Abs(Error[1]))
                 {
-                    if (Error[i] > Error[i - 1] && Error[i] > Error[i + 1] && k < Extrs.Length)
+                    extrCandidates[extrCount++] = 0;
+                }
+                for (var i = 1; i < n - 1; i++)
+                {
+                    if ((Error[i] > 0.0 && Error[i] >= Error[i - 1] && Error[i] > Error[i + 1]) ||
+                        (Error[i] < 0.0 && Error[i] <= Error[i - 1] && Error[i] < Error[i + 1]))
                     {
-                        Extrs[k++] = _grid[i++];  // insert to extrs
+                        extrCandidates[extrCount++] = i;
                     }
                 }
-                if (k < Extrs.Length)
+                if (Math.Abs(Error[n - 1]) > Math.Abs(Error[n - 2]))
                 {
-                    Extrs[k++] = _grid[n - 1];
+                    extrCandidates[extrCount++] = n - 1;
                 }
 
-                L = Math.Min(k, L);
+                // less than K peaks? then algorithm's converged (theoretically)
 
-                Extrs[L - 1] = _grid[n - 1];
+                if (extrCount < K) break;
+
+
+                // if there are more than K extrema, then remove the least important one by one
+                // until we have the most important K extrema in the set:
+
+                while (extrCount > K)
+                {
+                    // find index of peak with minimum abs error:
+
+                    var indexToRemove = 0;
+
+                    for (var i = 1; i < extrCount; i++)
+                    {
+                        if (Math.Abs(Error[extrCandidates[i]]) < Math.Abs(Error[extrCandidates[indexToRemove]]))
+                        {
+                            indexToRemove = i;
+                        }
+                    }
+
+                    // remove extrCandidate with indexToRemove:
+
+                    extrCount--;
+
+                    for (var i = indexToRemove; i < extrCount; i++)
+                    {
+                        extrCandidates[i] = extrCandidates[i + 1];
+                    }
+                }
+
+                Array.Copy(extrCandidates, _extrs, K);
 
 
                 // 6) check if we should continue iterations: ==================================
 
-                // actually the stopping condition is different, but this one is also OK:
+                var maxError = Math.Abs(Error[0]);
+                var minError = maxError;
 
-                if (Math.Abs(delta - prevDelta) < 1e-25) break;
+                for (var k = 0; k < K; k++)
+                {
+                    var error = Math.Abs(Error[_extrs[k]]);
 
-                prevDelta = delta;
+                    if (error < minError) minError = error;
+                    if (error > maxError) maxError = error;
+                }
+
+                if ((maxError - minError) / minError < 1e-6) break;
             }
 
 
             // finally, compute impulse response from interpolated frequency response:
 
+            return ImpulseResponse();
+        }
+
+        /// <summary>
+        /// Update gamma coefficients, interpolation points and delta
+        /// </summary>
+        private void UpdateCoefficients()
+        {
+            // 0) update cos table for future calculations: ==============================
+
+            for (int i = 0; i < _cosTable.Length; i++)
+            {
+                _cosTable[i] = Math.Cos(2 * Math.PI * _grid[_extrs[i]]);
+            }
+
+            // 1) compute gamma coefficients: ============================================
+
+            var num = 0.0;
+            var den = 0.0;
+
+            for (int i = 0, sign = 1; i < K; i++, sign = -sign)
+            {
+                _gammas[i] = Gamma(i);
+
+                num += _gammas[i] * _desired[_extrs[i]];
+                den += sign * _gammas[i] / _weights[_extrs[i]];
+            }
+
+            // 2) compute delta: =========================================================
+
+            var delta = num / den;
+
+            // 3) compute points for interpolation: ======================================
+
+            for (int i = 0, sign = 1; i < K; i++, sign = -sign)
+            {
+                _points[i] = _desired[_extrs[i]] - sign * delta / _weights[_extrs[i]];
+            }
+        }
+
+        /// <summary>
+        /// Reconstruct impulse response from interpolated frequency response
+        /// </summary>
+        /// <returns></returns>
+        private double[] ImpulseResponse()
+        {
+            UpdateCoefficients();
+
+            var halfOrder = Order / 2;
+
+            // optional: pre-calculate lagrange interpolated values =====================
+
+            var lagr = Enumerable.Range(0, halfOrder + 1)
+                                 .Select(i => Lagrange((double)i / Order))
+                                 .ToArray();
+
+            // compute kernel (impulse response): =======================================
+
             var kernel = new double[Order];
 
-            var halfOrder = Order / 2 + 1;
-
-            // optional: pre-calculate lagrange interpolated values ============
-
-            var lagr = new double[halfOrder];
-            for (var i = 1; i < halfOrder; i++)
-            {
-                lagr[i] = Lagrange((double)i / Order, L - 1);
-            }
-            // =================================================================
-
-            for (var k = 0; k < halfOrder; k++)
+            for (var k = 0; k < Order; k++)
             {
                 var sum = 0.0;
-                for (var i = 1; i < halfOrder; i++)
+                for (var i = 1; i <= halfOrder; i++)
                 {
-                    sum += lagr[i] * Math.Cos(2 * Math.PI * i * k / Order);
+                    sum += lagr[i] * Math.Cos(2 * Math.PI * i * (k - halfOrder) / Order);
                 }
 
-                kernel[halfOrder - 1 + k] = kernel[halfOrder - 1 - k] = (FrequencyResponse[0] + 2 * sum) / Order;
+                kernel[k] = (lagr[0] + 2 * sum) / Order;
             }
 
             return kernel;
         }
 
+        /// <summary>
+        /// Compute gamma coefficient
+        /// </summary>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        private double Gamma(int k)
+        {
+            var jet = (K - 1) / 15 + 1;     // as in original Rabiner's code; without it there'll be numerical issues 
+            var den = 1.0;
+
+            for (var j = 0; j < jet; j++)
+            {
+                for (var i = j; i < K; i += jet)
+                {
+                    if (i != k) den *= 2 * (_cosTable[k] - _cosTable[i]);
+                }
+            }
+
+            if (Math.Abs(den) < Tolerance) den = Tolerance;
+
+            return 1 / den;
+        }
+
+        /// <summary>
+        /// Barycentric Lagrange interpolation
+        /// </summary>
+        /// <param name="freq"></param>
+        /// <returns></returns>
+        private double Lagrange(double freq)
+        {
+            var num = 0.0;
+            var den = 0.0;
+
+            var cosFreq = Math.Cos(2 * Math.PI * freq);
+
+            for (var i = 0; i < K; i++)
+            {
+                var cosDiff = cosFreq - _cosTable[i];
+
+                if (Math.Abs(cosDiff) < Tolerance) return _points[i];
+
+                cosDiff = _gammas[i] / cosDiff;
+                den += cosDiff;
+                num += cosDiff * _points[i];
+            }
+
+            return num / den;
+        }
+
+        /// <summary>
+        /// Convert ripple decibel value to passband weight
+        /// </summary>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public static double DbToPassbandWeight(double db) => (Math.Pow(10, db / 20) - 1) / (Math.Pow(10, db / 20) + 1);
+
+        /// <summary>
+        /// Convert ripple decibel value to stopband weight
+        /// </summary>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public static double DbToStopbandWeight(double db) => Math.Pow(10, -db / 20);
 
         /// <summary>
         /// Estimate filter order according to [Herrman et al., 1973].
@@ -332,8 +443,8 @@ namespace NWaves.Filters.Fda
         /// <returns></returns>
         public static int EstimateOrder(double fp, double fa, double ripplePass, double rippleStop)
         {
-            var rp = PassbandDeltaFromDb(ripplePass);
-            var rs = StopbandDeltaFromDb(rippleStop);
+            var rp = DbToPassbandWeight(ripplePass);
+            var rs = DbToStopbandWeight(rippleStop);
 
             if (rp < rs)
             {
@@ -353,157 +464,5 @@ namespace NWaves.Filters.Fda
 
             return l % 2 == 1 ? l : l + 1;
         }
-
-        public static double PassbandDeltaFromDb(double db) => (Math.Pow(10, db / 20) - 1) / (Math.Pow(10, db / 20) + 1);
-
-        public static double StopbandDeltaFromDb(double db) => Math.Pow(10, -db / 20);
-
-
-        #region helping functions
-
-        private double CosDifference(double f1, double f2) => Math.Cos(2 * Math.PI * f1) - Math.Cos(2 * Math.PI * f2);
-
-        private double Gamma(int k, int n)
-        {
-            var prod = 1.0;
-            for (var i = 0; i < n; i++)
-            {
-                if (i != k) prod *= 1 / CosDifference(Extrs[k], Extrs[i]);
-            }
-            return prod;
-        }
-
-        private double Lagrange(double freq, int n)
-        {
-            var num = 0.0;
-            var den = 0.0;
-
-            for (var k = 0; k < n; k++)
-            {
-                num += _points[k] * _betas[k] / CosDifference(freq, Extrs[k]);
-                den += _betas[k] / CosDifference(freq, Extrs[k]);
-            }
-
-            return num / den;
-        }
-
-        #endregion
-
-
-        #region Code that depends on the band form
-
-        private readonly Func<int, int> ExtremalResponse;
-
-        private int ExtremalResponseLp(int idx) => Extrs[idx] <= _fp1 ? 1 : 0;
-        private int ExtremalResponseHp(int idx) => Extrs[idx] >= _fp1 ? 1 : 0;
-        private int ExtremalResponseBp(int idx) => Extrs[idx] >= _fp1 && Extrs[idx] <= _fp2 ? 1 : 0;
-        private int ExtremalResponseBs(int idx) => Extrs[idx] <= _fp1 || Extrs[idx] >= _fp2 ? 1 : 0;
-
-        private readonly Func<int, double> ErrorWeight;
-
-        private double ErrorWeightLp(int idx) => Extrs[idx] <= _fp1 ? _d1 : _d2;
-        private double ErrorWeightHp(int idx) => Extrs[idx] >= _fp1 ? _d1 : _d2;
-        private double ErrorWeightBp(int idx) => Extrs[idx] <= _fp1 ? _d1 : Extrs[idx] <= _fp2 ? _d2 : _d3;
-        private double ErrorWeightBs(int idx) => Extrs[idx] <= _fp1 ? _d1 : Extrs[idx] <= _fp2 ? _d2 : _d3;
-
-        private readonly Action EvaluateError;
-
-        /// <summary>
-        /// Evaluate error for LP band form
-        /// </summary>
-        private void EvaluateErrorLp()
-        {
-            for (var i = 0; i < _grid.Length; i++)
-            {
-                if (_grid[i] < _fp1 || _grid[i] > _fa1)
-                {
-                    var desired = _grid[i] <= _fp1 ? 1 : 0;
-                    var weight = _grid[i] <= _fp1 ? _d2 / _d1 : 1;
-
-                    Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Evaluate error for HP band form
-        /// </summary>
-        private void EvaluateErrorHp()
-        {
-            for (var i = 0; i < _grid.Length; i++)
-            {
-                if (_grid[i] > _fp1 || _grid[i] < _fa1)
-                {
-                    var desired = _grid[i] >= _fp1 ? 1 : 0;
-                    var weight = _grid[i] >= _fp1 ? _d1 / _d2 : 1;
-
-                    Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Evaluate error for BP band form
-        /// </summary>
-        private void EvaluateErrorBp()
-        {
-            int desired;
-            double weight;
-
-            for (var i = 0; i < _grid.Length; i++)
-            {
-                if (_grid[i] < _fa1)
-                {
-                    desired = 0;
-                    weight = _d1;
-                }
-                else if (_grid[i] > _fp1 && _grid[i] < _fp2)
-                {
-                    desired = 1;
-                    weight = _d2;
-                }
-                else if (_grid[i] > _fa2)
-                {
-                    desired = 0;
-                    weight = _d3;
-                }
-                else continue;
-
-                Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
-            }
-        }
-
-        /// <summary>
-        /// Evaluate error for BS band form
-        /// </summary>
-        private void EvaluateErrorBs()
-        {
-            int desired;
-            double weight;
-
-            for (var i = 0; i < _grid.Length; i++)
-            {
-                if (_grid[i] < _fp1)
-                {
-                    desired = 1;
-                    weight = _d1;
-                }
-                else if (_grid[i] > _fa1 && _grid[i] < _fa2)
-                {
-                    desired = 0;
-                    weight = _d2;
-                }
-                else if (_grid[i] > _fp2)
-                {
-                    desired = 1;
-                    weight = _d3;
-                }
-                else continue;
-
-                Error[i] = Math.Abs(weight * (desired - FrequencyResponse[i]));
-            }
-        }
-
-        #endregion
     }
 }
