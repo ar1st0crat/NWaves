@@ -133,7 +133,13 @@ namespace NWaves.FeatureExtractors.Base
             return ComputeFrom(signal, 0, signal.Length);
         }
 
-
+        /// <summary>
+        /// Reset feature extractor's state 
+        /// </summary>
+        public virtual void Reset()
+        {
+        }
+        
         #region parallelization
 
         /// <summary>

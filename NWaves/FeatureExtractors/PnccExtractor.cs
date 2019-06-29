@@ -120,34 +120,29 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Internal buffer for a signal block at each step
         /// </summary>
-        private float[] _block;
+        private readonly float[] _block;
 
         /// <summary>
         /// Internal buffer for a signal spectrum at each step
         /// </summary>
-        private float[] _spectrum;
+        private readonly float[] _spectrum;
 
         /// <summary>
         /// Internal buffers for gammatone spectrum and its derivatives
         /// </summary>
-        private float[] _gammatoneSpectrum;
-        private float[] _spectrumQOut;
-        private float[] _filteredSpectrumQ;
-        private float[] _spectrumS;
-        private float[] _smoothedSpectrumS;
-        private float[] _avgSpectrumQ1;
-        private float[] _avgSpectrumQ2;
-        private float[] _smoothedSpectrum;
-
-        /// <summary>
-        /// Internal buffer of zeros for quick memset
-        /// </summary>
-        private readonly float[] _zeroblock;
+        private readonly float[] _gammatoneSpectrum;
+        private readonly float[] _spectrumQOut;
+        private readonly float[] _filteredSpectrumQ;
+        private readonly float[] _spectrumS;
+        private readonly float[] _smoothedSpectrumS;
+        private readonly float[] _avgSpectrumQ1;
+        private readonly float[] _avgSpectrumQ2;
+        private readonly float[] _smoothedSpectrum;
 
         /// <summary>
         /// Ring buffer for efficient processing of consecutive spectra
         /// </summary>
-        private SpectraRingBuffer _ringBuffer;
+        private readonly SpectraRingBuffer _ringBuffer;
 
 
         /// <summary>
@@ -233,8 +228,7 @@ namespace NWaves.FeatureExtractors
             _avgSpectrumQ1 = new float[_filterbankSize];
             _avgSpectrumQ2 = new float[_filterbankSize];
             _smoothedSpectrum = new float[_filterbankSize];
-            _zeroblock = new float[_fftSize];
-
+ 
             _ringBuffer = new SpectraRingBuffer(2 * M + 1, _filterbankSize);
         }
 
@@ -278,8 +272,11 @@ namespace NWaves.FeatureExtractors
             {
                 // prepare next block for processing
 
-                _zeroblock.FastCopyTo(_block, _fftSize);
+                // copy 'frameSize' samples
                 samples.FastCopyTo(_block, frameSize, timePos);
+                // fill zeros to 'fftSize'
+                for (var k = frameSize; k < _block.Length; _block[k++] = 0) ;
+
 
                 // 0) pre-emphasis (if needed)
 
@@ -469,6 +466,14 @@ namespace NWaves.FeatureExtractors
             return featureVectors;
         }
 
+        /// <summary>
+        /// Reset state
+        /// </summary>
+        public override void Reset()
+        {
+            _ringBuffer.Reset();
+        }
+
 
         /// <summary>
         /// Helper Ring Buffer class for efficient processing of consecutive spectra
@@ -511,6 +516,19 @@ namespace NWaves.FeatureExtractors
                 CentralSpectrum = _spectra[(_current + _capacity / 2 + 1) % _capacity];
 
                 _current = (_current + 1) % _capacity;
+            }
+
+            public void Reset()
+            {
+                _count = 0;
+                _current = 0;
+
+                Array.Clear(AverageSpectrum, 0, AverageSpectrum.Length);
+
+                foreach (var spectrum in _spectra)
+                {
+                    Array.Clear(spectrum, 0, spectrum.Length);
+                }
             }
         }
     }

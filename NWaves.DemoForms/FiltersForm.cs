@@ -679,16 +679,22 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            var w1 = Remez.DbToPassbandWeight(ripplePass1);
-            var w2 = Remez.DbToStopbandWeight(rippleStop);
-            var w3 = Remez.DbToPassbandWeight(ripplePass2);
+            var freqs = new[] { 0, fp1, fa1, fa2, fp2, 0.5 };
 
-            var remez = new Remez(order, new[] { 0, fp1, fa1, fa2, fp2, 0.5 }, new[] { 1, 0, 1.0 }, new[] { w1, w2, w3 });
+            var weights = new[]
+            {
+                Remez.DbToPassbandWeight(ripplePass1),
+                Remez.DbToStopbandWeight(rippleStop),
+                Remez.DbToPassbandWeight(ripplePass2),
+            };
+
+            var remez = new Remez(order, freqs, new double[] { 1, 0, 1 }, weights);
+
             _filter = new FirFilter(remez.Design());
 
-            //var extrema = string.Join("\t", Enumerable.Range(0, remez.K).Select(e => remez.ExtremalFrequencies[e].ToString("F5")));
-            //var message = $"Iterations: {remez.Iterations}\n\nEstimated order: {Remez.EstimateOrder(fp, fa, ripplePass, rippleStop)}\n\nExtrema:\n{extrema}";
-            //MessageBox.Show(message);
+            var extrema = string.Join("\t", Enumerable.Range(0, remez.K).Select(e => remez.ExtremalFrequencies[e].ToString("F5")));
+            var message = $"Iterations: {remez.Iterations}\n\nEstimated order: {Remez.EstimateOrder(freqs, weights)}\n\nExtrema:\n{extrema}";
+            MessageBox.Show(message);
 
             filterParamsDataGrid.RowCount = 8;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";

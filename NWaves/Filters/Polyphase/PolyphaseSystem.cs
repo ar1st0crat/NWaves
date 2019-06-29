@@ -176,6 +176,11 @@ namespace NWaves.Filters.Polyphase
             {
                 filter.Reset();
             }
+
+            foreach (var filter in MultirateFilters)
+            {
+                filter.Reset();
+            }
         }
 
         /// <summary>

@@ -60,24 +60,24 @@ namespace NWaves.FeatureExtractors
         private readonly float _preEmphasis;
 
         /// <summary>
-        /// Internal buffer for real parts of the currently processed block
-        /// </summary>
-        private float[] _block;
-
-        /// <summary>
-        /// Internal buffer for reversed real parts of the currently processed block
-        /// </summary>
-        private float[] _reversed;
-
-        /// <summary>
         /// Internal buffer for cross-correlation signal
         /// </summary>
-        float[] _cc;
+        private readonly float[] _cc;
 
         /// <summary>
         /// Internal buffer for LPC-coefficients
         /// </summary>
-        float[] _lpc;
+        private readonly float[] _lpc;
+
+        /// <summary>
+        /// Internal buffer for real parts of the currently processed block
+        /// </summary>
+        private readonly float[] _block;
+
+        /// <summary>
+        /// Internal buffer for reversed real parts of the currently processed block
+        /// </summary>
+        private readonly float[] _reversed;
 
         /// <summary>
         /// Main constructor

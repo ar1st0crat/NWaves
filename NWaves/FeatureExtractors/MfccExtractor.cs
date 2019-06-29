@@ -37,12 +37,12 @@ namespace NWaves.FeatureExtractors
         private readonly int _filterbankSize;
 
         /// <summary>
-        /// Lower frequency
+        /// Lower frequency (Hz)
         /// </summary>
         private readonly double _lowFreq;
 
         /// <summary>
-        /// Upper frequency
+        /// Upper frequency (Hz)
         /// </summary>
         private readonly double _highFreq;
 
@@ -89,22 +89,17 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Internal buffer for a signal spectrum at each step
         /// </summary>
-        private float[] _spectrum;
+        private readonly float[] _spectrum;
 
         /// <summary>
         /// Internal buffer for a signal log-mel-spectrum at each step
         /// </summary>
-        private float[] _logMelSpectrum;
+        private readonly float[] _logMelSpectrum;
 
         /// <summary>
         /// Internal buffer for a signal block at each step
         /// </summary>
-        private float[] _block;
-
-        /// <summary>
-        /// Internal buffer of zeros for quick memset
-        /// </summary>
-        private readonly float[] _zeroblock;
+        private readonly float[] _block;
 
         /// <summary>
         /// Main constructor
@@ -160,6 +155,7 @@ namespace NWaves.FeatureExtractors
             _dct = new Dct2(_filterbankSize, FeatureCount);
 
             _window = window;
+
             if (_window != WindowTypes.Rectangular)
             {
                 _windowSamples = Window.OfType(_window, FrameSize);
@@ -168,14 +164,13 @@ namespace NWaves.FeatureExtractors
             _lifterSize = lifterSize;
             _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
 
-            _preEmphasis = (float) preEmphasis;
+            _preEmphasis = (float)preEmphasis;
 
             // reserve memory for reusable blocks
 
             _spectrum = new float[_fftSize / 2 + 1];
             _logMelSpectrum = new float[_filterbankSize];
             _block = new float[_fftSize];
-            _zeroblock = new float[_fftSize];
         }
 
         /// <summary>
@@ -212,8 +207,11 @@ namespace NWaves.FeatureExtractors
             {
                 // prepare next block for processing
 
-                _zeroblock.FastCopyTo(_block, _fftSize);
-                samples.FastCopyTo(_block, _windowSamples.Length, i);
+                // copy frameSize samples
+                samples.FastCopyTo(_block, frameSize, i);
+                // fill zeros to fftSize if frameSize < fftSize
+                for (var k = frameSize; k < _block.Length; _block[k++] = 0) ;
+
 
                 // 0) pre-emphasis (if needed)
 
@@ -260,7 +258,7 @@ namespace NWaves.FeatureExtractors
                 featureVectors.Add(new FeatureVector
                 {
                     Features = mfccs,
-                    TimePosition = (double) i / SamplingRate
+                    TimePosition = (double)i / SamplingRate
                 });
             }
 

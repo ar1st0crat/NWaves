@@ -29,11 +29,12 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install 
 - [x] IIR filters (Bessel, Butterworth, Chebyshev I & II, Elliptic, Thiran)
 - [x] basic operations (convolution, cross-correlation, rectification, amplification)
 - [x] block convolution (overlap-add / overlap-save offline and online)
-- [x] basic filter design & analysis (group delay, zeros/poles, window-sinc, BP, BR, HP from/to LP, SOS, combining filters)
+- [x] basic filter design & analysis (group delay, zeros/poles, BP, BR, HP from/to LP, SOS, combining filters)
+- [x] FIR filter design: frequency sampling, winsow-sinc, equiripple (Remez / Parks-McClellan)
 - [x] non-linear filters (median filter, overdrive and distortion effects)
 - [x] windowing functions (Hamming, Blackman, Hann, Gaussian, Kaiser, KBD, triangular, Lanczos, flat-top, Bartlett-Hann)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and perceptual weighting (A, B, C)
-- [x] customizable feature extraction (time-domain, spectral, MFCC, PNCC/SPNCC, LPC, LPCC, AMS) and CSV serialization
+- [x] customizable feature extraction (time-domain, spectral, MFCC, PNCC/SPNCC, LPC, LPCC, PLP, AMS) and CSV serialization
 - [x] feature post-processing (mean and variance normalization, adding deltas)
 - [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest, decrease, noiseness, MPEG7)
 - [x] harmonic features (harmonic centroid and spread, inharmonicity, tristimulus, odd-to-even ratio)

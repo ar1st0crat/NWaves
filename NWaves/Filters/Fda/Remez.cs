@@ -12,7 +12,7 @@ namespace NWaves.Filters.Fda
     ///     var order = 57;
     ///     var freqs = new double[] { 0, 0.15, 0.17, 0.5 };
     ///     var response = new double[] { 1, 0 };
-    ///     var weights = new double[] { 0.001, 0.1 };
+    ///     var weights = new double[] { 0.01, 0.1 };
     ///     
     ///     var remez = new Remez(order, freqs, response, weights);
     ///     
@@ -115,6 +115,8 @@ namespace NWaves.Filters.Fda
         public Remez(int order, double[] freqs, double[] desired, double[] weights, int gridDensity = 16)
         {
             Guard.AgainstEvenNumber(order, "The order of the filter");
+            Guard.AgainstIncorrectFilterParams(freqs, desired, weights);
+
             Order = order;
 
             K = Order / 2 + 2;
@@ -433,36 +435,62 @@ namespace NWaves.Filters.Fda
         public static double DbToStopbandWeight(double db) => Math.Pow(10, -db / 20);
 
         /// <summary>
-        /// Estimate filter order according to [Herrman et al., 1973].
+        /// Estimate LP filter order according to [Herrman et al., 1973].
         /// Section 8.2.7 in Proakis & Manolakis book.
         /// </summary>
         /// <param name="fp"></param>
         /// <param name="fa"></param>
-        /// <param name="ripplePass"></param>
-        /// <param name="rippleStop"></param>
+        /// <param name="dp"></param>
+        /// <param name="da"></param>
         /// <returns></returns>
-        public static int EstimateOrder(double fp, double fa, double ripplePass, double rippleStop)
+        public static int EstimateOrder(double fp, double fa, double dp, double da)
         {
-            var rp = DbToPassbandWeight(ripplePass);
-            var rs = DbToStopbandWeight(rippleStop);
-
-            if (rp < rs)
+            if (dp < da)
             {
-                var tmp = rp;
-                rp = rs;
-                rs = tmp;
+                var tmp = dp;
+                dp = da;
+                da = tmp;
             }
 
             var bw = fa - fp;
 
-            var d = (0.005309 * Math.Log10(rp) * Math.Log10(rp) + 0.07114 * Math.Log10(rp) - 0.4761) * Math.Log10(rs) -
-                    (0.00266 * Math.Log10(rp) * Math.Log10(rp) + 0.5941 * Math.Log10(rp) + 0.4278);
+            var d = (0.005309 * Math.Log10(dp) * Math.Log10(dp) + 0.07114 * Math.Log10(dp) - 0.4761) * Math.Log10(da) -
+                    (0.00266 * Math.Log10(dp) * Math.Log10(dp) + 0.5941 * Math.Log10(dp) + 0.4278);
 
-            var f = 0.51244 * (Math.Log10(rp) - Math.Log10(rs)) + 11.012;
+            var f = 0.51244 * (Math.Log10(dp) - Math.Log10(da)) + 11.012;
 
             var l = (int)((d - f * bw * bw) / bw + 1.5);
 
             return l % 2 == 1 ? l : l + 1;
+        }
+
+        /// <summary>
+        /// Estimate order of a filter with custom bands.
+        /// 
+        /// Parameters are give in conventional format. For example:
+        /// 
+        /// freqs: { 0, 0.2, 0.22, 0.32, 0.33, 0.5 }
+        /// deltas: { 0.01, 0.1, 0.06 }
+        /// 
+        /// </summary>
+        /// <param name="freqs"></param>
+        /// <param name="deltas"></param>
+        /// <returns></returns>
+        public static int EstimateOrder(double[] freqs, double[] deltas)
+        {
+            var maxOrder = 0;
+
+            for (int fi = 1, di = 0; di < deltas.Length - 1; fi += 2, di++)
+            {
+                var order = EstimateOrder(freqs[fi], freqs[fi + 1], deltas[di], deltas[di + 1]);
+
+                if (order > maxOrder)
+                {
+                    maxOrder = order;
+                }
+            }
+
+            return maxOrder;
         }
     }
 }

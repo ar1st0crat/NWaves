@@ -88,22 +88,17 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Internal buffer for a signal block at each step
         /// </summary>
-        private float[] _block;
+        private readonly float[] _block;
 
         /// <summary>
         /// Internal buffer for a signal spectrum at each step
         /// </summary>
-        private float[] _spectrum;
+        private readonly float[] _spectrum;
 
         /// <summary>
         /// Internal buffer for gammatone spectrum
         /// </summary>
-        private float[] _filteredSpectrum;
-
-        /// <summary>
-        /// Internal buffer of zeros for quick memset
-        /// </summary>
-        private readonly float[] _zeroblock;
+        private readonly float[] _filteredSpectrum;
 
         /// <summary>
         /// Main constructor
@@ -181,7 +176,6 @@ namespace NWaves.FeatureExtractors
             _block = new float[_fftSize];
             _spectrum = new float[_fftSize / 2 + 1];
             _filteredSpectrum = new float[_filterbankSize];
-            _zeroblock = new float[_fftSize];
         }
 
         /// <summary>
@@ -224,8 +218,11 @@ namespace NWaves.FeatureExtractors
             {
                 // prepare next block for processing
 
-                _zeroblock.FastCopyTo(_block, _zeroblock.Length);
+                // copy 'frameSize' samples
                 samples.FastCopyTo(_block, frameSize, i);
+                // fill zeros to 'fftSize'
+                for (var k = frameSize; k < _block.Length; _block[k++] = 0) ;
+
 
                 // 0) pre-emphasis (if needed)
 

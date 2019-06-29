@@ -47,5 +47,23 @@ namespace NWaves.Utils
                 throw new ArgumentException($"{argName} must be an odd number!");
             }
         }
+
+        public static void AgainstIncorrectFilterParams(double[] freqs, double[] desired, double[] weights)
+        {
+            var n = freqs.Length;
+
+            if (n < 4 || n % 2 != 0)
+            {
+                throw new ArgumentException("Frequency array must have even number of at least 4 values!");
+            }
+
+            if (freqs[0] != 0 || freqs[n - 1] != 0.5)
+            {
+                throw new ArgumentException("Frequency array must start with 0 and end with 0.5!");
+            }
+
+            Guard.AgainstInequality(desired.Length, n / 2, "Size of desired array", "half-size of freqs array");
+            Guard.AgainstInequality(weights.Length, n / 2, "Size of weights array", "half-size of freqs array");
+        }
     }
 }

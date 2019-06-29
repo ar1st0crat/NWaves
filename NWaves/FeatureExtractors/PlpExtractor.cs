@@ -1,0 +1,392 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using NWaves.FeatureExtractors.Base;
+using NWaves.Filters;
+using NWaves.Filters.Fda;
+using NWaves.Transforms;
+using NWaves.Utils;
+using NWaves.Windows;
+
+namespace NWaves.FeatureExtractors
+{
+    /// <summary>
+    /// Perceptual Linear Predictive Coefficients extractor (PLP-RASTA)
+    /// </summary>
+    public class PlpExtractor : FeatureExtractor
+    {
+        /// <summary>
+        /// Number of coefficients
+        /// </summary>
+        public override int FeatureCount { get; }
+
+        /// <summary>
+        /// Descriptions (simply "plp0", "plp1", "plp2", etc.)
+        /// </summary>
+        public override List<string> FeatureDescriptions =>
+            Enumerable.Range(0, FeatureCount).Select(i => "plp" + i).ToList();
+
+        /// <summary>
+        /// Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)].
+        /// By default it's bark filterbank.
+        /// </summary>
+        public float[][] FilterBank { get; }
+
+        /// <summary>
+        /// Number of bark filters
+        /// </summary>
+        private readonly int _filterbankSize;
+
+        /// <summary>
+        /// Lower frequency
+        /// </summary>
+        private readonly double _lowFreq;
+
+        /// <summary>
+        /// Upper frequency
+        /// </summary>
+        private readonly double _highFreq;
+
+        /// <summary>
+        /// Size of FFT
+        /// </summary>
+        private readonly int _fftSize;
+
+        /// <summary>
+        /// FFT transformer
+        /// </summary>
+        private readonly Fft _fft;
+
+        /// <summary>
+        /// RASTA coefficient (if zero, then no RASTA filtering)
+        /// </summary>
+        private readonly double _rasta;
+
+        /// <summary>
+        /// RASTA filters for each critical band
+        /// </summary>
+        private readonly RastaFilter[] _rastaFilters;
+
+        /// <summary>
+        /// Size of liftering window
+        /// </summary>
+        private readonly int _lifterSize;
+
+        /// <summary>
+        /// Liftering window coefficients
+        /// </summary>
+        private readonly float[] _lifterCoeffs;
+
+        /// <summary>
+        /// Type of the window function
+        /// </summary>
+        private readonly WindowTypes _window;
+
+        /// <summary>
+        /// Window samples
+        /// </summary>
+        private readonly float[] _windowSamples;
+
+        /// <summary>
+        /// Pre-emphasis coefficient
+        /// </summary>
+        private readonly float _preEmphasis;
+
+        /// <summary>
+        /// Internal buffer for a signal spectrum at each step
+        /// </summary>
+        private readonly float[] _spectrum;
+
+        /// <summary>
+        /// Internal buffer for a signal spectrum grouped to frequency bands
+        /// </summary>
+        private readonly float[] _bandSpectrum;
+
+        /// <summary>
+        /// Equal loudness weighting coefficients
+        /// </summary>
+        private readonly double[] _equalLoudnessCurve;
+
+        /// <summary>
+        /// Internal buffer for LPC-coefficients
+        /// </summary>
+        private readonly float[] _lpc;
+
+        /// <summary>
+        /// Internal buffer for a signal block at each step
+        /// </summary>
+        private readonly float[] _block;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="samplingRate"></param>
+        /// <param name="featureCount"></param>
+        /// <param name="frameDuration"></param>
+        /// <param name="hopDuration"></param>
+        /// <param name="rasta"></param>
+        /// <param name="filterbankSize"></param>
+        /// <param name="lowFreq"></param>
+        /// <param name="highFreq"></param>
+        /// <param name="fftSize"></param>
+        /// <param name="filterbank"></param>
+        /// <param name="lifterSize"></param>
+        /// <param name="preEmphasis"></param>
+        /// <param name="window"></param>
+        public PlpExtractor(int samplingRate,
+                            int featureCount,
+                            double frameDuration = 0.0256/*sec*/,
+                            double hopDuration = 0.010/*sec*/,
+                            double rasta = 0,
+                            int filterbankSize = 20,
+                            double lowFreq = 0,
+                            double highFreq = 0,
+                            int fftSize = 0,
+                            float[][] filterbank = null,
+                            int lifterSize = 22,
+                            double preEmphasis = 0.0,
+                            WindowTypes window = WindowTypes.Hamming) : 
+            base(samplingRate, frameDuration, hopDuration)
+        {
+            FeatureCount = featureCount;
+
+            _rasta = rasta;
+
+            if (rasta > 0)
+            {
+                _rastaFilters = Enumerable.Range(0, filterbankSize)
+                                          .Select(f => new RastaFilter(rasta))
+                                          .ToArray();
+            }
+
+            if (filterbank == null)
+            {
+                _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
+                _filterbankSize = filterbankSize;
+
+                _lowFreq = lowFreq;
+                _highFreq = highFreq;
+
+                var barkBands = FilterBanks.BarkBands(_filterbankSize, _fftSize, SamplingRate, _lowFreq, _highFreq);
+                FilterBank = FilterBanks.Triangular(_fftSize, SamplingRate, barkBands);
+
+                _equalLoudnessCurve = new double[_filterbankSize];
+
+                for (var i = 0; i < barkBands.Length; i++)
+                {
+                    var level2 = barkBands[i].Item2 * barkBands[i].Item2;
+
+                    _equalLoudnessCurve[i] = Math.Pow(level2 / (level2 + 1.6e5), 2) * (level2 + 1.44e6) / (level2 + 9.61e6);
+                }
+            }
+            else
+            {
+                FilterBank = filterbank;
+                _filterbankSize = filterbank.Length;
+                _fftSize = 2 * (filterbank[0].Length - 1);
+            }
+
+            _fft = new Fft(_fftSize);
+
+            _window = window;
+
+            if (_window != WindowTypes.Rectangular)
+            {
+                _windowSamples = Window.OfType(_window, FrameSize);
+            }
+
+            _lifterSize = lifterSize;
+            _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
+
+            _preEmphasis = (float)preEmphasis;
+
+            // reserve memory for reusable blocks
+
+            _spectrum = new float[_fftSize / 2 + 1];
+            _bandSpectrum = new float[_filterbankSize];
+            _block = new float[_fftSize];
+        }
+
+        /// <summary>
+        /// Standard method for computing PLP features:
+        ///     0) [Optional] pre-emphasis
+        /// 
+        /// Decompose signal into overlapping (hopSize) frames of length fftSize. In each frame do:
+        /// 
+        ///     1) Apply window (if rectangular window was specified then just do nothing)
+        ///     2) Obtain power spectrum
+        ///     3) Apply filterbank of critical bands
+        ///     4) [Optional] filter each component of the processed spectrum with a RASTA filter
+        ///     5) Apply equal loudness curve
+        ///     6) Take cubic root
+        ///     7) Do LPC
+        ///     8) Convert LPC to cepstrum
+        ///     9) [Optional] lifter the LPCC
+        /// 
+        /// </summary>
+        /// <param name="samples">Samples for analysis</param>
+        /// <param name="startSample">The number (position) of the first sample for processing</param>
+        /// <param name="endSample">The number (position) of last sample for processing</param>
+        /// <returns>List of PLP vectors</returns>
+        public override List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
+        {
+            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
+
+            var hopSize = HopSize;
+            var frameSize = FrameSize;
+
+            var featureVectors = new List<FeatureVector>();
+
+            var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
+
+            var lastSample = endSample - Math.Max(frameSize, hopSize);
+
+            for (var i = startSample; i < lastSample; i += hopSize)
+            {
+                // prepare next block for processing
+
+                // copy 'frameSize' samples
+                samples.FastCopyTo(_block, frameSize, i);
+                // fill zeros to 'fftSize'
+                for (var k = frameSize; k < _block.Length; _block[k++] = 0) ;
+
+
+                // 0) pre-emphasis (if needed)
+
+                if (_preEmphasis > 1e-10)
+                {
+                    for (var k = 0; k < frameSize; k++)
+                    {
+                        var y = _block[k] - prevSample * _preEmphasis;
+                        prevSample = _block[k];
+                        _block[k] = y;
+                    }
+                    prevSample = samples[i + hopSize - 1];
+                }
+
+                // 1) apply window
+
+                if (_window != WindowTypes.Rectangular)
+                {
+                    _block.ApplyWindow(_windowSamples);
+                }
+
+                // 2) calculate power spectrum
+
+                _fft.PowerSpectrum(_block, _spectrum);
+
+                // 3) apply filterbank of the result (bark frequencies by default)
+
+                FilterBanks.Apply(FilterBank, _spectrum, _bandSpectrum);
+
+                // 4) RASTA filtering in log-domain [optional]
+
+                if (_rasta > 0)
+                {
+                    for (var k = 0; k < _bandSpectrum.Length; k++)
+                    {
+                        var log = (float)Math.Log(_bandSpectrum[k]);
+                        log = _rastaFilters[k].Process(log);
+                        _bandSpectrum[k] = (float)Math.Exp(log);
+                    }
+                }
+
+                // 5) and 6) apply equal loudness curve and take cubic root
+
+                for (var k = 0; k < _bandSpectrum.Length; k++)
+                {
+                    _bandSpectrum[k] = (float)Math.Pow(_bandSpectrum[k] * _equalLoudnessCurve[k], 0.33);
+                }
+
+                // 7) LPC:
+
+                for (var k = 0; k < _lpc.Length; _lpc[k] = 0, k++) ;
+
+                var _spectrumRe = new float[MathUtils.NextPowerOfTwo(2 * FeatureCount + 1)];
+                var _spectrumIm = new float[MathUtils.NextPowerOfTwo(2 * FeatureCount + 1)];
+
+                Array.Clear(_spectrumRe, 0, _spectrumRe.Length);
+                Array.Clear(_spectrumIm, 0, _spectrumIm.Length);
+
+                _bandSpectrum.FastCopyTo(_spectrumRe, _filterbankSize);
+
+
+                _fft.Inverse(_spectrumRe, _spectrumIm);
+
+                var err = MathUtils.LevinsonDurbin(_spectrumRe, _lpc, FeatureCount, _bandSpectrum.Length - 1);
+
+
+                // 8) simple and efficient algorithm for obtaining LPCC coefficients from LPC
+
+                var lpcc = new float[FeatureCount];
+
+                lpcc[0] = (float)Math.Log(err);
+
+                for (var n = 1; n < FeatureCount; n++)
+                {
+                    var acc = 0.0f;
+                    for (var k = 1; k < n; k++)
+                    {
+                        acc += k * lpcc[k] * _lpc[n - k];
+                    }
+                    lpcc[n] = -_lpc[n] - acc / n;
+                }
+
+                // 9) (optional) liftering
+
+                if (_lifterCoeffs != null)
+                {
+                    lpcc.ApplyWindow(_lifterCoeffs);
+                }
+
+                // add lpcc vector to output sequence
+
+                featureVectors.Add(new FeatureVector
+                {
+                    Features = lpcc,
+                    TimePosition = (double)i / SamplingRate
+                });
+            }
+
+            return featureVectors;
+        }
+
+        /// <summary>
+        /// Reset state
+        /// </summary>
+        public override void Reset()
+        {
+            if (_rastaFilters == null) return;
+
+            foreach (var filter in _rastaFilters)
+            {
+                filter.Reset();
+            }
+        }
+
+        /// <summary>
+        /// In case of RASTA filtering computations can't be done in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override bool IsParallelizable() => _rasta == 0;
+
+        /// <summary>
+        /// Copy of current extractor that can work in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override FeatureExtractor ParallelCopy() => 
+            new PlpExtractor(SamplingRate,
+                             FeatureCount,
+                             FrameDuration,
+                             HopDuration,
+                             _rasta,
+                             _filterbankSize,
+                             _lowFreq,
+                             _highFreq,
+                             _fftSize,
+                             FilterBank,
+                             _lifterSize,
+                             _preEmphasis,
+                             _window);
+    }
+}
