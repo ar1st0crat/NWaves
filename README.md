@@ -16,7 +16,7 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install 
 
 [Read wiki documentation](https://github.com/ar1st0crat/NWaves/wiki)
 
-[Changelog](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
+[Known bugs and Changelog](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
 
 ## Main features 
 
@@ -30,7 +30,7 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install 
 - [x] basic operations (convolution, cross-correlation, rectification, amplification)
 - [x] block convolution (overlap-add / overlap-save offline and online)
 - [x] basic filter design & analysis (group delay, zeros/poles, BP, BR, HP from/to LP, SOS, combining filters)
-- [x] FIR filter design: frequency sampling, winsow-sinc, equiripple (Remez / Parks-McClellan)
+- [x] FIR filter design: frequency sampling, window-sinc, equiripple (Remez / Parks-McClellan)
 - [x] non-linear filters (median filter, overdrive and distortion effects)
 - [x] windowing functions (Hamming, Blackman, Hann, Gaussian, Kaiser, KBD, triangular, Lanczos, flat-top, Bartlett-Hann)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and perceptual weighting (A, B, C)
@@ -49,6 +49,7 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install 
 - [x] envelope following
 - [x] sound effects (delay, echo, tremolo, wahwah, phaser, vibrato, flanger, pitch shift, sound morphing, robotize, whisperize)
 - [x] harmonic/percussive separation
+- [x] Griffin-Lim algorithm
 - [x] adaptive filtering (LMS, NLMS, LMF, SignLMS, RLS)
 - [x] simple modulation/demodulation (AM, ring, FM, PM)
 - [x] simple audio playback and recording

@@ -72,12 +72,12 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Internal buffer for frequency bands
         /// </summary>
-        private Tuple<double, double, double>[] _frequencyBands;
+        private readonly Tuple<double, double, double>[] _frequencyBands;
 
         /// <summary>
         /// Internal buffer for central frequencies
         /// </summary>
-        private float[] _frequencies;
+        private readonly float[] _frequencies;
 
         /// <summary>
         /// Internal buffer for harmonic peak frequencies (optional)
@@ -92,22 +92,17 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Internal buffer for magnitude spectrum
         /// </summary>
-        private float[] _spectrum;
+        private readonly float[] _spectrum;
 
         /// <summary>
         /// Internal buffer for total energies in frequency bands
         /// </summary>
-        private float[] _mappedSpectrum;
+        private readonly float[] _mappedSpectrum;
 
         /// <summary>
         /// Internal buffer for currently processed block
         /// </summary>
-        private float[] _block;
-
-        /// <summary>
-        /// Internal block of zeros for a quick memset
-        /// </summary>
-        private float[] _zeroblock;
+        private readonly float[] _block;
 
         /// <summary>
         /// Extractor functions
@@ -137,7 +132,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Harmonic peaks detector function (optional)
         /// </summary>
-        Action<float[], int[], float[], int, float> _peaksDetector;
+        private Action<float[], int[], float[], int, float> _peaksDetector;
 
         /// <summary>
         /// Constructor
@@ -266,7 +261,6 @@ namespace NWaves.FeatureExtractors.Multi
             _spectrum = new float[_fftSize / 2 + 1];                // buffer for magnitude spectrum
             _mappedSpectrum = new float[_filterbank.Length + 1];    // buffer for total energies in bands
             _block = new float[_fftSize];                           // buffer for currently processed block
-            _zeroblock = new float[_fftSize];                       // just a buffer of zeros for quick memset
         }
 
         /// <summary>
@@ -397,8 +391,11 @@ namespace NWaves.FeatureExtractors.Multi
             {
                 // prepare all blocks in memory for the current step:
 
-                _zeroblock.FastCopyTo(_block, _fftSize);
+                // copy frameSize samples
                 samples.FastCopyTo(_block, FrameSize, i);
+                // fill zeros to fftSize if frameSize < fftSize
+                for (var k = FrameSize; k < _block.Length; _block[k++] = 0) ;
+
 
                 // apply window if necessary
 

@@ -31,7 +31,7 @@ namespace NWaves.FeatureExtractors
         /// 
         /// </summary>
         public override List<string> FeatureDescriptions => _featureDescriptions;
-        private List<string> _featureDescriptions;
+        private readonly List<string> _featureDescriptions;
 
         /// <summary>
         /// The "featuregram": the sequence of (feature) vectors;
@@ -43,7 +43,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Filterbank matrix of dimension [filterCount * (fftSize/2 + 1)]
         /// </summary>
-        private float[][] _filterbank;
+        private readonly float[][] _filterbank;
         public float[][] Filterbank => _filterbank;
         
         /// <summary>
@@ -95,37 +95,27 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Internal buffer for a signal block at each step
         /// </summary>
-        private float[] _block;
+        private readonly float[] _block;
 
         /// <summary>
         /// Internal buffer for a signal spectrum at each step
         /// </summary>
-        private float[] _spectrum;
+        private readonly float[] _spectrum;
 
         /// <summary>
         /// Internal buffer for filtered spectrum
         /// </summary>
-        private float[] _filteredSpectrum;
+        private readonly float[] _filteredSpectrum;
 
         /// <summary>
-        /// 
+        /// Internal buffer for modulation spectrum analysis
         /// </summary>
-        private float[] _modBlock;
+        private readonly float[] _modBlock;
             
         /// <summary>
-        /// 
+        /// Modulation spectrum (in one band)
         /// </summary>
-        private float[] _modSpectrum;
-
-        /// <summary>
-        /// Internal buffer of zeros for quick memset
-        /// </summary>
-        private readonly float[] _zeroblock;
-
-        /// <summary>
-        /// Another internal buffer of zeros for quick memset
-        /// </summary>
-        private readonly float[] _zeroModblock;
+        private readonly float[] _modSpectrum;
 
 
         /// <summary>
@@ -192,13 +182,11 @@ namespace NWaves.FeatureExtractors
                 _spectrum = new float[_fftSize / 2 + 1];
                 _filteredSpectrum = new float[_filterbank.Length];
                 _block = new float[_fftSize];
-                _zeroblock = new float[_fftSize];
             }
 
             _preEmphasis = (float) preEmphasis;
 
             _modBlock = new float[_modulationFftSize];
-            _zeroModblock = new float[_modulationFftSize];
             _modSpectrum = new float[_modulationFftSize / 2 + 1];
 
             // feature descriptions
@@ -263,8 +251,11 @@ namespace NWaves.FeatureExtractors
 
                 for (i = startSample; i < lastSample; i += hopSize)
                 {
-                    _zeroblock.FastCopyTo(_block, _zeroblock.Length);
+                    // copy frameSize samples
                     samples.FastCopyTo(_block, frameSize, i);
+                    // fill zeros to fftSize if frameSize < fftSize
+                    for (var k = frameSize; k < _block.Length; _block[k++] = 0) ;
+
 
                     // 0) pre-emphasis (if needed)
 
@@ -350,8 +341,11 @@ namespace NWaves.FeatureExtractors
 
                 foreach (var envelope in _envelopes)
                 {
-                    _zeroModblock.FastCopyTo(_modBlock, _modulationFftSize);
-                    envelope.FastCopyTo(_modBlock, Math.Min(_modulationFftSize, envelopeLength - i), i);
+                    // copy modFftSize samples (or envelopeLength - i in the end)
+                    var len = Math.Min(_modulationFftSize, envelopeLength - i);
+                    envelope.FastCopyTo(_modBlock, len, i);
+                    // fill zeros to modFftSize if len < modFftSize
+                    for (var k = len; k < _modBlock.Length; _modBlock[k++] = 0) ;
 
                     _modulationFft.PowerSpectrum(_modBlock, _modSpectrum);
                     _modSpectrum.FastCopyTo(vector, _modSpectrum.Length, 0, offset);

@@ -53,17 +53,17 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Internal buffer for real parts of the currently processed block
         /// </summary>
-        private float[] _block;
+        private readonly float[] _block;
 
         /// <summary>
         /// Internal buffer for reversed real parts of the currently processed block
         /// </summary>
-        private float[] _reversed;
+        private readonly float[] _reversed;
 
         /// <summary>
         /// Internal buffer for cross-correlation signal
         /// </summary>
-        private float[] _cc;
+        private readonly float[] _cc;
 
 
         /// <summary>

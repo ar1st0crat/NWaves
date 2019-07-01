@@ -245,9 +245,9 @@ namespace NWaves.FeatureExtractors
             {
                 // prepare next block for processing
 
-                // copy 'frameSize' samples
+                // copy frameSize samples
                 samples.FastCopyTo(_block, frameSize, i);
-                // fill zeros to 'fftSize'
+                // fill zeros to fftSize if frameSize < fftSize
                 for (var k = frameSize; k < _block.Length; _block[k++] = 0) ;
 
 

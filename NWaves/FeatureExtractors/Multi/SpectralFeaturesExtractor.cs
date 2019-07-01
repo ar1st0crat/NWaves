@@ -69,7 +69,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Internal buffer for magnitude spectrum
         /// </summary>
-        private float[] _spectrum;
+        private readonly float[] _spectrum;
 
         /// <summary>
         /// Internal buffer for magnitude spectrum taken only at frequencies of interest
@@ -79,17 +79,12 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Internal buffer for spectral positions of frequencies of interest
         /// </summary>
-        private int[] _frequencyPositions;
+        private readonly int[] _frequencyPositions;
 
         /// <summary>
         /// Internal buffer for currently processed block
         /// </summary>
-        private float[] _block;
-
-        /// <summary>
-        /// Internal block of zeros for a quick memset
-        /// </summary>
-        private float[] _zeroblock;
+        private readonly float[] _block;
 
         /// <summary>
         /// Constructor
@@ -232,7 +227,6 @@ namespace NWaves.FeatureExtractors.Multi
 
             _spectrum = new float[_fftSize / 2 + 1];  // buffer for magnitude spectrum
             _block = new float[_fftSize];             // buffer for currently processed block
-            _zeroblock = new float[_fftSize];         // just a buffer of zeros for quick memset
         }
 
         /// <summary>
@@ -270,8 +264,11 @@ namespace NWaves.FeatureExtractors.Multi
             {
                 // prepare all blocks in memory for the current step:
 
-                _zeroblock.FastCopyTo(_block, _fftSize);
+                // copy frameSize samples
                 samples.FastCopyTo(_block, FrameSize, i);
+                // fill zeros to fftSize if frameSize < fftSize
+                for (var k = FrameSize; k < _block.Length; _block[k++] = 0) ;
+
 
                 // apply window if necessary
 

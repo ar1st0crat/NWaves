@@ -144,6 +144,11 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         private readonly SpectraRingBuffer _ringBuffer;
 
+        /// <summary>
+        /// Step of PNCC algorithm
+        /// </summary>
+        private int _step;
+
 
         /// <summary>
         /// Main constructor
@@ -268,13 +273,13 @@ namespace NWaves.FeatureExtractors
 
             var featureVectors = new List<FeatureVector>();
 
-            for (int timePos = startSample, i = 0; timePos < lastSample; timePos += hopSize, i++)
+            for (var i = startSample; i < lastSample; i += hopSize, _step++)
             {
                 // prepare next block for processing
 
-                // copy 'frameSize' samples
-                samples.FastCopyTo(_block, frameSize, timePos);
-                // fill zeros to 'fftSize'
+                // copy frameSize samples
+                samples.FastCopyTo(_block, frameSize, i);
+                // fill zeros to fftSize if frameSize < fftSize
                 for (var k = frameSize; k < _block.Length; _block[k++] = 0) ;
 
 
@@ -288,7 +293,7 @@ namespace NWaves.FeatureExtractors
                         prevSample = _block[k];
                         _block[k] = y;
                     }
-                    prevSample = samples[i + hopSize - 1];
+                    prevSample = samples[i + hopSize - 1];  // the bug was here! (_step instead of i)
                 }
 
                 // 1) apply window
@@ -313,11 +318,12 @@ namespace NWaves.FeatureExtractors
                 // 4.1) temporal integration (zero-phase moving average filter)
 
                 _ringBuffer.Add(_gammatoneSpectrum);
+
                 var spectrumQ = _ringBuffer.AverageSpectrum;
 
                 // 4.2) asymmetric noise suppression
 
-                if (i == 2 * M)
+                if (_step == 2 * M)
                 {
                     for (var j = 0; j < _spectrumQOut.Length; j++)
                     {
@@ -325,7 +331,7 @@ namespace NWaves.FeatureExtractors
                     }
                 }
                 
-                if (i >= 2 * M)
+                if (_step >= 2 * M)
                 {
                     for (var j = 0; j < _spectrumQOut.Length; j++)
                     {
@@ -343,7 +349,7 @@ namespace NWaves.FeatureExtractors
                     {
                         _filteredSpectrumQ[j] = Math.Max(spectrumQ[j] - _spectrumQOut[j], 0.0f);
 
-                        if (i == 2 * M)
+                        if (_step == 2 * M)
                         {
                             _avgSpectrumQ1[j] = 0.9f * _filteredSpectrumQ[j];
                             _avgSpectrumQ2[j] = _filteredSpectrumQ[j];
@@ -438,7 +444,7 @@ namespace NWaves.FeatureExtractors
                         }
                     }
 
-                    // 6) dct-II (normalized)
+                    // 6) dct-II (N = normalized)
 
                     var pnccs = new float[FeatureCount];
                     _dct.DirectN(_smoothedSpectrum, pnccs);
@@ -448,7 +454,7 @@ namespace NWaves.FeatureExtractors
                     featureVectors.Add(new FeatureVector
                     {
                         Features = pnccs,
-                        TimePosition = (double) timePos / SamplingRate
+                        TimePosition = (double) i / SamplingRate
                     });
                 }
 
@@ -458,8 +464,15 @@ namespace NWaves.FeatureExtractors
                     featureVectors.Add(new FeatureVector
                     {
                         Features = new float[FeatureCount],
-                        TimePosition = (double)timePos / SamplingRate
+                        TimePosition = (double)i / SamplingRate
                     });
+                }
+
+                // wow, who knows, maybe it'll happen!
+
+                if (_step == int.MaxValue - 1)
+                {
+                    _step = 2 * M + 1;
                 }
             }
 
@@ -471,6 +484,7 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         public override void Reset()
         {
+            _step = 0;
             _ringBuffer.Reset();
         }
 

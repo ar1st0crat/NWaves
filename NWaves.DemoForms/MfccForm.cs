@@ -18,7 +18,7 @@ namespace NWaves.DemoForms
     public partial class MfccForm : Form
     {
         private DiscreteSignal _signal;
-        private List<FeatureVector> _mfccVectors;
+        private List<FeatureVector> _mfccVectors, pnccVectors;
 
         public MfccForm()
         {
@@ -43,16 +43,11 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            var sr = _signal.SamplingRate;
-            var barkbands = FilterBanks.BarkBands(16, 512, sr, 100/*Hz*/, 6500/*Hz*/, overlap: false);
-            var barkbank = FilterBanks.Triangular(512, sr, barkbands);
+            // we can easily change mel filters to bark filters, for example:
 
-            //var pre = new PreEmphasisFilter(0.95);
-
-            //for (var i = 0; i < _signal.Length; i++)
-            //{
-            //    _signal[i] = pre.Process(_signal[i]);
-            //}
+            //var sr = _signal.SamplingRate;
+            //var barkbands = FilterBanks.BarkBands(16, 512, sr, 100/*Hz*/, 6500/*Hz*/, overlap: false);
+            //var barkbank = FilterBanks.Triangular(512, sr, barkbands);
 
             var mfccExtractor = new MfccExtractor(_signal.SamplingRate, 13,
                                                   //filterbankSize: 40,
@@ -61,12 +56,41 @@ namespace NWaves.DemoForms
                                                   //lifterSize: 22,
                                                   //filterbank: barkbank,
                                                   preEmphasis: 0.95,
+                                                  //fftSize: 1024,
                                                   window: WindowTypes.Hamming);
 
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);
 
-            //FeaturePostProcessing.NormalizeMean(_mfccVectors);        // optional
+            //FeaturePostProcessing.NormalizeMean(_mfccVectors);        // optional (but REQUIRED for PNCC!)
             //FeaturePostProcessing.AddDeltas(_mfccVectors);
+
+
+            // ============== I use this code to test PNCC results (just ignore it))): ========================
+
+            //pnccVectors = new List<FeatureVector>();
+            //var vector = new FeatureVector() { Features = new float[13] };
+            //var pos = 1;
+
+            //using (var fs = new FileStream(@"E:\Projects\github\NWaves_Materials\pncc\esh_ru_0001.pncc", FileMode.Open))
+            //using (var br = new BinaryReader(fs))
+            //{
+            //    while (pos < 700)
+            //    {
+            //        br.ReadSingle();
+            //        for (var i = 0; i < 12; i++)
+            //        {
+            //            vector.Features[i] = br.ReadSingle();
+            //        }
+            //        pnccVectors.Add(vector);
+            //        vector = new FeatureVector() { Features = new float[13] };
+            //        pos++;
+            //    }
+            //}
+
+            //mfccPanel.Markline = pnccVectors[0].Features;
+
+            // ================================================================================================
+
 
             FillFeaturesList(_mfccVectors, mfccExtractor.FeatureDescriptions);
             mfccListView.Items[0].Selected = true;
@@ -110,6 +134,13 @@ namespace NWaves.DemoForms
         private void mfccListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             mfccPanel.Line = _mfccVectors[e.ItemIndex].Features;
+
+            // ============== I use this code to test PNCC results (just ignore it))): ========================
+
+            // mfccPanel.Line = _mfccVectors[e.ItemIndex + 2].Features;
+            // mfccPanel.Markline = pnccVectors[e.ItemIndex].Features;
+
+            // ================================================================================================
         }
     }
 }
