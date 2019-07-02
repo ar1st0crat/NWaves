@@ -491,7 +491,7 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            _filter = new Filters.Butterworth.BandPassFilter(freq, 0.4, order);//, -0.1);
+            _filter = new Filters.Butterworth.BandPassFilter(freq, 0.4, order);
 
             filterParamsDataGrid.RowCount = 2;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";
@@ -514,7 +514,15 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            _filter = new Filters.Elliptic.LowPassFilter(freq, order, 1, 39.5);
+            // example how to convert linear scale specifications to decibel scale:
+
+            var deltaPass = 0.99;
+            var deltaStop = 0.01;
+
+            var ripplePassDb = Utils.Scale.ToDecibel(1 / deltaPass);
+            var attenuateDb = Utils.Scale.ToDecibel(1 / deltaStop);
+
+            _filter = new Filters.Elliptic.LowPassFilter(freq, order, ripplePassDb, attenuateDb);
 
             filterParamsDataGrid.RowCount = 2;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";

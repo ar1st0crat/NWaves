@@ -9,6 +9,7 @@ using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
 using NWaves.FeatureExtractors.Serializers;
 using NWaves.Filters;
+using NWaves.Filters.Base;
 using NWaves.Filters.Fda;
 using NWaves.Signals;
 using NWaves.Windows;
@@ -46,7 +47,7 @@ namespace NWaves.DemoForms
             // we can easily change mel filters to bark filters, for example:
 
             //var sr = _signal.SamplingRate;
-            //var barkbands = FilterBanks.BarkBands(16, 512, sr, 100/*Hz*/, 6500/*Hz*/, overlap: false);
+            //var barkbands = FilterBanks.Bark1Bands(16, 512, sr, 100/*Hz*/, 6500/*Hz*/, overlap: false);
             //var barkbank = FilterBanks.Triangular(512, sr, barkbands);
 
             var mfccExtractor = new MfccExtractor(_signal.SamplingRate, 13,
@@ -58,6 +59,18 @@ namespace NWaves.DemoForms
                                                   preEmphasis: 0.95,
                                                   //fftSize: 1024,
                                                   window: WindowTypes.Hamming);
+
+            //var mfccExtractor = new PlpExtractor(_signal.SamplingRate, 12,
+            //                                      filterbankSize: 23,
+            //                                      lpcOrder: 8,
+            //                                      //lowFreq: 100,
+            //                                      //highFreq: 4200,
+            //                                      //lifterSize: 22,
+            //                                      //filterbank: barkbank,
+            //                                      //preEmphasis: 0.95,
+            //                                      //rasta: 0.94,
+            //                                      //fftSize: 1024,
+            //                                      window: WindowTypes.Hamming);
 
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);
 

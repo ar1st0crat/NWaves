@@ -250,6 +250,69 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Convert LPC coefficients to LPCC
+        /// </summary>
+        /// <param name="lpc"></param>
+        /// <param name="gain"></param>
+        /// <param name="lpcc"></param>
+        public static void LpcToLpcc(float[] lpc, float gain, float[] lpcc)
+        {
+            var n = lpcc.Length;
+            var p = lpc.Length;     // must be lpcOrder + 1 (!)
+
+            lpcc[0] = (float)Math.Log(gain);
+
+            for (var m = 1; m < Math.Min(n, p); m++)
+            {
+                var acc = 0.0f;
+                for (var k = 1; k < m; k++)
+                {
+                    acc += k * lpcc[k] * lpc[m - k];
+                }
+                lpcc[m] = -lpc[m] - acc / m;
+            }
+
+            for (var m = p; m < n; m++)
+            {
+                var acc = 0.0f;
+                for (var k = 1; k < p; k++)
+                {
+                    acc += (m - k) * lpcc[m - k] * lpc[k];
+                }
+                lpcc[m] = -acc / m;
+            }
+        }
+
+        /// <summary>
+        /// Convert LPCC coefficients to LPC and gain
+        /// 
+        /// Formulae: https://www.mathworks.com/help/dsp/ref/lpctofromcepstralcoefficients.html
+        /// 
+        /// </summary>
+        /// <param name="lpcc"></param>
+        /// <param name="lpc"></param>
+        /// <returns></returns>
+        public static float LpccToLpc(float[] lpcc, float[] lpc)
+        {
+            var n = lpcc.Length;
+            var p = lpc.Length;     // must be lpcOrder + 1 (!)
+
+            lpc[0] = 1;
+
+            for (var m = 1; m < p; m++)
+            {
+                var acc = 0.0f;
+                for (var k = 1; k < m; k++)
+                {
+                    acc += k * lpcc[k] * lpc[m - k];
+                }
+                lpc[m] = -lpcc[m] - acc / m;
+            }
+
+            return (float)Math.Exp(lpcc[0]);
+        }
+
+        /// <summary>
         /// Nth order statistics
         /// </summary>
         /// <param name="a"></param>

@@ -33,7 +33,7 @@ namespace NWaves.FeatureExtractors
         public float[][] FilterBank { get; }
 
         /// <summary>
-        /// Number of bark filters
+        /// Number of filters in filterbank
         /// </summary>
         private readonly int _filterbankSize;
 
@@ -108,9 +108,29 @@ namespace NWaves.FeatureExtractors
         private readonly double[] _equalLoudnessCurve;
 
         /// <summary>
+        /// LPC order
+        /// </summary>
+        private readonly int _lpcOrder;
+
+        /// <summary>
         /// Internal buffer for LPC-coefficients
         /// </summary>
         private readonly float[] _lpc;
+
+        /// <summary>
+        /// Cross-correlation array (computed as IFFT of power spectrum)
+        /// </summary>
+        private readonly float[] _cc;
+
+        /// <summary>
+        /// Just a buffer for _cc imaginary parts in IFFT
+        /// </summary>
+        private readonly float[] _im;
+
+        /// <summary>
+        /// Fft transformer used for LPC
+        /// </summary>
+        private readonly Fft _fftLpc;
 
         /// <summary>
         /// Internal buffer for a signal block at each step
@@ -124,6 +144,7 @@ namespace NWaves.FeatureExtractors
         /// <param name="featureCount"></param>
         /// <param name="frameDuration"></param>
         /// <param name="hopDuration"></param>
+        /// <param name="lpcOrder"></param>
         /// <param name="rasta"></param>
         /// <param name="filterbankSize"></param>
         /// <param name="lowFreq"></param>
@@ -137,37 +158,29 @@ namespace NWaves.FeatureExtractors
                             int featureCount,
                             double frameDuration = 0.0256/*sec*/,
                             double hopDuration = 0.010/*sec*/,
+                            int lpcOrder = 0,
                             double rasta = 0,
                             int filterbankSize = 20,
                             double lowFreq = 0,
                             double highFreq = 0,
                             int fftSize = 0,
                             float[][] filterbank = null,
-                            int lifterSize = 22,
+                            int lifterSize = 0,
                             double preEmphasis = 0.0,
                             WindowTypes window = WindowTypes.Hamming) : 
             base(samplingRate, frameDuration, hopDuration)
         {
             FeatureCount = featureCount;
 
-            _rasta = rasta;
-
-            if (rasta > 0)
-            {
-                _rastaFilters = Enumerable.Range(0, filterbankSize)
-                                          .Select(f => new RastaFilter(rasta))
-                                          .ToArray();
-            }
-
             if (filterbank == null)
             {
                 _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
-                _filterbankSize = filterbankSize;
+                _filterbankSize = filterbankSize + 2;
 
                 _lowFreq = lowFreq;
                 _highFreq = highFreq;
 
-                var barkBands = FilterBanks.BarkBands(_filterbankSize, _fftSize, SamplingRate, _lowFreq, _highFreq);
+                var barkBands = FilterBanks.Bark2Bands(_filterbankSize, _fftSize, SamplingRate, _lowFreq, _highFreq);
                 FilterBank = FilterBanks.Triangular(_fftSize, SamplingRate, barkBands);
 
                 _equalLoudnessCurve = new double[_filterbankSize];
@@ -186,8 +199,17 @@ namespace NWaves.FeatureExtractors
                 _fftSize = 2 * (filterbank[0].Length - 1);
             }
 
-            _fft = new Fft(_fftSize);
+            _rasta = rasta;
 
+            if (rasta > 0)
+            {
+                _rastaFilters = Enumerable.Range(0, filterbankSize)
+                                          .Select(f => new RastaFilter(rasta))
+                                          .ToArray();
+            }
+
+            _fft = new Fft(_fftSize);
+            
             _window = window;
 
             if (_window != WindowTypes.Rectangular)
@@ -199,6 +221,17 @@ namespace NWaves.FeatureExtractors
             _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
 
             _preEmphasis = (float)preEmphasis;
+
+            // buffers for LPC
+
+            _lpcOrder = lpcOrder > 0 ? lpcOrder : FeatureCount;
+
+            var lpcFftLength = MathUtils.NextPowerOfTwo(2 * _filterbankSize - 2);
+
+            _lpc = new float[_lpcOrder + 1];
+            _cc = new float[lpcFftLength];
+            _im = new float[lpcFftLength];
+            _fftLpc = new Fft(lpcFftLength);
 
             // reserve memory for reusable blocks
 
@@ -275,7 +308,7 @@ namespace NWaves.FeatureExtractors
 
                 _fft.PowerSpectrum(_block, _spectrum);
 
-                // 3) apply filterbank of the result (bark frequencies by default)
+                // 3) apply filterbank on the result (bark frequencies by default)
 
                 FilterBanks.Apply(FilterBank, _spectrum, _bandSpectrum);
 
@@ -283,54 +316,59 @@ namespace NWaves.FeatureExtractors
 
                 if (_rasta > 0)
                 {
-                    for (var k = 0; k < _bandSpectrum.Length; k++)
+                    for (var k = 1; k < _bandSpectrum.Length - 1; k++)
                     {
-                        var log = (float)Math.Log(_bandSpectrum[k]);
-                        log = _rastaFilters[k].Process(log);
+                        var log = (float)Math.Log(_bandSpectrum[k] + float.Epsilon);
+
+                        log = _rastaFilters[k - 1].Process(log);
+
                         _bandSpectrum[k] = (float)Math.Exp(log);
                     }
                 }
 
                 // 5) and 6) apply equal loudness curve and take cubic root
 
-                for (var k = 0; k < _bandSpectrum.Length; k++)
+                for (var k = 1; k < _bandSpectrum.Length - 1; k++)
                 {
                     _bandSpectrum[k] = (float)Math.Pow(_bandSpectrum[k] * _equalLoudnessCurve[k], 0.33);
                 }
 
-                // 7) LPC:
+                // duplicate edge bands
 
+                _bandSpectrum[0] = _bandSpectrum[1];
+                _bandSpectrum[_bandSpectrum.Length - 1] = _bandSpectrum[_bandSpectrum.Length - 2];
+
+
+                // 7) LPC from power spectrum:
+
+                _bandSpectrum.FastCopyTo(_cc, _filterbankSize);
+
+                // fill reusable buffers with zeros:
+
+                for (var k = _filterbankSize; k < _cc.Length; _cc[k] = 0, k++) ;
+                for (var k = 0; k < _im.Length; _im[k] = 0, k++) ;
                 for (var k = 0; k < _lpc.Length; _lpc[k] = 0, k++) ;
 
-                var _spectrumRe = new float[MathUtils.NextPowerOfTwo(2 * FeatureCount + 1)];
-                var _spectrumIm = new float[MathUtils.NextPowerOfTwo(2 * FeatureCount + 1)];
+                // make real part symmetric before IFFT:
 
-                Array.Clear(_spectrumRe, 0, _spectrumRe.Length);
-                Array.Clear(_spectrumIm, 0, _spectrumIm.Length);
+                for (var k = 1; k < _filterbankSize - 1; k++)
+                {
+                    _cc[_filterbankSize - 1 + k] = _cc[_filterbankSize - 1 - k];
+                }
 
-                _bandSpectrum.FastCopyTo(_spectrumRe, _filterbankSize);
+                _fftLpc.Inverse(_cc, _im);
+
+                // LPC:
+
+                var err = MathUtils.LevinsonDurbin(_cc, _lpc, _lpcOrder);
 
 
-                _fft.Inverse(_spectrumRe, _spectrumIm);
-
-                var err = MathUtils.LevinsonDurbin(_spectrumRe, _lpc, FeatureCount, _bandSpectrum.Length - 1);
-
-
-                // 8) simple and efficient algorithm for obtaining LPCC coefficients from LPC
+                // 8) compute LPCC coefficients from LPC
 
                 var lpcc = new float[FeatureCount];
 
-                lpcc[0] = (float)Math.Log(err);
-
-                for (var n = 1; n < FeatureCount; n++)
-                {
-                    var acc = 0.0f;
-                    for (var k = 1; k < n; k++)
-                    {
-                        acc += k * lpcc[k] * _lpc[n - k];
-                    }
-                    lpcc[n] = -_lpc[n] - acc / n;
-                }
+                MathUtils.LpcToLpcc(_lpc, err, lpcc);
+                
 
                 // 9) (optional) liftering
 
@@ -379,6 +417,7 @@ namespace NWaves.FeatureExtractors
                              FeatureCount,
                              FrameDuration,
                              HopDuration,
+                             _lpcOrder,
                              _rasta,
                              _filterbankSize,
                              _lowFreq,

@@ -251,7 +251,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method returns frequency tuples for uniformly spaced frequency bands on Bark scale.
+        /// Method returns frequency tuples for uniformly spaced frequency bands on Bark scale (Traunmueller, 1990).
         /// </summary>
         /// <param name="barkFilterCount">Number of bark filters to create</param>
         /// <param name="fftSize">Assumed size of FFT</param>
@@ -260,12 +260,28 @@ namespace NWaves.Filters.Fda
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
         /// <returns>Array of frequency tuples for each Bark filter</returns>
-        public static Tuple<double, double, double>[] BarkBands(
+        public static Tuple<double, double, double>[] Bark1Bands(
             int barkFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
         {
-            return UniformBands(Scale.HerzToBark, Scale.BarkToHerz, barkFilterCount, samplingRate, lowFreq, highFreq, overlap);
+            return UniformBands(Scale.HerzToBark1, Scale.Bark1ToHerz, barkFilterCount, samplingRate, lowFreq, highFreq, overlap);
         }
-        
+
+        /// <summary>
+        /// Method returns frequency tuples for uniformly spaced frequency bands on Bark scale (Wang, 1992).
+        /// </summary>
+        /// <param name="barkFilterCount">Number of bark filters to create</param>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="lowFreq">Lower bound of the frequency range</param>
+        /// <param name="highFreq">Upper bound of the frequency range</param>
+        /// <param name="overlap">Flag indicating that bands should overlap</param>
+        /// <returns>Array of frequency tuples for each Bark filter</returns>
+        public static Tuple<double, double, double>[] Bark2Bands(
+            int barkFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
+        {
+            return UniformBands(Scale.HerzToBark2, Scale.Bark2ToHerz, barkFilterCount, samplingRate, lowFreq, highFreq, overlap);
+        }
+
         /// <summary>
         /// Method returns frequency tuples for critical bands.
         /// </summary>

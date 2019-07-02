@@ -93,15 +93,16 @@ namespace NWaves.FeatureExtractors
                              int featureCount,
                              double frameDuration = 0.0256/*sec*/,
                              double hopDuration = 0.010/*sec*/,
+                             int lpcOrder = 0,
                              int lifterSize = 22,
-                             double preEmphasis = 0.0,
+                             double preEmphasis = 0,
                              WindowTypes window = WindowTypes.Rectangular)
 
             : base(samplingRate, frameDuration, hopDuration)
         {
             FeatureCount = featureCount;
 
-            _order = featureCount;
+            _order = lpcOrder > 0 ? lpcOrder : featureCount;
 
             var fftSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
             _convolver = new Convolver(fftSize);
@@ -180,27 +181,17 @@ namespace NWaves.FeatureExtractors
 
                 // 3) Levinson-Durbin
 
-                for (int k = 0; k < _lpc.Length; k++) _lpc[k] = 0;
+                for (int k = 0; k < _lpc.Length; _lpc[k] = 0, k++) ;
 
                 var err = MathUtils.LevinsonDurbin(_cc, _lpc, _order, frameSize - 1);
 
-                // 4) simple and efficient algorithm for obtaining LPCC coefficients from LPC
+                // 4) compute LPCC coefficients from LPC
 
                 var lpcc = new float[FeatureCount];
 
-                lpcc[0] = (float)Math.Log(err);
+                MathUtils.LpcToLpcc(_lpc, err, lpcc);
 
-                for (var n = 1; n < FeatureCount; n++)
-                {
-                    var acc = 0.0f;
-                    for (var k = 1; k < n; k++)
-                    {
-                        acc += k * lpcc[k] * _lpc[n - k];
-                    }
-                    lpcc[n] = -_lpc[n] - acc / n;
-                }
-
-                // (optional) liftering
+                // 5) (optional) liftering
 
                 if (_lifterCoeffs != null)
                 {
@@ -208,7 +199,7 @@ namespace NWaves.FeatureExtractors
                 }
 
 
-                // add LPC vector to output sequence
+                // add LPCC vector to output sequence
 
                 featureVectors.Add(new FeatureVector
                 {
@@ -231,6 +222,6 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
-            new LpccExtractor(SamplingRate, FeatureCount, FrameDuration, HopDuration, _lifterSize, _preEmphasis, _window);
+            new LpccExtractor(SamplingRate, FeatureCount, FrameDuration, HopDuration, _order, _lifterSize, _preEmphasis, _window);
     }
 }

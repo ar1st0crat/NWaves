@@ -70,7 +70,7 @@ namespace NWaves.DemoForms
                     bands = FilterBanks.MelBands(filterCount, fftSize, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
                     break;
                 case "Bark":
-                    bands = FilterBanks.BarkBands(filterCount, fftSize, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
+                    bands = FilterBanks.Bark1Bands(filterCount, fftSize, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
                     break;
                 case "Critical bands":
                     bands = FilterBanks.CriticalBands(filterCount, fftSize, samplingRate, lowFreq, highFreq);
