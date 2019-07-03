@@ -292,10 +292,13 @@ namespace NWaves.Transforms
 
                 for (var j = 0; j <= _fftSize / 2; j++)
                 {
-                    _re[j] = (float)(mag[i][j] * Math.Cos(phase[i][j]));
-                    _im[j] = (float)(mag[i][j] * Math.Sin(phase[i][j]));
-                    _re[_fftSize - 1 - j] = _re[j];
-                    _im[_fftSize - 1 - j] = _im[j];
+                    _re[j] = (float)(2 * mag[i][j] * Math.Cos(phase[i][j]));
+                    _im[j] = (float)(2 * mag[i][j] * Math.Sin(phase[i][j]));
+                }
+                for (var j = 1; j < _fftSize / 2; j++)
+                {
+                    _re[_fftSize - j] = _re[j];
+                    _im[_fftSize - j] = _im[j];
                 }
 
                 _fft.Inverse(_re, _im);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using NWaves.Audio;
+using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Windows;
@@ -51,17 +52,28 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Average];
             }
 
-            _stft = new Stft(512, 128, _windowType);
+            _stft = new Stft(2048, 256, _windowType);
+
+            _spectrogram = _stft.Spectrogram(_signal);
 
             var processed = _stft.Inverse(_stft.Direct(_signal));
             _processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
+
+
+            // 1) check also this:
+            //var mp = _stft.MagnitudePhaseSpectrogram(_signal);
+            //var processed = _stft.ReconstructMagnitudePhase(mp);
+            //_processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
+
+            // 2) or check this:
+            //var processed = new GriffinLimReconstructor(_spectrogram, _stft).Reconstruct();
+            //_processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
 
             signalPanel.Gain = 120;
             signalPanel.Signal = _signal;
             processedSignalPanel.Gain = 120;
             processedSignalPanel.Signal = _processedSignal;
 
-            _spectrogram = _stft.Spectrogram(_signal);
             spectrogramPanel.Spectrogram = _spectrogram;
         }
 

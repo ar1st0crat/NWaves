@@ -78,7 +78,7 @@ namespace NWaves.DemoForms
 
         private async void playButton2_Click(object sender, EventArgs e)
         {
-            await _player.PlayAsync(_harmonicSignal * 2);
+            await _player.PlayAsync(_harmonicSignal);
         }
 
         private async void playButton3_Click(object sender, EventArgs e)
