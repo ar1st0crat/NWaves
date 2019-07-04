@@ -60,12 +60,12 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// FFT transformer
         /// </summary>
-        private readonly Fft _fft;
+        private readonly RealFft _fft;
 
         /// <summary>
         /// FFT transformer for modulation spectrum
         /// </summary>
-        private readonly Fft _modulationFft;
+        private readonly RealFft _modulationFft;
 
         /// <summary>
         /// Type of the window function
@@ -146,7 +146,7 @@ namespace NWaves.FeatureExtractors
         {
             _modulationFftSize = modulationFftSize;
             _modulationHopSize = modulationHopSize;
-            _modulationFft = new Fft(_modulationFftSize);
+            _modulationFft = new RealFft(_modulationFftSize);
 
             _featuregram = featuregram?.ToArray();
 
@@ -169,7 +169,7 @@ namespace NWaves.FeatureExtractors
                     _fftSize = 2 * (filterbank[0].Length - 1);
                 }
 
-                _fft = new Fft(_fftSize);
+                _fft = new RealFft(_fftSize);
                 
                 _featureCount = _filterbank.Length * (_modulationFftSize / 2 + 1);
 

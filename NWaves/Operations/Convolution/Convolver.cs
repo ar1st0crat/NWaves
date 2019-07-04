@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -18,7 +19,7 @@ namespace NWaves.Operations.Convolution
         /// <summary>
         /// FFT transformer
         /// </summary>
-        private Fft _fft;
+        private RealFft _fft;
 
         // internal reusable buffers
 
@@ -26,7 +27,6 @@ namespace NWaves.Operations.Convolution
         private float[] _imag1;
         private float[] _real2;
         private float[] _imag2;
-        private float[] _zeroblock;
 
         /// <summary>
         /// Constructor
@@ -47,13 +47,12 @@ namespace NWaves.Operations.Convolution
         private void PrepareMemory(int fftSize)
         {
             _fftSize = fftSize;
-            _fft = new Fft(_fftSize);
+            _fft = new RealFft(_fftSize);
 
             _real1 = new float[_fftSize];
             _imag1 = new float[_fftSize];
             _real2 = new float[_fftSize];
             _imag2 = new float[_fftSize];
-            _zeroblock = new float[_fftSize];
         }
 
         /// <summary>
@@ -92,32 +91,32 @@ namespace NWaves.Operations.Convolution
         /// <param name="output">Real parts of resulting convolution (zero-padded)</param>
         public void Convolve(float[] input, float[] kernel, float[] output)
         {
-            _zeroblock.FastCopyTo(_real1, _fftSize);
-            _zeroblock.FastCopyTo(_real2, _fftSize);
-            _zeroblock.FastCopyTo(_imag1, _fftSize);
-            _zeroblock.FastCopyTo(_imag2, _fftSize);
+            Array.Clear(_real1, 0, _fftSize);
+            Array.Clear(_real2, 0, _fftSize);
+            Array.Clear(_imag1, 0, _fftSize);
+            Array.Clear(_imag2, 0, _fftSize);
 
             input.FastCopyTo(_real1, input.Length);
             kernel.FastCopyTo(_real2, kernel.Length);
 
             // 1) do FFT of both signals
 
-            _fft.Direct(_real1, _imag1);
-            _fft.Direct(_real2, _imag2);
+            _fft.Direct(_real1, _real1, _imag1);
+            _fft.Direct(_real2, _real2, _imag2);
 
             // 2) do complex multiplication of spectra and normalize
 
-            for (var i = 0; i < _fftSize; i++)
+            for (var i = 0; i <= _fftSize/2; i++)
             {
                 var re = _real1[i] * _real2[i] - _imag1[i] * _imag2[i];
                 var im = _real1[i] * _imag2[i] + _imag1[i] * _real2[i];
-                output[i] = re / _fftSize;
-                _imag1[i] = im / _fftSize;
+                _real1[i] = 2 * re / _fftSize;
+                _imag1[i] = 2 * im / _fftSize;
             }
 
             // 3) do inverse FFT of resulting spectrum
 
-            _fft.Inverse(output, _imag1);
+            _fft.Inverse(_real1, _imag1, output);
         }
 
         /// <summary>

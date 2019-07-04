@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using NWaves.Transforms;
 using System;
+using System.Linq;
 
 namespace NWaves.Tests.TransformTests
 {
@@ -37,7 +38,7 @@ namespace NWaves.Tests.TransformTests
             realFft.Direct(array, re, im);
             realFft.Inverse(re, im, output);
 
-            Assert.That(output, Is.EqualTo(array).Within(1e-5));
+            Assert.That(output, Is.EqualTo(array.Select(a => a * 4)).Within(1e-5));
         }
 
         [Test]

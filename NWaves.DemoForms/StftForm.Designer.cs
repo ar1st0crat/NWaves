@@ -32,12 +32,12 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.play2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.windowsComboBox = new System.Windows.Forms.ComboBox();
             this.windowPlot = new NWaves.DemoForms.UserControls.LinePlot();
             this.spectrogramPanel = new NWaves.DemoForms.UserControls.SpectrogramPlot();
             this.processedSignalPanel = new NWaves.DemoForms.UserControls.SignalPlot();
             this.signalPanel = new NWaves.DemoForms.UserControls.SignalPlot();
-            this.play2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -76,6 +76,13 @@
             this.playToolStripMenuItem.Text = "Play&1";
             this.playToolStripMenuItem.Click += new System.EventHandler(this.playToolStripMenuItem_Click);
             // 
+            // play2ToolStripMenuItem
+            // 
+            this.play2ToolStripMenuItem.Name = "play2ToolStripMenuItem";
+            this.play2ToolStripMenuItem.Size = new System.Drawing.Size(56, 24);
+            this.play2ToolStripMenuItem.Text = "Play&2";
+            this.play2ToolStripMenuItem.Click += new System.EventHandler(this.play2ToolStripMenuItem_Click);
+            // 
             // windowsComboBox
             // 
             this.windowsComboBox.FormattingEnabled = true;
@@ -108,12 +115,13 @@
             // 
             this.spectrogramPanel.AutoScroll = true;
             this.spectrogramPanel.BackColor = System.Drawing.Color.Black;
+            this.spectrogramPanel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.spectrogramPanel.ColorMapName = "magma";
             this.spectrogramPanel.Location = new System.Drawing.Point(13, 394);
             this.spectrogramPanel.Markline = null;
             this.spectrogramPanel.MarklineThickness = 0;
             this.spectrogramPanel.Name = "spectrogramPanel";
-            this.spectrogramPanel.Size = new System.Drawing.Size(754, 256);
+            this.spectrogramPanel.Size = new System.Drawing.Size(754, 290);
             this.spectrogramPanel.Spectrogram = null;
             this.spectrogramPanel.TabIndex = 11;
             // 
@@ -147,18 +155,11 @@
             this.signalPanel.Stride = 64;
             this.signalPanel.TabIndex = 9;
             // 
-            // play2ToolStripMenuItem
-            // 
-            this.play2ToolStripMenuItem.Name = "play2ToolStripMenuItem";
-            this.play2ToolStripMenuItem.Size = new System.Drawing.Size(56, 24);
-            this.play2ToolStripMenuItem.Text = "Play&2";
-            this.play2ToolStripMenuItem.Click += new System.EventHandler(this.play2ToolStripMenuItem_Click);
-            // 
             // StftForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1105, 659);
+            this.ClientSize = new System.Drawing.Size(1105, 696);
             this.Controls.Add(this.windowsComboBox);
             this.Controls.Add(this.windowPlot);
             this.Controls.Add(this.spectrogramPanel);

@@ -55,7 +55,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// FFT transformer
         /// </summary>
-        private readonly Fft _fft;
+        private readonly RealFft _fft;
 
         /// <summary>
         /// RASTA coefficient (if zero, then no RASTA filtering)
@@ -130,7 +130,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Fft transformer used for LPC
         /// </summary>
-        private readonly Fft _fftLpc;
+        private readonly RealFft _fftLpc;
 
         /// <summary>
         /// Internal buffer for a signal block at each step
@@ -208,7 +208,7 @@ namespace NWaves.FeatureExtractors
                                           .ToArray();
             }
 
-            _fft = new Fft(_fftSize);
+            _fft = new RealFft(_fftSize);
             
             _window = window;
 
@@ -231,7 +231,7 @@ namespace NWaves.FeatureExtractors
             _lpc = new float[_lpcOrder + 1];
             _cc = new float[lpcFftLength];
             _im = new float[lpcFftLength];
-            _fftLpc = new Fft(lpcFftLength);
+            _fftLpc = new RealFft(lpcFftLength);
 
             // reserve memory for reusable blocks
 
@@ -356,7 +356,7 @@ namespace NWaves.FeatureExtractors
                     _cc[_filterbankSize - 1 + k] = _cc[_filterbankSize - 1 - k];
                 }
 
-                _fftLpc.Inverse(_cc, _im);
+                _fftLpc.Inverse(_cc, _im, _cc);
 
                 // LPC:
 

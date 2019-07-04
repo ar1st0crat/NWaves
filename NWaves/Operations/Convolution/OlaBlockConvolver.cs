@@ -17,17 +17,17 @@ namespace NWaves.Operations.Convolution
         /// <summary>
         /// Filter kernel
         /// </summary>
-        protected float[] _kernel;
+        private readonly float[] _kernel;
 
         /// <summary>
         /// FFT size (also the size of one analyzed chunk)
         /// </summary>
-        protected int _fftSize;
+        private readonly int _fftSize;
 
         /// <summary>
         /// FFT transformer
         /// </summary>
-        protected Fft _fft;
+        private readonly RealFft _fft;
 
         /// <summary>
         /// Offset in the input delay line
@@ -42,14 +42,13 @@ namespace NWaves.Operations.Convolution
         /// <summary>
         /// internal buffers
         /// </summary>
-        private float[] _kernelSpectrumRe;
-        private float[] _kernelSpectrumIm;
-        private float[] _blockRe;
-        private float[] _blockIm;
-        private float[] _convRe;
-        private float[] _convIm;
-        private float[] _zeroblock;
-        private float[] _lastSaved;
+        private readonly float[] _kernelSpectrumRe;
+        private readonly float[] _kernelSpectrumIm;
+        private readonly float[] _blockRe;
+        private readonly float[] _blockIm;
+        private readonly float[] _convRe;
+        private readonly float[] _convIm;
+        private readonly float[] _lastSaved;
 
         /// <summary>
         /// Hop size
@@ -70,7 +69,7 @@ namespace NWaves.Operations.Convolution
                 throw new ArgumentException("Kernel length must not exceed the size of FFT!");
             }
 
-            _fft = new Fft(_fftSize);
+            _fft = new RealFft(_fftSize);
 
             _kernel = kernel.ToArray();
             _kernelSpectrumRe = _kernel.PadZeros(_fftSize);
@@ -80,9 +79,8 @@ namespace NWaves.Operations.Convolution
             _blockRe = new float[_fftSize];
             _blockIm = new float[_fftSize];
             _lastSaved = new float[_kernel.Length - 1];
-            _zeroblock = new float[_fftSize];
 
-            _fft.Direct(_kernelSpectrumRe, _kernelSpectrumIm);
+            _fft.Direct(_kernelSpectrumRe, _kernelSpectrumRe, _kernelSpectrumIm);
 
             Reset();
         }
@@ -132,16 +130,18 @@ namespace NWaves.Operations.Convolution
         {
             var M = _kernel.Length;
 
-            _zeroblock.FastCopyTo(_blockIm, _fftSize);
-            _zeroblock.FastCopyTo(_blockRe, M - 1, 0, HopSize);
+            var halfSize = _fftSize / 2;
 
-            _fft.Direct(_blockRe, _blockIm);
-            for (var j = 0; j < _fftSize; j++)
+            Array.Clear(_blockIm, 0, _fftSize);
+            Array.Clear(_blockRe, HopSize, M - 1);
+
+            _fft.Direct(_blockRe, _blockRe, _blockIm);
+            for (var j = 0; j <= halfSize; j++)
             {
-                _convRe[j] = (_blockRe[j] * _kernelSpectrumRe[j] - _blockIm[j] * _kernelSpectrumIm[j]) / _fftSize;
-                _convIm[j] = (_blockRe[j] * _kernelSpectrumIm[j] + _blockIm[j] * _kernelSpectrumRe[j]) / _fftSize;
+                _convRe[j] = (_blockRe[j] * _kernelSpectrumRe[j] - _blockIm[j] * _kernelSpectrumIm[j]) / halfSize;
+                _convIm[j] = (_blockRe[j] * _kernelSpectrumIm[j] + _blockIm[j] * _kernelSpectrumRe[j]) / halfSize;
             }
-            _fft.Inverse(_convRe, _convIm);
+            _fft.Inverse(_convRe, _convIm, _convRe);
 
             for (var j = 0; j < M - 1; j++)
             {
@@ -196,11 +196,11 @@ namespace NWaves.Operations.Convolution
             _bufferOffset = 0;
             _outputBufferOffset = 0;
 
-            _zeroblock.FastCopyTo(_lastSaved, _lastSaved.Length);
-            _zeroblock.FastCopyTo(_blockRe, _blockRe.Length);
-            _zeroblock.FastCopyTo(_blockIm, _blockIm.Length);
-            _zeroblock.FastCopyTo(_convRe, _convRe.Length);
-            _zeroblock.FastCopyTo(_convIm, _convIm.Length);
+            Array.Clear(_lastSaved, 0, _lastSaved.Length);
+            Array.Clear(_blockRe, 0, _blockRe.Length);
+            Array.Clear(_blockIm, 0, _blockIm.Length);
+            Array.Clear(_convRe, 0, _convRe.Length);
+            Array.Clear(_convIm, 0, _convIm.Length);
         }
     }
 }

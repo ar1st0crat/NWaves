@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using NWaves.Audio;
@@ -52,18 +53,18 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Average];
             }
 
-            _stft = new Stft(2048, 256, _windowType);
+            _stft = new Stft(512, 64, _windowType);
 
             _spectrogram = _stft.Spectrogram(_signal);
 
-            var processed = _stft.Inverse(_stft.Direct(_signal));
-            _processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
+            //var processed = _stft.Inverse(_stft.Direct(_signal));
+            //_processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
 
 
             // 1) check also this:
-            //var mp = _stft.MagnitudePhaseSpectrogram(_signal);
-            //var processed = _stft.ReconstructMagnitudePhase(mp);
-            //_processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
+            var mp = _stft.MagnitudePhaseSpectrogram(_signal);
+            var processed = _stft.ReconstructMagnitudePhase(mp);
+            _processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
 
             // 2) or check this:
             //var processed = new GriffinLimReconstructor(_spectrogram, _stft).Reconstruct();
@@ -75,6 +76,45 @@ namespace NWaves.DemoForms
             processedSignalPanel.Signal = _processedSignal;
 
             spectrogramPanel.Spectrogram = _spectrogram;
+
+
+
+            //// StftC - has complex FFT
+
+            //// RealFFT-based Stft is 30% faster!
+
+            //var sr = new Stft(2048, 256);
+            //var sc = new StftC(2048, 256);
+
+            //var sw = new Stopwatch();
+
+            //sw.Start();
+
+            //for (var i = 0; i < 10; i++)
+            //{
+            //    var processed1 = sr.Inverse(sr.Direct(_signal));
+            //    _processedSignal = new DiscreteSignal(_signal.SamplingRate, processed1);
+            //}
+
+            //sw.Stop();
+
+            //var t1 = sw.Elapsed;
+
+
+            //sw.Reset();
+            //sw.Start();
+
+            //for (var i = 0; i < 10; i++)
+            //{
+            //    var processed1 = sc.Inverse(sc.Direct(_signal));
+            //    _processedSignal = new DiscreteSignal(_signal.SamplingRate, processed1);
+            //}
+
+            //sw.Stop();
+
+            //var t2 = sw.Elapsed;
+
+            //MessageBox.Show(t1 + " " + t2);
         }
 
         private async void playToolStripMenuItem_Click(object sender, EventArgs e)

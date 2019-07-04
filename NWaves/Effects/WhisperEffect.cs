@@ -1,6 +1,4 @@
-﻿using NWaves.Filters.Base;
-using NWaves.Signals;
-using NWaves.Transforms;
+﻿using NWaves.Transforms;
 using NWaves.Utils;
 using NWaves.Windows;
 using System;
@@ -11,7 +9,7 @@ namespace NWaves.Effects
     /// Effect for speech whisperization.
     /// Currently it's based on the phase vocoder technique.
     /// 
-    /// Hint. Choose relatively small fft and hop sizes (e.g., 128 and 40).
+    /// Hint. Choose relatively small fft and hop sizes (e.g., 256 and 40).
     /// 
     /// </summary>
     public class WhisperEffect : AudioEffect
@@ -34,7 +32,7 @@ namespace NWaves.Effects
         /// <summary>
         /// Internal FFT transformer
         /// </summary>
-        private readonly Fft _fft;
+        private readonly RealFft _fft;
 
         /// <summary>
         /// Window coefficients
@@ -42,9 +40,14 @@ namespace NWaves.Effects
         private readonly float[] _window;
 
         /// <summary>
+        /// ISTFT normalization gain
+        /// </summary>
+        private readonly float _gain;
+
+        /// <summary>
         /// Delay line
         /// </summary>
-        private float[] _dl;
+        private readonly float[] _dl;
 
         /// <summary>
         /// Offset in the input delay line
@@ -59,12 +62,11 @@ namespace NWaves.Effects
         /// <summary>
         /// Internal buffers
         /// </summary>
-        private float[] _re;
-        private float[] _im;
-        private float[] _filteredRe;
-        private float[] _filteredIm;
-        private float[] _zeroblock;
-        private float[] _lastSaved;
+        private readonly float[] _re;
+        private readonly float[] _im;
+        private readonly float[] _filteredRe;
+        private readonly float[] _filteredIm;
+        private readonly float[] _lastSaved;
 
         /// <summary>
         /// Randomizer for phases
@@ -84,15 +86,17 @@ namespace NWaves.Effects
 
             Guard.AgainstInvalidRange(_hopSize, _fftSize, "Hop size", "FFT size");
 
-            _fft = new Fft(_fftSize);
+            _fft = new RealFft(_fftSize);
+
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
+
+            _gain = 2f / _fftSize;
 
             _dl = new float[_fftSize];
             _re = new float[_fftSize];
             _im = new float[_fftSize];
             _filteredRe = new float[_fftSize];
             _filteredIm = new float[_fftSize];
-            _zeroblock = new float[_fftSize];
             _lastSaved = new float[_overlapSize];
         }
 
@@ -118,12 +122,12 @@ namespace NWaves.Effects
         /// </summary>
         public void ProcessFrame()
         {
-            _zeroblock.FastCopyTo(_im, _fftSize);
+            Array.Clear(_im, 0, _fftSize);
             _dl.FastCopyTo(_re, _fftSize);
 
             _re.ApplyWindow(_window);
 
-            _fft.Direct(_re, _im);
+            _fft.Direct(_re, _re, _im);
 
             for (var j = 0; j <= _fftSize / 2; j++)
             {
@@ -133,13 +137,10 @@ namespace NWaves.Effects
                 _filteredRe[j] = (float)(mag * Math.Cos(phase));
                 _filteredIm[j] = (float)(mag * Math.Sin(phase));
             }
+            _filteredIm[0] = 0;
 
-            for (var j = _fftSize / 2 + 1; j < _fftSize; j++)
-            {
-                _filteredRe[j] = _filteredIm[j] = 0.0f;
-            }
 
-            _fft.Inverse(_filteredRe, _filteredIm);
+            _fft.Inverse(_filteredRe, _filteredIm, _filteredRe);
 
             _filteredRe.ApplyWindow(_window);
 
@@ -152,7 +153,7 @@ namespace NWaves.Effects
 
             for (var i = 0; i < _filteredRe.Length; i++)        // Wet / Dry mix
             {
-                _filteredRe[i] *= Wet * 2 / _fftSize;
+                _filteredRe[i] *= Wet * _gain;
                 _filteredRe[i] += _dl[i] * Dry;
             }
 
@@ -170,12 +171,12 @@ namespace NWaves.Effects
             _inOffset = _overlapSize;
             _outOffset = 0;
 
-            _zeroblock.FastCopyTo(_dl, _dl.Length);
-            _zeroblock.FastCopyTo(_re, _re.Length);
-            _zeroblock.FastCopyTo(_im, _im.Length);
-            _zeroblock.FastCopyTo(_filteredRe, _filteredRe.Length);
-            _zeroblock.FastCopyTo(_filteredIm, _filteredIm.Length);
-            _zeroblock.FastCopyTo(_lastSaved, _lastSaved.Length);
+            Array.Clear(_dl, 0, _dl.Length);
+            Array.Clear(_re, 0, _re.Length);
+            Array.Clear(_im, 0, _im.Length);
+            Array.Clear(_filteredRe, 0, _filteredRe.Length);
+            Array.Clear(_filteredIm, 0, _filteredIm.Length);
+            Array.Clear(_lastSaved, 0, _lastSaved.Length);
         }
     }
 }

@@ -39,7 +39,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// FFT transformer
         /// </summary>
-        private readonly Fft _fft;
+        private readonly RealFft _fft;
 
         /// <summary>
         /// Type of the window function
@@ -188,7 +188,7 @@ namespace NWaves.FeatureExtractors.Multi
             FeatureDescriptions = features.ToList();
             
             _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
-            _fft = new Fft(_fftSize);
+            _fft = new RealFft(_fftSize);
 
             _window = window;
             if (_window != WindowTypes.Rectangular)

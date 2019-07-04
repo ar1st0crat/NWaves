@@ -41,7 +41,7 @@ namespace NWaves.Operations.Tsm
         /// <summary>
         /// Internal FFT transformer
         /// </summary>
-        private readonly Fft _fft;
+        private readonly RealFft _fft;
 
         /// <summary>
         /// Window coefficients
@@ -61,47 +61,43 @@ namespace NWaves.Operations.Tsm
         /// <summary>
         /// Array of phases computed at previous step
         /// </summary>
-        private double[] _prevPhase;
+        private readonly double[] _prevPhase;
 
         /// <summary>
         /// Array of new synthesized phases
         /// </summary>
-        private double[] _phaseTotal;
+        private readonly double[] _phaseTotal;
 
         /// <summary>
         /// Array of spectrum magnitudes (at current step)
         /// </summary>
-        private double[] _mag;
+        private readonly double[] _mag;
 
         /// <summary>
         /// Array of spectrum phases (at current step)
         /// </summary>
-        private double[] _phase;
+        private readonly double[] _phase;
 
         /// <summary>
         /// Array of phase deltas
         /// </summary>
-        private double[] _delta;
+        private readonly double[] _delta;
 
         /// <summary>
         /// Array of peak positions (indices)
         /// </summary>
-        private int[] _peaks;
+        private readonly int[] _peaks;
 
         /// <summary>
         /// Internal buffer for real parts of analyzed block
         /// </summary>
-        private float[] _re;
+        private readonly float[] _re;
 
         /// <summary>
         /// Internal buffer for imaginary parts of analyzed block
         /// </summary>
-        private float[] _im;
+        private readonly float[] _im;
 
-        /// <summary>
-        /// Internal array of zeros for a quick memset
-        /// </summary>
-        private readonly float[] _zeroblock;
 
         /// <summary>
         /// Constructor
@@ -118,7 +114,7 @@ namespace NWaves.Operations.Tsm
             _fftSize = (fftSize > 0) ? fftSize : 8 * Math.Max(_hopAnalysis, _hopSynthesis);
             _phaseLocking = phaseLocking;
 
-            _fft = new Fft(_fftSize);
+            _fft = new RealFft(_fftSize);
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
 
             _gain = 2 / (_fftSize * _window.Select(w => w * w).Sum() / _hopSynthesis);
@@ -138,7 +134,6 @@ namespace NWaves.Operations.Tsm
 
             _re = new float[_fftSize];
             _im = new float[_fftSize];
-            _zeroblock = new float[_fftSize];
         }
 
         /// <summary>
@@ -158,11 +153,11 @@ namespace NWaves.Operations.Tsm
             for (var posAnalysis = 0; posAnalysis + _fftSize < input.Length; posAnalysis += _hopAnalysis)
             {
                 input.FastCopyTo(_re, _fftSize, posAnalysis);
-                _zeroblock.FastCopyTo(_im, _fftSize);
+                Array.Clear(_im, 0, _fftSize);
 
                 _re.ApplyWindow(_window);
 
-                _fft.Direct(_re, _im);
+                _fft.Direct(_re, _re, _im);
 
                 for (var j = 0; j < _mag.Length; j++)
                 {
@@ -219,13 +214,10 @@ namespace NWaves.Operations.Tsm
 
                     leftPos = rightPos;
                 }
+                _im[0] = 0;
 
-                for (var j = _fftSize / 2 + 1; j < _fftSize; j++)
-                {
-                    _re[j] = _im[j] = 0.0f;
-                }
 
-                _fft.Inverse(_re, _im);
+                _fft.Inverse(_re, _im, _re);
 
                 for (var j = 0; j < _re.Length; j++)
                 {
@@ -250,11 +242,8 @@ namespace NWaves.Operations.Tsm
 
         public void Reset()
         {
-            for (var i = 0; i < _phaseTotal.Length; i++)
-            {
-                _phaseTotal[i] = 0;
-                _prevPhase[i] = 0;
-            }
+            Array.Clear(_phaseTotal, 0, _phaseTotal.Length);
+            Array.Clear(_prevPhase, 0, _prevPhase.Length);
         }
     }
 }

@@ -58,7 +58,6 @@ namespace NWaves.Effects
         private float[] _im1, _im2;
         private float[] _filteredRe;
         private float[] _filteredIm;
-        private float[] _zeroblock;
         private float[] _lastSaved;
 
         /// <summary>
@@ -85,7 +84,6 @@ namespace NWaves.Effects
             _im2 = new float[_fftSize];
             _filteredRe = new float[_fftSize];
             _filteredIm = new float[_fftSize];
-            _zeroblock = new float[_fftSize];
             _lastSaved = new float[_overlapSize];
         }
 
@@ -114,8 +112,8 @@ namespace NWaves.Effects
         /// </summary>
         public void ProcessFrame()
         {
-            _zeroblock.FastCopyTo(_im1, _fftSize);
-            _zeroblock.FastCopyTo(_im2, _fftSize);
+            Array.Clear(_im1, 0, _fftSize);
+            Array.Clear(_im2, 0, _fftSize);
             _dl1.FastCopyTo(_re1, _fftSize);
             _dl2.FastCopyTo(_re2, _fftSize);
 
@@ -171,15 +169,15 @@ namespace NWaves.Effects
             _inOffset = _overlapSize;
             _outOffset = 0;
 
-            _zeroblock.FastCopyTo(_dl1, _dl1.Length);
-            _zeroblock.FastCopyTo(_re1, _re1.Length);
-            _zeroblock.FastCopyTo(_im1, _im1.Length);
-            _zeroblock.FastCopyTo(_dl2, _dl2.Length);
-            _zeroblock.FastCopyTo(_re2, _re2.Length);
-            _zeroblock.FastCopyTo(_im2, _im2.Length);
-            _zeroblock.FastCopyTo(_filteredRe, _filteredRe.Length);
-            _zeroblock.FastCopyTo(_filteredIm, _filteredIm.Length);
-            _zeroblock.FastCopyTo(_lastSaved, _lastSaved.Length);
+            Array.Clear(_dl1, 0, _dl1.Length);
+            Array.Clear(_re1, 0, _re1.Length);
+            Array.Clear(_im1, 0, _im1.Length);
+            Array.Clear(_dl2, 0, _dl2.Length);
+            Array.Clear(_re2, 0, _re2.Length);
+            Array.Clear(_im2, 0, _im2.Length);
+            Array.Clear(_filteredRe, 0, _filteredRe.Length);
+            Array.Clear(_filteredIm, 0, _filteredIm.Length);
+            Array.Clear(_lastSaved, 0, _lastSaved.Length);
         }
 
         /// <summary>

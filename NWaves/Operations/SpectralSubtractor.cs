@@ -43,7 +43,7 @@ namespace NWaves.Operations
         /// <summary>
         /// Internal FFT transformer
         /// </summary>
-        private readonly Fft _fft;
+        private readonly RealFft _fft;
 
         /// <summary>
         /// Window coefficients
@@ -56,11 +56,6 @@ namespace NWaves.Operations
         private readonly float _gain;
 
         /// <summary>
-        /// Accumulated noise
-        /// </summary>
-        private readonly float[] _noiseAcc;
-
-        /// <summary>
         /// Noise estimate
         /// </summary>
         private readonly float[] _noiseEstimate;
@@ -68,7 +63,7 @@ namespace NWaves.Operations
         /// <summary>
         /// Delay line
         /// </summary>
-        private float[] _dl;
+        private readonly float[] _dl;
 
         /// <summary>
         /// Offset in the input delay line
@@ -83,12 +78,11 @@ namespace NWaves.Operations
         /// <summary>
         /// Internal buffers
         /// </summary>
-        private float[] _re;
-        private float[] _im;
-        private float[] _filteredRe;
-        private float[] _filteredIm;
-        private float[] _zeroblock;
-        private float[] _lastSaved;
+        private readonly float[] _re;
+        private readonly float[] _im;
+        private readonly float[] _filteredRe;
+        private readonly float[] _filteredIm;
+        private readonly float[] _lastSaved;
         
         /// <summary>
         /// Constructor
@@ -104,12 +98,11 @@ namespace NWaves.Operations
             _hopSize = hopSize;
             _overlapSize = _fftSize - _hopSize;
 
-            _fft = new Fft(_fftSize);
+            _fft = new RealFft(_fftSize);
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
 
             _gain = 2 / (_fftSize * _window.Select(w => w * w).Sum() / _hopSize);
 
-            _noiseAcc = new float[_fftSize / 2 + 1];
             _noiseEstimate = new float[_fftSize / 2 + 1];
 
             _dl = new float[_fftSize];
@@ -117,7 +110,6 @@ namespace NWaves.Operations
             _im = new float[_fftSize];
             _filteredRe = new float[_fftSize];
             _filteredIm = new float[_fftSize];
-            _zeroblock = new float[_fftSize];
             _lastSaved = new float[_overlapSize];
 
             EstimateNoise(noise);
@@ -132,17 +124,19 @@ namespace NWaves.Operations
         private void EstimateNoise(DiscreteSignal noise)
         {
             var numFrames = 0;
-            
+
+            var noiseAcc = new float[_fftSize / 2 + 1];
+
             for (var pos = 0; pos + _fftSize < noise.Length; pos += _hopSize, numFrames++)
             {
                 noise.Samples.FastCopyTo(_re, _fftSize, pos);
-                _zeroblock.FastCopyTo(_im, _fftSize);
+                Array.Clear(_im, 0, _fftSize);
 
-                _fft.Direct(_re, _im);
+                _fft.Direct(_re, _re, _im);
 
                 for (var j = 0; j <= _fftSize / 2; j++)
                 {
-                    _noiseAcc[j] += _re[j] * _re[j] + _im[j] * _im[j];
+                    noiseAcc[j] += _re[j] * _re[j] + _im[j] * _im[j];
                 }
             }
 
@@ -150,7 +144,7 @@ namespace NWaves.Operations
 
             for (var j = 1; j < _fftSize / 2; j++)
             {
-                _noiseEstimate[j] = (_noiseAcc[j - 1] + _noiseAcc[j] + _noiseAcc[j + 1]) / (3 * numFrames);
+                _noiseEstimate[j] = (noiseAcc[j - 1] + noiseAcc[j] + noiseAcc[j + 1]) / (3 * numFrames);
             }
 
             _noiseEstimate[0] /= numFrames;
@@ -182,12 +176,12 @@ namespace NWaves.Operations
             float k = (AlphaMin - AlphaMax) / (SnrMax - SnrMin);
             float b = AlphaMax - k * SnrMin;
 
-            _zeroblock.FastCopyTo(_im, _fftSize);
+            Array.Clear(_im, 0, _fftSize);
             _dl.FastCopyTo(_re, _fftSize);
 
             _re.ApplyWindow(_window);
 
-            _fft.Direct(_re, _im);
+            _fft.Direct(_re, _re, _im);
 
             for (var j = 0; j <= _fftSize / 2; j++)
             {
@@ -206,13 +200,10 @@ namespace NWaves.Operations
                 _filteredRe[j] = (float)(mag * Math.Cos(phase));
                 _filteredIm[j] = (float)(mag * Math.Sin(phase));
             }
+            _filteredIm[0] = 0;
 
-            for (var j = _fftSize / 2 + 1; j < _fftSize; j++)
-            {
-                _filteredRe[j] = _filteredIm[j] = 0.0f;
-            }
 
-            _fft.Inverse(_filteredRe, _filteredIm);
+            _fft.Inverse(_filteredRe, _filteredIm, _filteredRe);
 
             _filteredRe.ApplyWindow(_window);
 
@@ -236,12 +227,12 @@ namespace NWaves.Operations
             _inOffset = _overlapSize;
             _outOffset = 0;
 
-            _zeroblock.FastCopyTo(_dl, _dl.Length);
-            _zeroblock.FastCopyTo(_re, _re.Length);
-            _zeroblock.FastCopyTo(_im, _im.Length);
-            _zeroblock.FastCopyTo(_filteredRe, _filteredRe.Length);
-            _zeroblock.FastCopyTo(_filteredIm, _filteredIm.Length);
-            _zeroblock.FastCopyTo(_lastSaved, _lastSaved.Length);
+            Array.Clear(_dl, 0, _dl.Length);
+            Array.Clear(_re, 0, _re.Length);
+            Array.Clear(_im, 0, _im.Length);
+            Array.Clear(_filteredRe, 0, _filteredRe.Length);
+            Array.Clear(_filteredIm, 0, _filteredIm.Length);
+            Array.Clear(_lastSaved, 0, _lastSaved.Length);
         }
 
         /// <summary>

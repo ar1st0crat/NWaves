@@ -1,4 +1,5 @@
-﻿using NWaves.Utils;
+﻿using NWaves.Signals;
+using NWaves.Utils;
 using System;
 
 namespace NWaves.Transforms
@@ -36,8 +37,11 @@ namespace NWaves.Transforms
         /// <summary>
         /// Internal buffers
         /// </summary>
-        private float[] _re, _im;
-        
+        private readonly float[] _re;
+        private readonly float[] _im;
+        private readonly float[] _realSpectrum;
+        private readonly float[] _imagSpectrum;
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -50,6 +54,11 @@ namespace NWaves.Transforms
 
             _re = new float[_fftSize];
             _im = new float[_fftSize];
+
+            _realSpectrum = new float[_fftSize + 1];
+            _imagSpectrum = new float[_fftSize + 1];
+
+            // precompute coefficients:
 
             var tblSize = (int)Math.Log(_fftSize, 2);
 
@@ -88,7 +97,7 @@ namespace NWaves.Transforms
         {
             // do half-size complex FFT:
 
-            for (int i = 0, k = 0; k < _fftSize * 2; i++)
+            for (int i = 0, k = 0; i < _fftSize; i++)
             {
                 _re[i] = input[k++];
                 _im[i] = input[k++];
@@ -173,8 +182,8 @@ namespace NWaves.Transforms
 
             for (var k = 0; k < _fftSize; k++)
             {
-                _re[k] = (re[k] * _ar[k] + im[k] * _ai[k] + re[_fftSize - k] * _br[k] - im[_fftSize - k] * _bi[k]) / _fftSize;
-                _im[k] = (im[k] * _ar[k] - re[k] * _ai[k] - re[_fftSize - k] * _bi[k] - im[_fftSize - k] * _br[k]) / _fftSize;
+                _re[k] = re[k] * _ar[k] + im[k] * _ai[k] + re[_fftSize - k] * _br[k] - im[_fftSize - k] * _bi[k];
+                _im[k] = im[k] * _ar[k] - re[k] * _ai[k] - re[_fftSize - k] * _bi[k] - im[_fftSize - k] * _br[k];
             }
 
             // do half-size complex FFT:
@@ -233,10 +242,116 @@ namespace NWaves.Transforms
 
             // fill output:
 
-            for (int i = 0, k = 0; k < _fftSize * 2; i++)
+            for (int i = 0, k = 0; i < _fftSize; i++)
             {
                 output[k++] = _re[i];
                 output[k++] = _im[i];
+            }
+        }
+
+        /// <summary>
+        /// Magnitude spectrum:
+        /// 
+        ///     spectrum = sqrt(re * re + im * im)
+        /// 
+        /// </summary>
+        /// <param name="samples">Array of samples (samples parts)</param>
+        /// <param name="spectrum">Magnitude spectrum</param>
+        /// <param name="normalize">Normalization flag</param>
+        public void MagnitudeSpectrum(float[] samples, float[] spectrum, bool normalize = false)
+        {
+            Direct(samples, _realSpectrum, _imagSpectrum);
+
+            if (normalize)
+            {
+                for (var i = 0; i < spectrum.Length; i++)
+                {
+                    spectrum[i] = (float)(Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]) / _fftSize);
+                }
+            }
+            else
+            {
+                for (var i = 0; i < spectrum.Length; i++)
+                {
+                    spectrum[i] = (float)(Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Power spectrum (normalized by default):
+        /// 
+        ///     spectrum =   (re * re + im * im) / fftSize
+        /// 
+        /// </summary>
+        /// <param name="samples">Array of samples (samples parts)</param>
+        /// <param name="spectrum">Power spectrum</param>
+        /// <param name="normalize">Normalization flag</param>
+        public void PowerSpectrum(float[] samples, float[] spectrum, bool normalize = true)
+        {
+            Direct(samples, _realSpectrum, _imagSpectrum);
+
+            if (normalize)
+            {
+                for (var i = 0; i < spectrum.Length; i++)
+                {
+                    spectrum[i] = (_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]) / _fftSize;
+                }
+            }
+            else
+            {
+                for (var i = 0; i < spectrum.Length; i++)
+                {
+                    spectrum[i] = _realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Overloaded method for DiscreteSignal as an input
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="normalize"></param>
+        /// <returns></returns>
+        public DiscreteSignal MagnitudeSpectrum(DiscreteSignal signal, bool normalize = false)
+        {
+            var spectrum = new float[_fftSize + 1];
+            MagnitudeSpectrum(signal.Samples, spectrum, normalize);
+            return new DiscreteSignal(signal.SamplingRate, spectrum);
+        }
+
+        /// <summary>
+        /// Overloaded method for DiscreteSignal as an input
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="normalize"></param>
+        /// <returns></returns>
+        public DiscreteSignal PowerSpectrum(DiscreteSignal signal, bool normalize = true)
+        {
+            var spectrum = new float[_fftSize + 1];
+            PowerSpectrum(signal.Samples, spectrum, normalize);
+            return new DiscreteSignal(signal.SamplingRate, spectrum);
+        }
+
+        /// <summary>
+        /// FFT shift (in-place)
+        /// </summary>
+        /// <param name="samples"></param>
+        public static void Shift(float[] samples)
+        {
+            if ((samples.Length & 1) == 1)
+            {
+                throw new ArgumentException("FFT shift is not supported for arrays with odd lengths");
+            }
+
+            var mid = samples.Length / 2;
+
+            for (var i = 0; i < samples.Length / 2; i++)
+            {
+                var shift = i + mid;
+                var tmp = samples[i];
+                samples[i] = samples[shift];
+                samples[shift] = tmp;
             }
         }
     }

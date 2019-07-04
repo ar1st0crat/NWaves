@@ -34,7 +34,7 @@ namespace NWaves.Effects
         /// <summary>
         /// Internal FFT transformer
         /// </summary>
-        private readonly Fft _fft;
+        private readonly RealFft _fft;
 
         /// <summary>
         /// Frequency resolution
@@ -54,7 +54,7 @@ namespace NWaves.Effects
         /// <summary>
         /// Delay line
         /// </summary>
-        private float[] _dl;
+        private readonly float[] _dl;
 
         /// <summary>
         /// Offset in the input delay line
@@ -69,27 +69,26 @@ namespace NWaves.Effects
         /// <summary>
         /// Internal buffers
         /// </summary>
-        private float[] _re;
-        private float[] _im;
-        private float[] _filteredRe;
-        private float[] _filteredIm;
-        private float[] _zeroblock;
-        private float[] _lastSaved;
+        private readonly float[] _re;
+        private readonly float[] _im;
+        private readonly float[] _filteredRe;
+        private readonly float[] _filteredIm;
+        private readonly float[] _lastSaved;
 
         /// <summary>
         /// Array of spectrum magnitudes (at current step)
         /// </summary>
-        private float[] _mag;
+        private readonly float[] _mag;
 
         /// <summary>
         /// Array of spectrum phases (at current step)
         /// </summary>
-        private float[] _phase;
+        private readonly float[] _phase;
 
         /// <summary>
         /// Array of phases computed at previous step
         /// </summary>
-        private float[] _prevPhase;
+        private readonly float[] _prevPhase;
 
         /// <summary>
         /// Array of new synthesized phases
@@ -112,7 +111,8 @@ namespace NWaves.Effects
 
             Guard.AgainstInvalidRange(_hopSize, _fftSize, "Hop size", "FFT size");
 
-            _fft = new Fft(_fftSize);
+            _fft = new RealFft(_fftSize);
+
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
 
             _gain = (float)(2 * Math.PI / (_fftSize * _window.Select(w => w * w).Sum() / _hopSize));
@@ -124,7 +124,6 @@ namespace NWaves.Effects
             _im = new float[_fftSize];
             _filteredRe = new float[_fftSize];
             _filteredIm = new float[_fftSize];
-            _zeroblock = new float[_fftSize];
             _lastSaved = new float[_overlapSize];
 
             _mag = new float[_fftSize / 2 + 1];
@@ -138,12 +137,12 @@ namespace NWaves.Effects
         /// </summary>
         public void ProcessFrame()
         {
-            _zeroblock.FastCopyTo(_im, _fftSize);
+            Array.Clear(_im, 0, _fftSize);
             _dl.FastCopyTo(_re, _fftSize);
 
             _re.ApplyWindow(_window);
 
-            _fft.Direct(_re, _im);
+            _fft.Direct(_re, _re, _im);
 
             var nextPhase = (float)(2 * Math.PI * _hopSize / _fftSize);
 
@@ -162,8 +161,8 @@ namespace NWaves.Effects
                 _phase[j] = _freqResolution * (j + (float)deltaWrapped / nextPhase);
             }
 
-            _zeroblock.FastCopyTo(_re, _fftSize);
-            _zeroblock.FastCopyTo(_im, _fftSize);
+            Array.Clear(_re, 0, _fftSize);
+            Array.Clear(_im, 0, _fftSize);
 
             // "stretch" spectrum:
 
@@ -175,7 +174,7 @@ namespace NWaves.Effects
 
                 stretchPos = (int)(j * _shift);
             }
-            
+
             for (var j = 0; j <= _fftSize / 2; j++)
             {
                 var mag = _re[j];
@@ -186,13 +185,10 @@ namespace NWaves.Effects
                 _filteredRe[j] = (float)(mag * Math.Cos(_phaseTotal[j]));
                 _filteredIm[j] = (float)(mag * Math.Sin(_phaseTotal[j]));
             }
+            _filteredIm[0] = 0;
 
-            for (var j = _fftSize / 2 + 1; j < _fftSize; j++)
-            {
-                _filteredRe[j] = _filteredIm[j] = 0.0f;
-            }
 
-            _fft.Inverse(_filteredRe, _filteredIm);
+            _fft.Inverse(_filteredRe, _filteredIm, _filteredRe);
 
             _filteredRe.ApplyWindow(_window);
 
@@ -240,14 +236,14 @@ namespace NWaves.Effects
             _inOffset = _overlapSize;
             _outOffset = 0;
 
-            _zeroblock.FastCopyTo(_dl, _dl.Length);
-            _zeroblock.FastCopyTo(_re, _re.Length);
-            _zeroblock.FastCopyTo(_im, _im.Length);
-            _zeroblock.FastCopyTo(_filteredRe, _filteredRe.Length);
-            _zeroblock.FastCopyTo(_filteredIm, _filteredIm.Length);
-            _zeroblock.FastCopyTo(_lastSaved, _lastSaved.Length);
-            _zeroblock.FastCopyTo(_prevPhase, _prevPhase.Length);
-            _zeroblock.FastCopyTo(_phaseTotal, _phaseTotal.Length);
+            Array.Clear(_dl, 0, _dl.Length);
+            Array.Clear(_re, 0, _re.Length);
+            Array.Clear(_im, 0, _im.Length);
+            Array.Clear(_filteredRe, 0, _filteredRe.Length);
+            Array.Clear(_filteredIm, 0, _filteredIm.Length);
+            Array.Clear(_lastSaved, 0, _lastSaved.Length);
+            Array.Clear(_prevPhase, 0, _prevPhase.Length);
+            Array.Clear(_phaseTotal, 0, _phaseTotal.Length);
         }
     }
 }

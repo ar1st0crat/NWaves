@@ -54,7 +54,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// FFT transformer
         /// </summary>
-        private readonly Fft _fft;
+        private readonly RealFft _fft;
 
         /// <summary>
         /// DCT-II transformer
@@ -151,7 +151,7 @@ namespace NWaves.FeatureExtractors
                 _fftSize = 2 * (filterbank[0].Length - 1);
             }
 
-            _fft = new Fft(_fftSize);
+            _fft = new RealFft(_fftSize);
             _dct = new Dct2(_filterbankSize, FeatureCount);
 
             _window = window;

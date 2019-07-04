@@ -327,7 +327,7 @@ namespace NWaves.Features
             signal.ApplyWindow(WindowTypes.Hann);
 
             var size = fftSize > 0 ? fftSize : MathUtils.NextPowerOfTwo(signal.Length);
-            var fft = new Fft(size);
+            var fft = new RealFft(size);
 
             var spectrum = fft.PowerSpectrum(signal, false).Samples;
 
@@ -403,7 +403,7 @@ namespace NWaves.Features
             signal.ApplyWindow(WindowTypes.Hann);
 
             var size = fftSize > 0 ? fftSize : MathUtils.NextPowerOfTwo(signal.Length);
-            var fft = new Fft(size);
+            var fft = new RealFft(size);
 
             var spectrum = fft.PowerSpectrum(signal, false).Samples;
 
@@ -477,7 +477,7 @@ namespace NWaves.Features
             signal.ApplyWindow(WindowTypes.Hann);
 
             var size = fftSize > 0 ? fftSize : MathUtils.NextPowerOfTwo(signal.Length);
-            var fft = new Fft(size);
+            var fft = new RealFft(size);
 
             var spectrum = fft.PowerSpectrum(signal, false).Samples;
 

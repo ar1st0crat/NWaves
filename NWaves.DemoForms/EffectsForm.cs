@@ -9,6 +9,9 @@ using NWaves.Operations.Tsm;
 using NWaves.Signals;
 using NWaves.Signals.Builders;
 using NWaves.Transforms;
+using NWaves.Windows;
+using NWaves.Utils;
+using System.Linq;
 
 namespace NWaves.DemoForms
 {

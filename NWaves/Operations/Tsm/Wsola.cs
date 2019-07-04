@@ -21,7 +21,7 @@ namespace NWaves.Operations.Tsm
         /// <summary>
         /// Window size
         /// </summary>
-        protected int _windowSize;
+        private int _windowSize;
 
         /// <summary>
         /// Hop size at analysis stage (STFT decomposition)
@@ -31,17 +31,17 @@ namespace NWaves.Operations.Tsm
         /// <summary>
         /// Hop size at synthesis stage (STFT merging)
         /// </summary>
-        protected int _hopSynthesis;
+        private int _hopSynthesis;
 
         /// <summary>
         /// Maximum length of the fragment for search of the most similar waveform
         /// </summary>
-        protected int _maxDelta;
+        private int _maxDelta;
 
         /// <summary>
         /// True if parameters were set by user (not by default)
         /// </summary>
-        private bool _userParameters;
+        private readonly bool _userParameters;
 
         /// <summary>
         /// Internal convolver
@@ -66,7 +66,7 @@ namespace NWaves.Operations.Tsm
             _windowSize = Math.Max(windowSize, 32);
             _hopAnalysis = Math.Max(hopAnalysis, 10);
             _hopSynthesis = (int)(_hopAnalysis * stretch);
-            _maxDelta = maxDelta > 2 ? maxDelta : _hopSynthesis + _hopSynthesis % 1;
+            _maxDelta = maxDelta > 2 ? maxDelta : _hopSynthesis;
             
             _userParameters = true;
 
@@ -105,7 +105,7 @@ namespace NWaves.Operations.Tsm
             }
 
             _hopSynthesis = (int)(_hopAnalysis * stretch);
-            _maxDelta = _hopSynthesis + _hopSynthesis % 1;
+            _maxDelta = _hopSynthesis;
 
             PrepareConvolver();
         }
