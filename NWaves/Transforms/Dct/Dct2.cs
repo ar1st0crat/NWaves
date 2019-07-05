@@ -6,7 +6,7 @@ namespace NWaves.Transforms
     /// Class providing methods for Discrete Cosine Transform of type-II.
     /// See https://en.wikipedia.org/wiki/Discrete_cosine_transform
     /// </summary>
-    public class Dct2
+    public class Dct2 : IDct
     {
         /// <summary>
         /// DCT precalculated cosine matrix
@@ -27,9 +27,8 @@ namespace NWaves.Transforms
         /// <summary>
         /// Precalculate DCT matrices
         /// </summary>
-        /// <param name="length"></param>
         /// <param name="dctSize"></param>
-        public Dct2(int length, int dctSize)
+        public Dct2(int dctSize)
         {
             _dctSize = dctSize;
             _dctMtx = new float[dctSize][];
@@ -37,25 +36,25 @@ namespace NWaves.Transforms
 
             // Precalculate dct and idct matrices
 
-            var m = Math.PI / (length << 1);
+            var m = Math.PI / (dctSize << 1);
 
             for (var k = 0; k < dctSize; k++)
             {
-                _dctMtx[k] = new float[length];
+                _dctMtx[k] = new float[dctSize];
 
-                for (var n = 0; n < length; n++)
+                for (var n = 0; n < dctSize; n++)
                 {
-                    _dctMtx[k][n] = (float)Math.Cos(((n << 1) + 1) * k * m);
+                    _dctMtx[k][n] = 2 * (float)Math.Cos(((n << 1) + 1) * k * m);
                 }
             }
 
             for (var k = 0; k < dctSize; k++)
             {
-                _dctMtxInv[k] = new float[length];
+                _dctMtxInv[k] = new float[dctSize];
 
-                for (var n = 1; n < length; n++)
+                for (var n = 1; n < dctSize; n++)
                 {
-                    _dctMtxInv[k][n] = (float)Math.Cos(((k << 1) + 1) * n * m);
+                    _dctMtxInv[k][n] = 2 * (float)Math.Cos(((k << 1) + 1) * n * m);
                 }
             }
         }
@@ -79,8 +78,14 @@ namespace NWaves.Transforms
         /// <summary>
         /// DCT-II (with normalization)
         /// </summary>
-        public void DirectN(float[] input, float[] output)
+        public void DirectNorm(float[] input, float[] output)
         {
+            var norm0 = (float)Math.Sqrt(0.5);
+            var norm = (float)Math.Sqrt(0.5 / _dctSize);
+
+            // In some implementations (e.g. PNCC) the following norm-coeff is used:
+            // var norm = (float)Math.Sqrt(2.0 / _dctSize);
+
             for (var k = 0; k < output.Length; k++)
             {
                 output[k] = 0.0f;
@@ -90,10 +95,10 @@ namespace NWaves.Transforms
                     output[k] += input[n] * _dctMtx[k][n];
                 }
 
-                output[k] *= (float)Math.Sqrt(2.0 / output.Length);
+                output[k] *= norm;
             }
 
-            output[0] *= (float)Math.Sqrt(0.5);
+            output[0] *= norm0;
         }
 
         /// <summary>
@@ -103,14 +108,12 @@ namespace NWaves.Transforms
         {
             for (var k = 0; k < output.Length; k++)
             {
-                output[k] = input[0] * 0.5f;
+                output[k] = input[0];
 
                 for (var n = 1; n < input.Length; n++)
                 {
                     output[k] += input[n] * _dctMtxInv[k][n];
                 }
-
-                output[k] *= 2.0f / _dctSize;
             }
         }
     }

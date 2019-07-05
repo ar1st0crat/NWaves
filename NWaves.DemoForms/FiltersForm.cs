@@ -516,8 +516,8 @@ namespace NWaves.DemoForms
 
             // example how to convert linear scale specifications to decibel scale:
 
-            var deltaPass = 0.99;
-            var deltaStop = 0.01;
+            var deltaPass = 0.96;
+            var deltaStop = 0.04;
 
             var ripplePassDb = Utils.Scale.ToDecibel(1 / deltaPass);
             var attenuateDb = Utils.Scale.ToDecibel(1 / deltaStop);

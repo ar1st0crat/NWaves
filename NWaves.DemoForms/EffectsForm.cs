@@ -9,9 +9,6 @@ using NWaves.Operations.Tsm;
 using NWaves.Signals;
 using NWaves.Signals.Builders;
 using NWaves.Transforms;
-using NWaves.Windows;
-using NWaves.Utils;
-using System.Linq;
 
 namespace NWaves.DemoForms
 {
@@ -176,8 +173,8 @@ namespace NWaves.DemoForms
             }
             else
             {
-                _filteredSignal = Operation.TimeStretch(_signal, shift, tsm);
-                                  //Operation.TimeStretch(_signal, shift, winSize, hopSize, tsm);
+                _filteredSignal = //Operation.TimeStretch(_signal, shift, tsm);
+                                  Operation.TimeStretch(_signal, shift, winSize, hopSize, tsm);
             }
 
             signalAfterFilteringPanel.Signal = _filteredSignal;

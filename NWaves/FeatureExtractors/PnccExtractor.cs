@@ -213,7 +213,7 @@ namespace NWaves.FeatureExtractors
             }
 
             _fft = new RealFft(_fftSize);
-            _dct = new Dct2(_filterbankSize, FeatureCount);
+            _dct = new Dct2(_filterbankSize);
 
             _preEmphasis = (float)preEmphasis;
 
@@ -444,10 +444,10 @@ namespace NWaves.FeatureExtractors
                         }
                     }
 
-                    // 6) dct-II (N = normalized)
+                    // 6) dct-II (Norm = normalized)
 
                     var pnccs = new float[FeatureCount];
-                    _dct.DirectN(_smoothedSpectrum, pnccs);
+                    _dct.DirectNorm(_smoothedSpectrum, pnccs);
 
                     // add pncc vector to output sequence
 
@@ -458,8 +458,8 @@ namespace NWaves.FeatureExtractors
                     });
                 }
 
-                // first 2*M vectors are empty
-                else
+                // first M vectors are zeros
+                else if (_step >= M)
                 {
                     featureVectors.Add(new FeatureVector
                     {

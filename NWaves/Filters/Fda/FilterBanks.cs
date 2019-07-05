@@ -584,7 +584,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method applies filters to spectrum and then does Log10() on resulting spectrum.
+        /// Method applies filters to spectrum and then does Ln() on resulting spectrum.
         /// </summary>
         /// <param name="filterbank"></param>
         /// <param name="spectrum"></param>
@@ -600,7 +600,49 @@ namespace NWaves.Filters.Fda
                     filtered[i] += filterbank[i][j] * spectrum[j];
                 }
 
+                filtered[i] = (float)Math.Log(filtered[i] + float.Epsilon);
+            }
+        }
+
+        /// <summary>
+        /// Method applies filters to spectrum and then does Log10() on resulting spectrum.
+        /// </summary>
+        /// <param name="filterbank"></param>
+        /// <param name="spectrum"></param>
+        /// <param name="filtered"></param>
+        public static void ApplyAndLog10(float[][] filterbank, float[] spectrum, float[] filtered)
+        {
+            for (var i = 0; i < filterbank.Length; i++)
+            {
+                filtered[i] = 0.0f;
+
+                for (var j = 0; j < spectrum.Length; j++)
+                {
+                    filtered[i] += filterbank[i][j] * spectrum[j];
+                }
+
                 filtered[i] = (float)Math.Log10(filtered[i] + float.Epsilon);
+            }
+        }
+
+        /// <summary>
+        /// Method applies filters to spectrum and then does Pow(x, 1/3) on resulting spectrum.
+        /// </summary>
+        /// <param name="filterbank"></param>
+        /// <param name="spectrum"></param>
+        /// <param name="filtered"></param>
+        public static void ApplyAndCubicRoot(float[][] filterbank, float[] spectrum, float[] filtered)
+        {
+            for (var i = 0; i < filterbank.Length; i++)
+            {
+                filtered[i] = 0.0f;
+
+                for (var j = 0; j < spectrum.Length; j++)
+                {
+                    filtered[i] += filterbank[i][j] * spectrum[j];
+                }
+
+                filtered[i] = (float)Math.Pow(filtered[i], 1.0 / 3);
             }
         }
     }

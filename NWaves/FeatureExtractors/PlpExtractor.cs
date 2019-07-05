@@ -28,7 +28,8 @@ namespace NWaves.FeatureExtractors
 
         /// <summary>
         /// Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)].
-        /// By default it's bark filterbank.
+        /// By default it's bark filterbank like in original H.Hermansky's work
+        /// (although many people prefer mel bands).
         /// </summary>
         public float[][] FilterBank { get; }
 
@@ -189,7 +190,7 @@ namespace NWaves.FeatureExtractors
                 {
                     var level2 = barkBands[i].Item2 * barkBands[i].Item2;
 
-                    _equalLoudnessCurve[i] = Math.Pow(level2 / (level2 + 1.6e5), 2) * (level2 + 1.44e6) / (level2 + 9.61e6);
+                    _equalLoudnessCurve[i] = Math.Pow(level2 / (level2 + 1.6e5), 2) * ((level2 + 1.44e6) / (level2 + 9.61e6));
                 }
             }
             else

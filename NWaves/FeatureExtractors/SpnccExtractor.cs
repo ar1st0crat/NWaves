@@ -163,7 +163,7 @@ namespace NWaves.FeatureExtractors
             }
 
             _fft = new RealFft(_fftSize);
-            _dct = new Dct2(_filterbankSize, FeatureCount);
+            _dct = new Dct2(_filterbankSize);
 
             _preEmphasis = (float) preEmphasis;
             
@@ -287,7 +287,7 @@ namespace NWaves.FeatureExtractors
                 // 6) dct-II (normalized)
 
                 var spnccs = new float[FeatureCount];
-                _dct.DirectN(_filteredSpectrum, spnccs);
+                _dct.DirectNorm(_filteredSpectrum, spnccs);
 
                 // add pncc vector to output sequence
 
