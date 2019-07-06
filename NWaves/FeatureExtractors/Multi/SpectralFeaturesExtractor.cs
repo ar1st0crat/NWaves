@@ -270,12 +270,9 @@ namespace NWaves.FeatureExtractors.Multi
                 for (var k = FrameSize; k < _block.Length; _block[k++] = 0) ;
 
 
-                // apply window if necessary
+                // apply window
 
-                if (_window != WindowTypes.Rectangular)
-                {
-                    _block.ApplyWindow(_windowSamples);
-                }
+                _block.ApplyWindow(_windowSamples);
 
                 // compute and prepare spectrum
 

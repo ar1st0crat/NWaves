@@ -173,31 +173,72 @@ namespace NWaves.FeatureExtractors
         {
             FeatureCount = featureCount;
 
+            _lowFreq = lowFreq;
+            _highFreq = highFreq;
+
+            double[] centerFrequencies;
+
             if (filterbank == null)
             {
                 _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
                 _filterbankSize = filterbankSize + 2;
 
-                _lowFreq = lowFreq;
-                _highFreq = highFreq;
-
                 var barkBands = FilterBanks.Bark2Bands(_filterbankSize, _fftSize, SamplingRate, _lowFreq, _highFreq);
                 FilterBank = FilterBanks.Triangular(_fftSize, SamplingRate, barkBands);
 
-                _equalLoudnessCurve = new double[_filterbankSize];
-
-                for (var i = 0; i < barkBands.Length; i++)
-                {
-                    var level2 = barkBands[i].Item2 * barkBands[i].Item2;
-
-                    _equalLoudnessCurve[i] = Math.Pow(level2 / (level2 + 1.6e5), 2) * ((level2 + 1.44e6) / (level2 + 9.61e6));
-                }
+                centerFrequencies = barkBands.Select(b => b.Item2).ToArray();
             }
             else
             {
-                FilterBank = filterbank;
-                _filterbankSize = filterbank.Length;
+                _filterbankSize = filterbank.Length + 2;
                 _fftSize = 2 * (filterbank[0].Length - 1);
+
+                FilterBank = new float[_filterbankSize][];
+
+                // create arrays for duplicated edges:
+
+                FilterBank[0] = filterbank[0];
+                FilterBank[_filterbankSize - 1] = filterbank[_filterbankSize - 3];
+
+                // determine center frequencies:
+
+                centerFrequencies = new double[_filterbankSize];
+
+                for (var i = 0; i < filterbank.Length; i++)
+                {
+                    var minPos = 0;
+                    var maxPos = _fftSize / 2;
+
+                    for (var j = 0; j < filterbank[i].Length; j++)
+                    {
+                        if (filterbank[i][j] > 0)
+                        {
+                            minPos = j;
+                            break;
+                        }
+                    }
+                    for (var j = minPos; j < filterbank[i].Length; j++)
+                    {
+                        if (filterbank[i][j] == 0)
+                        {
+                            maxPos = j;
+                            break;
+                        }
+                    }
+
+                    centerFrequencies[i + 1] = (maxPos - minPos);
+
+                    FilterBank[i + 1] = filterbank[i];
+                }
+            }
+
+            _equalLoudnessCurve = new double[_filterbankSize];
+
+            for (var i = 0; i < centerFrequencies.Length; i++)
+            {
+                var level2 = centerFrequencies[i] * centerFrequencies[i];
+
+                _equalLoudnessCurve[i] = Math.Pow(level2 / (level2 + 1.6e5), 2) * ((level2 + 1.44e6) / (level2 + 9.61e6));
             }
 
             _rasta = rasta;
@@ -269,6 +310,8 @@ namespace NWaves.FeatureExtractors
             var hopSize = HopSize;
             var frameSize = FrameSize;
 
+            const double power = 1.0 / 3;
+
             var featureVectors = new List<FeatureVector>();
 
             var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
@@ -300,14 +343,11 @@ namespace NWaves.FeatureExtractors
 
                 // 1) apply window
 
-                if (_window != WindowTypes.Rectangular)
-                {
-                    _block.ApplyWindow(_windowSamples);
-                }
+                _block.ApplyWindow(_windowSamples);
 
-                // 2) calculate power spectrum
+                // 2) calculate power spectrum (without normalization)
 
-                _fft.PowerSpectrum(_block, _spectrum);
+                _fft.PowerSpectrum(_block, _spectrum, false);
 
                 // 3) apply filterbank on the result (bark frequencies by default)
 
@@ -331,7 +371,7 @@ namespace NWaves.FeatureExtractors
 
                 for (var k = 1; k < _bandSpectrum.Length - 1; k++)
                 {
-                    _bandSpectrum[k] = (float)Math.Pow(_bandSpectrum[k] * _equalLoudnessCurve[k], 0.33);
+                    _bandSpectrum[k] = (float)Math.Pow(_bandSpectrum[k] * _equalLoudnessCurve[k], power);
                 }
 
                 // duplicate edge bands
@@ -414,17 +454,17 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() => 
-            new PlpExtractor(SamplingRate,
-                             FeatureCount,
-                             FrameDuration,
-                             HopDuration,
+            new PlpExtractor( SamplingRate,
+                              FeatureCount,
+                              FrameDuration,
+                              HopDuration,
                              _lpcOrder,
                              _rasta,
                              _filterbankSize,
                              _lowFreq,
                              _highFreq,
                              _fftSize,
-                             FilterBank,
+                              FilterBank,
                              _lifterSize,
                              _preEmphasis,
                              _window);

@@ -293,15 +293,12 @@ namespace NWaves.FeatureExtractors
                         prevSample = _block[k];
                         _block[k] = y;
                     }
-                    prevSample = samples[i + hopSize - 1];  // the bug was here! (_step instead of i)
+                    prevSample = samples[i + hopSize - 1];
                 }
 
                 // 1) apply window
 
-                if (_window != WindowTypes.Rectangular)
-                {
-                    _block.ApplyWindow(_windowSamples);
-                }
+                _block.ApplyWindow(_windowSamples);
 
                 // 2) calculate power spectrum
 
@@ -427,7 +424,7 @@ namespace NWaves.FeatureExtractors
                     
                     // =============================================================
 
-                    // 5) nonlinearity (power ^ d     or    Log10)
+                    // 5) nonlinearity (power ^ d     or    Log)
 
                     if (_power != 0)
                     {
@@ -440,7 +437,7 @@ namespace NWaves.FeatureExtractors
                     {
                         for (var j = 0; j < _smoothedSpectrum.Length; j++)
                         {
-                            _smoothedSpectrum[j] = (float) Math.Log10(_smoothedSpectrum[j] + float.Epsilon);
+                            _smoothedSpectrum[j] = (float) Math.Log(_smoothedSpectrum[j] + float.Epsilon);
                         }
                     }
 

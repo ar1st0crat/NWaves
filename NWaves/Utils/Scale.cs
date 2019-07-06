@@ -8,8 +8,10 @@ namespace NWaves.Utils
     /// 1) converting between different scales:
     ///     - decibel
     ///     - MIDI pitch
-    ///     - mel
-    ///     - bark
+    ///     - mel (HTK)
+    ///     - mel (Slaney)
+    ///     - bark1 (Traunmueller)
+    ///     - bark2 (Wang)
     ///     - ERB
     /// 
     /// 2) loudness weighting:
@@ -102,6 +104,40 @@ namespace NWaves.Utils
         public static double MelToHerz(double mel)
         {
             return (Math.Exp(mel / 1127.01048) - 1) * 700;
+        }
+
+        /// <summary>
+        /// Method converts herz frequency to mel frequency (suggested by M.Slaney)
+        /// </summary>
+        /// <param name="herz">Herz frequency</param>
+        /// <returns>Mel frequency</returns>
+        public static double HerzToMelSlaney(double herz)
+        {
+            const double minHerz = 0.0;
+            const double sp = 200.0 / 3;
+            const double minLogHerz = 1000.0;
+            const double minLogMel = (minLogHerz - minHerz) / sp;
+
+            var logStep = Math.Log(6.4) / 27;
+
+            return herz < minLogHerz ? (herz - minHerz) / sp : minLogMel + Math.Log(herz / minLogHerz) / logStep;
+        }
+
+        /// <summary>
+        /// Method converts mel frequency to herz frequency (suggested by M.Slaney)
+        /// </summary>
+        /// <param name="mel">Mel frequency</param>
+        /// <returns>Herz frequency</returns>
+        public static double MelToHerzSlaney(double mel)
+        {
+            const double minHerz = 0.0;
+            const double sp = 200.0 / 3;
+            const double minLogHerz = 1000.0;
+            const double minLogMel = (minLogHerz - minHerz) / sp;
+
+            var logStep = Math.Log(6.4) / 27;
+
+            return mel < minLogMel ? minHerz + sp * mel : minLogHerz * Math.Exp(logStep * (mel - minLogMel));
         }
 
         /// <summary>

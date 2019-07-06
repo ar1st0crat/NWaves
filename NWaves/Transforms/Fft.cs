@@ -187,7 +187,7 @@ namespace NWaves.Transforms
         /// 
         /// </summary>
         /// <param name="samples">Array of samples (samples parts)</param>
-        /// <param name="spectrum">Magnitude spectrum</param>
+        /// <param name="spectrum">Magnitude spectrum (array MUST have size at least _fftSize / 2 + 1)</param>
         /// <param name="normalize">Normalization flag</param>
         public void MagnitudeSpectrum(float[] samples, float[] spectrum, bool normalize = false)
         {
@@ -198,16 +198,24 @@ namespace NWaves.Transforms
 
             Direct(_realSpectrum, _imagSpectrum);
 
+            var n = _fftSize / 2;
+
             if (normalize)
             {
-                for (var i = 0; i < spectrum.Length; i++)
+                spectrum[0] = Math.Abs(_realSpectrum[0]) / _fftSize;
+                spectrum[n] = Math.Abs(_realSpectrum[n]) / _fftSize;
+
+                for (var i = 1; i < n; i++)
                 {
                     spectrum[i] = (float)(Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]) / _fftSize);
                 }
             }
             else
             {
-                for (var i = 0; i < spectrum.Length; i++)
+                spectrum[0] = Math.Abs(_realSpectrum[0]);
+                spectrum[n] = Math.Abs(_realSpectrum[n]);
+
+                for (var i = 1; i < n; i++)
                 {
                     spectrum[i] = (float)(Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]));
                 }
@@ -221,7 +229,7 @@ namespace NWaves.Transforms
         /// 
         /// </summary>
         /// <param name="samples">Array of samples (samples parts)</param>
-        /// <param name="spectrum">Power spectrum</param>
+        /// <param name="spectrum">Power spectrum (array MUST have size at least _fftSize / 2 + 1)</param>
         /// <param name="normalize">Normalization flag</param>
         public void PowerSpectrum(float[] samples, float[] spectrum, bool normalize = true)
         {
@@ -232,16 +240,24 @@ namespace NWaves.Transforms
 
             Direct(_realSpectrum, _imagSpectrum);
 
+            var n = _fftSize / 2; 
+
             if (normalize)
             {
-                for (var i = 0; i < spectrum.Length; i++)
+                spectrum[0] = _realSpectrum[0] * _realSpectrum[0] / _fftSize;
+                spectrum[n] = _realSpectrum[n] * _realSpectrum[n] / _fftSize;
+
+                for (var i = 1; i < n; i++)
                 {
                     spectrum[i] = (_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]) / _fftSize;
                 }
             }
             else
             {
-                for (var i = 0; i < spectrum.Length; i++)
+                spectrum[0] = _realSpectrum[0] * _realSpectrum[0];
+                spectrum[n] = _realSpectrum[n] * _realSpectrum[n];
+
+                for (var i = 1; i < n; i++)
                 {
                     spectrum[i] = _realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i];
                 }

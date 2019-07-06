@@ -254,6 +254,9 @@ namespace NWaves.Transforms
         /// 
         ///     spectrum = sqrt(re * re + im * im)
         /// 
+        /// Since for realFFT: im[0] = im[fftSize/2] = 0
+        /// we don't process separately these elements (like in case of FFT)
+        /// 
         /// </summary>
         /// <param name="samples">Array of samples (samples parts)</param>
         /// <param name="spectrum">Magnitude spectrum</param>
@@ -282,6 +285,9 @@ namespace NWaves.Transforms
         /// Power spectrum (normalized by default):
         /// 
         ///     spectrum =   (re * re + im * im) / fftSize
+        /// 
+        /// Since for realFFT: im[0] = im[fftSize/2] = 0
+        /// we don't process separately these elements (like in case of FFT)
         /// 
         /// </summary>
         /// <param name="samples">Array of samples (samples parts)</param>

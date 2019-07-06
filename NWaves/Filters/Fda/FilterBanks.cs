@@ -401,6 +401,48 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
+        /// Method creates overlapping triangular mel filters (as suggested by Malcolm Slaney).
+        /// </summary>
+        /// <param name="erbFilterCount">Number of mel filters</param>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate</param>
+        /// <param name="lowFreq">Lower bound of the frequency range</param>
+        /// <param name="highFreq">Upper bound of the frequency range</param>
+        /// <param name="normalizeGain">True if gain should be normalized; false if all filters should have same height 1.0</param>
+        /// <returns>Array of mel filters</returns>
+        public static float[][] MelBankSlaney(
+            int filterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool normalizeGain = true)
+        {
+            if (lowFreq < 0)
+            {
+                lowFreq = 0;
+            }
+            if (highFreq <= lowFreq)
+            {
+                highFreq = samplingRate / 2.0;
+            }
+
+            var frequencies = UniformBands(Scale.HerzToMelSlaney, Scale.MelToHerzSlaney, filterCount, samplingRate, lowFreq, highFreq, true);
+
+            var filterBank = Triangular(fftSize, samplingRate, frequencies);
+
+            if (!normalizeGain)
+            {
+                return filterBank;
+            }
+
+            for (var i = 0; i < filterCount; i++)
+            {
+                for (var j = 0; j < filterBank[i].Length; j++)
+                {
+                    filterBank[i][j] *= 2 / (float)(frequencies[i].Item3 - frequencies[i].Item1);
+                }
+            }
+
+            return filterBank;
+        }
+
+        /// <summary>
         /// Method creates overlapping ERB filters (ported from Malcolm Slaney's MATLAB code).
         /// </summary>
         /// <param name="erbFilterCount">Number of ERB filters</param>
@@ -492,14 +534,6 @@ namespace NWaves.Filters.Fda
 
                 var ir = new DiscreteSignal(1, fftSize);
                 ir[0] = 1.0f;
-
-                // for doubles the following code will work ok
-                // (however there's a crucial lost of precision in case of floats):
-
-                //var filter = filter1 * filter2 * filter3 * filter4;
-                //ir = filter.ApplyTo(ir);
-
-                // this code is ok both for floats and for doubles:
 
                 var chain = new FilterChain(new[] { filter1, filter2, filter3, filter4 });
 
@@ -626,12 +660,12 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method applies filters to spectrum and then does Pow(x, 1/3) on resulting spectrum.
+        /// Method applies filters to spectrum and then does 10*Log10() on resulting spectrum (librosa approach)
         /// </summary>
         /// <param name="filterbank"></param>
         /// <param name="spectrum"></param>
         /// <param name="filtered"></param>
-        public static void ApplyAndCubicRoot(float[][] filterbank, float[] spectrum, float[] filtered)
+        public static void ApplyAndToDecibel(float[][] filterbank, float[] spectrum, float[] filtered)
         {
             for (var i = 0; i < filterbank.Length; i++)
             {
@@ -642,7 +676,32 @@ namespace NWaves.Filters.Fda
                     filtered[i] += filterbank[i][j] * spectrum[j];
                 }
 
-                filtered[i] = (float)Math.Pow(filtered[i], 1.0 / 3);
+                var mag = filtered[i] > 1e-10 ? filtered[i] : 1e-10;
+
+                filtered[i] = 10 * (float)Math.Log10(mag);
+            }
+        }
+
+        /// <summary>
+        /// Method applies filters to spectrum and then does Pow(x, 1/3) on resulting spectrum.
+        /// </summary>
+        /// <param name="filterbank"></param>
+        /// <param name="spectrum"></param>
+        /// <param name="filtered"></param>
+        public static void ApplyAndCubicRoot(float[][] filterbank, float[] spectrum, float[] filtered)
+        {
+            const double power = 1.0 / 3;
+
+            for (var i = 0; i < filterbank.Length; i++)
+            {
+                filtered[i] = 0.0f;
+
+                for (var j = 0; j < spectrum.Length; j++)
+                {
+                    filtered[i] += filterbank[i][j] * spectrum[j];
+                }
+
+                filtered[i] = (float)Math.Pow(filtered[i], power);
             }
         }
     }

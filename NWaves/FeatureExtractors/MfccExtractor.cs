@@ -87,6 +87,41 @@ namespace NWaves.FeatureExtractors
         private readonly float _preEmphasis;
 
         /// <summary>
+        /// DCT type ("1", "1N", "2", "2N", "3", "3N", "4", "4N")
+        /// </summary>
+        private readonly string _dctType;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private readonly NonLinearityType _nonLinearityType;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private readonly SpectrumType _spectrumType;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private readonly bool _includeEnergy;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private readonly Action _getSpectrum;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private readonly Action _postProcessSpectrum;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private readonly Action<float[]> _applyDct;
+        
+        /// <summary>
         /// Internal buffer for a signal spectrum at each step
         /// </summary>
         private readonly float[] _spectrum;
@@ -100,15 +135,6 @@ namespace NWaves.FeatureExtractors
         /// Internal buffer for a signal block at each step
         /// </summary>
         private readonly float[] _block;
-
-        private readonly Action _getSpectrum;
-        private readonly Action _postProcessSpectrum;
-        private readonly Action<float[]> _applyDct;
-
-        private readonly string _dctType;
-        private readonly NonLinearityType _postProcessType;
-        private readonly SpectrumType _spectrumType;
-        private readonly bool _includeEnergy;
 
 
         /// <summary>
@@ -198,8 +224,11 @@ namespace NWaves.FeatureExtractors
                 case '3':
                     _dct = new Dct3(_filterbankSize);
                     break;
+                case '4':
+                    _dct = new Dct4(_filterbankSize);
+                    break;
                 default:
-                    throw new ArgumentException("Only DCT-1, 2 and 3 are supported!");
+                    throw new ArgumentException("Only DCT-1, 2, 3 and 4 are supported!");
             }
 
             if (dctType.Length > 1 && dctType[1] == 'N')
@@ -213,7 +242,7 @@ namespace NWaves.FeatureExtractors
 
             // setup spectrum post-processing: =======================================================
 
-            _postProcessType = postProcessType;
+            _nonLinearityType = postProcessType;
             switch (postProcessType)
             {
                 case NonLinearityType.Log10:
@@ -221,6 +250,9 @@ namespace NWaves.FeatureExtractors
                     break;
                 case NonLinearityType.LogE:
                     _postProcessSpectrum = () => FilterBanks.ApplyAndLog(FilterBank, _spectrum, _melSpectrum);
+                    break;
+                case NonLinearityType.ToDecibel:
+                    _postProcessSpectrum = () => FilterBanks.ApplyAndToDecibel(FilterBank, _spectrum, _melSpectrum);
                     break;
                 case NonLinearityType.CubicRoot:
                     _postProcessSpectrum = () => FilterBanks.ApplyAndCubicRoot(FilterBank, _spectrum, _melSpectrum);
@@ -307,23 +339,22 @@ namespace NWaves.FeatureExtractors
 
                 // 1) apply window
 
-                if (_window != WindowTypes.Rectangular)
-                {
-                    _block.ApplyWindow(_windowSamples);
-                }
+                _block.ApplyWindow(_windowSamples);
 
                 // 2) calculate magnitude/power spectrum (with/without normalization)
 
-                _getSpectrum();         // -> _spectrum
+                _getSpectrum();         // _block -> _spectrum
 
                 // 3) apply mel filterbank and take log10/ln/cubic_root of the result
 
-                _postProcessSpectrum(); // -> _melSpectrum
+                _postProcessSpectrum(); // _spectrum -> _melSpectrum
 
                 // 4) dct
 
                 var mfccs = new float[FeatureCount];
-                _applyDct(mfccs);
+
+                _applyDct(mfccs);       // _melSpectrum -> mfccs
+
 
                 // 5) (optional) liftering
 
@@ -377,46 +408,8 @@ namespace NWaves.FeatureExtractors
                               _preEmphasis,
                               _includeEnergy,
                               _dctType,
-                              _postProcessType,
+                              _nonLinearityType,
                               _spectrumType,
                               _window);
-    }
-
-
-    /// <summary>
-    /// Spectrum post-processing schemes
-    /// </summary>
-    public enum NonLinearityType
-    {
-        Log10,
-        LogE,
-        ToDecibel,
-        CubicRoot
-    }
-
-    /// <summary>
-    /// Spectrum calculations
-    /// </summary>
-    public enum SpectrumType
-    {
-        /// <summary>
-        /// Sqrt(re*re + im*im)
-        /// </summary>
-        Magnitude,
-
-        /// <summary>
-        /// re*re + im*im
-        /// </summary>
-        Power,
-
-        /// <summary>
-        /// Sqrt(re*re + im*im) / fftSize
-        /// </summary>
-        MagnitudeNormalized,
-
-        /// <summary>
-        /// (re*re + im*im) / fftSize
-        /// </summary>
-        PowerNormalized
     }
 }

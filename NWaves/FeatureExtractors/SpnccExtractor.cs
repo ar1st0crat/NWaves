@@ -239,10 +239,7 @@ namespace NWaves.FeatureExtractors
 
                 // 1) apply window
 
-                if (_window != WindowTypes.Rectangular)
-                {
-                    _block.ApplyWindow(_windowSamples);
-                }
+                _block.ApplyWindow(_windowSamples);
 
                 // 2) calculate power spectrum
 

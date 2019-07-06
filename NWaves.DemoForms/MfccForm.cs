@@ -50,14 +50,15 @@ namespace NWaves.DemoForms
             //var barkbands = FilterBanks.Bark1Bands(16, 512, sr, 100/*Hz*/, 6500/*Hz*/, overlap: false);
             //var barkbank = FilterBanks.Triangular(512, sr, barkbands);
 
-            var mfccExtractor = new PnccExtractor(_signal.SamplingRate, 13,
+            var mfccExtractor = new MfccExtractor(_signal.SamplingRate, 13,
                                                   //filterbankSize: 40,
                                                   //lowFreq: 100,
                                                   //highFreq: 4200,
                                                   //lifterSize: 22,
                                                   //filterbank: barkbank,
-                                                  preEmphasis: 0.97,
-                                                  fftSize: 1024,
+                                                  filterbank: FilterBanks.MelBankSlaney(25, 512, _signal.SamplingRate),
+                                                  preEmphasis: 0.95,
+                                                  //fftSize: 1024,
                                                   window: WindowTypes.Hamming);
 
             //var mfccExtractor = new PlpExtractor(_signal.SamplingRate, 12,
@@ -74,33 +75,33 @@ namespace NWaves.DemoForms
 
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);
 
-            FeaturePostProcessing.NormalizeMean(_mfccVectors);        // optional (but REQUIRED for PNCC!)
+            //FeaturePostProcessing.NormalizeMean(_mfccVectors);        // optional (but REQUIRED for PNCC!)
             //FeaturePostProcessing.AddDeltas(_mfccVectors);
 
 
             // ============== I use this code to test PNCC results (just ignore it))): ========================
 
-            pnccVectors = new List<FeatureVector>();
-            var vector = new FeatureVector() { Features = new float[13] };
-            var pos = 1;
+            //pnccVectors = new List<FeatureVector>();
+            //var vector = new FeatureVector() { Features = new float[13] };
+            //var pos = 1;
 
-            using (var fs = new FileStream(@"E:\Projects\github\NWaves_Materials\pncc\esh_ru_0001.pncc", FileMode.Open))
-            using (var br = new BinaryReader(fs))
-            {
-                while (pos < 700)
-                {
-                    br.ReadSingle();
-                    for (var i = 0; i < 12; i++)
-                    {
-                        vector.Features[i] = br.ReadSingle();
-                    }
-                    pnccVectors.Add(vector);
-                    vector = new FeatureVector() { Features = new float[13] };
-                    pos++;
-                }
-            }
+            //using (var fs = new FileStream(@"E:\Projects\github\NWaves_Materials\pncc\esh_ru_0001.pncc", FileMode.Open))
+            //using (var br = new BinaryReader(fs))
+            //{
+            //    while (pos < 700)
+            //    {
+            //        br.ReadSingle();
+            //        for (var i = 0; i < 12; i++)
+            //        {
+            //            vector.Features[i] = br.ReadSingle();
+            //        }
+            //        pnccVectors.Add(vector);
+            //        vector = new FeatureVector() { Features = new float[13] };
+            //        pos++;
+            //    }
+            //}
 
-            mfccPanel.Markline = pnccVectors[0].Features;
+            //mfccPanel.Markline = pnccVectors[0].Features;
 
             // ================================================================================================
 
@@ -146,12 +147,12 @@ namespace NWaves.DemoForms
 
         private void mfccListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
-            //mfccPanel.Line = _mfccVectors[e.ItemIndex].Features;
+            mfccPanel.Line = _mfccVectors[e.ItemIndex].Features;
 
             // ============== I use this code to test PNCC results (just ignore it))): ========================
 
-            mfccPanel.Line = _mfccVectors[e.ItemIndex].Features;
-            mfccPanel.Markline = pnccVectors[e.ItemIndex].Features;
+            //mfccPanel.Line = _mfccVectors[e.ItemIndex].Features;
+            //mfccPanel.Markline = pnccVectors[e.ItemIndex].Features;
 
             // ================================================================================================
         }
