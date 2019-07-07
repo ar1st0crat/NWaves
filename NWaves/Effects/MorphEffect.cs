@@ -29,7 +29,7 @@ namespace NWaves.Effects
         /// <summary>
         /// Internal FFT transformer
         /// </summary>
-        private readonly Fft _fft;
+        private readonly RealFft _fft;
 
         /// <summary>
         /// Window coefficients
@@ -73,7 +73,7 @@ namespace NWaves.Effects
 
             Guard.AgainstInvalidRange(_hopSize, _fftSize, "Hop size", "FFT size");
 
-            _fft = new Fft(_fftSize);
+            _fft = new RealFft(_fftSize);
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
 
             _dl1 = new float[_fftSize];
@@ -120,10 +120,10 @@ namespace NWaves.Effects
             _re1.ApplyWindow(_window);
             _re2.ApplyWindow(_window);
 
-            _fft.Direct(_re1, _im1);
-            _fft.Direct(_re2, _im2);
+            _fft.Direct(_re1, _re1, _im1);
+            _fft.Direct(_re2, _re2, _im2);
 
-            for (var j = 0; j <= _fftSize / 2; j++)
+            for (var j = 1; j <= _fftSize / 2; j++)
             {
                 var mag1 = Math.Sqrt(_re1[j] * _re1[j] + _im1[j] * _im1[j]);
                 var phase2 = Math.Atan2(_im2[j], _re2[j]);
@@ -132,12 +132,7 @@ namespace NWaves.Effects
                 _filteredIm[j] = (float)(mag1 * Math.Sin(phase2));
             }
 
-            for (var j = _fftSize / 2 + 1; j < _fftSize; j++)
-            {
-                _filteredRe[j] = _filteredIm[j] = 0.0f;
-            }
-
-            _fft.Inverse(_filteredRe, _filteredIm);
+            _fft.Inverse(_filteredRe, _filteredIm, _filteredRe);
 
             _filteredRe.ApplyWindow(_window);
 

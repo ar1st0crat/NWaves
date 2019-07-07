@@ -108,7 +108,7 @@ namespace NWaves.Operations.Tsm
 
                 _fft.Direct(_re, _re, _im);
 
-                for (var j = 0; j < _fftSize / 2 + 1; j++)
+                for (var j = 1; j <= _fftSize / 2; j++)
                 {
                     var mag = Math.Sqrt(_re[j] * _re[j] + _im[j] * _im[j]);
                     var phase = 2 * Math.PI * _rand.NextDouble();
@@ -116,7 +116,6 @@ namespace NWaves.Operations.Tsm
                     _re[j] = (float)(mag * Math.Cos(phase));
                     _im[j] = (float)(mag * Math.Sin(phase));
                 }
-                _im[0] = 0;
 
                 _fft.Inverse(_re, _im, _re);
 

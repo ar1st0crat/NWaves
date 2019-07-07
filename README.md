@@ -34,11 +34,11 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install 
 - [x] non-linear filters (median filter, overdrive and distortion effects)
 - [x] windowing functions (Hamming, Blackman, Hann, Gaussian, Kaiser, KBD, triangular, Lanczos, flat-top, Bartlett-Hann)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and perceptual weighting (A, B, C)
-- [x] customizable feature extraction (time-domain, spectral, MFCC, PNCC/SPNCC, LPC, LPCC, PLP, AMS) and CSV serialization
-- [x] feature post-processing (mean and variance normalization, adding deltas)
+- [x] customizable feature extraction (time-domain, spectral, MFCC, PNCC/SPNCC, LPC, LPCC, PLP, AMS)
+- [x] predefined MFCC configurations: HTK (MFCC-FB24), Slaney (MFCC-FB40)
+- [x] feature post-processing (mean and variance normalization, adding deltas) and CSV serialization
 - [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest, decrease, noiseness, MPEG7)
 - [x] harmonic features (harmonic centroid and spread, inharmonicity, tristimulus, odd-to-even ratio)
-- [x] perceptual features (loudness, sharpness)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking (autocorrelation, YIN, ZCR + Schmitt trigger, HSS/HPS, cepstrum)
 - [x] time scale modification (phase vocoder, PV with identity phase locking, WSOLA, PaulStretch)
@@ -57,7 +57,7 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install 
 
 ## Philosophy of NWaves
 
-NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and were first designed mostly for offline processing (now some online methods are also available). It doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C/C++ or Asm, but it's not that *very* slow for many purposes either.
+NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and were first designed mostly for offline processing (now many online methods are also available). It doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C/C++ or Asm, but it's not that *very* slow for many purposes either.
 
 
 ## Quickstart

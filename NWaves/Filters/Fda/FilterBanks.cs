@@ -21,8 +21,8 @@ namespace NWaves.Filters.Fda
     /// ...and methods for obtaining the most widely used frequency bands:
     /// 
     ///     - Herz bands
-    ///     - Mel bands
-    ///     - Bark bands
+    ///     - Mel bands (HTK and Slaney)
+    ///     - Bark bands (uniform and Slaney)
     ///     - Critical bands
     ///     - ERB filterbank
     ///     - Octaves (from MPEG-7)
@@ -41,9 +41,9 @@ namespace NWaves.Filters.Fda
         {
             var herzResolution = (double)samplingRate / fftSize;
 
-            var left = frequencies.Select(f => (int)Math.Round(f.Item1 / herzResolution)).ToArray();
-            var center = frequencies.Select(f => (int)Math.Round(f.Item2 / herzResolution)).ToArray();
-            var right = frequencies.Select(f => (int)Math.Round(f.Item3 / herzResolution)).ToArray();
+            var herzFrequencies = Enumerable.Range(1, fftSize / 2)
+                                            .Select(f => f * herzResolution)
+                                            .ToArray();
 
             var filterCount = frequencies.Length;
             var filterBank = new float[filterCount][];
@@ -52,13 +52,19 @@ namespace NWaves.Filters.Fda
             {
                 filterBank[i] = new float[fftSize / 2 + 1];
 
-                for (var j = left[i]; j < center[i]; j++)
+                var left = frequencies[i].Item1;
+                var center = frequencies[i].Item2;
+                var right = frequencies[i].Item3;
+
+                var j = 0;
+                for (; herzFrequencies[j] < left; j++) ;
+                for (; herzFrequencies[j] < center; j++)
                 {
-                    filterBank[i][j] = (float)(j - left[i]) / (center[i] - left[i]);
+                    filterBank[i][j] = (float)((herzFrequencies[j] - left) / (center - left));
                 }
-                for (var j = center[i]; j < right[i]; j++)
+                for (; j < herzFrequencies.Length && herzFrequencies[j] <= right; j++)
                 {
-                    filterBank[i][j] = (float)(right[i] - j) / (right[i] - center[i]);
+                    filterBank[i][j] = (float)((right - herzFrequencies[j]) / (right - center));
                 }
             }
 
@@ -436,6 +442,58 @@ namespace NWaves.Filters.Fda
                 for (var j = 0; j < filterBank[i].Length; j++)
                 {
                     filterBank[i][j] *= 2 / (float)(frequencies[i].Item3 - frequencies[i].Item1);
+                }
+            }
+
+            return filterBank;
+        }
+
+        /// <summary>
+        /// Method creates overlapping trapezoidal bark filters (as suggested by Malcolm Slaney).
+        /// </summary>
+        /// <param name="filterCount"></param>
+        /// <param name="fftSize"></param>
+        /// <param name="samplingRate"></param>
+        /// <param name="lowFreq"></param>
+        /// <param name="highFreq"></param>
+        /// <param name="width">Constant width of each band in Bark</param>
+        /// <returns></returns>
+        public static float[][] BarkBankSlaney(
+            int filterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, double width = 1)
+        {
+            if (lowFreq < 0)
+            {
+                lowFreq = 0;
+            }
+            if (highFreq <= lowFreq)
+            {
+                highFreq = samplingRate / 2.0;
+            }
+
+            var lowBark = Scale.HerzToBark2(lowFreq);
+            var highBark = Scale.HerzToBark2(highFreq) - lowBark;
+
+            var herzResolution = (double)samplingRate / fftSize;
+            var step = highBark / (filterCount - 1);
+
+            var binBarks = Enumerable.Range(0, fftSize / 2 + 1)
+                                     .Select(i => Scale.HerzToBark2(i * herzResolution))
+                                     .ToArray();
+
+            var filterBank = new float[filterCount][];
+
+            var midBark = lowBark;
+
+            for (var i = 0; i < filterCount; i++, midBark += step)
+            {
+                filterBank[i] = new float[fftSize / 2 + 1];
+
+                for (var j = 0; j < filterBank[i].Length; j++)
+                {
+                    var lof = binBarks[j] - midBark - 0.5;
+                    var hif = binBarks[j] - midBark + 0.5;
+
+                    filterBank[i][j] = (float)Math.Pow(10, Math.Min(0, Math.Min(hif, -2.5 * lof) / width));
                 }
             }
 

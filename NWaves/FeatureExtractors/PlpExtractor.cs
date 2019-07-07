@@ -193,12 +193,11 @@ namespace NWaves.FeatureExtractors
                 _filterbankSize = filterbank.Length + 2;
                 _fftSize = 2 * (filterbank[0].Length - 1);
 
+                Guard.AgainstInvalidRange(FrameSize, _fftSize, "frame size", "FFT size");
+
+                var herzResolution = (double)samplingRate / _fftSize;
+
                 FilterBank = new float[_filterbankSize][];
-
-                // create arrays for duplicated edges:
-
-                FilterBank[0] = filterbank[0];
-                FilterBank[_filterbankSize - 1] = filterbank[_filterbankSize - 3];
 
                 // determine center frequencies:
 
@@ -226,10 +225,15 @@ namespace NWaves.FeatureExtractors
                         }
                     }
 
-                    centerFrequencies[i + 1] = (maxPos - minPos);
+                    centerFrequencies[i + 1] = herzResolution * (maxPos + minPos) / 2;
 
                     FilterBank[i + 1] = filterbank[i];
                 }
+
+                // create arrays for duplicated edges:
+
+                FilterBank[0] = filterbank[0];
+                FilterBank[_filterbankSize - 1] = filterbank[filterbank.Length - 1];
             }
 
             _equalLoudnessCurve = new double[_filterbankSize];

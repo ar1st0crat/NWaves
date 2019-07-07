@@ -167,6 +167,8 @@ namespace NWaves.FeatureExtractors
                 {
                     _filterbank = filterbank;
                     _fftSize = 2 * (filterbank[0].Length - 1);
+
+                    Guard.AgainstInvalidRange(FrameSize, _fftSize, "frame size", "FFT size");
                 }
 
                 _fft = new RealFft(_fftSize);

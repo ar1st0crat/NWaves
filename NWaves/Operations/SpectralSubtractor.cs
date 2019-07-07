@@ -183,7 +183,7 @@ namespace NWaves.Operations
 
             _fft.Direct(_re, _re, _im);
 
-            for (var j = 0; j <= _fftSize / 2; j++)
+            for (var j = 1; j <= _fftSize / 2; j++)
             {
                 var power = _re[j] * _re[j] + _im[j] * _im[j];
                 var phase = Math.Atan2(_im[j], _re[j]);
@@ -200,8 +200,6 @@ namespace NWaves.Operations
                 _filteredRe[j] = (float)(mag * Math.Cos(phase));
                 _filteredIm[j] = (float)(mag * Math.Sin(phase));
             }
-            _filteredIm[0] = 0;
-
 
             _fft.Inverse(_filteredRe, _filteredIm, _filteredRe);
 

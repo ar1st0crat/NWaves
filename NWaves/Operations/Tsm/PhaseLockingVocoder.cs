@@ -184,7 +184,7 @@ namespace NWaves.Operations.Tsm
 
                 // assign phases at peaks to all neighboring frequency bins
 
-                var leftPos = 0;
+                var leftPos = 1;
 
                 for (var j = 0; j < peakCount - 1; j++)
                 {
@@ -214,7 +214,6 @@ namespace NWaves.Operations.Tsm
 
                     leftPos = rightPos;
                 }
-                _im[0] = 0;
 
 
                 _fft.Inverse(_re, _im, _re);

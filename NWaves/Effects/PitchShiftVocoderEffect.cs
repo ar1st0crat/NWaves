@@ -146,7 +146,7 @@ namespace NWaves.Effects
 
             var nextPhase = (float)(2 * Math.PI * _hopSize / _fftSize);
 
-            for (var j = 0; j < _fftSize / 2 + 1; j++)
+            for (var j = 1; j <= _fftSize / 2; j++)
             {
                 _mag[j] = (float)Math.Sqrt(_re[j] * _re[j] + _im[j] * _im[j]);
                 _phase[j] = (float)Math.Atan2(_im[j], _re[j]);
@@ -175,7 +175,7 @@ namespace NWaves.Effects
                 stretchPos = (int)(j * _shift);
             }
 
-            for (var j = 0; j <= _fftSize / 2; j++)
+            for (var j = 1; j <= _fftSize / 2; j++)
             {
                 var mag = _re[j];
                 var freqIndex = (_im[j] - j * _freqResolution) / _freqResolution;
@@ -185,8 +185,6 @@ namespace NWaves.Effects
                 _filteredRe[j] = (float)(mag * Math.Cos(_phaseTotal[j]));
                 _filteredIm[j] = (float)(mag * Math.Sin(_phaseTotal[j]));
             }
-            _filteredIm[0] = 0;
-
 
             _fft.Inverse(_filteredRe, _filteredIm, _filteredRe);
 
