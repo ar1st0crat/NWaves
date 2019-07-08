@@ -250,12 +250,12 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Convert LPC coefficients to LPCC
+        /// Convert LPC coefficients to cepstrum (LPCC)
         /// </summary>
         /// <param name="lpc"></param>
         /// <param name="gain"></param>
         /// <param name="lpcc"></param>
-        public static void LpcToLpcc(float[] lpc, float gain, float[] lpcc)
+        public static void LpcToCepstrum(float[] lpc, float gain, float[] lpcc)
         {
             var n = lpcc.Length;
             var p = lpc.Length;     // must be lpcOrder + 1 (!)
@@ -292,7 +292,7 @@ namespace NWaves.Utils
         /// <param name="lpcc"></param>
         /// <param name="lpc"></param>
         /// <returns></returns>
-        public static float LpccToLpc(float[] lpcc, float[] lpc)
+        public static float CepstrumToLpc(float[] lpcc, float[] lpc)
         {
             var n = lpcc.Length;
             var p = lpc.Length;     // must be lpcOrder + 1 (!)

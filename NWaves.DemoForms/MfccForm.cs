@@ -12,6 +12,7 @@ using NWaves.Filters;
 using NWaves.Filters.Base;
 using NWaves.Filters.Fda;
 using NWaves.Signals;
+using NWaves.Transforms;
 using NWaves.Windows;
 
 namespace NWaves.DemoForms
@@ -47,20 +48,32 @@ namespace NWaves.DemoForms
             // we can easily change mel filters to bark filters, for example:
 
             //var sr = _signal.SamplingRate;
-            //var barkbands = FilterBanks.Bark1Bands(16, 512, sr, 100/*Hz*/, 6500/*Hz*/, overlap: false);
+            //var barkbands = FilterBanks.BarkBands(16, 512, sr, 100/*Hz*/, 6500/*Hz*/, overlap: false);
             //var barkbank = FilterBanks.Triangular(512, sr, barkbands);
 
+            var vtln = new VtlnWarper(1.2, 0, 8000, 0, 8000);
+            //var vtln = new VtlnWarper(0.85, 0, 8000, 0, (int)(8000 * 0.85));
+
+            ////var sr = _signal.SamplingRate;
+            ////var barkbands = FilterBanks.MelBands(16, 512, sr, overlap: false);
+            ////var barkbank = FilterBanks.Trapezoidal(512, sr, barkbands, vtln, Utils.Scale.HerzToMel);
+
             var mfccExtractor = new MfccExtractor(_signal.SamplingRate, 13,
-                                                  //filterbankSize: 40,
+                                                  512.0 / _signal.SamplingRate,
+                                                  //filterbankSize: 18,
                                                   //lowFreq: 100,
                                                   //highFreq: 4200,
                                                   //lifterSize: 22,
                                                   //filterbank: barkbank,
-                                                  filterbank: FilterBanks.MelBankSlaney(40, 512, _signal.SamplingRate),
+                                                  filterbank: FilterBanks.MelBankSlaney(20, 512, _signal.SamplingRate, vtln: vtln),
                                                   //filterbank: FilterBanks.BarkBankSlaney(15, 512, _signal.SamplingRate),
-                                                  preEmphasis: 0.95,
+                                                  //preEmphasis: 0.95,
                                                   //fftSize: 1024,
-                                                  window: WindowTypes.Hamming);
+                                                  lifterSize: 0,
+                                                  spectrumType: SpectrumType.Power,
+                                                  postProcessType: NonLinearityType.ToDecibel,
+                                                  dctType: "2N",
+                                                  window: WindowTypes.Hann);
 
             //var mfccExtractor = new PlpExtractor(_signal.SamplingRate, 13,
             //                                      //filterbankSize: 23,
@@ -73,6 +86,17 @@ namespace NWaves.DemoForms
             //                                      //rasta: 0.94,
             //                                      //fftSize: 1024,
             //                                      window: WindowTypes.Hamming);
+
+            //var mfccExtractor = new PnccExtractor(_signal.SamplingRate, 13,
+            //                          //filterbankSize: 40,
+            //                          //lowFreq: 100,
+            //                          //highFreq: 4200,
+            //                          //lifterSize: 22,
+            //                          //filterbank: barkbank,
+            //                          preEmphasis: 0.97,
+            //                          fftSize: 1024,
+            //                          //lifterSize: 0,
+            //                          window: WindowTypes.Hamming);
 
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);
 

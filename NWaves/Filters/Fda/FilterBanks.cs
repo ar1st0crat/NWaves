@@ -31,14 +31,23 @@ namespace NWaves.Filters.Fda
     public static class FilterBanks
     {
         /// <summary>
-        /// Method returns universal triangular filterbank based on given frequencies.
+        /// Method returns universal triangular filterbank weights based on given frequencies.
         /// </summary>
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
+        /// <param name="vtln">VTLN frequency warper</param>
+        /// <param name="mapper">Frequency scale mapper (e.g. herz-to-mel) used here only for proper weighting</param>
         /// <returns>Array of triangular filters</returns>
-        public static float[][] Triangular(int fftSize, int samplingRate, Tuple<double, double, double>[] frequencies)
+        public static float[][] Triangular(int fftSize,
+                                           int samplingRate,
+                                           Tuple<double, double, double>[] frequencies,
+                                           VtlnWarper vtln = null,
+                                           Func<double, double> mapper = null)
         {
+            if (mapper == null) mapper = x => x;
+            Func<double, double> warp = vtln == null ? mapper : x => mapper(vtln.Warp(x));
+
             var herzResolution = (double)samplingRate / fftSize;
 
             var herzFrequencies = Enumerable.Range(1, fftSize / 2)
@@ -52,19 +61,19 @@ namespace NWaves.Filters.Fda
             {
                 filterBank[i] = new float[fftSize / 2 + 1];
 
-                var left = frequencies[i].Item1;
-                var center = frequencies[i].Item2;
-                var right = frequencies[i].Item3;
+                var left = warp(frequencies[i].Item1);
+                var center = warp(frequencies[i].Item2);
+                var right = warp(frequencies[i].Item3);
 
                 var j = 0;
-                for (; herzFrequencies[j] < left; j++) ;
-                for (; herzFrequencies[j] < center; j++)
+                for (; mapper(herzFrequencies[j]) <= left; j++) ;
+                for (; mapper(herzFrequencies[j]) <= center; j++)
                 {
-                    filterBank[i][j] = (float)((herzFrequencies[j] - left) / (center - left));
+                    filterBank[i][j] = (float)((mapper(herzFrequencies[j]) - left) / (center - left));
                 }
-                for (; j < herzFrequencies.Length && herzFrequencies[j] <= right; j++)
+                for (; j < herzFrequencies.Length && mapper(herzFrequencies[j]) < right; j++)
                 {
-                    filterBank[i][j] = (float)((right - herzFrequencies[j]) / (right - center));
+                    filterBank[i][j] = (float)((right - mapper(herzFrequencies[j])) / (right - center));
                 }
             }
 
@@ -72,18 +81,28 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method returns universal rectangular filterbank based on given frequencies.
+        /// Method returns universal rectangular filterbank weights based on given frequencies.
         /// </summary>
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
+        /// <param name="vtln">VTLN frequency warper</param>
+        /// <param name="mapper">Frequency scale mapper (e.g. herz-to-mel)</param>
         /// <returns>Array of rectangular filters</returns>
-        public static float[][] Rectangular(int fftSize, int samplingRate, Tuple<double, double, double>[] frequencies)
+        public static float[][] Rectangular(int fftSize,
+                                           int samplingRate,
+                                           Tuple<double, double, double>[] frequencies,
+                                           VtlnWarper vtln = null,
+                                           Func<double, double> mapper = null)
         {
+            if (mapper == null) mapper = x => x;
+            Func<double, double> warp = vtln == null ? mapper : x => mapper(vtln.Warp(x));
+
             var herzResolution = (double)samplingRate / fftSize;
 
-            var left = frequencies.Select(f => (int)Math.Round(f.Item1 / herzResolution)).ToArray();
-            var right = frequencies.Select(f => (int)Math.Round(f.Item3 / herzResolution)).ToArray();
+            var herzFrequencies = Enumerable.Range(1, fftSize / 2)
+                                            .Select(f => f * herzResolution)
+                                            .ToArray();
 
             var filterCount = frequencies.Length;
             var filterBank = new float[filterCount][];
@@ -92,7 +111,13 @@ namespace NWaves.Filters.Fda
             {
                 filterBank[i] = new float[fftSize / 2 + 1];
 
-                for (var j = left[i]; j < right[i]; j++)
+                var left = warp(frequencies[i].Item1);
+                var center = warp(frequencies[i].Item2);
+                var right = warp(frequencies[i].Item3);
+
+                var j = 0;
+                for (; mapper(herzFrequencies[j]) <= left; j++) ;
+                for (; j < herzFrequencies.Length && mapper(herzFrequencies[j]) < right; j++)
                 {
                     filterBank[i][j] = 1;
                 }
@@ -107,10 +132,16 @@ namespace NWaves.Filters.Fda
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
-        /// <returns>Array of trapezoidal FIR filters</returns>
-        public static float[][] Trapezoidal(int fftSize, int samplingRate, Tuple<double, double, double>[] frequencies)
+        /// <param name="vtln">VTLN frequency warper</param>
+        /// <param name="mapper">Frequency scale mapper (e.g. herz-to-mel)</param>
+        /// <returns>Array of rectangular filters</returns>
+        public static float[][] Trapezoidal(int fftSize,
+                                           int samplingRate,
+                                           Tuple<double, double, double>[] frequencies,
+                                           VtlnWarper vtln = null,
+                                           Func<double, double> mapper = null)
         {
-            var filterBank = Rectangular(fftSize, samplingRate, frequencies);
+            var filterBank = Rectangular(fftSize, samplingRate, frequencies, vtln, mapper);
 
             for (var i = 0; i < filterBank.Length; i++)
             {
@@ -175,7 +206,8 @@ namespace NWaves.Filters.Fda
                                                         Func<double, double> inverseMapper,
                                                         int filterCount, 
                                                         int samplingRate, 
-                                                        double lowFreq = 0, double highFreq = 0, 
+                                                        double lowFreq = 0,
+                                                        double highFreq = 0, 
                                                         bool overlap = true)
         {
             if (lowFreq < 0)
@@ -266,10 +298,10 @@ namespace NWaves.Filters.Fda
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
         /// <returns>Array of frequency tuples for each Bark filter</returns>
-        public static Tuple<double, double, double>[] Bark1Bands(
+        public static Tuple<double, double, double>[] BarkBands(
             int barkFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
         {
-            return UniformBands(Scale.HerzToBark1, Scale.Bark1ToHerz, barkFilterCount, samplingRate, lowFreq, highFreq, overlap);
+            return UniformBands(Scale.HerzToBark, Scale.BarkToHerz, barkFilterCount, samplingRate, lowFreq, highFreq, overlap);
         }
 
         /// <summary>
@@ -282,10 +314,10 @@ namespace NWaves.Filters.Fda
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
         /// <returns>Array of frequency tuples for each Bark filter</returns>
-        public static Tuple<double, double, double>[] Bark2Bands(
+        public static Tuple<double, double, double>[] BarkBandsSlaney(
             int barkFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
         {
-            return UniformBands(Scale.HerzToBark2, Scale.Bark2ToHerz, barkFilterCount, samplingRate, lowFreq, highFreq, overlap);
+            return UniformBands(Scale.HerzToBarkSlaney, Scale.BarkToHerzSlaney, barkFilterCount, samplingRate, lowFreq, highFreq, overlap);
         }
 
         /// <summary>
@@ -415,9 +447,10 @@ namespace NWaves.Filters.Fda
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="normalizeGain">True if gain should be normalized; false if all filters should have same height 1.0</param>
+        /// <param name="vtln">VTLN frequency warper</param>
         /// <returns>Array of mel filters</returns>
         public static float[][] MelBankSlaney(
-            int filterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool normalizeGain = true)
+            int filterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool normalizeGain = true, VtlnWarper vtln = null)
         {
             if (lowFreq < 0)
             {
@@ -430,7 +463,7 @@ namespace NWaves.Filters.Fda
 
             var frequencies = UniformBands(Scale.HerzToMelSlaney, Scale.MelToHerzSlaney, filterCount, samplingRate, lowFreq, highFreq, true);
 
-            var filterBank = Triangular(fftSize, samplingRate, frequencies);
+            var filterBank = Triangular(fftSize, samplingRate, frequencies, vtln, Scale.HerzToMelSlaney);
 
             if (!normalizeGain)
             {
@@ -439,9 +472,12 @@ namespace NWaves.Filters.Fda
 
             for (var i = 0; i < filterCount; i++)
             {
+                var left = frequencies[i].Item1;
+                var right = frequencies[i].Item3;
+                
                 for (var j = 0; j < filterBank[i].Length; j++)
                 {
-                    filterBank[i][j] *= 2 / (float)(frequencies[i].Item3 - frequencies[i].Item1);
+                    filterBank[i][j] *= 2 / (float)(right - left);
                 }
             }
 
@@ -470,14 +506,14 @@ namespace NWaves.Filters.Fda
                 highFreq = samplingRate / 2.0;
             }
 
-            var lowBark = Scale.HerzToBark2(lowFreq);
-            var highBark = Scale.HerzToBark2(highFreq) - lowBark;
+            var lowBark = Scale.HerzToBarkSlaney(lowFreq);
+            var highBark = Scale.HerzToBarkSlaney(highFreq) - lowBark;
 
             var herzResolution = (double)samplingRate / fftSize;
             var step = highBark / (filterCount - 1);
 
             var binBarks = Enumerable.Range(0, fftSize / 2 + 1)
-                                     .Select(i => Scale.HerzToBark2(i * herzResolution))
+                                     .Select(i => Scale.HerzToBarkSlaney(i * herzResolution))
                                      .ToArray();
 
             var filterBank = new float[filterCount][];
@@ -718,12 +754,14 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method applies filters to spectrum and then does 10*Log10() on resulting spectrum (librosa approach)
+        /// Method applies filters to spectrum and then does 10*Log10() on resulting spectrum
+        /// (added to compare MFCC coefficients with librosa results)
         /// </summary>
         /// <param name="filterbank"></param>
         /// <param name="spectrum"></param>
         /// <param name="filtered"></param>
-        public static void ApplyAndToDecibel(float[][] filterbank, float[] spectrum, float[] filtered)
+        /// <param name="minLevel"></param>
+        public static void ApplyAndToDecibel(float[][] filterbank, float[] spectrum, float[] filtered, float minLevel = 1e-10f)
         {
             for (var i = 0; i < filterbank.Length; i++)
             {
@@ -734,9 +772,7 @@ namespace NWaves.Filters.Fda
                     filtered[i] += filterbank[i][j] * spectrum[j];
                 }
 
-                var mag = filtered[i] > 1e-10 ? filtered[i] : 1e-10;
-
-                filtered[i] = 10 * (float)Math.Log10(mag);
+                filtered[i] = (float)Scale.ToDecibelPower(Math.Max(minLevel, filtered[i]));
             }
         }
 

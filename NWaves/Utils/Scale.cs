@@ -146,7 +146,7 @@ namespace NWaves.Utils
         /// </summary>
         /// <param name="herz">Herz frequency</param>
         /// <returns>Bark frequency</returns>
-        public static double HerzToBark1(double herz)
+        public static double HerzToBark(double herz)
         {
             return (26.81 * herz) / (1960 + herz) - 0.53;
         }
@@ -157,29 +157,29 @@ namespace NWaves.Utils
         /// </summary>
         /// <param name="bark">Bark frequency</param>
         /// <returns>Herz frequency</returns>
-        public static double Bark1ToHerz(double bark)
+        public static double BarkToHerz(double bark)
         {
             return 1960 / (26.81 / (bark + 0.53) - 1);
         }
 
         /// <summary>
         /// Method #2 converts herz frequency to corresponding bark frequency
-        /// (according to Wang (1992))
+        /// (according to Wang (1992)); used in M.Slaney's auditory toolbox
         /// </summary>
         /// <param name="herz">Herz frequency</param>
         /// <returns>Bark frequency</returns>
-        public static double HerzToBark2(double herz)
+        public static double HerzToBarkSlaney(double herz)
         {
             return 6 * MathUtils.Asinh(herz / 600);
         }
 
         /// <summary>
         /// Method #2 converts bark frequency to corresponding herz frequency
-        /// (according to Wang (1992))
+        /// (according to Wang (1992)); used in M.Slaney's auditory toolbox
         /// </summary>
         /// <param name="bark">Bark frequency</param>
         /// <returns>Herz frequency</returns>
-        public static double Bark2ToHerz(double bark)
+        public static double BarkToHerzSlaney(double bark)
         {
             return 600 * Math.Sinh(bark / 6);
         }

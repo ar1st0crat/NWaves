@@ -189,7 +189,7 @@ namespace NWaves.FeatureExtractors
 
                 var lpcc = new float[FeatureCount];
 
-                MathUtils.LpcToLpcc(_lpc, err, lpcc);
+                MathUtils.LpcToCepstrum(_lpc, err, lpcc);
 
                 // 5) (optional) liftering
 

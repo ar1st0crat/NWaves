@@ -49,13 +49,13 @@ namespace NWaves.Tests.UtilTests
         [Test]
         public void TestConvertHerzToBark1()
         {
-            Assert.That(Scale.HerzToBark1(5000), Is.EqualTo(18.73).Within(0.1));
+            Assert.That(Scale.HerzToBark(5000), Is.EqualTo(18.73).Within(0.1));
         }
 
         [Test]
         public void TestConvertBarkToHerz()
         {
-            Assert.That(Scale.Bark1ToHerz(18.73), Is.EqualTo(5000).Within(0.1));
+            Assert.That(Scale.BarkToHerz(18.73), Is.EqualTo(5000).Within(0.1));
         }
 
         [Test]

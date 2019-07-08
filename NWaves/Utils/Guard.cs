@@ -30,6 +30,14 @@ namespace NWaves.Utils
             }
         }
 
+        public static void AgainstExceedance(double low, double high, string lowName = "low", string highName = "high")
+        {
+            if (low > high)
+            {
+                throw new ArgumentException($"{lowName} must not exceed {highName}!");
+            }
+        }
+
         public static void AgainstNotPowerOfTwo(int n, string argName = "Parameter")
         {
             var pow = (int)Math.Log(n, 2);

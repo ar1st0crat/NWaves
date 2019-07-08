@@ -211,7 +211,7 @@ namespace NWaves.FeatureExtractors
                 _filterbankSize = filterbank.Length;
                 _fftSize = 2 * (filterbank[0].Length - 1);
 
-                Guard.AgainstInvalidRange(FrameSize, _fftSize, "frame size", "FFT size");
+                Guard.AgainstExceedance(FrameSize, _fftSize, "frame size", "FFT size");
             }
 
             _fft = new RealFft(_fftSize);
@@ -264,7 +264,8 @@ namespace NWaves.FeatureExtractors
             var hopSize = HopSize;
             var frameSize = FrameSize;
 
-            const float meanPower = 1e10f;
+            const float MeanPower = 1e10f;
+            const float Epsilon = 2.22e-16f;
             var mean = 4e07f;
 
             var d = _power != 0 ? 1.0 / _power : 0.0;
@@ -389,7 +390,7 @@ namespace NWaves.FeatureExtractors
 
                     for (var j = 0; j < _spectrumS.Length; j++)
                     {
-                        _spectrumS[j] = _filteredSpectrumQ[j] / Math.Max(spectrumQ[j], float.Epsilon);
+                        _spectrumS[j] = _filteredSpectrumQ[j] / Math.Max(spectrumQ[j], Epsilon);
                     }
 
                     for (var j = 0; j < _smoothedSpectrumS.Length; j++)
@@ -421,7 +422,7 @@ namespace NWaves.FeatureExtractors
                     
                     for (var j = 0; j < _smoothedSpectrum.Length; j++)
                     {
-                        _smoothedSpectrum[j] *= meanPower / mean;
+                        _smoothedSpectrum[j] *= MeanPower / mean;
                     }
                     
                     // =============================================================
@@ -439,7 +440,7 @@ namespace NWaves.FeatureExtractors
                     {
                         for (var j = 0; j < _smoothedSpectrum.Length; j++)
                         {
-                            _smoothedSpectrum[j] = (float) Math.Log(_smoothedSpectrum[j] + float.Epsilon);
+                            _smoothedSpectrum[j] = (float)Math.Log(_smoothedSpectrum[j] + Epsilon);
                         }
                     }
 

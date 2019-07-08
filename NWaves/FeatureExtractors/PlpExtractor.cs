@@ -34,6 +34,11 @@ namespace NWaves.FeatureExtractors
         public float[][] FilterBank { get; }
 
         /// <summary>
+        /// Filterbank center frequencies
+        /// </summary>
+        private readonly double[] _centerFrequencies;
+
+        /// <summary>
         /// Number of filters in filterbank
         /// </summary>
         private readonly int _filterbankSize;
@@ -151,10 +156,11 @@ namespace NWaves.FeatureExtractors
         /// <param name="lowFreq"></param>
         /// <param name="highFreq"></param>
         /// <param name="fftSize"></param>
-        /// <param name="filterbank"></param>
         /// <param name="lifterSize"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="window"></param>
+        /// <param name="filterbank"></param>
+        /// <param name="centerFrequencies"></param>
         public PlpExtractor(int samplingRate,
                             int featureCount,
                             double frameDuration = 0.0256/*sec*/,
@@ -165,10 +171,11 @@ namespace NWaves.FeatureExtractors
                             double lowFreq = 0,
                             double highFreq = 0,
                             int fftSize = 0,
-                            float[][] filterbank = null,
                             int lifterSize = 0,
                             double preEmphasis = 0.0,
-                            WindowTypes window = WindowTypes.Hamming) : 
+                            WindowTypes window = WindowTypes.Hamming,
+                            float[][] filterbank = null,
+                            double[] centerFrequencies = null) : 
             base(samplingRate, frameDuration, hopDuration)
         {
             FeatureCount = featureCount;
@@ -176,64 +183,69 @@ namespace NWaves.FeatureExtractors
             _lowFreq = lowFreq;
             _highFreq = highFreq;
 
-            double[] centerFrequencies;
-
             if (filterbank == null)
             {
                 _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
                 _filterbankSize = filterbankSize + 2;
 
-                var barkBands = FilterBanks.Bark2Bands(_filterbankSize, _fftSize, SamplingRate, _lowFreq, _highFreq);
+                var barkBands = FilterBanks.BarkBandsSlaney(_filterbankSize, _fftSize, SamplingRate, _lowFreq, _highFreq);
                 FilterBank = FilterBanks.Triangular(_fftSize, SamplingRate, barkBands);
 
-                centerFrequencies = barkBands.Select(b => b.Item2).ToArray();
+                _centerFrequencies = barkBands.Select(b => b.Item2).ToArray();
             }
             else
             {
                 _filterbankSize = filterbank.Length + 2;
                 _fftSize = 2 * (filterbank[0].Length - 1);
 
-                Guard.AgainstInvalidRange(FrameSize, _fftSize, "frame size", "FFT size");
+                Guard.AgainstExceedance(FrameSize, _fftSize, "frame size", "FFT size");
 
-                var herzResolution = (double)samplingRate / _fftSize;
-
-                FilterBank = new float[_filterbankSize][];
-
-                // determine center frequencies:
-
-                centerFrequencies = new double[_filterbankSize];
-
-                for (var i = 0; i < filterbank.Length; i++)
+                if (centerFrequencies != null)
                 {
-                    var minPos = 0;
-                    var maxPos = _fftSize / 2;
-
-                    for (var j = 0; j < filterbank[i].Length; j++)
-                    {
-                        if (filterbank[i][j] > 0)
-                        {
-                            minPos = j;
-                            break;
-                        }
-                    }
-                    for (var j = minPos; j < filterbank[i].Length; j++)
-                    {
-                        if (filterbank[i][j] == 0)
-                        {
-                            maxPos = j;
-                            break;
-                        }
-                    }
-
-                    centerFrequencies[i + 1] = herzResolution * (maxPos + minPos) / 2;
-
-                    FilterBank[i + 1] = filterbank[i];
+                    _centerFrequencies = centerFrequencies;
                 }
+                else
+                {
+                    var herzResolution = (double)samplingRate / _fftSize;
 
-                // create arrays for duplicated edges:
+                    FilterBank = new float[_filterbankSize][];
 
-                FilterBank[0] = filterbank[0];
-                FilterBank[_filterbankSize - 1] = filterbank[filterbank.Length - 1];
+                    // determine center frequencies:
+
+                    _centerFrequencies = new double[_filterbankSize];
+
+                    for (var i = 0; i < filterbank.Length; i++)
+                    {
+                        var minPos = 0;
+                        var maxPos = _fftSize / 2;
+
+                        for (var j = 0; j < filterbank[i].Length; j++)
+                        {
+                            if (filterbank[i][j] > 0)
+                            {
+                                minPos = j;
+                                break;
+                            }
+                        }
+                        for (var j = minPos; j < filterbank[i].Length; j++)
+                        {
+                            if (filterbank[i][j] == 0)
+                            {
+                                maxPos = j;
+                                break;
+                            }
+                        }
+
+                        _centerFrequencies[i + 1] = herzResolution * (maxPos + minPos) / 2;
+
+                        FilterBank[i + 1] = filterbank[i];
+                    }
+
+                    // create arrays for duplicated edges:
+
+                    FilterBank[0] = filterbank[0];
+                    FilterBank[_filterbankSize - 1] = filterbank[filterbank.Length - 1];
+                }
             }
 
             _equalLoudnessCurve = new double[_filterbankSize];
@@ -292,15 +304,15 @@ namespace NWaves.FeatureExtractors
         /// 
         /// Decompose signal into overlapping (hopSize) frames of length fftSize. In each frame do:
         /// 
-        ///     1) Apply window (if rectangular window was specified then just do nothing)
+        ///     1) Apply window
         ///     2) Obtain power spectrum
-        ///     3) Apply filterbank of critical bands
+        ///     3) Apply filterbank of bark bands (or mel bands)
         ///     4) [Optional] filter each component of the processed spectrum with a RASTA filter
         ///     5) Apply equal loudness curve
         ///     6) Take cubic root
         ///     7) Do LPC
         ///     8) Convert LPC to cepstrum
-        ///     9) [Optional] lifter the LPCC
+        ///     9) [Optional] lifter cepstrum
         /// 
         /// </summary>
         /// <param name="samples">Samples for analysis</param>
@@ -412,7 +424,7 @@ namespace NWaves.FeatureExtractors
 
                 var lpcc = new float[FeatureCount];
 
-                MathUtils.LpcToLpcc(_lpc, err, lpcc);
+                MathUtils.LpcToCepstrum(_lpc, err, lpcc);
                 
 
                 // 9) (optional) liftering
@@ -468,9 +480,10 @@ namespace NWaves.FeatureExtractors
                              _lowFreq,
                              _highFreq,
                              _fftSize,
-                              FilterBank,
                              _lifterSize,
                              _preEmphasis,
-                             _window);
+                             _window,
+                              FilterBank,
+                             _centerFrequencies);
     }
 }

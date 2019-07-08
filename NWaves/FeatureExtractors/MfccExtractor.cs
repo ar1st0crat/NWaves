@@ -152,7 +152,7 @@ namespace NWaves.FeatureExtractors
         /// <param name="lifterSize"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="includeEnergy"></param>
-        /// <param name="dctType">"1", "1N", "2", "2N", "3", "3N"</param>
+        /// <param name="dctType">"1", "1N", "2", "2N", "3", "3N", "4", "4N"</param>
         /// <param name="postProcessType"></param>
         /// <param name="spectrumType"></param>
         /// <param name="window"></param>
@@ -166,7 +166,7 @@ namespace NWaves.FeatureExtractors
                              int fftSize = 0,
                              float[][] filterbank = null,
                              int lifterSize = 22,
-                             double preEmphasis = 0.0,
+                             double preEmphasis = 0,
                              bool includeEnergy = false,
                              string dctType = "2",
                              NonLinearityType postProcessType = NonLinearityType.Log10,
@@ -194,7 +194,7 @@ namespace NWaves.FeatureExtractors
                 _filterbankSize = filterbank.Length;
                 _fftSize = 2 * (filterbank[0].Length - 1);
 
-                Guard.AgainstInvalidRange(FrameSize, _fftSize, "frame size", "FFT size");
+                Guard.AgainstExceedance(FrameSize, _fftSize, "frame size", "FFT size");
             }
 
             _fft = new RealFft(_fftSize);
@@ -292,7 +292,7 @@ namespace NWaves.FeatureExtractors
         /// 
         /// Decompose signal into overlapping (hopSize) frames of length fftSize. In each frame do:
         /// 
-        ///     1) Apply window (if rectangular window was specified then just do nothing)
+        ///     1) Apply window
         ///     2) Obtain power spectrum X
         ///     3) Apply mel filters and log() the result: Y = Log10(X * H)
         ///     4) Do dct-II: mfcc = Dct(Y)

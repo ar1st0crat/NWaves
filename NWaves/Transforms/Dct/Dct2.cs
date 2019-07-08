@@ -83,9 +83,6 @@ namespace NWaves.Transforms
             var norm0 = (float)Math.Sqrt(0.5);
             var norm = (float)Math.Sqrt(0.5 / _dctSize);
 
-            // In some implementations (e.g. PNCC) the following norm-coeff is used:
-            // var norm = (float)Math.Sqrt(2.0 / _dctSize);
-
             for (var k = 0; k < output.Length; k++)
             {
                 output[k] = 0.0f;
