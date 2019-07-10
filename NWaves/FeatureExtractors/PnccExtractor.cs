@@ -220,10 +220,7 @@ namespace NWaves.FeatureExtractors
             _preEmphasis = (float)preEmphasis;
 
             _window = window;
-            if (_window != WindowTypes.Rectangular)
-            {
-                _windowSamples = Window.OfType(_window, FrameSize);
-            }
+            _windowSamples = Window.OfType(_window, FrameSize);
 
             _block = new float[_fftSize];
             _spectrum = new float[_fftSize / 2 + 1];

@@ -240,10 +240,7 @@ namespace NWaves.FeatureExtractors.Multi
             _fft = new RealFft(_fftSize);
 
             _window = window;
-            if (_window != WindowTypes.Rectangular)
-            {
-                _windowSamples = Window.OfType(_window, FrameSize);
-            }
+            _windowSamples = Window.OfType(_window, FrameSize);
 
             _frequencyBands = frequencyBands ?? FilterBanks.OctaveBands(6, _fftSize, samplingRate);
             _filterbank = FilterBanks.Rectangular(_fftSize, samplingRate, _frequencyBands);

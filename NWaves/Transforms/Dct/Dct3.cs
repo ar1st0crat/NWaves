@@ -78,8 +78,8 @@ namespace NWaves.Transforms
         /// </summary>
         public void DirectNorm(float[] input, float[] output)
         {
-            var norm0 = (float)(1 / Math.Sqrt(input.Length));
-            var norm = (float)Math.Sqrt(0.5 / input.Length);
+            var norm0 = (float)(1 / Math.Sqrt(_dctSize));
+            var norm = (float)Math.Sqrt(0.5 / _dctSize);
 
             for (var k = 0; k < output.Length; k++)
             {

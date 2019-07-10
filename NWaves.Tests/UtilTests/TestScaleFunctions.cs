@@ -43,7 +43,7 @@ namespace NWaves.Tests.UtilTests
         [Test]
         public void TestConvertMelToHerz()
         {
-            Assert.That(Scale.MelToHerz(2363.5), Is.EqualTo(5000).Within(0.1));
+            Assert.That(Scale.MelToHerz(2363.5), Is.EqualTo(5000.111).Within(0.1));
         }
 
         [Test]

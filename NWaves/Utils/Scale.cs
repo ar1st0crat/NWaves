@@ -93,7 +93,7 @@ namespace NWaves.Utils
         /// <returns>Mel frequency</returns>
         public static double HerzToMel(double herz)
         {
-            return 1127.01048 * Math.Log(herz / 700 + 1);
+            return 1127 * Math.Log(herz / 700 + 1); // actually, should be 1127.01048, but HTK and Kaldi seem to use 1127
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace NWaves.Utils
         /// <returns>Herz frequency</returns>
         public static double MelToHerz(double mel)
         {
-            return (Math.Exp(mel / 1127.01048) - 1) * 700;
+            return (Math.Exp(mel / 1127) - 1) * 700;
         }
 
         /// <summary>

@@ -220,10 +220,7 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Simple cepstrum liftering.
-        /// 
-        /// Note. Indexing starts from zero (as in Kaldi, for example, and unlike HTK).
-        /// 
+        /// Cepstrum liftering.
         /// </summary>
         /// <param name="length">Length of the window</param>
         /// <param name="l">Denominator in liftering formula</param>

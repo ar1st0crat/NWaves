@@ -50,7 +50,7 @@ namespace NWaves.Filters.Fda
 
             var herzResolution = (double)samplingRate / fftSize;
 
-            var herzFrequencies = Enumerable.Range(1, fftSize / 2)
+            var herzFrequencies = Enumerable.Range(0, fftSize / 2 + 1)
                                             .Select(f => f * herzResolution)
                                             .ToArray();
 
@@ -100,7 +100,7 @@ namespace NWaves.Filters.Fda
 
             var herzResolution = (double)samplingRate / fftSize;
 
-            var herzFrequencies = Enumerable.Range(1, fftSize / 2)
+            var herzFrequencies = Enumerable.Range(0, fftSize / 2 + 1)
                                             .Select(f => f * herzResolution)
                                             .ToArray();
 
@@ -463,25 +463,34 @@ namespace NWaves.Filters.Fda
 
             var frequencies = UniformBands(Scale.HerzToMelSlaney, Scale.MelToHerzSlaney, filterCount, samplingRate, lowFreq, highFreq, true);
 
-            var filterBank = Triangular(fftSize, samplingRate, frequencies, vtln, Scale.HerzToMelSlaney);
+            var filterBank = Triangular(fftSize, samplingRate, frequencies, vtln);
 
-            if (!normalizeGain)
+            if (normalizeGain)
             {
-                return filterBank;
+                NormalizeGain(filterCount, frequencies, filterBank);
             }
 
+            return filterBank;
+        }
+
+        /// <summary>
+        /// Normalize weights
+        /// </summary>
+        /// <param name="filterCount"></param>
+        /// <param name="frequencies"></param>
+        /// <param name="filterBank"></param>
+        public static void NormalizeGain(int filterCount, Tuple<double, double, double>[] frequencies, float[][] filterBank)
+        {
             for (var i = 0; i < filterCount; i++)
             {
                 var left = frequencies[i].Item1;
                 var right = frequencies[i].Item3;
-                
+
                 for (var j = 0; j < filterBank[i].Length; j++)
                 {
                     filterBank[i][j] *= 2 / (float)(right - left);
                 }
             }
-
-            return filterBank;
         }
 
         /// <summary>
@@ -672,12 +681,14 @@ namespace NWaves.Filters.Fda
         {
             for (var i = 0; i < filterbank.Length; i++)
             {
-                filtered[i] = 0.0f;
+                var en = 0.0f;
 
                 for (var j = 0; j < spectrum.Length; j++)
                 {
-                    filtered[i] += filterbank[i][j] * spectrum[j];
+                    en += filterbank[i][j] * spectrum[j];
                 }
+
+                filtered[i] = en;
             }
         }
 
@@ -699,12 +710,14 @@ namespace NWaves.Filters.Fda
             {
                 for (var k = 0; k < filtered.Length; k++)
                 {
-                    filtered[k][i] = 0.0f;
+                    var en = 0.0f;
 
                     for (var j = 0; j < spectrogram[i].Length; j++)
                     {
-                        filtered[k][i] += filterbank[i][j] * spectrogram[k][j];
+                        en += filterbank[i][j] * spectrogram[k][j];
                     }
+
+                    filtered[k][i] = en;
                 }
             }
 
@@ -717,18 +730,19 @@ namespace NWaves.Filters.Fda
         /// <param name="filterbank"></param>
         /// <param name="spectrum"></param>
         /// <param name="filtered"></param>
-        public static void ApplyAndLog(float[][] filterbank, float[] spectrum, float[] filtered)
+        /// <param name="floor">log floor</param>
+        public static void ApplyAndLog(float[][] filterbank, float[] spectrum, float[] filtered, float floor = float.Epsilon)
         {
             for (var i = 0; i < filterbank.Length; i++)
             {
-                filtered[i] = 0.0f;
+                var en = 0.0f;
 
                 for (var j = 0; j < spectrum.Length; j++)
                 {
-                    filtered[i] += filterbank[i][j] * spectrum[j];
+                    en += filterbank[i][j] * spectrum[j];
                 }
 
-                filtered[i] = (float)Math.Log(filtered[i] + float.Epsilon);
+                filtered[i] = (float)Math.Log(Math.Max(en, floor));
             }
         }
 
@@ -738,18 +752,19 @@ namespace NWaves.Filters.Fda
         /// <param name="filterbank"></param>
         /// <param name="spectrum"></param>
         /// <param name="filtered"></param>
-        public static void ApplyAndLog10(float[][] filterbank, float[] spectrum, float[] filtered)
+        /// <param name="floor">log floor</param>
+        public static void ApplyAndLog10(float[][] filterbank, float[] spectrum, float[] filtered, float floor = float.Epsilon)
         {
             for (var i = 0; i < filterbank.Length; i++)
             {
-                filtered[i] = 0.0f;
+                var en = 0.0f;
 
                 for (var j = 0; j < spectrum.Length; j++)
                 {
-                    filtered[i] += filterbank[i][j] * spectrum[j];
+                    en += filterbank[i][j] * spectrum[j];
                 }
 
-                filtered[i] = (float)Math.Log10(filtered[i] + float.Epsilon);
+                filtered[i] = (float)Math.Log10(Math.Max(en, floor));
             }
         }
 
@@ -765,37 +780,37 @@ namespace NWaves.Filters.Fda
         {
             for (var i = 0; i < filterbank.Length; i++)
             {
-                filtered[i] = 0.0f;
+                var en = 0.0f;
 
                 for (var j = 0; j < spectrum.Length; j++)
                 {
-                    filtered[i] += filterbank[i][j] * spectrum[j];
+                    en += filterbank[i][j] * spectrum[j];
                 }
 
-                filtered[i] = (float)Scale.ToDecibelPower(Math.Max(minLevel, filtered[i]));
+                filtered[i] = (float)Scale.ToDecibelPower(Math.Max(en, minLevel));
             }
         }
 
         /// <summary>
-        /// Method applies filters to spectrum and then does Pow(x, 1/3) on resulting spectrum.
+        /// Method applies filters to spectrum and then does Pow(x, power) on resulting spectrum.
+        /// In PLP: power=1/3 (cubic root).
         /// </summary>
         /// <param name="filterbank"></param>
         /// <param name="spectrum"></param>
         /// <param name="filtered"></param>
-        public static void ApplyAndCubicRoot(float[][] filterbank, float[] spectrum, float[] filtered)
+        /// <param name="power"></param>
+        public static void ApplyAndPow(float[][] filterbank, float[] spectrum, float[] filtered, double power = 1.0 / 3)
         {
-            const double power = 1.0 / 3;
-
             for (var i = 0; i < filterbank.Length; i++)
             {
-                filtered[i] = 0.0f;
+                var en = 0.0f;
 
                 for (var j = 0; j < spectrum.Length; j++)
                 {
-                    filtered[i] += filterbank[i][j] * spectrum[j];
+                    en += filterbank[i][j] * spectrum[j];
                 }
 
-                filtered[i] = (float)Math.Pow(filtered[i], power);
+                filtered[i] = (float)Math.Pow(en, power);
             }
         }
     }

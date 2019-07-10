@@ -8,9 +8,11 @@ using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Filters.Base;
+using NWaves.Filters.Fda;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
+using NWaves.Windows;
 
 namespace NWaves.DemoForms
 {
@@ -22,7 +24,7 @@ namespace NWaves.DemoForms
         private DiscreteSignal _signal;
         private List<FeatureVector> _lpcVectors;
 
-        private Fft _fft;
+        private RealFft _fft;
 
 
         public LpcForm()
@@ -48,11 +50,35 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Left];
             }
 
-            _fft = new Fft(512);
+            _fft = new RealFft(512);
 
-            var lpcExtractor = new LpcExtractor(_signal.SamplingRate, 16, FrameDuration, HopDuration);
+            //var lpcExtractor = new LpcExtractor(_signal.SamplingRate, 16, FrameDuration, HopDuration);
+            //var lpcExtractor = new LpccExtractor(_signal.SamplingRate, 16, FrameDuration, HopDuration, lifterSize: 0);
 
-            _lpcVectors = lpcExtractor.ParallelComputeFrom(_signal);
+            var sr = _signal.SamplingRate;
+            var melbands = FilterBanks.MelBands(24, 512, sr, 0, 8000);
+            var melbank = FilterBanks.Triangular(512, sr, melbands, null, Utils.Scale.HerzToMel);
+
+            var lpcExtractor = new PlpExtractor(_signal.SamplingRate, 12,
+                                      //filterbankSize: 23,
+                                      lpcOrder: 12,
+                                      //lowFreq: 100,
+                                      //highFreq: 4200,
+                                      //lifterSize: 22,
+                                      filterbank: melbank,
+                                      centerFrequencies: melbands.Select(m => m.Item2).ToArray(),
+                                      window: WindowTypes.Rectangular);
+                                      //preEmphasis: 0.95,
+                                      //rasta: 0.94,
+                                      //fftSize: 1024);
+
+            //var data = new float[] { 1, 7, 2, 5, 4, 9, 1, 2, 3, 4, 5, 3, 4, 7, 6, 5, 1, 2, 3, 4, 5, 7, 7, 2, 3, 1, 9 }.PadZeros(512);
+            //_signal = new DiscreteSignal(16000, data);
+
+            // HTK result:
+            // -0.328354, -0.0626681, -0.0529092, -0.035697, -0.0780158, -0.0472787, -0.114684, -0.0103448, -0.072201, -0.0479003, -0.0231306, 0.00597705
+
+            _lpcVectors = lpcExtractor.ComputeFrom(_signal);
 
             FillFeaturesList(_lpcVectors, lpcExtractor.FeatureDescriptions);
             lpcListView.Items[0].Selected = true;
@@ -74,13 +100,24 @@ namespace NWaves.DemoForms
 
         float[] EstimateSpectrum(int idx)
         {
-            var vector = _lpcVectors[idx].Features.ToDoubles();  // make new copy of array of features
-            var gain = Math.Sqrt(vector[0]);
+            var lpcc = _lpcVectors[idx].Features;
+            var lpc = new float[lpcc.Length];
+            var gain = MathUtils.CepstrumToLpc(lpcc, lpc);
+
+            var vector = lpc.ToDoubles();
             vector[0] = 1.0;
 
-            var lpcTf = new TransferFunction(new[] { gain }, vector);
+            var lpcTf = new TransferFunction(new double[] { Math.Sqrt(gain) }, vector);
 
             return lpcTf.FrequencyResponse().Power.ToFloats();
+
+            //var vector = _lpcVectors[idx].Features.ToDoubles();  // make new copy of array of features
+            //var gain = Math.Sqrt(vector[0]);
+            //vector[0] = 1.0;
+
+            //var lpcTf = new TransferFunction(new[] { gain }, vector);
+
+            //return lpcTf.FrequencyResponse().Power.ToFloats();
         }
 
         private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors, 

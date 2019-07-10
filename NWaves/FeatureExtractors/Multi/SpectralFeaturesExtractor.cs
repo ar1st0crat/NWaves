@@ -191,10 +191,7 @@ namespace NWaves.FeatureExtractors.Multi
             _fft = new RealFft(_fftSize);
 
             _window = window;
-            if (_window != WindowTypes.Rectangular)
-            {
-                _windowSamples = Window.OfType(_window, FrameSize);
-            }
+            _windowSamples = Window.OfType(_window, FrameSize);
 
             var resolution = (float)samplingRate / _fftSize;
 

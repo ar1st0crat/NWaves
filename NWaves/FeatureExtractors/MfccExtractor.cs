@@ -10,7 +10,21 @@ using NWaves.Windows;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Mel Frequency Cepstral Coefficients extractor
+    /// Mel Frequency Cepstral Coefficients extractor.
+    /// 
+    /// Since so many variations of MFCC have been developed since 1980,
+    /// this class is very general and allows customizing pretty everything:
+    /// 
+    ///  - filterbank (by default it's MFCC-FB24 HTK/Kaldi-style)
+    ///  
+    ///  - non-linearity type (logE, log10, librosa power_to_db analog, cubic root)
+    ///  
+    ///  - spectrum calculation type (power/magnitude normalized/not normalized)
+    ///  
+    ///  - DCT type (1,2,3,4 normalized or not)
+    ///  
+    ///  - floor value for LOG-calculations (usually it's float.Epsilon; HTK default seems to be 1.0 and in librosa 1e-10 is used)
+    /// 
     /// </summary>
     public class MfccExtractor : FeatureExtractor
     {
@@ -92,32 +106,37 @@ namespace NWaves.FeatureExtractors
         private readonly string _dctType;
 
         /// <summary>
-        /// 
+        /// Non-linearity type (logE, log10, decibel, cubic root)
         /// </summary>
         private readonly NonLinearityType _nonLinearityType;
 
         /// <summary>
-        /// 
+        /// Spectrum calculation scheme (power/magnitude normalized/not normalized)
         /// </summary>
         private readonly SpectrumType _spectrumType;
 
         /// <summary>
-        /// 
+        /// Should the first MFCC coefficient be replaced with LOG(energy)
         /// </summary>
         private readonly bool _includeEnergy;
 
         /// <summary>
-        /// 
+        /// Floor value for LOG calculations
+        /// </summary>
+        private readonly float _logFloor;
+
+        /// <summary>
+        /// Delegate for calculating spectrum
         /// </summary>
         private readonly Action _getSpectrum;
 
         /// <summary>
-        /// 
+        /// Delegate for post-processing spectrum
         /// </summary>
         private readonly Action _postProcessSpectrum;
 
         /// <summary>
-        /// 
+        /// Delegate for applying DCT
         /// </summary>
         private readonly Action<float[]> _applyDct;
         
@@ -153,25 +172,27 @@ namespace NWaves.FeatureExtractors
         /// <param name="preEmphasis"></param>
         /// <param name="includeEnergy"></param>
         /// <param name="dctType">"1", "1N", "2", "2N", "3", "3N", "4", "4N"</param>
-        /// <param name="postProcessType"></param>
+        /// <param name="nonLinearity"></param>
         /// <param name="spectrumType"></param>
         /// <param name="window"></param>
+        /// <param name="logFloor"></param>
         public MfccExtractor(int samplingRate,
                              int featureCount,
                              double frameDuration = 0.0256/*sec*/,
                              double hopDuration = 0.010/*sec*/,
-                             int filterbankSize = 20,
+                             int filterbankSize = 24,
                              double lowFreq = 0,
                              double highFreq = 0,
                              int fftSize = 0,
                              float[][] filterbank = null,
-                             int lifterSize = 22,
+                             int lifterSize = 0,
                              double preEmphasis = 0,
                              bool includeEnergy = false,
                              string dctType = "2",
-                             NonLinearityType postProcessType = NonLinearityType.Log10,
-                             SpectrumType spectrumType = SpectrumType.PowerNormalized,
-                             WindowTypes window = WindowTypes.Hamming)
+                             NonLinearityType nonLinearity = NonLinearityType.Log10,
+                             SpectrumType spectrumType = SpectrumType.Power,
+                             WindowTypes window = WindowTypes.Hamming,
+                             float logFloor = float.Epsilon)
 
             : base(samplingRate, frameDuration, hopDuration)
         {
@@ -185,8 +206,8 @@ namespace NWaves.FeatureExtractors
                 _lowFreq = lowFreq;
                 _highFreq = highFreq;
 
-                FilterBank = FilterBanks.Triangular(_fftSize, SamplingRate,
-                                    FilterBanks.MelBands(_filterbankSize, _fftSize, SamplingRate, _lowFreq, _highFreq));
+                var melBands = FilterBanks.MelBands(_filterbankSize, _fftSize, SamplingRate, _lowFreq, _highFreq);
+                FilterBank = FilterBanks.Triangular(_fftSize, SamplingRate, melBands, mapper: Scale.HerzToMel);   // HTK/Kaldi-style
             }
             else
             {
@@ -200,11 +221,7 @@ namespace NWaves.FeatureExtractors
             _fft = new RealFft(_fftSize);
             
             _window = window;
-
-            if (_window != WindowTypes.Rectangular)
-            {
-                _windowSamples = Window.OfType(_window, FrameSize);
-            }
+            _windowSamples = Window.OfType(_window, FrameSize);
 
             _lifterSize = lifterSize;
             _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
@@ -244,20 +261,24 @@ namespace NWaves.FeatureExtractors
 
             // setup spectrum post-processing: =======================================================
 
-            _nonLinearityType = postProcessType;
-            switch (postProcessType)
+            _logFloor = logFloor;
+            _nonLinearityType = nonLinearity;
+            switch (nonLinearity)
             {
                 case NonLinearityType.Log10:
-                    _postProcessSpectrum = () => FilterBanks.ApplyAndLog10(FilterBank, _spectrum, _melSpectrum);
+                    _postProcessSpectrum = () => FilterBanks.ApplyAndLog10(FilterBank, _spectrum, _melSpectrum, _logFloor);
                     break;
                 case NonLinearityType.LogE:
-                    _postProcessSpectrum = () => FilterBanks.ApplyAndLog(FilterBank, _spectrum, _melSpectrum);
+                    _postProcessSpectrum = () => FilterBanks.ApplyAndLog(FilterBank, _spectrum, _melSpectrum, _logFloor);
                     break;
                 case NonLinearityType.ToDecibel:
-                    _postProcessSpectrum = () => FilterBanks.ApplyAndToDecibel(FilterBank, _spectrum, _melSpectrum);
+                    _postProcessSpectrum = () => FilterBanks.ApplyAndToDecibel(FilterBank, _spectrum, _melSpectrum, _logFloor);
                     break;
                 case NonLinearityType.CubicRoot:
-                    _postProcessSpectrum = () => FilterBanks.ApplyAndCubicRoot(FilterBank, _spectrum, _melSpectrum);
+                    _postProcessSpectrum = () => FilterBanks.ApplyAndPow(FilterBank, _spectrum, _melSpectrum, 0.33);
+                    break;
+                default:
+                    _postProcessSpectrum = () => { };
                     break;
             }
 
@@ -294,8 +315,8 @@ namespace NWaves.FeatureExtractors
         /// 
         ///     1) Apply window
         ///     2) Obtain power spectrum X
-        ///     3) Apply mel filters and log() the result: Y = Log10(X * H)
-        ///     4) Do dct-II: mfcc = Dct(Y)
+        ///     3) Apply mel filters and log() the result: Y = Log(X * H)
+        ///     4) Do dct: mfcc = Dct(Y)
         ///     5) [Optional] liftering of mfcc
         /// 
         /// </summary>
@@ -412,6 +433,7 @@ namespace NWaves.FeatureExtractors
                               _dctType,
                               _nonLinearityType,
                               _spectrumType,
-                              _window);
+                              _window,
+                              _logFloor);
     }
 }

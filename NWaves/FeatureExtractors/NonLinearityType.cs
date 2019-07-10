@@ -5,9 +5,10 @@
     /// </summary>
     public enum NonLinearityType
     {
-        Log10,
         LogE,
+        Log10,
         ToDecibel,
-        CubicRoot
+        CubicRoot,
+        None
     }
 }

@@ -29,6 +29,25 @@ namespace NWaves.DemoForms
             mfccPanel.ForeColor = Color.SeaGreen;
             mfccPanel.Thickness = 2;
             mfccPanel.Stride = 20;
+
+            //var sr = 16000;
+            //var barkbands = FilterBanks.MelBands(21, 1024, sr, 0, 8000);
+            //var barkbank1 = FilterBanks.Triangular(1024, sr, barkbands);
+            ////var barkbank1 = FilterBanks.Triangular(1024, sr, barkbands, mapper: Utils.Scale.HerzToMel);
+            ////var barkbank1 = FilterBanks.MelBankSlaney(40, 1024, sr, 0, 8000);
+
+            //var s = "";
+            //for (var i = 0; i < barkbank1.Length; i++)
+            //{
+            //    var m = string.Join(", ", barkbank1[i].Select(b => b.ToString("0.0000000000", System.Globalization.CultureInfo.InvariantCulture)));
+            //    s += m + ", ";
+            //}
+
+            //var f = File.CreateText("e:\\aaa.txt");
+
+            //f.WriteLine(s.Remove(s.Length - 2));
+
+            //f.Close();
         }
 
         private async void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -54,38 +73,27 @@ namespace NWaves.DemoForms
             var vtln = new VtlnWarper(1.2, 0, 8000, 0, 8000);
             //var vtln = new VtlnWarper(0.85, 0, 8000, 0, (int)(8000 * 0.85));
 
-            ////var sr = _signal.SamplingRate;
-            ////var barkbands = FilterBanks.MelBands(16, 512, sr, overlap: false);
-            ////var barkbank = FilterBanks.Trapezoidal(512, sr, barkbands, vtln, Utils.Scale.HerzToMel);
+            var sr = _signal.SamplingRate;
+            var melbands = FilterBanks.MelBands(26, 512, sr, 0, 8000);
+            var melbank = FilterBanks.Triangular(512, sr, melbands, null, Utils.Scale.HerzToMel);
 
-            var mfccExtractor = new MfccExtractor(_signal.SamplingRate, 13,
-                                                  512.0 / _signal.SamplingRate,
-                                                  //filterbankSize: 18,
+            var mfccExtractor = new MfccExtractor(_signal.SamplingRate, 13, 0.025, 0.01,
+                                                  //filterbankSize: 26,
                                                   //lowFreq: 100,
                                                   //highFreq: 4200,
-                                                  //lifterSize: 22,
-                                                  //filterbank: barkbank,
-                                                  filterbank: FilterBanks.MelBankSlaney(20, 512, _signal.SamplingRate, vtln: vtln),
+                                                  filterbank: melbank,
+                                                  //filterbank: FilterBanks.MelBankSlaney(40, 512, _signal.SamplingRate),//, vtln: vtln),
                                                   //filterbank: FilterBanks.BarkBankSlaney(15, 512, _signal.SamplingRate),
-                                                  //preEmphasis: 0.95,
+                                                  lifterSize: 22,
+                                                  //preEmphasis: 0.97,
                                                   //fftSize: 1024,
-                                                  lifterSize: 0,
+                                                  //includeEnergy: true,
                                                   spectrumType: SpectrumType.Power,
-                                                  postProcessType: NonLinearityType.ToDecibel,
+                                                  nonLinearity: NonLinearityType.LogE,
                                                   dctType: "2N",
-                                                  window: WindowTypes.Hann);
+                                                  window: WindowTypes.Hamming,
+                                                  logFloor: 1.0f);
 
-            //var mfccExtractor = new PlpExtractor(_signal.SamplingRate, 13,
-            //                                      //filterbankSize: 23,
-            //                                      lpcOrder: 8,
-            //                                      //lowFreq: 100,
-            //                                      //highFreq: 4200,
-            //                                      //lifterSize: 22,
-            //                                      filterbank: FilterBanks.BarkBankSlaney(15, 512, _signal.SamplingRate),
-            //                                      //preEmphasis: 0.95,
-            //                                      //rasta: 0.94,
-            //                                      //fftSize: 1024,
-            //                                      window: WindowTypes.Hamming);
 
             //var mfccExtractor = new PnccExtractor(_signal.SamplingRate, 13,
             //                          //filterbankSize: 40,
@@ -97,6 +105,32 @@ namespace NWaves.DemoForms
             //                          fftSize: 1024,
             //                          //lifterSize: 0,
             //                          window: WindowTypes.Hamming);
+
+            // If you need to test MFCC against HTK =======================================================
+            // keep in mind that HTK does the following pre-processing ====================================
+            // (turn these settings off if possible): =====================================================
+
+            _signal *= 32768;
+
+            // 1) zero-mean:
+
+            var mean = _signal.Samples.Average();
+
+            for (var i = 0; i < _signal.Length; i++)
+            {
+                _signal[i] -= mean;
+                _signal[i] += Math.Sign(_signal[i]) * 0.5f;
+            }
+
+            // 2) pre-emphasis (it's different from conventional pre-emphasis!):
+
+            var pre = 0.97f;
+
+            for (var i = _signal.Length - 1; i >= 1; i--)
+            {
+                _signal[i] -= _signal[i - 1] * pre;
+            }
+            _signal[0] *= 1.0f - pre;            // =============================================================================================
 
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);
 
