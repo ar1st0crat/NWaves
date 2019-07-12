@@ -10,12 +10,16 @@ using System.Linq;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Extractor 
+    /// This extractor computes in each frame
+    /// spectral energies in frequency bands defined by a given filterbank (channel outputs).
+    /// 
+    /// So it's like MFCC but without DCT-compressing of the filterbank-mapped spectrum.
+    /// 
     /// </summary>
     public class FilterbankExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Number of coefficients (number of frequency bands)
+        /// Number of coefficients (number of filters in the filter bank)
         /// </summary>
         public override int FeatureCount { get; }
 
@@ -41,7 +45,7 @@ namespace NWaves.FeatureExtractors
         private readonly WindowTypes _window;
 
         /// <summary>
-        /// Window samples
+        /// Window samples (weights)
         /// </summary>
         private readonly float[] _windowSamples;
 
@@ -81,7 +85,7 @@ namespace NWaves.FeatureExtractors
         private readonly float[] _spectrum;
 
         /// <summary>
-        /// Internal buffer for a post-processed mel-spectrum at each step
+        /// Internal buffer for a post-processed band spectrum at each step
         /// </summary>
         private readonly float[] _bandSpectrum;
 
@@ -95,9 +99,9 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <param name="samplingRate"></param>
         /// <param name="featureCount"></param>
+        /// <param name="filterbank"></param>
         /// <param name="frameDuration"></param>
         /// <param name="hopDuration"></param>
-        /// <param name="filterbank"></param>
         /// <param name="preEmphasis"></param>
         /// <param name="nonLinearity"></param>
         /// <param name="spectrumType"></param>
@@ -105,9 +109,9 @@ namespace NWaves.FeatureExtractors
         /// <param name="logFloor"></param>
         public FilterbankExtractor(int samplingRate,
                                    int featureCount,
+                                   float[][] filterbank,
                                    double frameDuration = 0.0256/*sec*/,
                                    double hopDuration = 0.010/*sec*/,
-                                   float[][] filterbank = null,
                                    double preEmphasis = 0,
                                    NonLinearityType nonLinearity = NonLinearityType.None,
                                    SpectrumType spectrumType = SpectrumType.Power,
@@ -150,7 +154,7 @@ namespace NWaves.FeatureExtractors
                     _postProcessSpectrum = () => FilterBanks.ApplyAndPow(FilterBank, _spectrum, _bandSpectrum, 0.33);
                     break;
                 default:
-                    _postProcessSpectrum = () => { };
+                    _postProcessSpectrum = () => FilterBanks.Apply(FilterBank, _spectrum, _bandSpectrum);
                     break;
             }
 
@@ -179,7 +183,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// 
+        /// Compute sequence of filter bank channel outputs
         /// </summary>
         /// <param name="samples"></param>
         /// <param name="startSample"></param>
@@ -258,9 +262,9 @@ namespace NWaves.FeatureExtractors
         public override FeatureExtractor ParallelCopy() =>
             new FilterbankExtractor( SamplingRate,
                                      FeatureCount,
+                                     FilterBank,
                                      FrameDuration,
                                      HopDuration,
-                                     FilterBank,
                                     _preEmphasis,
                                     _nonLinearityType,
                                     _spectrumType,

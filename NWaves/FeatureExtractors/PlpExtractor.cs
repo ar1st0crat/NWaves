@@ -134,11 +134,6 @@ namespace NWaves.FeatureExtractors
         private readonly float[] _cc;
 
         /// <summary>
-        /// 
-        /// </summary>
-        private readonly bool _replaceEdges;
-
-        /// <summary>
         /// Internal buffer for a signal block at each step
         /// </summary>
         private readonly float[] _block;
@@ -175,8 +170,7 @@ namespace NWaves.FeatureExtractors
                             double preEmphasis = 0,
                             WindowTypes window = WindowTypes.Hamming,
                             float[][] filterbank = null,
-                            double[] centerFrequencies = null,
-                            bool replaceEdges = false) : 
+                            double[] centerFrequencies = null) : 
             base(samplingRate, frameDuration, hopDuration)
         {
             FeatureCount = featureCount;
@@ -268,7 +262,6 @@ namespace NWaves.FeatureExtractors
             _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
 
             _preEmphasis = (float)preEmphasis;
-            _replaceEdges = replaceEdges;
 
             _lpcOrder = lpcOrder > 0 ? lpcOrder : FeatureCount + 1;
 
@@ -395,32 +388,18 @@ namespace NWaves.FeatureExtractors
 
                 // 7) LPC from power spectrum:
 
-                var n = _filterbankSize;
+                var n = _filterbankSize + 2;    // 2 duplicated edges
 
-                var _scc = new float[_cc.Length];
-
-                if (!_replaceEdges)
-                {
-                    _bandSpectrum.FastCopyTo(_scc, _filterbankSize, 0, 1);   // all ASR libs do this (reserve n+2 space and duplicate edges)
-                    n += 2;
-                }
-                else
-                {
-                    _bandSpectrum.FastCopyTo(_scc, _filterbankSize);         // but in original paper this is what was implied IIUC
-                }
-
-                _scc[0] = _scc[1];
-                _scc[n - 1] = _scc[n - 2];
-
-                // get autocorrelation samples from post-processed power spectrum:
+                // get autocorrelation samples from post-processed power spectrum (via IDFT):
 
                 for (var k = 0; k < _idftTable.Length; k++)
                 {
-                    var acc = 0f;
+                    var acc = _idftTable[k][0] * _bandSpectrum[0] +
+                              _idftTable[k][n - 1] * _bandSpectrum[n - 3];  // add values at two duplicated edges right away
 
-                    for (var j = 0; j < n; j++)
+                    for (var j = 1; j < n - 1; j++)
                     {
-                        acc += _idftTable[k][j] * _scc[j];
+                        acc += _idftTable[k][j] * _bandSpectrum[j - 1];
                     }
 
                     _cc[k] = acc / (2 * (n - 1));
@@ -496,7 +475,6 @@ namespace NWaves.FeatureExtractors
                              _preEmphasis,
                              _window,
                               FilterBank,
-                             _centerFrequencies,
-                             _replaceEdges);
+                             _centerFrequencies);
     }
 }

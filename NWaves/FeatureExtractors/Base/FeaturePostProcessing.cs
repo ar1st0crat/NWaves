@@ -73,10 +73,12 @@ namespace NWaves.FeatureExtractors.Base
         /// <param name="previous"></param>
         /// <param name="next"></param>
         /// <param name="includeDeltaDelta"></param>
+        /// <param name="N"></param>
         public static void AddDeltas(IList<FeatureVector> vectors, 
                                      IList<FeatureVector> previous = null,
                                      IList<FeatureVector> next = null,
-                                     bool includeDeltaDelta = true)
+                                     bool includeDeltaDelta = true,
+                                     int N = 2)
         {
             if (previous == null)
             {
@@ -93,7 +95,6 @@ namespace NWaves.FeatureExtractors.Base
 
             // deltas:
 
-            const int N = 2;
             int M = 2 * Enumerable.Range(1, N).Sum(x => x * x);  // scaling in denominator
 
             for (var i = N; i < sequence.Length - N; i++)

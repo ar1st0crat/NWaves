@@ -188,7 +188,7 @@ namespace NWaves.FeatureExtractors
                              int lifterSize = 0,
                              double preEmphasis = 0,
                              bool includeEnergy = false,
-                             string dctType = "2",
+                             string dctType = "2N",
                              NonLinearityType nonLinearity = NonLinearityType.Log10,
                              SpectrumType spectrumType = SpectrumType.Power,
                              WindowTypes window = WindowTypes.Hamming,
@@ -215,6 +215,7 @@ namespace NWaves.FeatureExtractors
                 _filterbankSize = filterbank.Length;
                 _fftSize = 2 * (filterbank[0].Length - 1);
 
+                Guard.AgainstNotPowerOfTwo(_fftSize, "FFT size");
                 Guard.AgainstExceedance(FrameSize, _fftSize, "frame size", "FFT size");
             }
 
@@ -250,7 +251,7 @@ namespace NWaves.FeatureExtractors
                     throw new ArgumentException("Only DCT-1, 2, 3 and 4 are supported!");
             }
 
-            if (dctType.Length > 1 && dctType[1] == 'N')
+            if (dctType.Length > 1 && char.ToUpper(dctType[1]) == 'N')
             {
                 _applyDct = mfccs => _dct.DirectNorm(_melSpectrum, mfccs);
             }
@@ -278,7 +279,7 @@ namespace NWaves.FeatureExtractors
                     _postProcessSpectrum = () => FilterBanks.ApplyAndPow(FilterBank, _spectrum, _melSpectrum, 0.33);
                     break;
                 default:
-                    _postProcessSpectrum = () => { };
+                    _postProcessSpectrum = () => FilterBanks.Apply(FilterBank, _spectrum, _melSpectrum);
                     break;
             }
 
@@ -311,7 +312,8 @@ namespace NWaves.FeatureExtractors
         /// Standard method for computing mfcc features:
         ///     0) [Optional] pre-emphasis
         /// 
-        /// Decompose signal into overlapping (hopSize) frames of length fftSize. In each frame do:
+        /// Decompose signal into overlapping (hopSize) frames of length fftSize.
+        /// According to default configuration, in each frame do:
         /// 
         ///     1) Apply window
         ///     2) Obtain power spectrum X

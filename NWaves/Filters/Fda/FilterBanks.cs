@@ -289,6 +289,23 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
+        /// Method returns frequency tuples for uniformly spaced frequency bands on Mel scale
+        /// (according to M.Slaney's formula).
+        /// </summary>
+        /// <param name="melFilterCount">Number of mel filters to create</param>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate of a signal</param>
+        /// <param name="lowFreq">Lower bound of the frequency range</param>
+        /// <param name="highFreq">Upper bound of the frequency range</param>
+        /// <param name="overlap">Flag indicating that bands should overlap</param>
+        /// <returns>Array of frequency tuples for each Mel filter</returns>
+        public static Tuple<double, double, double>[] MelBandsSlaney(
+            int melFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
+        {
+            return UniformBands(Scale.HerzToMelSlaney, Scale.MelToHerzSlaney, melFilterCount, samplingRate, lowFreq, highFreq, overlap);
+        }
+
+        /// <summary>
         /// Method returns frequency tuples for uniformly spaced frequency bands on Bark scale (Traunmueller, 1990).
         /// </summary>
         /// <param name="barkFilterCount">Number of bark filters to create</param>
@@ -467,30 +484,10 @@ namespace NWaves.Filters.Fda
 
             if (normalizeGain)
             {
-                NormalizeGain(filterCount, frequencies, filterBank);
+                Normalize(filterCount, frequencies, filterBank);
             }
 
             return filterBank;
-        }
-
-        /// <summary>
-        /// Normalize weights
-        /// </summary>
-        /// <param name="filterCount"></param>
-        /// <param name="frequencies"></param>
-        /// <param name="filterBank"></param>
-        public static void NormalizeGain(int filterCount, Tuple<double, double, double>[] frequencies, float[][] filterBank)
-        {
-            for (var i = 0; i < filterCount; i++)
-            {
-                var left = frequencies[i].Item1;
-                var right = frequencies[i].Item3;
-
-                for (var j = 0; j < filterBank[i].Length; j++)
-                {
-                    filterBank[i][j] *= 2 / (float)(right - left);
-                }
-            }
         }
 
         /// <summary>
@@ -670,7 +667,27 @@ namespace NWaves.Filters.Fda
 
             return erbFilterBank;
         }
-        
+
+        /// <summary>
+        /// Normalize weights (so that energies in each band are approx. equal)
+        /// </summary>
+        /// <param name="filterCount"></param>
+        /// <param name="frequencies"></param>
+        /// <param name="filterBank"></param>
+        public static void Normalize(int filterCount, Tuple<double, double, double>[] frequencies, float[][] filterBank)
+        {
+            for (var i = 0; i < filterCount; i++)
+            {
+                var left = frequencies[i].Item1;
+                var right = frequencies[i].Item3;
+
+                for (var j = 0; j < filterBank[i].Length; j++)
+                {
+                    filterBank[i][j] *= 2 / (float)(right - left);
+                }
+            }
+        }
+
         /// <summary>
         /// Method applies filters to spectrum and fills resulting filtered spectrum.
         /// </summary>

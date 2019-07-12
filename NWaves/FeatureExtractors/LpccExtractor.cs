@@ -102,7 +102,7 @@ namespace NWaves.FeatureExtractors
         {
             FeatureCount = featureCount;
 
-            _order = lpcOrder > 0 ? lpcOrder : featureCount;
+            _order = lpcOrder > 0 ? lpcOrder : featureCount - 1;
 
             var fftSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
             _convolver = new Convolver(fftSize);
