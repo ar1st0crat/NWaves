@@ -90,7 +90,7 @@ namespace NWaves.Operations.Convolution
         {
             // first, try to divide polynomials
 
-            var div = MathUtils.PolynomialDivision(signal.Real.Zip(signal.Imag, (r, i) => new Complex(r, i)).ToArray(),
+            var div = MathUtils.DividePolynomial(signal.Real.Zip(signal.Imag, (r, i) => new Complex(r, i)).ToArray(),
                                                    kernel.Real.Zip(kernel.Imag, (r, i) => new Complex(r, i)).ToArray());
 
             var quotient = div[0];

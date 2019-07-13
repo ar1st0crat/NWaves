@@ -36,6 +36,7 @@ New version **0.9.2** is coming soon! Faster, smarter, more features. [Read abou
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and perceptual weighting (A, B, C)
 - [x] customizable feature extraction (time-domain, spectral, MFCC, PNCC/SPNCC, LPC, LPCC, PLP, AMS)
 - [x] predefined MFCC configurations: HTK (MFCC-FB24), Slaney (MFCC-FB40)
+- [x] LPC conversions: LPC<->cepstrum, LPC<->LSF
 - [x] feature post-processing (mean and variance normalization, adding deltas) and CSV serialization
 - [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest, decrease, noiseness, MPEG7)
 - [x] harmonic features (harmonic centroid and spread, inharmonicity, tristimulus, odd-to-even ratio)

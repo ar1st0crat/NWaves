@@ -183,13 +183,13 @@ namespace NWaves.FeatureExtractors
 
                 for (int k = 0; k < _lpc.Length; _lpc[k] = 0, k++) ;
 
-                var err = MathUtils.LevinsonDurbin(_cc, _lpc, _order, frameSize - 1);
+                var err = Lpc.LevinsonDurbin(_cc, _lpc, _order, frameSize - 1);
 
                 // 4) compute LPCC coefficients from LPC
 
                 var lpcc = new float[FeatureCount];
 
-                MathUtils.LpcToCepstrum(_lpc, err, lpcc);
+                Lpc.ToCepstrum(_lpc, err, lpcc);
 
                 // 5) (optional) liftering
 

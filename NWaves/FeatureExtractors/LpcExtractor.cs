@@ -162,7 +162,7 @@ namespace NWaves.FeatureExtractors
                 // 3) levinson-durbin
 
                 var a = new float[_order + 1];
-                var err = MathUtils.LevinsonDurbin(_cc, a, _order, frameSize - 1);
+                var err = Lpc.LevinsonDurbin(_cc, a, _order, frameSize - 1);
                 a[0] = err;
 
                 // add LPC vector to output sequence
@@ -175,17 +175,6 @@ namespace NWaves.FeatureExtractors
             }
 
             return featureVectors;
-        }
-        
-        /// <summary>
-        /// Method returns LPC order for a given sampling rate 
-        /// according to the best practices.
-        /// </summary>
-        /// <param name="samplingRate">Sampling rate</param>
-        /// <returns>LPC order</returns>
-        public static int EstimateOrder(int samplingRate)
-        {
-            return 2 + samplingRate / 1000;
         }
 
         /// <summary>

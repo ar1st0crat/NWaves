@@ -77,7 +77,7 @@ namespace NWaves.Tests.UtilTests
             Complex[] num = { 2, 4, 6, 1, 2, 3 };
             Complex[] den = { 1, 2, 3 };
 
-            var div = MathUtils.PolynomialDivision(num, den);
+            var div = MathUtils.DividePolynomial(num, den);
 
             Assert.Multiple(() =>
             {
@@ -85,6 +85,38 @@ namespace NWaves.Tests.UtilTests
                 Assert.That(div[0].Select(d => d.Imaginary), Is.EqualTo(new[] { 0.0, 0, 0, 0 }).Within(1e-10));
                 Assert.That(div[1].Select(d => d.Real), Is.All.EqualTo(0.0).Within(1e-10));
             });
+        }
+
+        [Test]
+        public void TestLpcToLsf()
+        {
+            //float[] lpc = { 1, 0.6149f, 0.9899f, 0, 0.0031f, -0.008f, 0.0154f };
+            //float[] lsf = new float[lpc.Length];
+            //Lpc.ToLsf(lpc, lsf);
+            //Assert.That(lsf, Is.EqualTo(new [] { 0.62694603f, 1.25538484f, 1.82578472f, 1.87689099f, 1.95275509f, 2.51259995f, 3.1415927f }).Within(1e-5));
+
+            float[] lpc = { 1, 0.6149f, 0.2899f, 0.0031f, -0.0082f, -0.123f };
+            float[] lsf = new float[lpc.Length];
+
+            Lpc.ToLsf(lpc, lsf);
+
+            Assert.That(lsf, Is.EqualTo(new[] { 0.6471242f, 1.29403331f, 1.74836394f, 2.26815244f, 2.62021719f, 3.1415927f}).Within(1e-5));
+        }
+
+        [Test]
+        public void TestLsfToLpc()
+        {
+            //float[] lsf = { 0.62694603f, 1.25538484f, 1.82578472f, 1.87689099f, 1.95275509f, 2.51259995f, 3.1415927f };
+            //float[] lpc = new float[lsf.Length];
+            //Lpc.FromLsf(lsf, lpc);
+            //Assert.That(lpc, Is.EqualTo(new[] { 1, 0.6149f, 0.9899f, 0, 0.0031f, -0.008f, 0.0154f }).Within(1e-5));
+
+            float[] lsf = { 0.783008181f, 1.294033314f, 1.56781325f, 2.26815244f, 2.849793301f, 3.1415927f };
+            float[] lpc = new float[lsf.Length];
+
+            Lpc.FromLsf(lsf, lpc);
+
+            Assert.That(lpc, Is.EqualTo(new[] { 1, 0.6149f, 0.2899f, 0.5f, -0.0082f, -0.123f }).Within(1e-5));
         }
     }
 }

@@ -214,105 +214,6 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Levinson-Durbin algorithm for solving main LPC task
-        /// </summary>
-        /// <param name="input">Auto-correlation vector</param>
-        /// <param name="a">LP coefficients</param>
-        /// <param name="order">Order of LPC</param>
-        /// <returns>Prediction error</returns>
-        public static float LevinsonDurbin(float[] input, float[] a, int order, int offset = 0)
-        {
-            var err = input[offset];
-
-            a[0] = 1.0f;
-
-            for (var i = 1; i <= order; i++)
-            {
-                var lambda = 0.0f;
-                for (var j = 0; j < i; j++)
-                {
-                    lambda -= a[j] * input[offset + i - j];
-                }
-
-                lambda /= err;
-
-                for (var n = 0; n <= i / 2; n++)
-                {
-                    var tmp = a[i - n] + lambda * a[n];
-                    a[n] = a[n] + lambda * a[i - n];
-                    a[i - n] = tmp;
-                }
-
-                err *= (1.0f - lambda * lambda);
-            }
-
-            return err;
-        }
-
-        /// <summary>
-        /// Convert LPC coefficients to cepstrum (LPCC)
-        /// </summary>
-        /// <param name="lpc"></param>
-        /// <param name="gain"></param>
-        /// <param name="lpcc"></param>
-        public static void LpcToCepstrum(float[] lpc, float gain, float[] lpcc)
-        {
-            var n = lpcc.Length;
-            var p = lpc.Length;     // must be lpcOrder + 1 (!)
-
-            lpcc[0] = (float)Math.Log(gain);
-
-            for (var m = 1; m < Math.Min(n, p); m++)
-            {
-                var acc = 0.0f;
-                for (var k = 1; k < m; k++)
-                {
-                    acc += k * lpcc[k] * lpc[m - k];
-                }
-                lpcc[m] = -lpc[m] - acc / m;
-            }
-
-            for (var m = p; m < n; m++)
-            {
-                var acc = 0.0f;
-                for (var k = 1; k < p; k++)
-                {
-                    acc += (m - k) * lpcc[m - k] * lpc[k];
-                }
-                lpcc[m] = -acc / m;
-            }
-        }
-
-        /// <summary>
-        /// Convert LPCC coefficients to LPC and gain
-        /// 
-        /// Formulae: https://www.mathworks.com/help/dsp/ref/lpctofromcepstralcoefficients.html
-        /// 
-        /// </summary>
-        /// <param name="lpcc"></param>
-        /// <param name="lpc"></param>
-        /// <returns></returns>
-        public static float CepstrumToLpc(float[] lpcc, float[] lpc)
-        {
-            var n = lpcc.Length;
-            var p = lpc.Length;     // must be lpcOrder + 1 (!)
-
-            lpc[0] = 1;
-
-            for (var m = 1; m < p; m++)
-            {
-                var acc = 0.0f;
-                for (var k = 1; k < m; k++)
-                {
-                    acc += k * lpcc[k] * lpc[m - k];
-                }
-                lpc[m] = -lpcc[m] - acc / m;
-            }
-
-            return (float)Math.Exp(lpcc[0]);
-        }
-
-        /// <summary>
         /// Nth order statistics
         /// </summary>
         /// <param name="a"></param>
@@ -488,7 +389,7 @@ namespace NWaves.Utils
         /// <param name="dividend">Dividend</param>
         /// <param name="divisor">Divisor</param>
         /// <returns></returns>
-        public static Complex[][] PolynomialDivision(Complex[] dividend, Complex[] divisor)
+        public static Complex[][] DividePolynomial(Complex[] dividend, Complex[] divisor)
         {
             var output = (Complex[])dividend.Clone();
             var normalizer = divisor[0];
