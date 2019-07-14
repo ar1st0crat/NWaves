@@ -45,11 +45,6 @@ namespace NWaves.FeatureExtractors.Multi
         public override int FeatureCount => FeatureDescriptions.Count;
 
         /// <summary>
-        /// Size of used FFT
-        /// </summary>
-        private readonly int _fftSize;
-
-        /// <summary>
         /// FFT transformer
         /// </summary>
         private readonly RealFft _fft;
@@ -100,11 +95,6 @@ namespace NWaves.FeatureExtractors.Multi
         private readonly float[] _mappedSpectrum;
 
         /// <summary>
-        /// Internal buffer for currently processed block
-        /// </summary>
-        private readonly float[] _block;
-
-        /// <summary>
         /// Extractor functions
         /// </summary>
         private List<Func<float[], float[], float>> _extractors;
@@ -130,6 +120,11 @@ namespace NWaves.FeatureExtractors.Multi
         private float[] _pitchTrack;
 
         /// <summary>
+        /// Current position in pitch track
+        /// </summary>
+        private int _pitchPos;
+
+        /// <summary>
         /// Harmonic peaks detector function (optional)
         /// </summary>
         private Action<float[], int[], float[], int, float> _peaksDetector;
@@ -150,10 +145,11 @@ namespace NWaves.FeatureExtractors.Multi
                                               double hopDuration = 0.010/*sec*/,
                                               int fftSize = 0,
                                               Tuple<double, double, double>[] frequencyBands = null,
+                                              double preEmphasis = 0,
                                               WindowTypes window = WindowTypes.Hamming,
                                               IReadOnlyDictionary<string, object> parameters = null)
 
-            : base(samplingRate, frameDuration, hopDuration)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
         {
             if (featureList == "all" || featureList == "full")
             {
@@ -236,14 +232,14 @@ namespace NWaves.FeatureExtractors.Multi
 
             FeatureDescriptions = features.ToList();
 
-            _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
-            _fft = new RealFft(_fftSize);
+            _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
+            _fft = new RealFft(_blockSize);
 
             _window = window;
             _windowSamples = Window.OfType(_window, FrameSize);
 
-            _frequencyBands = frequencyBands ?? FilterBanks.OctaveBands(6, _fftSize, samplingRate);
-            _filterbank = FilterBanks.Rectangular(_fftSize, samplingRate, _frequencyBands);
+            _frequencyBands = frequencyBands ?? FilterBanks.OctaveBands(6, _blockSize, samplingRate);
+            _filterbank = FilterBanks.Rectangular(_blockSize, samplingRate, _frequencyBands);
 
             var cfs = _frequencyBands.Select(b => b.Item2).ToList();
             // insert zero frequency so that it'll be ignored during calculations
@@ -255,9 +251,8 @@ namespace NWaves.FeatureExtractors.Multi
 
             // reserve memory for reusable blocks
 
-            _spectrum = new float[_fftSize / 2 + 1];                // buffer for magnitude spectrum
+            _spectrum = new float[_blockSize / 2 + 1];              // buffer for magnitude spectrum
             _mappedSpectrum = new float[_filterbank.Length + 1];    // buffer for total energies in bands
-            _block = new float[_fftSize];                           // buffer for currently processed block
         }
 
         /// <summary>
@@ -379,77 +374,67 @@ namespace NWaves.FeatureExtractors.Multi
                 throw new ArgumentException($"Unknown feature: {FeatureDescriptions[nullExtractorPos]}");
             }
 
-            var featureVectors = new List<FeatureVector>();
+            _pitchPos = 0;
 
-            var pitchPos = 0;
+            return base.ComputeFrom(samples, startSample, endSample);
+        }
 
-            var i = startSample;
-            while (i + FrameSize < endSample)
+        /// <summary>
+        /// Compute MPEG7 spectral features in one frame
+        /// </summary>
+        /// <param name="block"></param>
+        /// <returns></returns>
+        public override float[] ProcessFrame(float[] block)
+        {
+            // fill zeros to fftSize if frameSize < fftSize
+
+            for (var k = FrameSize; k < block.Length; block[k++] = 0) ;
+
+            // apply window
+
+            block.ApplyWindow(_windowSamples);
+
+            // compute and prepare spectrum
+
+            _fft.MagnitudeSpectrum(block, _spectrum);
+
+            // apply filterbank (ignoring 0th coefficient)
+
+            for (var k = 0; k < _filterbank.Length; k++)
             {
-                // prepare all blocks in memory for the current step:
+                _mappedSpectrum[k + 1] = 0.0f;
 
-                // copy frameSize samples
-                samples.FastCopyTo(_block, FrameSize, i);
-                // fill zeros to fftSize if frameSize < fftSize
-                for (var k = FrameSize; k < _block.Length; _block[k++] = 0) ;
-
-
-                // apply window
-
-                _block.ApplyWindow(_windowSamples);
-
-                // compute and prepare spectrum
-
-                _fft.MagnitudeSpectrum(_block, _spectrum);
-
-                // apply filterbank (ignoring 0th coefficient)
-
-                for (var k = 0; k < _filterbank.Length; k++)
+                for (var j = 0; j < _spectrum.Length; j++)
                 {
-                    _mappedSpectrum[k + 1] = 0.0f;
-
-                    for (var j = 0; j < _spectrum.Length; j++)
-                    {
-                        _mappedSpectrum[k + 1] += _filterbank[k][j] * _spectrum[j];
-                    }
+                    _mappedSpectrum[k + 1] += _filterbank[k][j] * _spectrum[j];
                 }
-
-                // extract spectral features
-
-                var featureVector = new float[FeatureCount];
-
-                for (var j = 0; j < _extractors.Count; j++)
-                {
-                    featureVector[j] = _extractors[j](_mappedSpectrum, _frequencies);
-                }
-
-                // ...and maybe harmonic features
-
-                if (_harmonicExtractors != null)
-                {
-                    var pitch = _pitchTrack == null ? _pitchEstimator(_spectrum) : _pitchTrack[pitchPos++];
-
-                    _peaksDetector(_spectrum, _peaks, _peakFrequencies, SamplingRate, pitch);
-
-                    var offset = _extractors.Count;
-                    for (var j = 0; j < _harmonicExtractors.Count; j++)
-                    {
-                        featureVector[j + offset] = _harmonicExtractors[j](_spectrum, _peaks, _peakFrequencies);
-                    }
-                }
-
-                // finally create new feature vector
-
-                featureVectors.Add(new FeatureVector
-                {
-                    Features = featureVector,
-                    TimePosition = (double)i / SamplingRate
-                });
-
-                i += HopSize;
             }
 
-            return featureVectors;
+            // extract spectral features
+
+            var featureVector = new float[FeatureCount];
+
+            for (var j = 0; j < _extractors.Count; j++)
+            {
+                featureVector[j] = _extractors[j](_mappedSpectrum, _frequencies);
+            }
+
+            // ...and maybe harmonic features
+
+            if (_harmonicExtractors != null)
+            {
+                var pitch = _pitchTrack == null ? _pitchEstimator(_spectrum) : _pitchTrack[_pitchPos++];
+
+                _peaksDetector(_spectrum, _peaks, _peakFrequencies, SamplingRate, pitch);
+
+                var offset = _extractors.Count;
+                for (var j = 0; j < _harmonicExtractors.Count; j++)
+                {
+                    featureVector[j + offset] = _harmonicExtractors[j](_spectrum, _peaks, _peakFrequencies);
+                }
+            }
+
+            return featureVector;
         }
 
         /// <summary>
@@ -466,7 +451,7 @@ namespace NWaves.FeatureExtractors.Multi
         {
             var spectralFeatureSet = string.Join(",", FeatureDescriptions.Take(_extractors.Count));
 
-            var copy = new Mpeg7SpectralFeaturesExtractor(SamplingRate, spectralFeatureSet, FrameDuration, HopDuration, _fftSize, _frequencyBands, _window, _parameters)
+            var copy = new Mpeg7SpectralFeaturesExtractor(SamplingRate, spectralFeatureSet, FrameDuration, HopDuration, _blockSize, _frequencyBands, _preEmphasis, _window, _parameters)
             {
                 _extractors = _extractors,
                 _pitchTrack = _pitchTrack

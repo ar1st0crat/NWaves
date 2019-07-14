@@ -30,7 +30,7 @@ namespace NWaves.FeatureExtractors
             Enumerable.Range(0, FeatureCount).Select(i => "fb" + i).ToList();
 
         /// <summary>
-        /// Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)].
+        /// Filterbank matrix of dimension [filterbankSize * (_blockSize/2 + 1)].
         /// </summary>
         public float[][] FilterBank { get; }
 
@@ -50,11 +50,6 @@ namespace NWaves.FeatureExtractors
         private readonly float[] _windowSamples;
 
         /// <summary>
-        /// Pre-emphasis coefficient
-        /// </summary>
-        private readonly float _preEmphasis;
-
-        /// <summary>
         /// Non-linearity type (logE, log10, decibel, cubic root)
         /// </summary>
         private readonly NonLinearityType _nonLinearityType;
@@ -72,7 +67,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Delegate for calculating spectrum
         /// </summary>
-        private readonly Action _getSpectrum;
+        private readonly Action<float[]> _getSpectrum;
 
         /// <summary>
         /// Delegate for post-processing spectrum
@@ -88,11 +83,6 @@ namespace NWaves.FeatureExtractors
         /// Internal buffer for a post-processed band spectrum at each step
         /// </summary>
         private readonly float[] _bandSpectrum;
-
-        /// <summary>
-        /// Internal buffer for a signal block at each step
-        /// </summary>
-        private readonly float[] _block;
 
         /// <summary>
         /// Constructor
@@ -116,19 +106,20 @@ namespace NWaves.FeatureExtractors
                                    NonLinearityType nonLinearity = NonLinearityType.None,
                                    SpectrumType spectrumType = SpectrumType.Power,
                                    WindowTypes window = WindowTypes.Hamming,
-                                   float logFloor = float.Epsilon) :
-            base(samplingRate, frameDuration, hopDuration)
+                                   float logFloor = float.Epsilon)
+            
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
         {
             FeatureCount = featureCount;
 
             FilterBank = filterbank;
 
-            var fftSize = 2 * (filterbank[0].Length - 1);
+            _blockSize = 2 * (filterbank[0].Length - 1);
 
-            Guard.AgainstNotPowerOfTwo(fftSize, "FFT size");
-            Guard.AgainstExceedance(FrameSize, fftSize, "frame size", "FFT size");
+            Guard.AgainstNotPowerOfTwo(_blockSize, "FFT size");
+            Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
 
-            _fft = new RealFft(fftSize);
+            _fft = new RealFft(_blockSize);
 
             _window = window;
             _windowSamples = Window.OfType(_window, FrameSize);
@@ -162,24 +153,23 @@ namespace NWaves.FeatureExtractors
             switch (_spectrumType)
             {
                 case SpectrumType.Magnitude:
-                    _getSpectrum = () => _fft.MagnitudeSpectrum(_block, _spectrum, false);
+                    _getSpectrum = block => _fft.MagnitudeSpectrum(block, _spectrum, false);
                     break;
                 case SpectrumType.Power:
-                    _getSpectrum = () => _fft.PowerSpectrum(_block, _spectrum, false);
+                    _getSpectrum = block => _fft.PowerSpectrum(block, _spectrum, false);
                     break;
                 case SpectrumType.MagnitudeNormalized:
-                    _getSpectrum = () => _fft.MagnitudeSpectrum(_block, _spectrum, true);
+                    _getSpectrum = block => _fft.MagnitudeSpectrum(block, _spectrum, true);
                     break;
                 case SpectrumType.PowerNormalized:
-                    _getSpectrum = () => _fft.PowerSpectrum(_block, _spectrum, true);
+                    _getSpectrum = block => _fft.PowerSpectrum(block, _spectrum, true);
                     break;
             }
 
             // reserve memory for reusable blocks
 
-            _spectrum = new float[fftSize / 2 + 1];
+            _spectrum = new float[_blockSize / 2 + 1];
             _bandSpectrum = new float[filterbank.Length];
-            _block = new float[fftSize];
         }
 
         /// <summary>
@@ -189,64 +179,27 @@ namespace NWaves.FeatureExtractors
         /// <param name="startSample"></param>
         /// <param name="endSample"></param>
         /// <returns></returns>
-        public override List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
+        public override float[] ProcessFrame(float[] block)
         {
-            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
+            // fill zeros to _blockSize if frameSize < fftSize
 
-            var hopSize = HopSize;
-            var frameSize = FrameSize;
+            for (var k = FrameSize; k < block.Length; block[k++] = 0) ;
 
-            var featureVectors = new List<FeatureVector>();
+            // 1) apply window
 
-            var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
+            block.ApplyWindow(_windowSamples);
 
-            var lastSample = endSample - Math.Max(frameSize, hopSize);
+            // 2) calculate magnitude/power spectrum (with/without normalization)
 
-            for (var i = startSample; i < lastSample; i += hopSize)
-            {
-                // prepare next block for processing
+            _getSpectrum(block);        // _block -> _spectrum
 
-                // copy frameSize samples
-                samples.FastCopyTo(_block, frameSize, i);
-                // fill zeros to fftSize if frameSize < fftSize
-                for (var k = frameSize; k < _block.Length; _block[k++] = 0) ;
+            // 3) apply filterbank and take log10/ln/cubic_root of the result
 
+            _postProcessSpectrum();     // _spectrum -> _bandSpectrum
 
-                // 0) pre-emphasis (if needed)
+            // add vector to output sequence
 
-                if (_preEmphasis > 1e-10)
-                {
-                    for (var k = 0; k < frameSize; k++)
-                    {
-                        var y = _block[k] - prevSample * _preEmphasis;
-                        prevSample = _block[k];
-                        _block[k] = y;
-                    }
-                    prevSample = samples[i + hopSize - 1];
-                }
-
-                // 1) apply window
-
-                _block.ApplyWindow(_windowSamples);
-
-                // 2) calculate magnitude/power spectrum (with/without normalization)
-
-                _getSpectrum();         // _block -> _spectrum
-
-                // 3) apply filterbank and take log10/ln/cubic_root of the result
-
-                _postProcessSpectrum(); // _spectrum -> _bandSpectrum
-
-                // add mfcc vector to output sequence
-
-                featureVectors.Add(new FeatureVector
-                {
-                    Features = _bandSpectrum.FastCopy(),
-                    TimePosition = (double)i / SamplingRate
-                });
-            }
-
-            return featureVectors;
+            return _bandSpectrum.FastCopy();
         }
 
         /// <summary>

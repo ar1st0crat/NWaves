@@ -88,11 +88,6 @@ namespace NWaves.FeatureExtractors
         private readonly int _modulationHopSize;
 
         /// <summary>
-        /// Pre-emphasis coefficient
-        /// </summary>
-        private readonly float _preEmphasis;
-
-        /// <summary>
         /// Internal buffer for a signal block at each step
         /// </summary>
         private readonly float[] _block;
@@ -117,7 +112,6 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         private readonly float[] _modSpectrum;
 
-
         /// <summary>
         /// Main constructor
         /// </summary>
@@ -139,10 +133,10 @@ namespace NWaves.FeatureExtractors
                             int fftSize = 0,
                             IEnumerable<float[]> featuregram = null,
                             float[][] filterbank = null,
-                            double preEmphasis = 0.0,
+                            double preEmphasis = 0,
                             WindowTypes window = WindowTypes.Rectangular)
 
-            : base(samplingRate, frameDuration, hopDuration)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
         {
             _modulationFftSize = modulationFftSize;
             _modulationHopSize = modulationHopSize;
@@ -185,8 +179,6 @@ namespace NWaves.FeatureExtractors
                 _filteredSpectrum = new float[_filterbank.Length];
                 _block = new float[_fftSize];
             }
-
-            _preEmphasis = (float) preEmphasis;
 
             _modBlock = new float[_modulationFftSize];
             _modSpectrum = new float[_modulationFftSize / 2 + 1];
@@ -421,25 +413,13 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// True if computations can be done in parallel
+        /// All logic is fully implemented in ComputeFrom() method
         /// </summary>
+        /// <param name="block"></param>
         /// <returns></returns>
-        public override bool IsParallelizable() => true;
-
-        /// <summary>
-        /// Copy of current extractor that can work in parallel
-        /// </summary>
-        /// <returns></returns>
-        public override FeatureExtractor ParallelCopy() =>
-            new AmsExtractor(SamplingRate,
-                             FrameDuration,
-                             HopDuration, 
-                             _modulationFftSize, 
-                             _modulationHopSize, 
-                             _fftSize, 
-                             _featuregram, 
-                             _filterbank, 
-                             _preEmphasis, 
-                             _window);
+        public override float[] ProcessFrame(float[] block)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

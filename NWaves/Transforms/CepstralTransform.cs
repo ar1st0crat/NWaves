@@ -53,24 +53,26 @@ namespace NWaves.Transforms
         /// <returns></returns>
         public void Direct(float[] samples, float[] cepstrum, bool power = false)
         {
+            samples.FastCopyTo(_realSpectrum, _realSpectrum.Length);
+            Array.Clear(_imagSpectrum, 0, _imagSpectrum.Length);
+
             // complex fft
 
-            _fft.PowerSpectrum(samples, _realSpectrum, false);
-
+            _fft.Direct(_realSpectrum, _imagSpectrum);
 
             // logarithm of power spectrum
 
             for (var i = 0; i < _realSpectrum.Length; i++)
             {
-                _realSpectrum[i] = (float)Math.Log10(_realSpectrum[i] + float.Epsilon);
+                var ps = _realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i];
+
+                _realSpectrum[i] = (float)Math.Log10(ps + float.Epsilon);
                 _imagSpectrum[i] = 0.0f;
             }
-
 
             // complex ifft
 
             _fft.Inverse(_realSpectrum, _imagSpectrum);
-
 
             // take truncated part
 
@@ -110,13 +112,9 @@ namespace NWaves.Transforms
         /// <returns></returns>
         public void Inverse(float[] cepstrum, float[] samples, bool power = false)
         {
-            Guard.AgainstInequality(cepstrum.Length, _realSpectrum.Length, "Cepstrum length", "Size of FFT");
-            
-            for (var i = 0; i < _realSpectrum.Length; i++)
-            {
-                _realSpectrum[i] = cepstrum[i];
-                _imagSpectrum[i] = 0.0f;
-            }
+            Array.Clear(_realSpectrum, 0, _realSpectrum.Length);
+            Array.Clear(_imagSpectrum, 0, _imagSpectrum.Length);
+            cepstrum.FastCopyTo(_realSpectrum, cepstrum.Length);
 
             if (power)
             {

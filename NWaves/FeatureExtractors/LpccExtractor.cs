@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Operations.Convolution;
@@ -55,11 +54,6 @@ namespace NWaves.FeatureExtractors
         private readonly float[] _windowSamples;
 
         /// <summary>
-        /// Pre-emphasis coefficient
-        /// </summary>
-        private readonly float _preEmphasis;
-
-        /// <summary>
         /// Internal buffer for cross-correlation signal
         /// </summary>
         private readonly float[] _cc;
@@ -70,17 +64,12 @@ namespace NWaves.FeatureExtractors
         private readonly float[] _lpc;
 
         /// <summary>
-        /// Internal buffer for real parts of the currently processed block
-        /// </summary>
-        private readonly float[] _block;
-
-        /// <summary>
         /// Internal buffer for reversed real parts of the currently processed block
         /// </summary>
         private readonly float[] _reversed;
 
         /// <summary>
-        /// Main constructor
+        /// Constructor
         /// </summary>
         /// <param name="samplingRate"></param>
         /// <param name="featureCount"></param>
@@ -98,14 +87,14 @@ namespace NWaves.FeatureExtractors
                              double preEmphasis = 0,
                              WindowTypes window = WindowTypes.Rectangular)
 
-            : base(samplingRate, frameDuration, hopDuration)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
         {
             FeatureCount = featureCount;
 
             _order = lpcOrder > 0 ? lpcOrder : featureCount - 1;
 
-            var fftSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
-            _convolver = new Convolver(fftSize);
+            _blockSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
+            _convolver = new Convolver(_blockSize);
 
             _window = window;
             if (_window != WindowTypes.Rectangular)
@@ -116,11 +105,8 @@ namespace NWaves.FeatureExtractors
             _lifterSize = lifterSize;
             _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
 
-            _preEmphasis = (float)preEmphasis;
-
-            _block = new float[FrameSize];
             _reversed = new float[FrameSize];
-            _cc = new float[fftSize];
+            _cc = new float[_blockSize];
             _lpc = new float[_order + 1];
         }
 
@@ -130,85 +116,43 @@ namespace NWaves.FeatureExtractors
         /// (for efficient memory usage it doesn't just delegate its work to LpcExtractor)
         /// and then post-processes LPC vectors to obtain LPCC coefficients.
         /// </summary>
-        /// <param name="samples">Samples for analysis</param>
-        /// <param name="startSample">The number (position) of the first sample for processing</param>
-        /// <param name="endSample">The number (position) of last sample for processing</param>
-        /// <returns></returns>
-        public override List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
+        /// <param name="block">Samples for analysis</param>
+        /// <returns>LPCC vector</returns>
+        public override float[] ProcessFrame(float[] block)
         {
-            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
+            // 1) apply window (usually signal isn't windowed for LPC, so we check first)
 
-            var hopSize = HopSize;
-            var frameSize = FrameSize;
-
-            var featureVectors = new List<FeatureVector>();
-
-            var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
-
-            var lastSample = endSample - Math.Max(frameSize, hopSize);
-
-            for (var i = startSample; i < lastSample; i += hopSize)
+            if (_window != WindowTypes.Rectangular)
             {
-                // prepare all blocks in memory for the current step:
-
-                samples.FastCopyTo(_block, frameSize, i);
-
-                // 0) pre-emphasis (if needed)
-
-                if (_preEmphasis > 1e-10)
-                {
-                    for (var k = 0; k < frameSize; k++)
-                    {
-                        var y = _block[k] - prevSample * _preEmphasis;
-                        prevSample = _block[k];
-                        _block[k] = y;
-                    }
-                    prevSample = samples[i + hopSize - 1];
-                }
-
-                // 1) apply window
-
-                if (_window != WindowTypes.Rectangular)
-                {
-                    _block.ApplyWindow(_windowSamples);
-                }
-
-                _block.FastCopyTo(_reversed, frameSize);
-
-                // 2) autocorrelation
-
-                _convolver.CrossCorrelate(_block, _reversed, _cc);
-
-                // 3) Levinson-Durbin
-
-                for (int k = 0; k < _lpc.Length; _lpc[k] = 0, k++) ;
-
-                var err = Lpc.LevinsonDurbin(_cc, _lpc, _order, frameSize - 1);
-
-                // 4) compute LPCC coefficients from LPC
-
-                var lpcc = new float[FeatureCount];
-
-                Lpc.ToCepstrum(_lpc, err, lpcc);
-
-                // 5) (optional) liftering
-
-                if (_lifterCoeffs != null)
-                {
-                    lpcc.ApplyWindow(_lifterCoeffs);
-                }
-
-
-                // add LPCC vector to output sequence
-
-                featureVectors.Add(new FeatureVector
-                {
-                    Features = lpcc,
-                    TimePosition = (double)i / SamplingRate
-                });
+                block.ApplyWindow(_windowSamples);
             }
 
-            return featureVectors;
+            block.FastCopyTo(_reversed, FrameSize);
+
+            // 2) autocorrelation
+
+            _convolver.CrossCorrelate(block, _reversed, _cc);
+
+            // 3) Levinson-Durbin
+
+            for (int k = 0; k < _lpc.Length; _lpc[k] = 0, k++) ;
+
+            var err = Lpc.LevinsonDurbin(_cc, _lpc, _order, FrameSize - 1);
+
+            // 4) compute LPCC coefficients from LPC
+
+            var lpcc = new float[FeatureCount];
+
+            Lpc.ToCepstrum(_lpc, err, lpcc);
+
+            // 5) (optional) liftering
+
+            if (_lifterCoeffs != null)
+            {
+                lpcc.ApplyWindow(_lifterCoeffs);
+            }
+
+            return lpcc;
         }
 
         /// <summary>

@@ -143,6 +143,16 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
+        /// All logic is implemented in ComputeFrom() method
+        /// </summary>
+        /// <param name="block"></param>
+        /// <returns></returns>
+        public override float[] ProcessFrame(float[] block)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// True if computations can be done in parallel
         /// </summary>
         /// <returns></returns>

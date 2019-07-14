@@ -21,8 +21,7 @@ namespace NWaves.FeatureExtractors
                                 double preEmphasis = 0,
                                 bool includeEnergy = false,
                                 SpectrumType spectrumType = SpectrumType.Power,
-                                WindowTypes window = WindowTypes.Hamming,
-                                bool melWeights = true)
+                                WindowTypes window = WindowTypes.Hamming)
             : base(samplingRate,
                    featureCount,
                    frameDuration,
@@ -36,8 +35,7 @@ namespace NWaves.FeatureExtractors
                                   fftSize,
                                   frameDuration,
                                   lowFreq,
-                                  highFreq,
-                                  melWeights),  // in librosa this is set to false
+                                  highFreq),
                    lifterSize,
                    preEmphasis,
                    includeEnergy,
@@ -54,8 +52,7 @@ namespace NWaves.FeatureExtractors
                                                 int fftSize,
                                                 double frameDuration,
                                                 double lowFreq = 0,
-                                                double highFreq = 0,
-                                                bool melWeights = true)
+                                                double highFreq = 0)
         {
             var frameSize = (int)(frameDuration * samplingRate);
 
@@ -63,8 +60,7 @@ namespace NWaves.FeatureExtractors
 
             var melBands = FilterBanks.MelBands(filterbankSize, fftSize, samplingRate, lowFreq, highFreq);
 
-            return melWeights ? FilterBanks.Triangular(fftSize, samplingRate, melBands, null, Scale.HerzToMel) :
-                                FilterBanks.Triangular(fftSize, samplingRate, melBands);
+            return FilterBanks.Triangular(fftSize, samplingRate, melBands, null, Scale.HerzToMel);
         }
     }
 }

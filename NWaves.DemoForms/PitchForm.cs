@@ -20,7 +20,7 @@ namespace NWaves.DemoForms
     {
         private DiscreteSignal _signal;
 
-        private Fft _fft;
+        private RealFft _fft;
         private CepstralTransform _cepstralTransform;
         private Stft _stft;
 
@@ -62,7 +62,7 @@ namespace NWaves.DemoForms
             _cepstrumSize = int.Parse(cepstrumSizeTextBox.Text);
             _hopSize = int.Parse(hopSizeTextBox.Text);
 
-            _fft = new Fft(_fftSize);
+            _fft = new RealFft(_fftSize);
             _cepstralTransform = new CepstralTransform(_cepstrumSize, _fftSize);
 
             var pitchExtractor = new PitchExtractor(_signal.SamplingRate,
@@ -74,9 +74,6 @@ namespace NWaves.DemoForms
             _specNo = 0;
             specNoComboBox.DataSource = Enumerable.Range(1, _pitches.Count).ToArray();
 
-            UpdateSpectrumAndCepstrum();
-            UpdateAutoCorrelation();
-            
             // obtain spectrogram
 
             _stft = new Stft(_fftSize, _hopSize, WindowTypes.Rectangular);
@@ -116,7 +113,7 @@ namespace NWaves.DemoForms
             if (fftSize != _fftSize)
             {
                 _fftSize = fftSize;
-                _fft = new Fft(fftSize);
+                _fft = new RealFft(fftSize);
                 _cepstralTransform = new CepstralTransform(cepstrumSize, _fftSize);
             }
 
@@ -147,7 +144,7 @@ namespace NWaves.DemoForms
                 real[i] = cepstrum[i];
             }
 
-            _fft.Direct(real, imag);
+            _fft.Direct(real, real, imag);
 
             var spectrum = _fft.PowerSpectrum(block, normalize: false).Samples;
             var avg = spectrum.Average(s => LevelScale.ToDecibel(s));

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NWaves.Signals;
+using NWaves.Utils;
 
 namespace NWaves.FeatureExtractors.Base
 {
@@ -63,43 +64,106 @@ namespace NWaves.FeatureExtractors.Base
         public int SamplingRate { get; protected set; }
 
         /// <summary>
+        /// Size of the block for processing at each step.
+        /// This field can be corrected in subclass methods.
+        /// </summary>
+        protected int _blockSize;
+
+        /// <summary>
+        /// Pre-emphasis coefficient
+        /// </summary>
+        protected float _preEmphasis;
+
+        /// <summary>
         /// Constructor requires FrameSize and HopSize to be set
         /// </summary>
         /// <param name="samplingRate"></param>
         /// <param name="frameSize"></param>
         /// <param name="hopSize"></param>
-        protected FeatureExtractor(int samplingRate, int frameSize, int hopSize)
+        protected FeatureExtractor(int samplingRate, int frameSize, int hopSize, double preEmphasis = 0)
         {
             FrameDuration = (double) frameSize / samplingRate;
             HopDuration = (double) hopSize / samplingRate;
             FrameSize = frameSize;
             HopSize = hopSize;
             SamplingRate = samplingRate;
+            _blockSize = FrameSize;
+            _preEmphasis = (float)preEmphasis;
         }
 
         /// <summary>
         /// Constructor requires FrameSize and HopSize to be set
         /// </summary>
         /// <param name="samplingRate"></param>
-        /// <param name="frameSize"></param>
-        /// <param name="hopSize"></param>
-        protected FeatureExtractor(int samplingRate, double frameDuration, double hopDuration)
+        /// <param name="frameDuration"></param>
+        /// <param name="hopDuration"></param>
+        /// <param name="preEmphasis"></param>
+        protected FeatureExtractor(int samplingRate, double frameDuration, double hopDuration, double preEmphasis = 0)
         {
             FrameSize = (int) (samplingRate * frameDuration);
             HopSize = (int) (samplingRate * hopDuration);
             FrameDuration = frameDuration;
             HopDuration = hopDuration;
             SamplingRate = samplingRate;
+            _blockSize = FrameSize;
+            _preEmphasis = (float)preEmphasis;
         }
 
         /// <summary>
-        /// Compute the sequence of feature vectors from some part of array of samples
+        /// Compute the sequence of feature vectors from some part of array of samples.
         /// </summary>
         /// <param name="samples">Array of real-valued samples</param>
         /// <param name="startSample">The offset (position) of the first sample for processing</param>
         /// <param name="endSample">The offset (position) of last sample for processing</param>
         /// <returns>Sequence of feature vectors</returns>
-        public abstract List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample);
+        public virtual List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
+        {
+            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
+
+            var frameSize = FrameSize;
+            var hopSize = HopSize;
+
+            var block = new float[_blockSize];
+            var featureVectors = new List<FeatureVector>();
+
+            var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
+
+            var lastSample = endSample - Math.Max(frameSize, hopSize);
+
+            for (var i = startSample; i < lastSample; i += hopSize)
+            {
+                samples.FastCopyTo(block, frameSize, i);    // prepare new block for processing
+
+                if (_preEmphasis > 1e-10f)                  // (optionally) do pre-emphasis
+                {
+                    for (var k = 0; k < frameSize; k++)
+                    {
+                        var y = block[k] - prevSample * _preEmphasis;
+                        prevSample = block[k];
+                        block[k] = y;
+                    }
+                    prevSample = samples[i + hopSize - 1];
+                }
+
+                var features = ProcessFrame(block);         // process this block and compute features
+
+                featureVectors.Add(new FeatureVector
+                {
+                    Features = features,
+                    TimePosition = (double)i / SamplingRate
+                });
+            }
+
+            return featureVectors;
+        }
+
+        /// <summary>
+        /// Process one frame in block of data at each step
+        /// (in general block can be longer than frame, e.g. zero-padded block for FFT)
+        /// </summary>
+        /// <param name="block">Block of data</param>
+        /// <returns>Features computed in the block</returns>
+        public abstract float[] ProcessFrame(float[] block);
 
         /// <summary>
         /// Compute the sequence of feature vectors from the entire array of samples
@@ -134,7 +198,7 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Reset feature extractor's state 
+        /// Reset feature extractor's state
         /// </summary>
         public virtual void Reset()
         {
