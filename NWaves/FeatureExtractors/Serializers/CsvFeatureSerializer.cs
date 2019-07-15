@@ -32,6 +32,7 @@ namespace NWaves.FeatureExtractors.Serializers
         /// </summary>
         /// <param name="featureVectors">List of feature vectors for serialization</param>
         /// <param name="featureNames">List of feature vectors for serialization</param>
+        /// <param name="delimiter">Delimiter char</param>
         public CsvFeatureSerializer(IEnumerable<FeatureVector> featureVectors,
                                     IEnumerable<string> featureNames = null,
                                     char delimiter = ',')
@@ -44,7 +45,11 @@ namespace NWaves.FeatureExtractors.Serializers
         /// <summary>
         /// Asynchronous method for feature vectors serialization
         /// </summary>
-        public async Task SerializeAsync(Stream stream)
+        /// <param name="stream"></param>
+        /// <param name="format"></param>
+        /// <param name="timeFormat"></param>
+        /// <returns></returns>
+        public async Task SerializeAsync(Stream stream, string format = "0.00000", string timeFormat = "0.000")
         {
             var comma = _delimiter.ToString();
 
@@ -59,9 +64,9 @@ namespace NWaves.FeatureExtractors.Serializers
                 foreach (var vector in _vectors)
                 {
                     var line = string.Format("{0}{1}{2}",
-                                         vector.TimePosition.ToString("0.000", CultureInfo.InvariantCulture),
+                                         vector.TimePosition.ToString(timeFormat, CultureInfo.InvariantCulture),
                                          comma,
-                                         string.Join(comma, vector.Features.Select(f => f.ToString("0.00000", CultureInfo.InvariantCulture))));
+                                         string.Join(comma, vector.Features.Select(f => f.ToString(format, CultureInfo.InvariantCulture))));
 
                     await writer.WriteLineAsync(line).ConfigureAwait(false);
                 }

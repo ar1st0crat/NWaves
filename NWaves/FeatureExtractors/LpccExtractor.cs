@@ -26,47 +26,47 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Order of an LPC-filter
         /// </summary>
-        private readonly int _order;
-
-        /// <summary>
-        /// Size of liftering window
-        /// </summary>
-        private readonly int _lifterSize;
-
-        /// <summary>
-        /// Liftering window coefficients
-        /// </summary>
-        private readonly float[] _lifterCoeffs;
-
-        /// <summary>
-        /// Internal convolver
-        /// </summary>
-        private readonly Convolver _convolver;
+        protected readonly int _order;
 
         /// <summary>
         /// Type of the window function
         /// </summary>
-        private readonly WindowTypes _window;
+        protected readonly WindowTypes _window;
 
         /// <summary>
         /// Window samples
         /// </summary>
-        private readonly float[] _windowSamples;
+        protected readonly float[] _windowSamples;
+
+        /// <summary>
+        /// Size of liftering window
+        /// </summary>
+        protected readonly int _lifterSize;
+
+        /// <summary>
+        /// Liftering window coefficients
+        /// </summary>
+        protected readonly float[] _lifterCoeffs;
+
+        /// <summary>
+        /// Internal convolver
+        /// </summary>
+        protected readonly Convolver _convolver;
 
         /// <summary>
         /// Internal buffer for cross-correlation signal
         /// </summary>
-        private readonly float[] _cc;
+        protected readonly float[] _cc;
 
         /// <summary>
         /// Internal buffer for LPC-coefficients
         /// </summary>
-        private readonly float[] _lpc;
+        protected readonly float[] _lpc;
 
         /// <summary>
         /// Internal buffer for reversed real parts of the currently processed block
         /// </summary>
-        private readonly float[] _reversed;
+        protected readonly float[] _reversed;
 
         /// <summary>
         /// Constructor

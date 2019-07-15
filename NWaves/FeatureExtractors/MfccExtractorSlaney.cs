@@ -1,4 +1,5 @@
-﻿using NWaves.Filters.Fda;
+﻿using NWaves.FeatureExtractors.Base;
+using NWaves.Filters.Fda;
 using NWaves.Utils;
 using NWaves.Windows;
 
@@ -9,6 +10,26 @@ namespace NWaves.FeatureExtractors
     /// </summary>
     public class MfccExtractorSlaney : MfccExtractor
     {
+        protected bool _normalizeFilterbank = true;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="samplingRate"></param>
+        /// <param name="featureCount"></param>
+        /// <param name="frameDuration"></param>
+        /// <param name="hopDuration"></param>
+        /// <param name="filterbankSize"></param>
+        /// <param name="lowFreq"></param>
+        /// <param name="highFreq"></param>
+        /// <param name="fftSize"></param>
+        /// <param name="lifterSize"></param>
+        /// <param name="preEmphasis"></param>
+        /// <param name="includeEnergy"></param>
+        /// <param name="spectrumType"></param>
+        /// <param name="window"></param>
+        /// <param name="logFloor"></param>
+        /// <param name="normalizeFilterbank"></param>
         public MfccExtractorSlaney(int samplingRate,
                                    int featureCount,
                                    double frameDuration = 0.0256/*sec*/,
@@ -48,6 +69,7 @@ namespace NWaves.FeatureExtractors
                    window,
                    logFloor)
         {
+            _normalizeFilterbank = normalizeFilterbank;
         }
 
         /// <summary>
@@ -75,5 +97,32 @@ namespace NWaves.FeatureExtractors
 
             return FilterBanks.MelBankSlaney(filterbankSize, fftSize, samplingRate, lowFreq, highFreq, normalize);
         }
+
+        /// <summary>
+        /// True if computations can be done in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override bool IsParallelizable() => true;
+
+        /// <summary>
+        /// Copy of current extractor that can work in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override FeatureExtractor ParallelCopy() =>
+            new MfccExtractorSlaney( SamplingRate,
+                                     FeatureCount,
+                                     FrameDuration,
+                                     HopDuration,
+                                     FilterBank.Length,
+                                    _lowFreq,
+                                    _highFreq,
+                                    _blockSize,
+                                    _lifterSize,
+                                    _preEmphasis,
+                                    _includeEnergy,
+                                    _spectrumType,
+                                    _window,
+                                    _logFloor,
+                                    _normalizeFilterbank);
     }
 }

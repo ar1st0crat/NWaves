@@ -153,9 +153,12 @@ namespace NWaves.DemoForms
             var logFloor = float.Parse(textBoxLogFloor.Text);
 
             var mfccExtractor = new MfccExtractor(//samplingRate, 13, 0.025, 0.01,
-                                                  samplingRate, 13, 512.0/samplingRate, 0.01,
+                                                  samplingRate, 13, 512.0 / samplingRate, 0.01,
                                                   filterbank: filterbank,
+                                                  //filterbankSize: 26,
+                                                  //highFreq: 8000,
                                                   //preEmphasis: 0.97,
+                                                  //lifterSize: 22,
                                                   //includeEnergy: true,
                                                   spectrumType: spectrumType,
                                                   nonLinearity: nonLinearity,
@@ -164,6 +167,28 @@ namespace NWaves.DemoForms
                                                   logFloor: logFloor);
 
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);
+            
+            
+            //_mfccVectors = mfccExtractor.ComputeFrom(_signal * 32768);
+            //var mfccVectorsP = mfccExtractor.ParallelComputeFrom(_signal * 32768);
+
+            //for (var i = 0; i < _mfccVectors.Count; i++)
+            //{
+            //    for (var j = 0; j < _mfccVectors[i].Features.Length; j++)
+            //    {
+            //        if (Math.Abs(_mfccVectors[i].Features[j] - mfccVectorsP[i].Features[j]) > 1e-32f)
+            //        {
+            //            MessageBox.Show($"Nope: {i} - {j}");
+            //            return;
+            //        }
+
+            //        if (Math.Abs(_mfccVectors[i].TimePosition - mfccVectorsP[i].TimePosition) > 1e-32f)
+            //        {
+            //            MessageBox.Show($"Time: {i} - {j}");
+            //            return;
+            //        }
+            //    }
+            //}
 
             //FeaturePostProcessing.NormalizeMean(_mfccVectors);        // optional (but REQUIRED for PNCC!)
             //FeaturePostProcessing.AddDeltas(_mfccVectors);
@@ -191,6 +216,97 @@ namespace NWaves.DemoForms
 
             // ================================================================================================
         }
+    }
+
+
+    // If you want to test MFCC against HTK =======================================================
+    // keep in mind that HTK does the following pre-processing ====================================
+    // (turn these settings off in HTK config if possible): =======================================
+
+    // HTK does this pre-processing per frame instead of entire signal
+    // (which is weird given that frames overlap).
+
+    // Also: DON't normalize signal! If it's normalized then multiply by 32768 before processing:
+
+    //      _signal *= 32768;
+    //      _extractor.ComputeFrom(_signal);
+
+    class MfccExtractorTestHtk : MfccExtractorHtk
+    {
+        public MfccExtractorTestHtk(int samplingRate,
+                                    int featureCount,
+                                    double frameDuration = 0.0256/*sec*/,
+                                    double hopDuration = 0.010/*sec*/,
+                                    int filterbankSize = 24,
+                                    double lowFreq = 0,
+                                    double highFreq = 0,
+                                    int fftSize = 0,
+                                    int lifterSize = 0,
+                                    double preEmphasis = 0,
+                                    bool includeEnergy = false,
+                                    SpectrumType spectrumType = SpectrumType.Power,
+                                    WindowTypes window = WindowTypes.Hamming)
+            
+            : base(samplingRate, featureCount, frameDuration, hopDuration, filterbankSize, lowFreq, highFreq, fftSize, lifterSize, preEmphasis, includeEnergy, spectrumType, window)
+        {
+        }
+
+        public override float[] ProcessFrame(float[] block)
+        {
+            // 1) HTK zero-mean:
+
+            var frameSize = FrameSize;
+
+            var mean = block.Take(frameSize).Average();
+
+            for (var k = 0; k < frameSize; k++)
+            {
+                block[k] -= mean;
+                block[k] += Math.Sign(block[k]) * 0.5f;
+            }
+
+            // 2) HTK pre-emphasis (it's different from conventional pre-emphasis!):
+
+            // set base _preEmphasis field to 0 and do pre-emphasis here:
+
+            var pre = 0.97f;
+
+            for (var k = frameSize - 1; k >= 1; k--)
+            {
+                block[k] -= block[k - 1] * pre;
+            }
+            block[0] *= 1 - pre;
+
+
+            // ...and now continue standard computations:
+
+            return base.ProcessFrame(block);
+        }
+
+        /// <summary>
+        /// True if computations can be done in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override bool IsParallelizable() => true;
+
+        /// <summary>
+        /// Copy of current extractor that can work in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override FeatureExtractor ParallelCopy() =>
+            new MfccExtractorTestHtk( SamplingRate,
+                                      FeatureCount,
+                                      FrameDuration,
+                                      HopDuration,
+                                      FilterBank.Length,
+                                     _lowFreq,
+                                     _highFreq,
+                                     _blockSize,
+                                     _lifterSize,
+                                     _preEmphasis,
+                                     _includeEnergy,
+                                     _spectrumType,
+                                     _window);
     }
 }
 
@@ -234,62 +350,6 @@ namespace NWaves.DemoForms
 //                                                  window: WindowTypes.Hamming,
 //                                                  logFloor: 1.0f);
 
-//// If you need to test MFCC against HTK =======================================================
-//// keep in mind that HTK does the following pre-processing ====================================
-//// (turn these settings off in HTK config if possible): =======================================
-
-////_signal *= 32768;
-
-////// 1) zero-mean:
-
-////var mean = _signal.Samples.Average();
-
-////for (var i = 0; i < _signal.Length; i++)
-////{
-////    _signal[i] -= mean;
-////    _signal[i] += Math.Sign(_signal[i]) * 0.5f;
-////}
-
-////// 2) pre-emphasis (it's different from conventional pre-emphasis!):
-
-////var pre = 0.97f;
-
-////for (var i = _signal.Length - 1; i >= 1; i--)
-////{
-////    _signal[i] -= _signal[i - 1] * pre;
-////}
-////_signal[0] *= 1 - pre;
-
-
-///* Actually, if we write the code above before MFCC extraction
-// * the results will still be slightly different 
-// * because HTK does this pre-processing per frame instead of entire signal
-// * (which is weird given that frames overlap).
-// * 
-// * So if you really must stick to HTK scheme then copy MfccExtractor code
-// * to another class and put this code instead of lines 351-362:
-// * 
-//        var mean = _block.Take(frameSize).Average();
-
-//        for (var k = 0; k < frameSize; k++)
-//        {
-//            _block[k] -= mean;
-//            _block[k] += Math.Sign(_block[k]) * 0.5f;
-//        }
-
-//        // 2) pre-emphasis (it's different from conventional pre-emphasis!):
-
-//        var pre = 0.97f;
-
-//        for (var k = frameSize - 1; k >= 1; k--)
-//        {
-//            _block[k] -= _block[k - 1] * pre;
-//        }
-//        _block[0] *= 1 - pre;
-// *
-// */
-
-//// =============================================================================================
 
 
 //// test PNCC:

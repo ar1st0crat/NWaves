@@ -29,7 +29,7 @@ namespace NWaves.FeatureExtractors
     public class PitchExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Number of features (currently 1 pitch value estimated by autocorrelation)
+        /// Number of features (currently it's 1 pitch value estimated by autocorrelation)
         /// </summary>
         public override int FeatureCount { get; }
 
@@ -41,37 +41,37 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Lower pitch frequency
         /// </summary>
-        private readonly float _low;
+        protected readonly float _low;
 
         /// <summary>
         /// Upper pitch frequency
         /// </summary>
-        private readonly float _high;
+        protected readonly float _high;
 
         /// <summary>
         /// Type of the window function
         /// </summary>
-        private readonly WindowTypes _window;
+        protected readonly WindowTypes _window;
 
         /// <summary>
         /// Window samples
         /// </summary>
-        private readonly float[] _windowSamples;
+        protected readonly float[] _windowSamples;
 
         /// <summary>
         /// Internal convolver
         /// </summary>
-        private readonly Convolver _convolver;
+        protected readonly Convolver _convolver;
 
         /// <summary>
         /// Internal buffer for reversed real parts of the currently processed block
         /// </summary>
-        private readonly float[] _reversed;
+        protected readonly float[] _reversed;
 
         /// <summary>
         /// Internal buffer for cross-correlation signal
         /// </summary>
-        private readonly float[] _cc;
+        protected readonly float[] _cc;
 
         /// <summary>
         /// Constructor
@@ -79,7 +79,10 @@ namespace NWaves.FeatureExtractors
         /// <param name="samplingRate"></param>
         /// <param name="frameDuration"></param>
         /// <param name="hopDuration"></param>
-        /// <param name="parameters"></param>
+        /// <param name="low"></param>
+        /// <param name="high"></param>
+        /// <param name="preEmphasis"></param>
+        /// <param name="window"></param>
         public PitchExtractor(int samplingRate,
                               double frameDuration = 0.0256/*sec*/,
                               double hopDuration = 0.010/*sec*/,

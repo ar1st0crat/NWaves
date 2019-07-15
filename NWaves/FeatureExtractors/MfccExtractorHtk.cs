@@ -1,4 +1,5 @@
-﻿using NWaves.Filters.Fda;
+﻿using NWaves.FeatureExtractors.Base;
+using NWaves.Filters.Fda;
 using NWaves.Utils;
 using NWaves.Windows;
 
@@ -62,5 +63,30 @@ namespace NWaves.FeatureExtractors
 
             return FilterBanks.Triangular(fftSize, samplingRate, melBands, null, Scale.HerzToMel);
         }
+
+        /// <summary>
+        /// True if computations can be done in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override bool IsParallelizable() => true;
+
+        /// <summary>
+        /// Copy of current extractor that can work in parallel
+        /// </summary>
+        /// <returns></returns>
+        public override FeatureExtractor ParallelCopy() =>
+            new MfccExtractorHtk( SamplingRate,
+                                  FeatureCount,
+                                  FrameDuration,
+                                  HopDuration,
+                                  FilterBank.Length,
+                                 _lowFreq,
+                                 _highFreq,
+                                 _blockSize,
+                                 _lifterSize,
+                                 _preEmphasis,
+                                 _includeEnergy,
+                                 _spectrumType,
+                                 _window);
     }
 }

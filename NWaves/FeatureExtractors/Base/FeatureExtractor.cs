@@ -8,7 +8,14 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors.Base
 {
     /// <summary>
-    /// Abstract class for all feature extractors
+    /// Abstract class for all feature extractors.
+    /// 
+    /// NOTE.
+    /// All fields of FeatureExtractor class and its subclasses are made protected.
+    /// Conceptually they should be private, especially internal buffers,
+    /// but making them protected allows developers to extend extractors
+    /// more efficiently by reusing memory already allocated in base classes.
+    /// 
     /// </summary>
     public abstract class FeatureExtractor
     {
@@ -65,7 +72,7 @@ namespace NWaves.FeatureExtractors.Base
 
         /// <summary>
         /// Size of the block for processing at each step.
-        /// This field can be corrected in subclass methods.
+        /// This field is usually set in subclass methods.
         /// </summary>
         protected int _blockSize;
 
@@ -128,9 +135,9 @@ namespace NWaves.FeatureExtractors.Base
 
             var prevSample = startSample > 0 ? samples[startSample - 1] : 0.0f;
 
-            var lastSample = endSample - Math.Max(frameSize, hopSize);
+            var lastSample = endSample - frameSize;
 
-            for (var i = startSample; i < lastSample; i += hopSize)
+            for (var i = startSample; i <= lastSample; i += hopSize)
             {
                 samples.FastCopyTo(block, frameSize, i);    // prepare new block for processing
 
@@ -230,11 +237,16 @@ namespace NWaves.FeatureExtractors.Base
         {
             if (!IsParallelizable())
             {
-                throw new NotImplementedException();
+                throw new NotImplementedException("Current configuration of the extractor does not support parallel computation");
             }
 
             var threadCount = parallelThreads > 0 ? parallelThreads : Environment.ProcessorCount;
             var chunkSize = (endSample - startSample) / threadCount;
+
+            if (chunkSize < FrameSize)  // don't parallelize too short signals
+            {
+                return new List<FeatureVector>[] { ComputeFrom(samples, startSample, endSample) };
+            }
 
             var extractors = new FeatureExtractor[threadCount];
             extractors[0] = this;
@@ -250,10 +262,10 @@ namespace NWaves.FeatureExtractors.Base
 
             var hopCount = (chunkSize - FrameSize) / HopSize;
 
-            var lastPosition = startSample;
+            var lastPosition = startSample - 1;
             for (var i = 0; i < threadCount; i++)
             {
-                startPositions[i] = lastPosition;
+                startPositions[i] = lastPosition + 1;
                 endPositions[i] = lastPosition + hopCount * HopSize + FrameSize;
                 lastPosition = endPositions[i] - FrameSize;
             }

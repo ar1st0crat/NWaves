@@ -68,77 +68,71 @@ namespace NWaves.FeatureExtractors
         public float[][] FilterBank { get; }
 
         /// <summary>
-        /// Number of gammatone filters
-        /// </summary>
-        private readonly int _filterbankSize;
-
-        /// <summary>
         /// Lower frequency
         /// </summary>
-        private readonly double _lowFreq;
+        protected readonly double _lowFreq;
 
         /// <summary>
         /// Upper frequency
         /// </summary>
-        private readonly double _highFreq;
+        protected readonly double _highFreq;
         
         /// <summary>
         /// Nonlinearity coefficient (if 0 then Log10 is applied)
         /// </summary>
-        private readonly int _power;
+        protected readonly int _power;
 
         /// <summary>
         /// FFT transformer
         /// </summary>
-        private readonly RealFft _fft;
+        protected readonly RealFft _fft;
 
         /// <summary>
         /// DCT-II transformer
         /// </summary>
-        private readonly Dct2 _dct;
+        protected readonly Dct2 _dct;
 
         /// <summary>
         /// Type of the window function
         /// </summary>
-        private readonly WindowTypes _window;
+        protected readonly WindowTypes _window;
 
         /// <summary>
         /// Window samples
         /// </summary>
-        private readonly float[] _windowSamples;
+        protected readonly float[] _windowSamples;
 
         /// <summary>
         /// Internal buffer for a signal spectrum at each step
         /// </summary>
-        private readonly float[] _spectrum;
+        protected readonly float[] _spectrum;
 
         /// <summary>
         /// Internal buffers for gammatone spectrum and its derivatives
         /// </summary>
-        private readonly float[] _gammatoneSpectrum;
-        private readonly float[] _spectrumQOut;
-        private readonly float[] _filteredSpectrumQ;
-        private readonly float[] _spectrumS;
-        private readonly float[] _smoothedSpectrumS;
-        private readonly float[] _avgSpectrumQ1;
-        private readonly float[] _avgSpectrumQ2;
-        private readonly float[] _smoothedSpectrum;
+        protected readonly float[] _gammatoneSpectrum;
+        protected readonly float[] _spectrumQOut;
+        protected readonly float[] _filteredSpectrumQ;
+        protected readonly float[] _spectrumS;
+        protected readonly float[] _smoothedSpectrumS;
+        protected readonly float[] _avgSpectrumQ1;
+        protected readonly float[] _avgSpectrumQ2;
+        protected readonly float[] _smoothedSpectrum;
 
         /// <summary>
         /// Value for mean normalization
         /// </summary>
-        private float _mean = 4e07f;
+        protected float _mean = 4e07f;
 
         /// <summary>
         /// Ring buffer for efficient processing of consecutive spectra
         /// </summary>
-        private readonly SpectraRingBuffer _ringBuffer;
+        protected readonly SpectraRingBuffer _ringBuffer;
 
         /// <summary>
         /// Step of PNCC algorithm
         /// </summary>
-        private int _step;
-
+        protected int _step;
 
         /// <summary>
         /// Constructor
@@ -168,21 +162,18 @@ namespace NWaves.FeatureExtractors
                              double preEmphasis = 0,
                              WindowTypes window = WindowTypes.Hamming)
 
-            : base(samplingRate, frameDuration, hopDuration)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
         {
             FeatureCount = featureCount;
 
-            _power = power;
+            _lowFreq = lowFreq;
+            _highFreq = highFreq;
 
             if (filterbank == null)
             {
                 _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
-                _filterbankSize = filterbankSize;
 
-                _lowFreq = lowFreq;
-                _highFreq = highFreq;
-
-                FilterBank = FilterBanks.Erb(_filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
+                FilterBank = FilterBanks.Erb(filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
 
                 // use power spectrum:
 
@@ -198,31 +189,31 @@ namespace NWaves.FeatureExtractors
             else
             {
                 FilterBank = filterbank;
-                _filterbankSize = filterbank.Length;
+                filterbankSize = filterbank.Length;
                 _blockSize = 2 * (filterbank[0].Length - 1);
 
                 Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
             }
 
             _fft = new RealFft(_blockSize);
-            _dct = new Dct2(_filterbankSize);
+            _dct = new Dct2(filterbankSize);
 
-            _preEmphasis = (float)preEmphasis;
+            _power = power;
 
             _window = window;
             _windowSamples = Window.OfType(_window, FrameSize);
 
             _spectrum = new float[_blockSize / 2 + 1];
-            _spectrumQOut = new float[_filterbankSize];
-            _gammatoneSpectrum = new float[_filterbankSize];
-            _filteredSpectrumQ = new float[_filterbankSize];
-            _spectrumS = new float[_filterbankSize];
-            _smoothedSpectrumS = new float[_filterbankSize];
-            _avgSpectrumQ1 = new float[_filterbankSize];
-            _avgSpectrumQ2 = new float[_filterbankSize];
-            _smoothedSpectrum = new float[_filterbankSize];
+            _spectrumQOut = new float[filterbankSize];
+            _gammatoneSpectrum = new float[filterbankSize];
+            _filteredSpectrumQ = new float[filterbankSize];
+            _spectrumS = new float[filterbankSize];
+            _smoothedSpectrumS = new float[filterbankSize];
+            _avgSpectrumQ1 = new float[filterbankSize];
+            _avgSpectrumQ2 = new float[filterbankSize];
+            _smoothedSpectrum = new float[filterbankSize];
  
-            _ringBuffer = new SpectraRingBuffer(2 * M + 1, _filterbankSize);
+            _ringBuffer = new SpectraRingBuffer(2 * M + 1, filterbankSize);
         }
 
         /// <summary>
@@ -352,7 +343,7 @@ namespace NWaves.FeatureExtractors
 
                     var total = 0;
                     for (var k = Math.Max(j - N, 0);
-                             k < Math.Min(j + N + 1, _filterbankSize);
+                             k < Math.Min(j + N + 1, FilterBank.Length);
                              k++, total++)
                     {
                         _smoothedSpectrumS[j] += _spectrumS[k];
@@ -431,12 +422,12 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Helper Ring Buffer class for efficient processing of consecutive spectra
         /// </summary>
-        class SpectraRingBuffer
+        protected class SpectraRingBuffer
         {
-            private readonly float[][] _spectra;
-            private int _count;
-            private int _capacity;
-            private int _current;
+            protected readonly float[][] _spectra;
+            protected int _count;
+            protected int _capacity;
+            protected int _current;
 
             public float[] CentralSpectrum;
             public float[] AverageSpectrum;

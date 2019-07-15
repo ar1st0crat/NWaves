@@ -13,9 +13,9 @@ namespace NWaves.FeatureExtractors
     public class LpcExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Number of features coincides with the order of LPC
+        /// Number of features equals to order of LPC + 1
         /// </summary>
-        public override int FeatureCount => _order;
+        public override int FeatureCount => _order + 1;
 
         /// <summary>
         /// Descriptions ("error", "lpc1", "lpc2", etc.)
@@ -27,32 +27,32 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Order of an LPC-filter
         /// </summary>
-        private readonly int _order;
-
-        /// <summary>
-        /// Internal convolver
-        /// </summary>
-        private readonly Convolver _convolver;
+        protected readonly int _order;
 
         /// <summary>
         /// Type of the window function
         /// </summary>
-        private readonly WindowTypes _window;
+        protected readonly WindowTypes _window;
 
         /// <summary>
         /// Window samples
         /// </summary>
-        private readonly float[] _windowSamples;
+        protected readonly float[] _windowSamples;
+
+        /// <summary>
+        /// Internal convolver
+        /// </summary>
+        protected readonly Convolver _convolver;
 
         /// <summary>
         /// Internal buffer for reversed real parts of the currently processed block
         /// </summary>
-        private readonly float[] _reversed;
+        protected readonly float[] _reversed;
 
         /// <summary>
         /// Internal buffer for cross-correlation signal
         /// </summary>
-        private readonly float[] _cc;
+        protected readonly float[] _cc;
 
         /// <summary>
         /// Constructor

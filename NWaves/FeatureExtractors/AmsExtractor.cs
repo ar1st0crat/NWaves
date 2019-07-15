@@ -18,7 +18,7 @@ namespace NWaves.FeatureExtractors
         /// Total number of coefficients in amplitude modulation spectrum
         /// </summary>
         public override int FeatureCount => _featureCount;
-        private readonly int _featureCount;
+        protected readonly int _featureCount;
 
         /// <summary>
         /// Feature descriptions.
@@ -31,86 +31,86 @@ namespace NWaves.FeatureExtractors
         /// 
         /// </summary>
         public override List<string> FeatureDescriptions => _featureDescriptions;
-        private readonly List<string> _featureDescriptions;
+        protected readonly List<string> _featureDescriptions;
 
         /// <summary>
         /// The "featuregram": the sequence of (feature) vectors;
         /// if this sequence is given, then AmsExtractor computes 
         /// modulation spectral coefficients from sequences in each 'feature channel'.
         /// </summary>
-        private readonly float[][] _featuregram;
+        protected readonly float[][] _featuregram;
 
         /// <summary>
         /// Filterbank matrix of dimension [filterCount * (fftSize/2 + 1)]
         /// </summary>
-        private readonly float[][] _filterbank;
+        protected readonly float[][] _filterbank;
         public float[][] Filterbank => _filterbank;
         
         /// <summary>
         /// Signal envelopes in different frequency bands
         /// </summary>
-        private float[][] _envelopes;
+        protected float[][] _envelopes;
         public float[][] Envelopes => _envelopes;
 
         /// <summary>
         /// Size of FFT
         /// </summary>
-        private readonly int _fftSize;
+        protected readonly int _fftSize;
 
         /// <summary>
         /// FFT transformer
         /// </summary>
-        private readonly RealFft _fft;
+        protected readonly RealFft _fft;
 
         /// <summary>
         /// FFT transformer for modulation spectrum
         /// </summary>
-        private readonly RealFft _modulationFft;
+        protected readonly RealFft _modulationFft;
 
         /// <summary>
         /// Type of the window function
         /// </summary>
-        private readonly WindowTypes _window;
+        protected readonly WindowTypes _window;
 
         /// <summary>
         /// Window samples
         /// </summary>
-        private readonly float[] _windowSamples;
+        protected readonly float[] _windowSamples;
 
         /// <summary>
         /// Size of FFT applied to signal envelopes
         /// </summary>
-        private readonly int _modulationFftSize;
+        protected readonly int _modulationFftSize;
 
         /// <summary>
         /// Hop size for analysis of signal envelopes
         /// </summary>
-        private readonly int _modulationHopSize;
+        protected readonly int _modulationHopSize;
 
         /// <summary>
         /// Internal buffer for a signal block at each step
         /// </summary>
-        private readonly float[] _block;
+        protected readonly float[] _block;
 
         /// <summary>
         /// Internal buffer for a signal spectrum at each step
         /// </summary>
-        private readonly float[] _spectrum;
+        protected readonly float[] _spectrum;
 
         /// <summary>
         /// Internal buffer for filtered spectrum
         /// </summary>
-        private readonly float[] _filteredSpectrum;
+        protected readonly float[] _filteredSpectrum;
 
         /// <summary>
         /// Internal buffer for modulation spectrum analysis
         /// </summary>
-        private readonly float[] _modBlock;
+        protected readonly float[] _modBlock;
             
         /// <summary>
         /// Modulation spectrum (in one band)
         /// </summary>
-        private readonly float[] _modSpectrum;
+        protected readonly float[] _modSpectrum;
 
         /// <summary>
         /// Main constructor
@@ -419,7 +419,7 @@ namespace NWaves.FeatureExtractors
         /// <returns></returns>
         public override float[] ProcessFrame(float[] block)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("AmsExtractor does not provide this function. Please call ComputeFrom() method");
         }
     }
 }

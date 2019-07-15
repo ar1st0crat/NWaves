@@ -32,49 +32,49 @@ namespace NWaves.FeatureExtractors.Multi
         public override int FeatureCount => FeatureDescriptions.Count;
 
         /// <summary>
-        /// FFT transformer
-        /// </summary>
-        private readonly RealFft _fft;
-
-        /// <summary>
         /// Type of the window function
         /// </summary>
-        private readonly WindowTypes _window;
+        protected readonly WindowTypes _window;
 
         /// <summary>
         /// Window samples
         /// </summary>
-        private readonly float[] _windowSamples;
+        protected readonly float[] _windowSamples;
 
         /// <summary>
         /// Extractor functions
         /// </summary>
-        private List<Func<float[], float[], float>> _extractors;
+        protected List<Func<float[], float[], float>> _extractors;
 
         /// <summary>
         /// Extractor parameters
         /// </summary>
-        private readonly IReadOnlyDictionary<string, object> _parameters;
+        protected readonly IReadOnlyDictionary<string, object> _parameters;
+
+        /// <summary>
+        /// FFT transformer
+        /// </summary>
+        protected readonly RealFft _fft;
 
         /// <summary>
         /// Center frequencies (uniform in Herz scale by default; could be uniform in mel-scale or octave-scale, for example)
         /// </summary>
-        private readonly float[] _frequencies;
+        protected readonly float[] _frequencies;
 
         /// <summary>
         /// Internal buffer for magnitude spectrum
         /// </summary>
-        private readonly float[] _spectrum;
+        protected readonly float[] _spectrum;
 
         /// <summary>
         /// Internal buffer for magnitude spectrum taken only at frequencies of interest
         /// </summary>
-        private float[] _mappedSpectrum;
+        protected float[] _mappedSpectrum;
 
         /// <summary>
         /// Internal buffer for spectral positions of frequencies of interest
         /// </summary>
-        private readonly int[] _frequencyPositions;
+        protected readonly int[] _frequencyPositions;
 
         /// <summary>
         /// Constructor
@@ -223,26 +223,6 @@ namespace NWaves.FeatureExtractors.Multi
         {
             FeatureDescriptions.Insert(_extractors.Count, name);
             _extractors.Add(algorithm);
-        }
-
-        /// <summary>
-        /// Compute the sequence of feature vectors from some fragment of a signal
-        /// </summary>
-        /// <param name="samples">Signal</param>
-        /// <param name="startSample">The number (position) of the first sample for processing</param>
-        /// <param name="endSample">The number (position) of last sample for processing</param>
-        /// <returns>Sequence of feature vectors</returns>
-        public override List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
-        {
-            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
-
-            var nullExtractorPos = _extractors.IndexOf(null);
-            if (nullExtractorPos >= 0)
-            {
-                throw new ArgumentException($"Unknown feature: {FeatureDescriptions[nullExtractorPos]}");
-            }
-            
-            return base.ComputeFrom(samples, startSample, endSample);
         }
 
         /// <summary>

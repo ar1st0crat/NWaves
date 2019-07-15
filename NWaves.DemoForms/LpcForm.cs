@@ -53,7 +53,15 @@ namespace NWaves.DemoForms
             _fft = new RealFft(512);
 
             var lpcExtractor = new LpcExtractor(_signal.SamplingRate, 16, FrameDuration, HopDuration);
-            //var lpcExtractor = new LpccExtractor(_signal.SamplingRate, 16, FrameDuration, HopDuration, lifterSize: 0);
+
+            //var lpcExtractor = new LpccExtractor(_signal.SamplingRate, 15, FrameDuration, HopDuration, lifterSize: 0);
+
+            //var lpcExtractor = new PlpExtractor(_signal.SamplingRate, 10,
+            //                                    lpcOrder: 8,
+            //                                    rasta: 0.94,
+            //                                    filterbankSize: 20,
+            //                                    //lifterSize: 22,
+            //                                    window: WindowTypes.Hann);
 
             _lpcVectors = lpcExtractor.ComputeFrom(_signal);
 
@@ -77,6 +85,8 @@ namespace NWaves.DemoForms
 
         float[] EstimateSpectrum(int idx)
         {
+            // LPC-reconstructed spectrum:
+
             var vector = _lpcVectors[idx].Features.ToDoubles();  // make new copy of array of features
             var gain = Math.Sqrt(vector[0]);
             vector[0] = 1.0;
@@ -84,6 +94,20 @@ namespace NWaves.DemoForms
             var lpcTf = new TransferFunction(new[] { gain }, vector);
 
             return lpcTf.FrequencyResponse().Power.ToFloats();
+
+
+            // LPCC- / PLP-reconstructed spectrum:
+
+            //var lpcc = _lpcVectors[idx].Features;
+            //var lpc = new float[lpcc.Length];
+            //var gain = Lpc.FromCepstrum(lpcc, lpc);
+
+            //var vector = lpc.ToDoubles();
+            //vector[0] = 1.0;
+
+            //var lpcTf = new TransferFunction(new double[] { Math.Sqrt(gain) }, vector);
+
+            //return lpcTf.FrequencyResponse().Power.ToFloats();
         }
 
         private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors, 
@@ -119,35 +143,26 @@ namespace NWaves.DemoForms
     }
 }
 
+// ============================================== TEST PLP extractor against HTK: ========================================================
 
-//var sr = _signal.SamplingRate;
+//const int sr = 16000;
 //var melbands = FilterBanks.MelBands(24, 512, sr, 0, 8000);
 //var melbank = FilterBanks.Triangular(512, sr, melbands, null, Utils.Scale.HerzToMel);
 
-//var lpcExtractor = new PlpExtractor(_signal.SamplingRate, 13,
-//                                    lpcOrder: 6,
-//                                    filterbank: melbank,
-//                                    centerFrequencies: melbands.Select(m => m.Item2).ToArray(),
-//                                    preEmphasis: 0.97,
-//                                    rasta: 0.94,
-//                                    window: WindowTypes.Hann);
-
-
-// Test against HTK: =================================================================================
-
-//var lpcExtractor = new PlpExtractor(_signal.SamplingRate, 13,
+//var lpcExtractor = new PlpExtractor(sr, 13, 512.0 / sr,
 //                                    filterbank: melbank,
 //                                    centerFrequencies: melbands.Select(m => m.Item2).ToArray(),
 //                                    window: WindowTypes.Rectangular);
 
 //var data = new float[] { 1, 7, 2, 5, 4, 9, 1, 2, 3, 4, 5, 3, 4, 7, 6, 5, 1, 2, 3, 4, 5, 7, 7, 2, 3, 1, 9 }.PadZeros(512);
 
-//for (var i = 0; i < 30; i++) data[i + 40] = -data[i];
-//for (var i = 0; i < 70; i += 2) data[i] = -data[i];
+//for (var i = 0; i< 30; i++) data[i + 40] = -data[i];
+//for (var i = 0; i< 70; i += 2) data[i] = -data[i];
 
-//_signal = new DiscreteSignal(16000, data);
+//_signal = new DiscreteSignal(sr, data);
+//_lpcVectors = lpcExtractor.ComputeFrom(_signal);
 
 //// HTK result:
 //// -0.580443, -0.0684327, -0.227281, -0.10092, -0.0703564, -0.0446244, -0.104119, -0.0334703, -0.102588, -0.00156306, 0.0435456, 0.0358385, 
 
-// ====================================================================================================
+// ==========================================================================================================================================

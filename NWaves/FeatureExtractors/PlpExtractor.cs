@@ -36,92 +36,87 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Filterbank center frequencies
         /// </summary>
-        private readonly double[] _centerFrequencies;
-
-        /// <summary>
-        /// Number of filters in filterbank
-        /// </summary>
-        private readonly int _filterbankSize;
+        protected readonly double[] _centerFrequencies;
 
         /// <summary>
         /// Lower frequency
         /// </summary>
-        private readonly double _lowFreq;
+        protected readonly double _lowFreq;
 
         /// <summary>
         /// Upper frequency
         /// </summary>
-        private readonly double _highFreq;
-
-        /// <summary>
-        /// FFT transformer
-        /// </summary>
-        private readonly RealFft _fft;
+        protected readonly double _highFreq;
 
         /// <summary>
         /// RASTA coefficient (if zero, then no RASTA filtering)
         /// </summary>
-        private readonly double _rasta;
+        protected readonly double _rasta;
 
         /// <summary>
         /// RASTA filters for each critical band
         /// </summary>
-        private readonly RastaFilter[] _rastaFilters;
+        protected readonly RastaFilter[] _rastaFilters;
 
         /// <summary>
         /// Size of liftering window
         /// </summary>
-        private readonly int _lifterSize;
+        protected readonly int _lifterSize;
 
         /// <summary>
         /// Liftering window coefficients
         /// </summary>
-        private readonly float[] _lifterCoeffs;
+        protected readonly float[] _lifterCoeffs;
 
         /// <summary>
         /// Type of the window function
         /// </summary>
-        private readonly WindowTypes _window;
+        protected readonly WindowTypes _window;
 
         /// <summary>
         /// Window samples
         /// </summary>
-        private readonly float[] _windowSamples;
+        protected readonly float[] _windowSamples;
+
+        /// <summary>
+        /// FFT transformer
+        /// </summary>
+        protected readonly RealFft _fft;
 
         /// <summary>
         /// Internal buffer for a signal spectrum at each step
         /// </summary>
-        private readonly float[] _spectrum;
+        protected readonly float[] _spectrum;
 
         /// <summary>
         /// Internal buffer for a signal spectrum grouped to frequency bands
         /// </summary>
-        private readonly float[] _bandSpectrum;
+        protected readonly float[] _bandSpectrum;
 
         /// <summary>
         /// Equal loudness weighting coefficients
         /// </summary>
-        private readonly double[] _equalLoudnessCurve;
+        protected readonly double[] _equalLoudnessCurve;
 
         /// <summary>
         /// LPC order
         /// </summary>
-        private readonly int _lpcOrder;
+        protected readonly int _lpcOrder;
 
         /// <summary>
         /// Internal buffer for LPC-coefficients
         /// </summary>
-        private readonly float[] _lpc;
+        protected readonly float[] _lpc;
 
         /// <summary>
         /// Precomputed IDFT table
         /// </summary>
-        private readonly float[][] _idftTable;
+        protected readonly float[][] _idftTable;
 
         /// <summary>
         /// Autocorrelation samples (computed as IDFT of power spectrum)
         /// </summary>
-        private readonly float[] _cc;
+        protected readonly float[] _cc;
 
         /// <summary>
         /// Constructor
@@ -145,7 +140,7 @@ namespace NWaves.FeatureExtractors
                             int featureCount,
                             double frameDuration = 0.0256/*sec*/,
                             double hopDuration = 0.010/*sec*/,
-                            int lpcOrder = 8,
+                            int lpcOrder = 0,                       // will be autocalculated as featureCount - 1
                             double rasta = 0,
                             int filterbankSize = 24,
                             double lowFreq = 0,
@@ -161,23 +156,24 @@ namespace NWaves.FeatureExtractors
         {
             FeatureCount = featureCount;
 
+            // ================================ Prepare filter bank and center frequencies: ===========================================
+
             _lowFreq = lowFreq;
             _highFreq = highFreq;
 
             if (filterbank == null)
             {
                 _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
-                _filterbankSize = filterbankSize;
 
-                var barkBands = FilterBanks.BarkBandsSlaney(_filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
-                FilterBank = FilterBanks.BarkBankSlaney(_filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
+                var barkBands = FilterBanks.BarkBandsSlaney(filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
+                FilterBank = FilterBanks.BarkBankSlaney(filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
 
                 _centerFrequencies = barkBands.Select(b => b.Item2).ToArray();
             }
             else
             {
                 FilterBank = filterbank;
-                _filterbankSize = filterbank.Length;
+                filterbankSize = filterbank.Length;
                 _blockSize = 2 * (filterbank[0].Length - 1);
 
                 Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
@@ -190,9 +186,9 @@ namespace NWaves.FeatureExtractors
                 {
                     var herzResolution = (double)samplingRate / _blockSize;
 
-                    // determine center frequencies:
+                    // try to determine center frequencies automatically from filterbank weights:
 
-                    _centerFrequencies = new double[_filterbankSize];
+                    _centerFrequencies = new double[filterbankSize];
 
                     for (var i = 0; i < filterbank.Length; i++)
                     {
@@ -221,7 +217,9 @@ namespace NWaves.FeatureExtractors
                 }
             }
 
-            _equalLoudnessCurve = new double[_filterbankSize];
+            // ==================================== Compute equal loudness curve: =========================================
+
+            _equalLoudnessCurve = new double[filterbankSize];
 
             for (var i = 0; i < _centerFrequencies.Length; i++)
             {
@@ -230,28 +228,24 @@ namespace NWaves.FeatureExtractors
                 _equalLoudnessCurve[i] = Math.Pow(level2 / (level2 + 1.6e5), 2) * ((level2 + 1.44e6) / (level2 + 9.61e6));
             }
 
+            // ============================== Prepare RASTA filters (if necessary): =======================================
+
             _rasta = rasta;
 
             if (rasta > 0)
             {
-                _rastaFilters = Enumerable.Range(0, _filterbankSize)
+                _rastaFilters = Enumerable.Range(0, filterbankSize)
                                           .Select(f => new RastaFilter(rasta))
                                           .ToArray();
             }
 
-            _fft = new RealFft(_blockSize);
-           
-            _window = window;
-            _windowSamples = Window.OfType(_window, FrameSize);
+            // ============== Precompute IDFT table for obtaining autocorrelation coeffs from power spectrum: =============
 
-            _lifterSize = lifterSize;
-            _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
-
-            _lpcOrder = lpcOrder > 0 ? lpcOrder : FeatureCount + 1;
+            _lpcOrder = lpcOrder > 0 ? lpcOrder : FeatureCount - 1;
 
             _idftTable = new float[_lpcOrder + 1][];
 
-            var bandCount = _filterbankSize + 2;
+            var bandCount = filterbankSize + 2;     // +2 duplicated edges
             var freq = Math.PI / (bandCount - 1);
 
             for (var i = 0; i < _idftTable.Length; i++)
@@ -271,10 +265,18 @@ namespace NWaves.FeatureExtractors
             _lpc = new float[_lpcOrder + 1];
             _cc = new float[bandCount];
 
-            // reserve memory for reusable blocks
+            // =================================== Prepare everything else: ==============================
+
+            _fft = new RealFft(_blockSize);
+
+            _window = window;
+            _windowSamples = Window.OfType(_window, FrameSize);
+
+            _lifterSize = lifterSize;
+            _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
 
             _spectrum = new float[_blockSize / 2 + 1];
-            _bandSpectrum = new float[_filterbankSize];
+            _bandSpectrum = new float[filterbankSize];
         }
 
         /// <summary>
@@ -335,7 +337,7 @@ namespace NWaves.FeatureExtractors
 
             // 7) LPC from power spectrum:
 
-            var n = _filterbankSize + 2;    // 2 duplicated edges
+            var n = _idftTable[0].Length;
 
             // get autocorrelation samples from post-processed power spectrum (via IDFT):
 
@@ -405,7 +407,7 @@ namespace NWaves.FeatureExtractors
                               HopDuration,
                              _lpcOrder,
                              _rasta,
-                             _filterbankSize,
+                              FilterBank.Length,
                              _lowFreq,
                              _highFreq,
                              _blockSize,

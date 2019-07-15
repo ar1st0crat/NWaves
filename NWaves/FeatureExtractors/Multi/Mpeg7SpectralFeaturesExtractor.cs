@@ -45,89 +45,89 @@ namespace NWaves.FeatureExtractors.Multi
         public override int FeatureCount => FeatureDescriptions.Count;
 
         /// <summary>
-        /// FFT transformer
-        /// </summary>
-        private readonly RealFft _fft;
-
-        /// <summary>
-        /// Type of the window function
-        /// </summary>
-        private readonly WindowTypes _window;
-
-        /// <summary>
-        /// Window samples
-        /// </summary>
-        private readonly float[] _windowSamples;
-
-        /// <summary>
         /// Filterbank from frequency bands
         /// </summary>
-        private readonly float[][] _filterbank;
+        protected readonly float[][] _filterbank;
 
         /// <summary>
         /// Internal buffer for frequency bands
         /// </summary>
-        private readonly Tuple<double, double, double>[] _frequencyBands;
+        protected readonly Tuple<double, double, double>[] _frequencyBands;
 
         /// <summary>
         /// Internal buffer for central frequencies
         /// </summary>
-        private readonly float[] _frequencies;
+        protected readonly float[] _frequencies;
 
         /// <summary>
         /// Internal buffer for harmonic peak frequencies (optional)
         /// </summary>
-        private float[] _peakFrequencies;
+        protected float[] _peakFrequencies;
 
         /// <summary>
         /// Internal buffer for spectral positions of harmonic peaks (optional)
         /// </summary>
-        private int[] _peaks;
-
-        /// <summary>
-        /// Internal buffer for magnitude spectrum
-        /// </summary>
-        private readonly float[] _spectrum;
-
-        /// <summary>
-        /// Internal buffer for total energies in frequency bands
-        /// </summary>
-        private readonly float[] _mappedSpectrum;
+        protected int[] _peaks;
 
         /// <summary>
         /// Extractor functions
         /// </summary>
-        private List<Func<float[], float[], float>> _extractors;
+        protected List<Func<float[], float[], float>> _extractors;
 
         /// <summary>
         /// Extractor parameters
         /// </summary>
-        private readonly IReadOnlyDictionary<string, object> _parameters;
+        protected readonly IReadOnlyDictionary<string, object> _parameters;
 
         /// <summary>
         /// Harmonic extractor functions (optional)
         /// </summary>
-        private List<Func<float[], int[], float[], float>> _harmonicExtractors;
+        protected List<Func<float[], int[], float[], float>> _harmonicExtractors;
+
+        /// <summary>
+        /// FFT transformer
+        /// </summary>
+        protected readonly RealFft _fft;
+
+        /// <summary>
+        /// Type of the window function
+        /// </summary>
+        protected readonly WindowTypes _window;
+
+        /// <summary>
+        /// Window samples
+        /// </summary>
+        protected readonly float[] _windowSamples;
+
+        /// <summary>
+        /// Internal buffer for magnitude spectrum
+        /// </summary>
+        protected readonly float[] _spectrum;
+
+        /// <summary>
+        /// Internal buffer for total energies in frequency bands
+        /// </summary>
+        protected readonly float[] _mappedSpectrum;
 
         /// <summary>
         /// Pitch estimator function (optional)
         /// </summary>
-        private Func<float[], float> _pitchEstimator;
+        protected Func<float[], float> _pitchEstimator;
 
         /// <summary>
         /// Array of precomputed pitches (optional)
         /// </summary>
-        private float[] _pitchTrack;
+        protected float[] _pitchTrack;
 
         /// <summary>
         /// Current position in pitch track
         /// </summary>
-        private int _pitchPos;
+        protected int _pitchPos;
 
         /// <summary>
         /// Harmonic peaks detector function (optional)
         /// </summary>
-        private Action<float[], int[], float[], int, float> _peaksDetector;
+        protected Action<float[], int[], float[], int, float> _peaksDetector;
 
         /// <summary>
         /// Constructor

@@ -37,52 +37,52 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// FFT transformer
         /// </summary>
-        private readonly RealFft _fft;
+        protected readonly RealFft _fft;
 
         /// <summary>
         /// Type of the window function
         /// </summary>
-        private readonly WindowTypes _window;
+        protected readonly WindowTypes _window;
 
         /// <summary>
         /// Window samples (weights)
         /// </summary>
-        private readonly float[] _windowSamples;
+        protected readonly float[] _windowSamples;
 
         /// <summary>
         /// Non-linearity type (logE, log10, decibel, cubic root)
         /// </summary>
-        private readonly NonLinearityType _nonLinearityType;
+        protected readonly NonLinearityType _nonLinearityType;
 
         /// <summary>
         /// Spectrum calculation scheme (power/magnitude normalized/not normalized)
         /// </summary>
-        private readonly SpectrumType _spectrumType;
+        protected readonly SpectrumType _spectrumType;
 
         /// <summary>
         /// Floor value for LOG calculations
         /// </summary>
-        private readonly float _logFloor;
+        protected readonly float _logFloor;
 
         /// <summary>
         /// Delegate for calculating spectrum
         /// </summary>
-        private readonly Action<float[]> _getSpectrum;
+        protected readonly Action<float[]> _getSpectrum;
 
         /// <summary>
         /// Delegate for post-processing spectrum
         /// </summary>
-        private readonly Action _postProcessSpectrum;
+        protected readonly Action _postProcessSpectrum;
 
         /// <summary>
         /// Internal buffer for a signal spectrum at each step
         /// </summary>
-        private readonly float[] _spectrum;
+        protected readonly float[] _spectrum;
 
         /// <summary>
         /// Internal buffer for a post-processed band spectrum at each step
         /// </summary>
-        private readonly float[] _bandSpectrum;
+        protected readonly float[] _bandSpectrum;
 
         /// <summary>
         /// Constructor
@@ -116,15 +116,12 @@ namespace NWaves.FeatureExtractors
 
             _blockSize = 2 * (filterbank[0].Length - 1);
 
-            Guard.AgainstNotPowerOfTwo(_blockSize, "FFT size");
             Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
 
             _fft = new RealFft(_blockSize);
 
             _window = window;
             _windowSamples = Window.OfType(_window, FrameSize);
-
-            _preEmphasis = (float)preEmphasis;
 
             // setup spectrum post-processing: =======================================================
 

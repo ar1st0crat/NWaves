@@ -27,12 +27,12 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Extractor functions
         /// </summary>
-        private List<Func<DiscreteSignal, int, int, float>> _extractors;
+        protected List<Func<DiscreteSignal, int, int, float>> _extractors;
 
         /// <summary>
         /// Parameters
         /// </summary>
-        private readonly IReadOnlyDictionary<string, object> _parameters;
+        protected readonly IReadOnlyDictionary<string, object> _parameters;
 
         /// <summary>
         /// Constructor
@@ -149,7 +149,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <returns></returns>
         public override float[] ProcessFrame(float[] block)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("TimeDomainExtractor does not provide this function. Please call ComputeFrom() method");
         }
 
         /// <summary>

@@ -17,11 +17,11 @@ namespace NWaves.FeatureExtractors
     /// 
     ///  - filterbank (by default it's MFCC-FB24 HTK/Kaldi-style)
     ///  
-    ///  - non-linearity type (logE, log10, librosa power_to_db analog, cubic root)
+    ///  - non-linearity type (logE, log10, decibel (librosa power_to_db analog), cubic root)
     ///  
     ///  - spectrum calculation type (power/magnitude normalized/not normalized)
     ///  
-    ///  - DCT type (1,2,3,4 normalized or not)
+    ///  - DCT type (1,2,3,4 normalized or not): "1", "1N", "2", "2N", etc.
     ///  
     ///  - floor value for LOG-calculations (usually it's float.Epsilon; HTK default seems to be 1.0 and in librosa 1e-10 is used)
     /// 
@@ -46,99 +46,94 @@ namespace NWaves.FeatureExtractors
         public float[][] FilterBank { get; }
 
         /// <summary>
-        /// Number of mel filters
-        /// </summary>
-        private readonly int _filterbankSize;
-
-        /// <summary>
         /// Lower frequency (Hz)
         /// </summary>
-        private readonly double _lowFreq;
+        protected readonly double _lowFreq;
 
         /// <summary>
         /// Upper frequency (Hz)
         /// </summary>
-        private readonly double _highFreq;
-
-        /// <summary>
-        /// FFT transformer
-        /// </summary>
-        private readonly RealFft _fft;
-
-        /// <summary>
-        /// DCT-II transformer
-        /// </summary>
-        private readonly IDct _dct;
-
-        /// <summary>
-        /// Size of liftering window
-        /// </summary>
-        private readonly int _lifterSize;
-
-        /// <summary>
-        /// Liftering window coefficients
-        /// </summary>
-        private readonly float[] _lifterCoeffs;
+        protected readonly double _highFreq;
 
         /// <summary>
         /// Type of the window function
         /// </summary>
-        private readonly WindowTypes _window;
+        protected readonly WindowTypes _window;
 
         /// <summary>
         /// Window samples
         /// </summary>
-        private readonly float[] _windowSamples;
+        protected readonly float[] _windowSamples;
+
+        /// <summary>
+        /// Size of liftering window
+        /// </summary>
+        protected readonly int _lifterSize;
+
+        /// <summary>
+        /// Liftering window coefficients
+        /// </summary>
+        protected readonly float[] _lifterCoeffs;
+
+        /// <summary>
+        /// FFT transformer
+        /// </summary>
+        protected readonly RealFft _fft;
+
+        /// <summary>
+        /// DCT-II transformer
+        /// </summary>
+        protected readonly IDct _dct;
 
         /// <summary>
         /// DCT type ("1", "1N", "2", "2N", "3", "3N", "4", "4N")
         /// </summary>
-        private readonly string _dctType;
+        protected readonly string _dctType;
 
         /// <summary>
         /// Non-linearity type (logE, log10, decibel, cubic root)
         /// </summary>
-        private readonly NonLinearityType _nonLinearityType;
+        protected readonly NonLinearityType _nonLinearityType;
 
         /// <summary>
         /// Spectrum calculation scheme (power/magnitude normalized/not normalized)
         /// </summary>
-        private readonly SpectrumType _spectrumType;
+        protected readonly SpectrumType _spectrumType;
 
         /// <summary>
         /// Should the first MFCC coefficient be replaced with LOG(energy)
         /// </summary>
-        private readonly bool _includeEnergy;
+        protected readonly bool _includeEnergy;
 
         /// <summary>
         /// Floor value for LOG calculations
         /// </summary>
-        private readonly float _logFloor;
+        protected readonly float _logFloor;
 
         /// <summary>
         /// Delegate for calculating spectrum
         /// </summary>
-        private readonly Action<float[]> _getSpectrum;
+        protected readonly Action<float[]> _getSpectrum;
 
         /// <summary>
         /// Delegate for post-processing spectrum
         /// </summary>
-        private readonly Action _postProcessSpectrum;
+        protected readonly Action _postProcessSpectrum;
 
         /// <summary>
         /// Delegate for applying DCT
         /// </summary>
-        private readonly Action<float[]> _applyDct;
+        protected readonly Action<float[]> _applyDct;
         
         /// <summary>
         /// Internal buffer for a signal spectrum at each step
         /// </summary>
-        private readonly float[] _spectrum;
+        protected readonly float[] _spectrum;
 
         /// <summary>
         /// Internal buffer for a post-processed mel-spectrum at each step
         /// </summary>
-        private readonly float[] _melSpectrum;
+        protected readonly float[] _melSpectrum;
 
         /// <summary>
         /// Constructor
@@ -182,24 +177,22 @@ namespace NWaves.FeatureExtractors
         {
             FeatureCount = featureCount;
 
+            _lowFreq = lowFreq;
+            _highFreq = highFreq;
+
             if (filterbank == null)
             {
                 _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
-                _filterbankSize = filterbankSize;
 
-                _lowFreq = lowFreq;
-                _highFreq = highFreq;
-
-                var melBands = FilterBanks.MelBands(_filterbankSize, _blockSize, SamplingRate, _lowFreq, _highFreq);
+                var melBands = FilterBanks.MelBands(filterbankSize, _blockSize, SamplingRate, _lowFreq, _highFreq);
                 FilterBank = FilterBanks.Triangular(_blockSize, SamplingRate, melBands, mapper: Scale.HerzToMel);   // HTK/Kaldi-style
             }
             else
             {
                 FilterBank = filterbank;
-                _filterbankSize = filterbank.Length;
+                filterbankSize = filterbank.Length;
                 _blockSize = 2 * (filterbank[0].Length - 1);
 
-                Guard.AgainstNotPowerOfTwo(_blockSize, "FFT size");
                 Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
             }
 
@@ -211,7 +204,6 @@ namespace NWaves.FeatureExtractors
             _lifterSize = lifterSize;
             _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
 
-            _preEmphasis = (float)preEmphasis;
             _includeEnergy = includeEnergy;
 
             // setup DCT: ============================================================================
@@ -220,16 +212,16 @@ namespace NWaves.FeatureExtractors
             switch (dctType[0])
             {
                 case '1':
-                    _dct = new Dct1(_filterbankSize);
+                    _dct = new Dct1(filterbankSize);
                     break;
                 case '2':
-                    _dct = new Dct2(_filterbankSize);
+                    _dct = new Dct2(filterbankSize);
                     break;
                 case '3':
-                    _dct = new Dct3(_filterbankSize);
+                    _dct = new Dct3(filterbankSize);
                     break;
                 case '4':
-                    _dct = new Dct4(_filterbankSize);
+                    _dct = new Dct4(filterbankSize);
                     break;
                 default:
                     throw new ArgumentException("Only DCT-1, 2, 3 and 4 are supported!");
@@ -287,7 +279,7 @@ namespace NWaves.FeatureExtractors
             // reserve memory for reusable blocks
 
             _spectrum = new float[_blockSize / 2 + 1];
-            _melSpectrum = new float[_filterbankSize];
+            _melSpectrum = new float[filterbankSize];
         }
 
 
@@ -361,7 +353,7 @@ namespace NWaves.FeatureExtractors
                                FeatureCount,
                                FrameDuration, 
                                HopDuration,
-                              _filterbankSize, 
+                               FilterBank.Length, 
                               _lowFreq,
                               _highFreq,
                               _blockSize, 

@@ -36,59 +36,54 @@ namespace NWaves.FeatureExtractors
         public float[][] FilterBank { get; }
 
         /// <summary>
-        /// Number of gammatone filters
-        /// </summary>
-        private readonly int _filterbankSize;
-
-        /// <summary>
         /// Lower frequency
         /// </summary>
-        private readonly double _lowFreq;
+        protected readonly double _lowFreq;
 
         /// <summary>
         /// Upper frequency
         /// </summary>
-        private readonly double _highFreq;
+        protected readonly double _highFreq;
 
         /// <summary>
         /// Nonlinearity coefficient (if 0 then Log10 is applied)
         /// </summary>
-        private readonly int _power;
+        protected readonly int _power;
 
         /// <summary>
         /// FFT transformer
         /// </summary>
-        private readonly RealFft _fft;
+        protected readonly RealFft _fft;
 
         /// <summary>
         /// DCT-II transformer
         /// </summary>
-        private readonly Dct2 _dct;
+        protected readonly Dct2 _dct;
 
         /// <summary>
         /// Type of the window function
         /// </summary>
-        private readonly WindowTypes _window;
+        protected readonly WindowTypes _window;
 
         /// <summary>
         /// Window samples
         /// </summary>
-        private readonly float[] _windowSamples;
+        protected readonly float[] _windowSamples;
 
         /// <summary>
         /// Internal buffer for a signal spectrum at each step
         /// </summary>
-        private readonly float[] _spectrum;
+        protected readonly float[] _spectrum;
 
         /// <summary>
         /// Internal buffer for gammatone spectrum
         /// </summary>
-        private readonly float[] _filteredSpectrum;
+        protected readonly float[] _filteredSpectrum;
 
         /// <summary>
         /// Value for mean normalization
         /// </summary>
-        private float _mean = 4e07f;
+        protected float _mean = 4e07f;
 
         /// <summary>
         /// Main constructor
@@ -127,12 +122,11 @@ namespace NWaves.FeatureExtractors
             if (filterbank == null)
             {
                 _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
-                _filterbankSize = filterbankSize;
 
                 _lowFreq = lowFreq;
                 _highFreq = highFreq;
 
-                FilterBank = FilterBanks.Erb(_filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
+                FilterBank = FilterBanks.Erb(filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
 
                 // use power spectrum:
 
@@ -148,20 +142,20 @@ namespace NWaves.FeatureExtractors
             else
             {
                 FilterBank = filterbank;
-                _filterbankSize = filterbank.Length;
+                filterbankSize = filterbank.Length;
                 _blockSize = 2 * (filterbank[0].Length - 1);
 
                 Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
             }
 
             _fft = new RealFft(_blockSize);
-            _dct = new Dct2(_filterbankSize);
+            _dct = new Dct2(filterbankSize);
             
             _window = window;
             _windowSamples = Window.OfType(_window, FrameSize);
 
             _spectrum = new float[_blockSize / 2 + 1];
-            _filteredSpectrum = new float[_filterbankSize];
+            _filteredSpectrum = new float[filterbankSize];
         }
 
         /// <summary>
