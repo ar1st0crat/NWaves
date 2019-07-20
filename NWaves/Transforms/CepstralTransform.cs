@@ -5,7 +5,15 @@ using NWaves.Utils;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class providing methods for direct and inverse cepstrum transforms
+    /// Class providing methods for various cepstrum transforms:
+    /// 
+    ///     1) Complex cepstrum (direct and inverse)
+    ///     2) Real cepstrum
+    ///     3) Power cepstrum
+    ///     4) Phase cepstrum
+    ///     
+    /// 1) and 2) are analogous to MATLAB cceps/icceps and rceps, respectively.
+    /// 
     /// </summary>
     public class CepstralTransform
     {
@@ -20,6 +28,11 @@ namespace NWaves.Transforms
         private readonly Fft _fft;
 
         /// <summary>
+        /// Logarithm base (E or 10)
+        /// </summary>
+        private readonly double _logBase;
+
+        /// <summary>
         /// Intermediate buffer storing real parts of spectrum
         /// </summary>
         private readonly float[] _realSpectrum;
@@ -28,45 +41,212 @@ namespace NWaves.Transforms
         /// Intermediate buffer storing imaginary parts of spectrum
         /// </summary>
         private readonly float[] _imagSpectrum;
-        
+
+        /// <summary>
+        /// Intermediate buffer storing unwrapped phase
+        /// </summary>
+        private readonly double[] _unwrapped;
+
         /// <summary>
         /// Constructor with necessary parameters
         /// </summary>
         /// <param name="cepstrumSize"></param>
         /// <param name="fftSize"></param>
-        public CepstralTransform(int cepstrumSize, int fftSize = 512)
+        /// <param name="logBase"></param>
+        public CepstralTransform(int cepstrumSize, int fftSize = 0, double logBase = Math.E)
         {
+            Size = cepstrumSize;
+
+            if (cepstrumSize > fftSize)
+            {
+                fftSize = MathUtils.NextPowerOfTwo(cepstrumSize);
+            }
+
             _fft = new Fft(fftSize);
 
-            Size = cepstrumSize;
+            _logBase = logBase;
 
             _realSpectrum = new float[fftSize];
             _imagSpectrum = new float[fftSize];
+            _unwrapped = new double[fftSize];
         }
 
         /// <summary>
-        /// Method for computing real cepstrum from array of samples
+        /// Direct complex cepstral transform:
+        /// 
+        /// Real{IFFT(log(abs(FFT(x)) + unwrapped_phase))}
+        /// 
         /// </summary>
-        /// <param name="samples"></param>
+        /// <param name="input"></param>
         /// <param name="cepstrum"></param>
-        /// <param name="power"></param>
         /// <returns></returns>
-        public void Direct(float[] samples, float[] cepstrum, bool power = false)
+        public double Direct(float[] input, float[] cepstrum)
         {
-            samples.FastCopyTo(_realSpectrum, _realSpectrum.Length);
+            Array.Clear(_realSpectrum, 0, _realSpectrum.Length);
             Array.Clear(_imagSpectrum, 0, _imagSpectrum.Length);
+
+            input.FastCopyTo(_realSpectrum, input.Length);
 
             // complex fft
 
             _fft.Direct(_realSpectrum, _imagSpectrum);
 
-            // logarithm of power spectrum
+            // complex logarithm of magnitude spectrum
+
+            // the most difficult part is phase unwrapping which is slightly different from MathUtils.Unwrap
+            
+            var offset = 0.0;
+            _unwrapped[0] = 0.0;
+
+            var prevPhase = Math.Atan2(_imagSpectrum[0], _realSpectrum[0]);
+
+            for (var n = 1; n < _unwrapped.Length; n++)
+            {
+                var phase = Math.Atan2(_imagSpectrum[n], _realSpectrum[n]);
+
+                var delta = phase - prevPhase;
+
+                if (delta > Math.PI)
+                {
+                    offset -= 2 * Math.PI;
+                }
+                else if (delta < -Math.PI)
+                {
+                    offset += 2 * Math.PI;
+                }
+
+                _unwrapped[n] = phase + offset;
+                prevPhase = phase;
+            }
+
+            var mid = _realSpectrum.Length / 2;
+            var delay = Math.Round(_unwrapped[mid] / Math.PI);
 
             for (var i = 0; i < _realSpectrum.Length; i++)
             {
-                var ps = _realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i];
+                _unwrapped[i] -= Math.PI * delay * i / mid;
 
-                _realSpectrum[i] = (float)Math.Log10(ps + float.Epsilon);
+                var mag = Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]);
+
+                _realSpectrum[i] = (float)Math.Log(mag + float.Epsilon, _logBase);
+                _imagSpectrum[i] = (float)_unwrapped[i];
+            }
+
+            // complex ifft
+
+            _fft.Inverse(_realSpectrum, _imagSpectrum);
+
+            // take truncated part
+
+            _realSpectrum.FastCopyTo(cepstrum, Size);
+
+            // normalize
+
+            for (var i = 0; i < cepstrum.Length; i++)
+            {
+                cepstrum[i] /= _fft.Size;
+            }
+
+            return delay;
+        }
+
+        /// <summary>
+        /// Direct complex cepstral transform
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public DiscreteSignal Direct(DiscreteSignal signal)
+        {
+            var cepstrum = new float[Size];
+            Direct(signal.Samples, cepstrum);
+            return new DiscreteSignal(signal.SamplingRate, cepstrum);
+        }
+
+        /// <summary>
+        /// Inverse complex cepstral transform
+        /// </summary>
+        /// <param name="cepstrum"></param>
+        /// <param name="output"></param>
+        /// <param name="delay"></param>
+        /// <returns></returns>
+        public void Inverse(float[] cepstrum, float[] output, double delay = 0)
+        {
+            Array.Clear(_realSpectrum, 0, _realSpectrum.Length);
+            Array.Clear(_imagSpectrum, 0, _imagSpectrum.Length);
+
+            cepstrum.FastCopyTo(_realSpectrum, cepstrum.Length);
+
+            // complex fft
+
+            _fft.Direct(_realSpectrum, _imagSpectrum);
+
+            // complex exp() of spectrum
+
+            var mid = _realSpectrum.Length / 2;
+
+            for (var i = 0; i < _realSpectrum.Length; i++)
+            {
+                var mag = _realSpectrum[i];
+                var phase = _imagSpectrum[i] + Math.PI * delay * i / mid;
+
+                _realSpectrum[i] = (float)(Math.Pow(_logBase, mag) * Math.Cos(phase));
+                _imagSpectrum[i] = (float)(Math.Pow(_logBase, mag) * Math.Sin(phase));
+            }
+
+            // complex ifft
+
+            _fft.Inverse(_realSpectrum, _imagSpectrum);
+
+            // take truncated part
+
+            _realSpectrum.FastCopyTo(output, output.Length);
+
+            // normalize
+
+            for (var i = 0; i < output.Length; i++)
+            {
+                output[i] /= _fft.Size;
+            }
+        }
+
+        /// <summary>
+        /// Inverse complex cepstral transform
+        /// </summary>
+        /// <param name="cepstrum"></param>
+        /// <returns></returns>
+        public DiscreteSignal Inverse(DiscreteSignal cepstrum)
+        {
+            var output = new float[_realSpectrum.Length];
+            Inverse(cepstrum.Samples, output);
+            return new DiscreteSignal(cepstrum.SamplingRate, output);
+        }
+
+        /// <summary>
+        /// Real cepstrum:
+        /// 
+        /// real{IFFT(log(abs(FFT(x))))}
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="cepstrum"></param>
+        public void RealCepstrum(float[] input, float[] cepstrum)
+        {
+            Array.Clear(_realSpectrum, 0, _realSpectrum.Length);
+            Array.Clear(_imagSpectrum, 0, _imagSpectrum.Length);
+
+            input.FastCopyTo(_realSpectrum, input.Length);
+
+            // complex fft
+
+            _fft.Direct(_realSpectrum, _imagSpectrum);
+
+            // logarithm of magnitude spectrum
+
+            for (var i = 0; i < _realSpectrum.Length; i++)
+            {
+                var mag = Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]);
+
+                _realSpectrum[i] = (float)Math.Log(mag + float.Epsilon, _logBase);
                 _imagSpectrum[i] = 0.0f;
             }
 
@@ -76,82 +256,53 @@ namespace NWaves.Transforms
 
             // take truncated part
 
-            if (power)
+            _realSpectrum.FastCopyTo(cepstrum, Size);
+
+            // normalize
+
+            for (var i = 0; i < cepstrum.Length; i++)
             {
-                for (var i = 0; i < Size; i++)
-                {
-                    cepstrum[i] = (_realSpectrum[i] * _realSpectrum[i] + 
-                                   _imagSpectrum[i] * _imagSpectrum[i]) / _realSpectrum.Length;
-                }
-            }
-            else
-            {
-                _realSpectrum.FastCopyTo(cepstrum, Size);
+                cepstrum[i] /= _fft.Size;
             }
         }
 
         /// <summary>
-        /// Method for computing real cepstrum of a signal
+        /// Wiki:
+        /// power_cepstrum = 4 * real_cepstrum ^ 2
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="power"></param>
-        /// <returns>Cepstrum signal</returns>
-        public DiscreteSignal Direct(DiscreteSignal signal, bool power = false)
-        {
-            var cepstrum = new float[Size];
-            Direct(signal.Samples, cepstrum, power);
-            return new DiscreteSignal(signal.SamplingRate, cepstrum);
-        }
-
-        /// <summary>
-        /// Method for computing inverse cepstrum
-        /// </summary>
+        /// <param name="input"></param>
         /// <param name="cepstrum"></param>
-        /// <param name="samples"></param>
-        /// <param name="power"></param>
-        /// <returns></returns>
-        public void Inverse(float[] cepstrum, float[] samples, bool power = false)
+        public void PowerCepstrum(float[] input, float[] cepstrum)
         {
-            Array.Clear(_realSpectrum, 0, _realSpectrum.Length);
-            Array.Clear(_imagSpectrum, 0, _imagSpectrum.Length);
+            RealCepstrum(input, cepstrum);
+
+            for (var i = 0; i < cepstrum.Length; i++)
+            {
+                var pc = 4 * cepstrum[i] * cepstrum[i];
+
+                cepstrum[i] = pc;
+            }
+        }
+
+        /// <summary>
+        /// Wiki:
+        /// phase_cepstrum = (complex_cepstrum - reversed_complex_cepstrum) ^ 2
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="cepstrum"></param>
+        public void PhaseCepstrum(float[] input, float[] cepstrum)
+        {
+            Direct(input, cepstrum);
+
+            // use this free memory block for storing reversed cepstrum
             cepstrum.FastCopyTo(_realSpectrum, cepstrum.Length);
 
-            if (power)
+            for (var i = 0; i < cepstrum.Length; i++)
             {
-                for (var i = 0; i < _realSpectrum.Length; i++)
-                {
-                    _realSpectrum[i] = (float)Math.Sqrt(_realSpectrum[i]) * _realSpectrum.Length;
-                }
+                var pc = cepstrum[i] - _realSpectrum[cepstrum.Length - 1 - i];
+
+                cepstrum[i] = pc * pc;
             }
-
-            // FFT
-
-            _fft.Direct(_realSpectrum, _imagSpectrum);
-
-            // Pow ("inverse" logarithm)
-
-            for (var i = 0; i < _realSpectrum.Length; i++)
-            {
-                samples[i] = (float)Math.Sqrt(Math.Pow(_realSpectrum[i], 10));
-                _imagSpectrum[i] = 0.0f;
-            }
-            
-            // IFFT
-            
-            _fft.Inverse(samples, _imagSpectrum);
-        }
-
-        /// <summary>
-        /// Method for computing inverse cepstrum
-        /// </summary>
-        /// <param name="cepstrum"></param>
-        /// <param name="power"></param>
-        /// <returns>Cepstrum signal</returns>
-        public DiscreteSignal Inverse(DiscreteSignal cepstrum, bool power = false)
-        {
-            var output = new float[_realSpectrum.Length];
-            Inverse(cepstrum.Samples, output, power);
-            return new DiscreteSignal(cepstrum.SamplingRate, output);
         }
     }
 }

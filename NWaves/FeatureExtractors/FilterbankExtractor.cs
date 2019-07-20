@@ -98,7 +98,6 @@ namespace NWaves.FeatureExtractors
         /// <param name="window"></param>
         /// <param name="logFloor"></param>
         public FilterbankExtractor(int samplingRate,
-                                   int featureCount,
                                    float[][] filterbank,
                                    double frameDuration = 0.0256/*sec*/,
                                    double hopDuration = 0.010/*sec*/,
@@ -110,9 +109,8 @@ namespace NWaves.FeatureExtractors
             
             : base(samplingRate, frameDuration, hopDuration, preEmphasis)
         {
-            FeatureCount = featureCount;
-
             FilterBank = filterbank;
+            FeatureCount = filterbank.Length;
 
             _blockSize = 2 * (filterbank[0].Length - 1);
 
@@ -211,7 +209,6 @@ namespace NWaves.FeatureExtractors
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
             new FilterbankExtractor( SamplingRate,
-                                     FeatureCount,
                                      FilterBank,
                                      FrameDuration,
                                      HopDuration,

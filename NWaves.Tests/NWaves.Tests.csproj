@@ -46,6 +46,7 @@
     <Compile Include="FilterTests\TestWienerFilter.cs" />
     <Compile Include="OperationTests\TestResampling.cs" />
     <Compile Include="SignalTests\TestSignalBuilders.cs" />
+    <Compile Include="TransformTests\TestCepstrum.cs" />
     <Compile Include="TransformTests\TestFft.cs" />
     <Compile Include="UtilTests\TestMathFunctions.cs" />
     <Compile Include="UtilTests\TestScaleFunctions.cs" />

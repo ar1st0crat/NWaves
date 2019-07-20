@@ -73,7 +73,6 @@ namespace NWaves.Features
         /// <param name="endPos"></param>
         /// <param name="low"></param>
         /// <param name="high"></param>
-        /// <param name="window"></param>
         /// <returns></returns>
         public static float FromAutoCorrelation(DiscreteSignal signal,
                                                 int startPos = 0,
@@ -88,8 +87,11 @@ namespace NWaves.Features
         /// Pitch estimation from zero crossing rate (based on Schmitt trigger)
         /// </summary>
         /// <param name="signal"></param>
+        /// <param name="samplingRate"></param>
         /// <param name="startPos"></param>
         /// <param name="endPos"></param>
+        /// <param name="lowSchmittThreshold"></param>
+        /// <param name="highSchmittThreshold"></param>
         /// <returns></returns>
         public static float FromZeroCrossingsSchmitt(float[] signal,
                                                      int samplingRate,
@@ -165,6 +167,8 @@ namespace NWaves.Features
         /// <param name="signal"></param>
         /// <param name="startPos"></param>
         /// <param name="endPos"></param>
+        /// <param name="lowSchmittThreshold"></param>
+        /// <param name="highSchmittThreshold"></param>
         /// <returns></returns>
         public static float FromZeroCrossingsSchmitt(DiscreteSignal signal,
                                                      int startPos = 0,
@@ -186,8 +190,12 @@ namespace NWaves.Features
         /// The Journal of the Acoustical Society of America, 111(4). - 2002.
         /// </summary>
         /// <param name="signal"></param>
+        /// <param name="samplingRate"></param>
         /// <param name="startPos"></param>
         /// <param name="endPos"></param>
+        /// <param name="low"></param>
+        /// <param name="high"></param>
+        /// <param name="cmdfThreshold"></param>
         /// <returns></returns>
         public static float FromYin(float[] signal,
                                     int samplingRate,
@@ -306,6 +314,9 @@ namespace NWaves.Features
         /// <param name="signal"></param>
         /// <param name="startPos"></param>
         /// <param name="endPos"></param>
+        /// <param name="low"></param>
+        /// <param name="high"></param>
+        /// <param name="fftSize"></param>
         /// <returns></returns>
         public static float FromHss(DiscreteSignal signal,
                                     int startPos = 0,
@@ -337,9 +348,10 @@ namespace NWaves.Features
         /// <summary>
         /// Pitch estimation: Harmonic Sum Spectrum (given pre-computed spectrum)
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
+        /// <param name="spectrum"></param>
+        /// <param name="samplingRate"></param>
+        /// <param name="low"></param>
+        /// <param name="high"></param>
         /// <returns></returns>
         public static float FromHss(float[] spectrum,
                                     int samplingRate,
@@ -382,6 +394,9 @@ namespace NWaves.Features
         /// <param name="signal"></param>
         /// <param name="startPos"></param>
         /// <param name="endPos"></param>
+        /// <param name="low"></param>
+        /// <param name="high"></param>
+        /// <param name="fftSize"></param>
         /// <returns></returns>
         public static float FromHps(DiscreteSignal signal,
                                     int startPos = 0,
@@ -413,9 +428,10 @@ namespace NWaves.Features
         /// <summary>
         /// Pitch estimation: Harmonic Product Spectrum (given pre-computed spectrum)
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
+        /// <param name="spectrum"></param>
+        /// <param name="samplingRate"></param>
+        /// <param name="low"></param>
+        /// <param name="high"></param>
         /// <returns></returns>
         public static float FromHps(float[] spectrum,
                                     int samplingRate,
@@ -456,6 +472,9 @@ namespace NWaves.Features
         /// <param name="signal"></param>
         /// <param name="startPos"></param>
         /// <param name="endPos"></param>
+        /// <param name="low"></param>
+        /// <param name="high"></param>
+        /// <param name="fftSize"></param>
         /// <returns></returns>
         public static float FromSpectralPeaks(DiscreteSignal signal,
                                               int startPos = 0,
@@ -487,9 +506,10 @@ namespace NWaves.Features
         /// <summary>
         /// Pitch estimation: from spectral peaks (given pre-computed spectrum)
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
+        /// <param name="spectrum"></param>
+        /// <param name="samplingRate"></param>
+        /// <param name="low"></param>
+        /// <param name="high"></param>
         /// <returns></returns>
         public static float FromSpectralPeaks(float[] spectrum,
                                               int samplingRate,
@@ -517,8 +537,12 @@ namespace NWaves.Features
         /// Pitch estimation from signal cepstrum
         /// </summary>
         /// <param name="signal"></param>
+        /// <param name="startPos"></param>
+        /// <param name="endPos"></param>
         /// <param name="low"></param>
         /// <param name="high"></param>
+        /// <param name="cepstrumSize"></param>
+        /// <param name="fftSize"></param>
         /// <returns></returns>
         public static float FromCepstrum(DiscreteSignal signal,
                                          int startPos = 0,
@@ -526,7 +550,7 @@ namespace NWaves.Features
                                          float low = 80,
                                          float high = 400,
                                          int cepstrumSize = 256,
-                                         int fftSize = 512)
+                                         int fftSize = 1024)
         {
             var samplingRate = signal.SamplingRate;
 
@@ -543,8 +567,10 @@ namespace NWaves.Features
             var pitch1 = (int)(1.0 * samplingRate / high);                              // 2,5 ms = 400Hz
             var pitch2 = Math.Min(cepstrumSize - 1, (int)(1.0 * samplingRate / low));   // 12,5 ms = 80Hz
 
+            var cepstrum = new float[cepstrumSize];
+
             var cepstralTransform = new CepstralTransform(cepstrumSize, fftSize);
-            var cepstrum = cepstralTransform.Direct(signal);
+            cepstralTransform.RealCepstrum(signal.Samples, cepstrum);
 
             var max = cepstrum[pitch1];
             var peakIndex = pitch1;

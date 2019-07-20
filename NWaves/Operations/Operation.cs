@@ -154,7 +154,7 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Simple resampling (as the combination of interpolation and decimation).
+        /// Band-limited resampling
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="newSamplingRate"></param>
@@ -166,7 +166,7 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Resampling based on simple interpolation
+        /// Simple resampling (as the combination of interpolation and decimation)
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="up"></param>

@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Multi;
 using NWaves.FeatureExtractors.Serializers;
 using NWaves.Filters;
 using NWaves.Filters.Base;
@@ -167,30 +168,8 @@ namespace NWaves.DemoForms
                                                   logFloor: logFloor);
 
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);
-            
-            
-            //_mfccVectors = mfccExtractor.ComputeFrom(_signal * 32768);
-            //var mfccVectorsP = mfccExtractor.ParallelComputeFrom(_signal * 32768);
 
-            //for (var i = 0; i < _mfccVectors.Count; i++)
-            //{
-            //    for (var j = 0; j < _mfccVectors[i].Features.Length; j++)
-            //    {
-            //        if (Math.Abs(_mfccVectors[i].Features[j] - mfccVectorsP[i].Features[j]) > 1e-32f)
-            //        {
-            //            MessageBox.Show($"Nope: {i} - {j}");
-            //            return;
-            //        }
-
-            //        if (Math.Abs(_mfccVectors[i].TimePosition - mfccVectorsP[i].TimePosition) > 1e-32f)
-            //        {
-            //            MessageBox.Show($"Time: {i} - {j}");
-            //            return;
-            //        }
-            //    }
-            //}
-
-            //FeaturePostProcessing.NormalizeMean(_mfccVectors);        // optional (but REQUIRED for PNCC!)
+            //FeaturePostProcessing.NormalizeMean(_mfccVectors);        // optional
             //FeaturePostProcessing.AddDeltas(_mfccVectors);
 
             var header = mfccExtractor.FeatureDescriptions;
@@ -220,7 +199,7 @@ namespace NWaves.DemoForms
 
 
     // If you want to test MFCC against HTK =======================================================
-    // keep in mind that HTK does the following pre-processing ====================================
+    // keep in mind that HTK does the following pre-processing: zero-mean and pre-emphasis ========
     // (turn these settings off in HTK config if possible): =======================================
 
     // HTK does this pre-processing per frame instead of entire signal
@@ -251,6 +230,11 @@ namespace NWaves.DemoForms
         {
         }
 
+        /// <summary>
+        /// HTK-style pre-processing (zero-mean and pre-emphasis)
+        /// </summary>
+        /// <param name="block"></param>
+        /// <returns></returns>
         public override float[] ProcessFrame(float[] block)
         {
             // 1) HTK zero-mean:
@@ -311,66 +295,43 @@ namespace NWaves.DemoForms
 }
 
 
+// =================================================== TEST ParallelComputeFrom: ========================================================
 
+//_mfccVectors = mfccExtractor.ComputeFrom(_signal);
+//var mfccVectorsP = mfccExtractor.ParallelComputeFrom(_signal);
 
-//            //var vtln = new VtlnWarper(1.2, 0, 8000, 0, 8000);                     // alpha = 1.2
-//            //var vtln = new VtlnWarper(0.85, 0, 8000, 0, (int)(8000 * 0.85));      // alpha = 0.85
+//for (var i = 0; i < _mfccVectors.Count; i++)
+//{
+//    for (var j = 0; j < _mfccVectors[i].Features.Length; j++)
+//    {
+//        if (Math.Abs(_mfccVectors[i].Features[j] - mfccVectorsP[i].Features[j]) > 1e-32f)
+//        {
+//            MessageBox.Show($"Nope: {i} - {j}");
+//            return;
+//        }
 
-//            var sr = _signal.SamplingRate;
-//            var melbands = FilterBanks.MelBands(26, 512, sr, 0, 8000);
-//            // HTK, Kaldi:
-//            var melbank = FilterBanks.Triangular(512, sr, melbands, null, Utils.Scale.HerzToMel);
-//            // LIBROSA:
-//            // var melbank = FilterBanks.Triangular(512, sr, melbands);
-
-//            // test normalization:
-//            // FilterBanks.Normalize(26, melbands, melbank);
-
-
-//            // we can easily change mel filters to bark filters, for example:
-
-//            //var barkbands = FilterBanks.BarkBands(16, 512, sr, 100/*Hz*/, 6500/*Hz*/, overlap: false);
-//            //var barkbank = FilterBanks.Triangular(512, sr, barkbands);
-
-
-//            var mfccExtractor = new MfccExtractor(_signal.SamplingRate, 13, 0.025, 0.01,
-//                                                  //filterbankSize: 26,
-//                                                  //lowFreq: 100,
-//                                                  //highFreq: 4200,
-//                                                  filterbank: melbank,
-//                                                  //filterbank: FilterBanks.MelBankSlaney(40, 512, _signal.SamplingRate),//, vtln: vtln),
-//                                                  //filterbank: FilterBanks.BarkBankSlaney(15, 512, _signal.SamplingRate),
-//                                                  lifterSize: 22,
-//                                                  //preEmphasis: 0.97,
-//                                                  //fftSize: 1024,
-//                                                  //includeEnergy: true,
-//                                                  spectrumType: SpectrumType.Power,
-//                                                  nonLinearity: NonLinearityType.LogE,
-//                                                  dctType: "2N",
-//                                                  window: WindowTypes.Hamming,
-//                                                  logFloor: 1.0f);
+//        if (Math.Abs(_mfccVectors[i].TimePosition - mfccVectorsP[i].TimePosition) > 1e-32f)
+//        {
+//            MessageBox.Show($"Time: {i} - {j}");
+//            return;
+//        }
+//    }
+//}
 
 
 
-//// test PNCC:
 
-////var mfccExtractor = new PnccExtractor(_signal.SamplingRate, 13,
-////                          //filterbankSize: 40,
-////                          //lowFreq: 100,
-////                          //highFreq: 4200,
-////                          //lifterSize: 22,
-////                          //filterbank: barkbank,
-////                          preEmphasis: 0.97,
-////                          fftSize: 1024,
-////                          //lifterSize: 0,
-////                          window: WindowTypes.Hamming);
+// ====================================================== test PNCC: =============================================================
 
-
-
+//var mfccExtractor = new PnccExtractor(_signal.SamplingRate,
+//                                      13,
+//                                      preEmphasis: 0.97,
+//                                      fftSize: 1024,
+//                                      window: WindowTypes.Hamming);
 
 //_mfccVectors = mfccExtractor.ComputeFrom(_signal);
 
-//            FeaturePostProcessing.NormalizeMean(_mfccVectors);        // optional (but REQUIRED for PNCC!)
+//            FeaturePostProcessing.NormalizeMean(_mfccVectors);
 //            FeaturePostProcessing.AddDeltas(_mfccVectors);
 
 
@@ -418,3 +379,15 @@ namespace NWaves.DemoForms
 //            //    await serializer.SerializeAsync(csvFile);
 //            //}
 
+
+
+
+//            var sr = _signal.SamplingRate;
+
+//            var melbands = FilterBanks.MelBands(26, 512, sr, 0, 8000);
+
+//            // HTK, Kaldi:
+//            var melbank = FilterBanks.Triangular(512, sr, melbands, null, Utils.Scale.HerzToMel);
+
+//            // LIBROSA:
+//            // var melbank = FilterBanks.Triangular(512, sr, melbands);

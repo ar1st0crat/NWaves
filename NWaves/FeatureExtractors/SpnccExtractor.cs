@@ -127,17 +127,6 @@ namespace NWaves.FeatureExtractors
                 _highFreq = highFreq;
 
                 FilterBank = FilterBanks.Erb(filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
-
-                // use power spectrum:
-
-                foreach (var filter in FilterBank)
-                {
-                    for (var j = 0; j < filter.Length; j++)
-                    {
-                        var ps = filter[j] * filter[j];
-                        filter[j] = ps;
-                    }
-                }
             }
             else
             {
@@ -186,7 +175,7 @@ namespace NWaves.FeatureExtractors
 
             // 2) calculate power spectrum
 
-            _fft.PowerSpectrum(block, _spectrum);
+            _fft.PowerSpectrum(block, _spectrum, false);
 
             // 3) apply gammatone filterbank
 

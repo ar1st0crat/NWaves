@@ -441,7 +441,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// True if computations can be done in parallel
         /// </summary>
         /// <returns></returns>
-        public override bool IsParallelizable() => true;
+        public override bool IsParallelizable() => _pitchTrack == null;
 
         /// <summary>
         /// Copy of current extractor that can work in parallel

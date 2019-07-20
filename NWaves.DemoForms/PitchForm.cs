@@ -36,7 +36,7 @@ namespace NWaves.DemoForms
         {
             InitializeComponent();
 
-            cepstrumPanel.Gain = 0.2f;
+            cepstrumPanel.Gain = 200;
             cepstrumPanel.Stride = 1;
             cepstrumPanel.ForeColor = Color.Blue;
             autoCorrPanel.Gain = 5;
@@ -125,12 +125,11 @@ namespace NWaves.DemoForms
             
             var pos = _hopSize * _specNo;
             var block = _signal[pos, pos + _fftSize];
-            
+
             //block.ApplyWindow(WindowTypes.Hamming);
 
-            var cepstrum = _cepstralTransform.Direct(block);
-
-            var pitch = Pitch.FromCepstrum(block);
+            var cepstrum = new float[_fftSize];
+            _cepstralTransform.RealCepstrum(block.Samples, cepstrum);
 
             // ************************************************************************
             //      just visualize spectrum estimated from cepstral coefficients:
@@ -150,14 +149,16 @@ namespace NWaves.DemoForms
             var avg = spectrum.Average(s => LevelScale.ToDecibel(s));
 
             var spectrumEstimate = real.Take(_fftSize / 2 + 1)
-                                       .Select(s => (float)LevelScale.FromDecibel(s * 40 / _fftSize - avg))
+                                       .Select(s => (float)LevelScale.FromDecibel(s * 40 - avg))
                                        .ToArray();
 
             spectrumPanel.Line = spectrum;
             spectrumPanel.Markline = spectrumEstimate;
             spectrumPanel.ToDecibel();
 
-            cepstrumPanel.Line = cepstrum.Samples;
+            var pitch = Pitch.FromCepstrum(block);
+
+            cepstrumPanel.Line = cepstrum;
             cepstrumPanel.Mark = (int)(_signal.SamplingRate / pitch);
         }
 

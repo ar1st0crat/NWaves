@@ -174,17 +174,6 @@ namespace NWaves.FeatureExtractors
                 _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
                 FilterBank = FilterBanks.Erb(filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
-
-                // use power spectrum:
-
-                foreach (var filter in FilterBank)
-                {
-                    for (var j = 0; j < filter.Length; j++)
-                    {
-                        var ps = filter[j] * filter[j];
-                        filter[j] = ps;
-                    }
-                }
             }
             else
             {
@@ -214,6 +203,8 @@ namespace NWaves.FeatureExtractors
             _smoothedSpectrum = new float[filterbankSize];
  
             _ringBuffer = new SpectraRingBuffer(2 * M + 1, filterbankSize);
+
+            _step = M - 1;
         }
 
         /// <summary>
@@ -239,6 +230,8 @@ namespace NWaves.FeatureExtractors
             const float MeanPower = 1e10f;
             const float Epsilon = 2.22e-16f;
 
+            _step++;
+
             // fill zeros to fftSize if frameSize < fftSize
 
             for (var k = FrameSize; k < block.Length; block[k++] = 0) ;
@@ -249,7 +242,7 @@ namespace NWaves.FeatureExtractors
 
             // 2) calculate power spectrum
 
-            _fft.PowerSpectrum(block, _spectrum);
+            _fft.PowerSpectrum(block, _spectrum, false);
 
             // 3) apply gammatone filterbank
 
@@ -366,7 +359,8 @@ namespace NWaves.FeatureExtractors
 
                 for (var j = 0; j < _smoothedSpectrum.Length; j++)
                 {
-                    _smoothedSpectrum[j] *= MeanPower / _mean;
+                    _smoothedSpectrum[j] /= _mean;
+                    _smoothedSpectrum[j] *= MeanPower;
                 }
 
                 // =============================================================
@@ -413,7 +407,7 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         public override void Reset()
         {
-            _step = 0;
+            _step = M - 1;
             _mean = 4e07f;
             _ringBuffer.Reset();
         }

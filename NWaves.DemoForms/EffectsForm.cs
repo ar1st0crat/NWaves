@@ -163,10 +163,15 @@ namespace NWaves.DemoForms
                 _filteredSignal = effect.ApplyTo(_signal, FilteringMethod.Auto);
 
                 //DiscreteSignal morph;
-                //using (var stream = new FileStream(@"D:\Docs\Research\DATABASE\Dictor1\wav\gtr16khz.wav", FileMode.Open))
+                //using (var stream = new FileStream(@"D:\Docs\Research\DATABASE\Dictor1\wav\21.wav", FileMode.Open))
                 //{
                 //    var waveFile = new WaveFile(stream);
                 //    morph = waveFile[Channels.Average];
+                //}
+
+                //if (morph.SamplingRate != _signal.SamplingRate)
+                //{
+                //    morph = Operation.Resample(morph, _signal.SamplingRate);
                 //}
 
                 //_filteredSignal = ((MorphEffect)effect).ApplyTo(_signal, morph);

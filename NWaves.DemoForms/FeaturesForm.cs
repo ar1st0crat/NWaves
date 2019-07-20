@@ -66,7 +66,7 @@ namespace NWaves.DemoForms
 
             var tdVectors = tdExtractor.ParallelComputeFrom(_signal);
             var spectralVectors = spectralExtractor.ParallelComputeFrom(_signal);
-            var mpeg7Vectors = mpeg7Extractor.ParallelComputeFrom(_signal);
+            var mpeg7Vectors = mpeg7Extractor.ComputeFrom(_signal);
 
             _vectors = FeaturePostProcessing.Join(tdVectors, spectralVectors, mpeg7Vectors);
 
