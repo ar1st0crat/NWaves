@@ -8,6 +8,7 @@ using NWaves.Audio.Mci;
 using NWaves.Signals;
 using NWaves.Signals.Builders;
 using NWaves.Transforms;
+using NWaves.Transforms.Wavelets;
 
 namespace NWaves.DemoForms
 {
@@ -403,6 +404,18 @@ namespace NWaves.DemoForms
 
         private void mfccToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            var fwt = new Fwt(72, new Wavelet("db7"));
+            //var fwt = new Fwt(64, new Wavelet(WaveletFamily.Daubechies, 5));
+
+            var output = new float[72];
+            var reconstructed = new float[72];
+
+            fwt.Direct(Enumerable.Range(0, 72).Select(x => (float)x).ToArray(), output, 2);
+            //fwt.Inverse(output, reconstructed, 2);
+
+            var mes = string.Join("\n", output.Select(o => o.ToString()));
+            MessageBox.Show(mes);
+
             new MfccForm().ShowDialog();
         }
 

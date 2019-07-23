@@ -20,7 +20,7 @@ New version **0.9.2** is coming soon! Faster, smarter, more features. [Read abou
 
 ## Main features 
 
-- [x] major DSP transforms (FFT, DCT, STFT, Hilbert, Hartley, Mellin, cepstral, Goertzel)
+- [x] major DSP transforms (FFT, DCT, STFT, FWT, Hilbert, Hartley, Mellin, cepstral, Goertzel)
 - [x] signal builders (sine, white/pink/red/Perlin noise, awgn, triangle, sawtooth, square, pulse, ramp, ADSR, wavetable)
 - [x] basic LTI digital filters (moving average, comb, Savitzky-Golay, pre/de-emphasis, DC removal, RASTA)
 - [x] FIR/IIR filtering (offline and online)
@@ -45,6 +45,7 @@ New version **0.9.2** is coming soon! Faster, smarter, more features. [Read abou
 - [x] time scale modification (phase vocoder, PV with identity phase locking, WSOLA, PaulStretch)
 - [x] simple resampling, interpolation, decimation
 - [x] bandlimited resampling
+- [x] wavelets: haar, db, symlet, coiflet
 - [x] polyphase filters
 - [x] noise reduction (spectral subtraction, sciPy-style Wiener filtering)
 - [x] envelope following
@@ -174,15 +175,23 @@ using (var stream = new FileStream("saved_stereo.wav", FileMode.Create))
 ```
 
 
-### Transforms:
+### Transforms
+
+For each transform there's a corresponding transformer object.
+Each transformer object has ```Direct()``` and ```Inverse()``` methods.
+
+#### FFT
 
 ```C#
-// For each transform there's a corresponding transformer object.
-// Each transformer object has Direct() and Inverse() methods.
 
 // Complex FFT transformer:
 
 var fft = new Fft(1024);
+
+// Real FFT transformer (faster):
+
+var rfft = new RealFft(1024);
+
 
 float[] real = signal.First(1024).Samples;
 float[] imag = new float [1024];
@@ -209,6 +218,11 @@ var logPowerSpectrum =
        .Select(s => Scale.ToDecibel(s))
        .ToArray();
 
+```
+
+#### STFT
+
+```C#
 
 // Short-Time Fourier Transform:
 
@@ -218,11 +232,35 @@ var reconstructed = stft.Inverse(timefreq);
 
 var spectrogram = stft.Spectrogram(signal);
 
+```
+
+#### Cepstral transform
+
+```C#
 
 // Cepstral transformer:
 
 var ct = new CepstralTransform(24, fftSize: 512);
 var cepstrum = ct.Direct(signal);
+var real = ct.RealCepstrum(signal);
+
+```
+
+#### Wavelets
+
+```C#
+
+var fwt = new Fwt(192, new Wavelet("db3"));
+
+// or
+//var fwt = new Fwt(192, new Wavelet(WaveletFamily.Daubechies, 5));
+
+var output = new float[192];
+var reconstructed = new float[192];
+
+fwt.Direct(input, output);
+fwt.Inverse(output, reconstructed);
+
 ```
 
 
