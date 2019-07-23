@@ -91,13 +91,18 @@ namespace NWaves.Transforms.Wavelets
 
             input.FastCopyTo(_temp, input.Length);
 
+            bool pad = (_waveletLength / 2) % 2 == 0;  // according to MATLAB and pyWavelets implementations,
+                                                       // convolution in case of db3, db5, db7, etc. runs through another samples;
+                                                       // essentially, we're convolving kernel with signal [x_n-1, x0, x1, ..., x_n-2]
+
+                                                       // NOTE. We are emulating the 'periodization' mode of MATLAB/pywt.
             var h = input.Length;
 
             for (var l = 0; l < level && h >= _waveletLength; l++, h /= 2)
             {
                 var halfLen = h / 2;
-
-                var start = _waveletLength / 4;
+                var padding = pad ? h - 1 : 0;
+                var start = (_waveletLength - 1) / 4;
 
                 for (int i = 0; i < halfLen; i++, start++)
                 {
@@ -107,7 +112,7 @@ namespace NWaves.Transforms.Wavelets
 
                     for (int j = 0; j < _waveletLength; j++)
                     {
-                        var k = (i * 2 + j) % h;
+                        var k = (i * 2 + j + padding) % h;
 
                         output[start]           += _temp[k] * _loD[j]; // approximation
                         output[start + halfLen] += _temp[k] * _hiD[j]; // details
@@ -139,6 +144,8 @@ namespace NWaves.Transforms.Wavelets
 
             input.FastCopyTo(_temp, input.Length);
 
+            bool pad = (_waveletLength / 2) % 2 == 0;
+
             var h = (int)(input.Length / Math.Pow(2, level - 1));
 
             for (; h <= input.Length; h *= 2)
@@ -146,8 +153,8 @@ namespace NWaves.Transforms.Wavelets
                 Array.Clear(output, 0, output.Length);
 
                 var halfLen = h / 2;
-
-                var start = _waveletLength / 4;
+                var padding = pad ? h - 1 : 0;
+                var start = (_waveletLength - 1) / 4;
 
                 for (int i = 0; i < halfLen; i++, start++)
                 {
@@ -155,7 +162,7 @@ namespace NWaves.Transforms.Wavelets
 
                     for (int j = 0; j < _waveletLength; j++)
                     {
-                        var k = (i * 2 + j) % h;
+                        var k = (i * 2 + j + padding) % h;
 
                         output[k] += _temp[start] * _loR[j] + _temp[start + halfLen] * _hiR[j];
                     }

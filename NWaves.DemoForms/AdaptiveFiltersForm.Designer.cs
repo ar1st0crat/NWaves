@@ -70,12 +70,7 @@
             this.linePlot1.AutoScroll = true;
             this.linePlot1.BackColor = System.Drawing.Color.White;
             this.linePlot1.ForeColor = System.Drawing.Color.Blue;
-            this.linePlot1.Gain = null;
-            this.linePlot1.Legend = null;
-            this.linePlot1.Line = null;
             this.linePlot1.Location = new System.Drawing.Point(13, 47);
-            this.linePlot1.Mark = null;
-            this.linePlot1.Markline = null;
             this.linePlot1.Name = "linePlot1";
             this.linePlot1.PaddingX = 30;
             this.linePlot1.PaddingY = 20;

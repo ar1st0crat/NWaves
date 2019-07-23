@@ -68,12 +68,7 @@
             this.demodulatedPlot.AutoScroll = true;
             this.demodulatedPlot.BackColor = System.Drawing.Color.White;
             this.demodulatedPlot.ForeColor = System.Drawing.Color.Blue;
-            this.demodulatedPlot.Gain = null;
-            this.demodulatedPlot.Legend = null;
-            this.demodulatedPlot.Line = null;
             this.demodulatedPlot.Location = new System.Drawing.Point(12, 356);
-            this.demodulatedPlot.Mark = null;
-            this.demodulatedPlot.Markline = null;
             this.demodulatedPlot.Name = "demodulatedPlot";
             this.demodulatedPlot.PaddingX = 30;
             this.demodulatedPlot.PaddingY = 20;
@@ -87,12 +82,7 @@
             this.modulatedPlot.AutoScroll = true;
             this.modulatedPlot.BackColor = System.Drawing.Color.White;
             this.modulatedPlot.ForeColor = System.Drawing.Color.Blue;
-            this.modulatedPlot.Gain = null;
-            this.modulatedPlot.Legend = null;
-            this.modulatedPlot.Line = null;
             this.modulatedPlot.Location = new System.Drawing.Point(13, 123);
-            this.modulatedPlot.Mark = null;
-            this.modulatedPlot.Markline = null;
             this.modulatedPlot.Name = "modulatedPlot";
             this.modulatedPlot.PaddingX = 30;
             this.modulatedPlot.PaddingY = 20;

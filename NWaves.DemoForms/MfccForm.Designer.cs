@@ -112,12 +112,7 @@ namespace NWaves.DemoForms
             this.mfccPanel.AutoScroll = true;
             this.mfccPanel.BackColor = System.Drawing.Color.White;
             this.mfccPanel.ForeColor = System.Drawing.Color.Blue;
-            this.mfccPanel.Gain = null;
-            this.mfccPanel.Legend = null;
-            this.mfccPanel.Line = null;
             this.mfccPanel.Location = new System.Drawing.Point(606, 465);
-            this.mfccPanel.Mark = null;
-            this.mfccPanel.Markline = null;
             this.mfccPanel.Name = "mfccPanel";
             this.mfccPanel.PaddingX = 30;
             this.mfccPanel.PaddingY = 20;
