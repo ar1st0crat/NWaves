@@ -69,16 +69,6 @@ namespace NWaves.FeatureExtractors
         protected readonly float[] _lifterCoeffs;
 
         /// <summary>
-        /// Type of the window function
-        /// </summary>
-        protected readonly WindowTypes _window;
-
-        /// <summary>
-        /// Window samples
-        /// </summary>
-        protected readonly float[] _windowSamples;
-
-        /// <summary>
         /// FFT transformer
         /// </summary>
         protected readonly RealFft _fft;
@@ -152,7 +142,7 @@ namespace NWaves.FeatureExtractors
                             float[][] filterbank = null,
                             double[] centerFrequencies = null)
             
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
         {
             FeatureCount = featureCount;
 
@@ -269,9 +259,6 @@ namespace NWaves.FeatureExtractors
 
             _fft = new RealFft(_blockSize);
 
-            _window = window;
-            _windowSamples = Window.OfType(_window, FrameSize);
-
             _lifterSize = lifterSize;
             _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
 
@@ -283,38 +270,30 @@ namespace NWaves.FeatureExtractors
         /// Standard method for computing PLP features.
         /// In each frame do:
         /// 
-        ///     1) Apply window
-        ///     2) Obtain power spectrum
-        ///     3) Apply filterbank of bark bands (or mel bands)
-        ///     4) [Optional] filter each component of the processed spectrum with a RASTA filter
-        ///     5) Apply equal loudness curve
-        ///     6) Take cubic root
-        ///     7) Do LPC
-        ///     8) Convert LPC to cepstrum
-        ///     9) [Optional] lifter cepstrum
+        ///     0) Apply window (base extractor does it)
+        ///     1) Obtain power spectrum
+        ///     2) Apply filterbank of bark bands (or mel bands)
+        ///     3) [Optional] filter each component of the processed spectrum with a RASTA filter
+        ///     4) Apply equal loudness curve
+        ///     5) Take cubic root
+        ///     6) Do LPC
+        ///     7) Convert LPC to cepstrum
+        ///     8) [Optional] lifter cepstrum
         /// 
         /// </summary>
         /// <param name="block">Samples for analysis</param>
         /// <returns>PLP vector</returns>
         public override float[] ProcessFrame(float[] block)
         {
-            // fill zeros to fftSize if frameSize < fftSize (blockSize)
-
-            for (var k = FrameSize; k < block.Length; block[k++] = 0) ;
-
-            // 1) apply window
-
-            block.ApplyWindow(_windowSamples);
-
-            // 2) calculate power spectrum (without normalization)
+            // 1) calculate power spectrum (without normalization)
 
             _fft.PowerSpectrum(block, _spectrum, false);
 
-            // 3) apply filterbank on the result (bark frequencies by default)
+            // 2) apply filterbank on the result (bark frequencies by default)
 
             FilterBanks.Apply(FilterBank, _spectrum, _bandSpectrum);
 
-            // 4) RASTA filtering in log-domain [optional]
+            // 3) RASTA filtering in log-domain [optional]
 
             if (_rasta > 0)
             {
@@ -328,14 +307,14 @@ namespace NWaves.FeatureExtractors
                 }
             }
 
-            // 5) and 6) apply equal loudness curve and take cubic root
+            // 4) and 5) apply equal loudness curve and take cubic root
 
             for (var k = 0; k < _bandSpectrum.Length; k++)
             {
                 _bandSpectrum[k] = (float)Math.Pow(Math.Max(_bandSpectrum[k], 1.0) * _equalLoudnessCurve[k], 0.33);
             }
 
-            // 7) LPC from power spectrum:
+            // 6) LPC from power spectrum:
 
             var n = _idftTable[0].Length;
 
@@ -360,14 +339,14 @@ namespace NWaves.FeatureExtractors
 
             var err = Lpc.LevinsonDurbin(_cc, _lpc, _lpcOrder);
 
-            // 8) compute LPCC coefficients from LPC
+            // 7) compute LPCC coefficients from LPC
 
             var lpcc = new float[FeatureCount];
 
             Lpc.ToCepstrum(_lpc, err, lpcc);
 
 
-            // 9) (optional) liftering
+            // 8) (optional) liftering
 
             if (_lifterCoeffs != null)
             {

@@ -61,16 +61,6 @@ namespace NWaves.FeatureExtractors
         protected readonly Dct2 _dct;
 
         /// <summary>
-        /// Type of the window function
-        /// </summary>
-        protected readonly WindowTypes _window;
-
-        /// <summary>
-        /// Window samples
-        /// </summary>
-        protected readonly float[] _windowSamples;
-
-        /// <summary>
         /// Internal buffer for a signal spectrum at each step
         /// </summary>
         protected readonly float[] _spectrum;
@@ -113,7 +103,7 @@ namespace NWaves.FeatureExtractors
                               double preEmphasis = 0,
                               WindowTypes window = WindowTypes.Hamming)
 
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
         {
             FeatureCount = featureCount;
 
@@ -139,9 +129,6 @@ namespace NWaves.FeatureExtractors
 
             _fft = new RealFft(_blockSize);
             _dct = new Dct2(filterbankSize);
-            
-            _window = window;
-            _windowSamples = Window.OfType(_window, FrameSize);
 
             _spectrum = new float[_blockSize / 2 + 1];
             _filteredSpectrum = new float[filterbankSize];
@@ -151,12 +138,12 @@ namespace NWaves.FeatureExtractors
         /// S(implified)PNCC algorithm according to [Kim & Stern, 2016].
         /// In each frame do:
         /// 
-        ///     1) Apply window (if rectangular window was specified then just do nothing)
-        ///     2) Obtain power spectrum
-        ///     3) Apply gammatone filters (squared)
-        ///     4) Mean power normalization
-        ///     5) Apply nonlinearity
-        ///     6) Do dct-II (normalized)
+        ///     0) Apply window (base extractor does it)
+        ///     1) Obtain power spectrum
+        ///     2) Apply gammatone filters (squared)
+        ///     3) Mean power normalization
+        ///     4) Apply nonlinearity
+        ///     5) Do dct-II (normalized)
         /// 
         /// </summary>
         /// <param name="samples">Samples for analysis</param>
@@ -165,23 +152,15 @@ namespace NWaves.FeatureExtractors
         {
             const float meanPower = 1e10f;
 
-            // fill zeros to fftSize if frameSize < fftSize
-
-            for (var k = FrameSize; k < block.Length; block[k++] = 0) ;
-
-            // 1) apply window
-
-            block.ApplyWindow(_windowSamples);
-
-            // 2) calculate power spectrum
+            // 1) calculate power spectrum
 
             _fft.PowerSpectrum(block, _spectrum, false);
 
-            // 3) apply gammatone filterbank
+            // 2) apply gammatone filterbank
 
             FilterBanks.Apply(FilterBank, _spectrum, _filteredSpectrum);
 
-            // 4) mean power normalization:
+            // 3) mean power normalization:
 
             var sumPower = 0.0f;
             for (var j = 0; j < _filteredSpectrum.Length; j++)
@@ -196,7 +175,7 @@ namespace NWaves.FeatureExtractors
                 _filteredSpectrum[j] *= meanPower / _mean;
             }
 
-            // 5) nonlinearity (pow ^ d  or  Log10)
+            // 4) nonlinearity (pow ^ d  or  Log10)
 
             if (_power != 0)
             {
@@ -213,7 +192,7 @@ namespace NWaves.FeatureExtractors
                 }
             }
 
-            // 6) dct-II (normalized)
+            // 5) dct-II (normalized)
 
             var spnccs = new float[FeatureCount];
             _dct.DirectNorm(_filteredSpectrum, spnccs);

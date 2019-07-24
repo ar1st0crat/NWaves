@@ -68,16 +68,6 @@ namespace NWaves.FeatureExtractors
         protected readonly RealFft _modulationFft;
 
         /// <summary>
-        /// Type of the window function
-        /// </summary>
-        protected readonly WindowTypes _window;
-
-        /// <summary>
-        /// Window samples
-        /// </summary>
-        protected readonly float[] _windowSamples;
-
-        /// <summary>
         /// Size of FFT applied to signal envelopes
         /// </summary>
         protected readonly int _modulationFftSize;
@@ -136,7 +126,7 @@ namespace NWaves.FeatureExtractors
                             double preEmphasis = 0,
                             WindowTypes window = WindowTypes.Rectangular)
 
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
         {
             _modulationFftSize = modulationFftSize;
             _modulationHopSize = modulationHopSize;
@@ -168,12 +158,6 @@ namespace NWaves.FeatureExtractors
                 _fft = new RealFft(_fftSize);
                 
                 _featureCount = _filterbank.Length * (_modulationFftSize / 2 + 1);
-
-                _window = window;
-                if (_window != WindowTypes.Rectangular)
-                {
-                    _windowSamples = Window.OfType(_window, FrameSize);
-                }
 
                 _spectrum = new float[_fftSize / 2 + 1];
                 _filteredSpectrum = new float[_filterbank.Length];
@@ -318,7 +302,7 @@ namespace NWaves.FeatureExtractors
                 }
                 avg /= envelopeLength;
 
-                if (avg >= 1e-10)   // this happens more frequently
+                if (avg >= 1e-10f)   // this happens more frequently
                 {
                     for (var k = 0; k < envelopeLength; k++)
                     {

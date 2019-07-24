@@ -49,16 +49,6 @@ namespace NWaves.FeatureExtractors
         protected readonly float _high;
 
         /// <summary>
-        /// Type of the window function
-        /// </summary>
-        protected readonly WindowTypes _window;
-
-        /// <summary>
-        /// Window samples
-        /// </summary>
-        protected readonly float[] _windowSamples;
-
-        /// <summary>
         /// Internal convolver
         /// </summary>
         protected readonly Convolver _convolver;
@@ -91,16 +81,10 @@ namespace NWaves.FeatureExtractors
                               double preEmphasis = 0,
                               WindowTypes window = WindowTypes.Rectangular)
 
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
         {
             _low = low;
             _high = high;
-
-            _window = window;
-            if (_window != WindowTypes.Rectangular)
-            {
-                _windowSamples = Window.OfType(_window, FrameSize);
-            }
 
             _blockSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
             _convolver = new Convolver(_blockSize);
@@ -118,20 +102,13 @@ namespace NWaves.FeatureExtractors
         /// <returns>Array of one element: pitch</returns>
         public override float[] ProcessFrame(float[] block)
         {
-            // 1) apply window
-
-            if (_window != WindowTypes.Rectangular)
-            {
-                block.ApplyWindow(_windowSamples);
-            }
-
             block.FastCopyTo(_reversed, FrameSize);
 
-            // 2) autocorrelation
+            // 1) autocorrelation
 
             _convolver.CrossCorrelate(block, _reversed, _cc);
 
-            // 3) argmax of autocorrelation
+            // 2) argmax of autocorrelation
 
             var pitch1 = (int)(SamplingRate / _high);    // 2,5 ms = 400Hz
             var pitch2 = (int)(SamplingRate / _low);     // 12,5 ms = 80Hz

@@ -40,16 +40,6 @@ namespace NWaves.FeatureExtractors
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// Type of the window function
-        /// </summary>
-        protected readonly WindowTypes _window;
-
-        /// <summary>
-        /// Window samples (weights)
-        /// </summary>
-        protected readonly float[] _windowSamples;
-
-        /// <summary>
         /// Non-linearity type (logE, log10, decibel, cubic root)
         /// </summary>
         protected readonly NonLinearityType _nonLinearityType;
@@ -107,7 +97,7 @@ namespace NWaves.FeatureExtractors
                                    WindowTypes window = WindowTypes.Hamming,
                                    float logFloor = float.Epsilon)
             
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
         {
             FilterBank = filterbank;
             FeatureCount = filterbank.Length;
@@ -117,9 +107,6 @@ namespace NWaves.FeatureExtractors
             Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
 
             _fft = new RealFft(_blockSize);
-
-            _window = window;
-            _windowSamples = Window.OfType(_window, FrameSize);
 
             // setup spectrum post-processing: =======================================================
 
@@ -176,19 +163,11 @@ namespace NWaves.FeatureExtractors
         /// <returns></returns>
         public override float[] ProcessFrame(float[] block)
         {
-            // fill zeros to _blockSize if frameSize < fftSize
-
-            for (var k = FrameSize; k < block.Length; block[k++] = 0) ;
-
-            // 1) apply window
-
-            block.ApplyWindow(_windowSamples);
-
-            // 2) calculate magnitude/power spectrum (with/without normalization)
+            // 1) calculate magnitude/power spectrum (with/without normalization)
 
             _getSpectrum(block);        // _block -> _spectrum
 
-            // 3) apply filterbank and take log10/ln/cubic_root of the result
+            // 2) apply filterbank and take log10/ln/cubic_root of the result
 
             _postProcessSpectrum();     // _spectrum -> _bandSpectrum
 

@@ -29,16 +29,6 @@ namespace NWaves.FeatureExtractors
         protected readonly int _order;
 
         /// <summary>
-        /// Type of the window function
-        /// </summary>
-        protected readonly WindowTypes _window;
-
-        /// <summary>
-        /// Window samples
-        /// </summary>
-        protected readonly float[] _windowSamples;
-
-        /// <summary>
         /// Size of liftering window
         /// </summary>
         protected readonly int _lifterSize;
@@ -87,7 +77,7 @@ namespace NWaves.FeatureExtractors
                              double preEmphasis = 0,
                              WindowTypes window = WindowTypes.Rectangular)
 
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
         {
             FeatureCount = featureCount;
 
@@ -95,12 +85,6 @@ namespace NWaves.FeatureExtractors
 
             _blockSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
             _convolver = new Convolver(_blockSize);
-
-            _window = window;
-            if (_window != WindowTypes.Rectangular)
-            {
-                _windowSamples = Window.OfType(_window, FrameSize);
-            }
 
             _lifterSize = lifterSize;
             _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
@@ -120,32 +104,25 @@ namespace NWaves.FeatureExtractors
         /// <returns>LPCC vector</returns>
         public override float[] ProcessFrame(float[] block)
         {
-            // 1) apply window (usually signal isn't windowed for LPC, so we check first)
-
-            if (_window != WindowTypes.Rectangular)
-            {
-                block.ApplyWindow(_windowSamples);
-            }
-
             block.FastCopyTo(_reversed, FrameSize);
 
-            // 2) autocorrelation
+            // 1) autocorrelation
 
             _convolver.CrossCorrelate(block, _reversed, _cc);
 
-            // 3) Levinson-Durbin
+            // 2) Levinson-Durbin
 
             for (int k = 0; k < _lpc.Length; _lpc[k] = 0, k++) ;
 
             var err = Lpc.LevinsonDurbin(_cc, _lpc, _order, FrameSize - 1);
 
-            // 4) compute LPCC coefficients from LPC
+            // 3) compute LPCC coefficients from LPC
 
             var lpcc = new float[FeatureCount];
 
             Lpc.ToCepstrum(_lpc, err, lpcc);
 
-            // 5) (optional) liftering
+            // 4) (optional) liftering
 
             if (_lifterCoeffs != null)
             {

@@ -56,16 +56,6 @@ namespace NWaves.FeatureExtractors
         protected readonly double _highFreq;
 
         /// <summary>
-        /// Type of the window function
-        /// </summary>
-        protected readonly WindowTypes _window;
-
-        /// <summary>
-        /// Window samples
-        /// </summary>
-        protected readonly float[] _windowSamples;
-
-        /// <summary>
         /// Size of liftering window
         /// </summary>
         protected readonly int _lifterSize;
@@ -173,7 +163,7 @@ namespace NWaves.FeatureExtractors
                              WindowTypes window = WindowTypes.Hamming,
                              float logFloor = float.Epsilon)
 
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
         {
             FeatureCount = featureCount;
 
@@ -197,9 +187,6 @@ namespace NWaves.FeatureExtractors
             }
 
             _fft = new RealFft(_blockSize);
-            
-            _window = window;
-            _windowSamples = Window.OfType(_window, FrameSize);
 
             _lifterSize = lifterSize;
             _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
@@ -287,48 +274,40 @@ namespace NWaves.FeatureExtractors
         /// Standard method for computing MFCC features.
         /// According to default configuration, in each frame do:
         /// 
-        ///     1) Apply window
-        ///     2) Obtain power spectrum X
-        ///     3) Apply mel filters and log() the result: Y = Log(X * H)
-        ///     4) Do dct: mfcc = Dct(Y)
-        ///     5) [Optional] liftering of mfcc
+        ///     0) Apply window (base extractor does it)
+        ///     1) Obtain power spectrum X
+        ///     2) Apply mel filters and log() the result: Y = Log(X * H)
+        ///     3) Do dct: mfcc = Dct(Y)
+        ///     4) [Optional] liftering of mfcc
         /// 
         /// </summary>
         /// <param name="block">Samples for analysis</param>
         /// <returns>MFCC vector</returns>
         public override float[] ProcessFrame(float[] block)
         {
-            // fill zeros to fftSize if frameSize < fftSize
-
-            for (var k = FrameSize; k < block.Length; block[k++] = 0) ;
-
-            // 1) apply window
-
-            block.ApplyWindow(_windowSamples);
-
-            // 2) calculate magnitude/power spectrum (with/without normalization)
+            // 1) calculate magnitude/power spectrum (with/without normalization)
 
             _getSpectrum(block);        //  block -> _spectrum
 
-            // 3) apply mel filterbank and take log10/ln/cubic_root of the result
+            // 2) apply mel filterbank and take log10/ln/cubic_root of the result
 
             _postProcessSpectrum();     // _spectrum -> _melSpectrum
 
-            // 4) dct
+            // 3) dct
 
             var mfccs = new float[FeatureCount];
 
             _applyDct(mfccs);           // _melSpectrum -> mfccs
 
 
-            // 5) (optional) liftering
+            // 4) (optional) liftering
 
             if (_lifterCoeffs != null)
             {
                 mfccs.ApplyWindow(_lifterCoeffs);
             }
 
-            // 6) (optional) replace first coeff with log(energy) 
+            // 5) (optional) replace first coeff with log(energy) 
 
             if (_includeEnergy)
             {

@@ -16,7 +16,7 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install 
 
 [Read wiki documentation](https://github.com/ar1st0crat/NWaves/wiki)
 
-New version **0.9.2** is coming soon! Faster, smarter, more features. [Read about changes here](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
+New version **0.9.2** is out! Faster, smarter, more features. [Read about changes here](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
 
 ## Main features 
 
@@ -33,9 +33,9 @@ New version **0.9.2** is coming soon! Faster, smarter, more features. [Read abou
 - [x] FIR filter design: frequency sampling, window-sinc, equiripple (Remez / Parks-McClellan)
 - [x] non-linear filters (median filter, overdrive and distortion effects)
 - [x] windowing functions (Hamming, Blackman, Hann, Gaussian, Kaiser, KBD, triangular, Lanczos, flat-top, Bartlett-Hann)
-- [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and perceptual weighting (A, B, C)
+- [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and VTLN warping
 - [x] customizable feature extraction (time-domain, spectral, MFCC, PNCC/SPNCC, LPC, LPCC, PLP, AMS)
-- [x] predefined MFCC configurations: HTK (MFCC-FB24), Slaney (MFCC-FB40)
+- [x] preconfigured MFCC extractors: HTK (MFCC-FB24), Slaney (MFCC-FB40)
 - [x] LPC conversions: LPC<->cepstrum, LPC<->LSF
 - [x] feature post-processing (mean and variance normalization, adding deltas) and CSV serialization
 - [x] spectral features (centroid, spread, flatness, entropy, rolloff, contrast, crest, decrease, noiseness, MPEG7)
@@ -218,6 +218,22 @@ var logPowerSpectrum =
        .Select(s => Scale.ToDecibel(s))
        .ToArray();
 
+
+// rfft will run faster;
+// real FFT transforms real-valued signal to complex-valued spectrum,
+// hence prototypes of methods are same, except Direct/Inverse:
+
+rfft.Direct(real, real, imag);   // real -> (real, imag)
+rfft.Inverse(real, imag, real);  // (real, imag) -> real
+
+var magnitudeSpectrum = 
+    rfft.MagnitudeSpectrum(signal[1000, 2024]);
+
+var powerSpectrum = 
+    rfft.PowerSpectrum(signal.First(1024), normalize: false);
+
+// ...
+
 ```
 
 #### STFT
@@ -241,8 +257,14 @@ var spectrogram = stft.Spectrogram(signal);
 // Cepstral transformer:
 
 var ct = new CepstralTransform(24, fftSize: 512);
+
+// complex cepstrum
 var cepstrum = ct.Direct(signal);
-var real = ct.RealCepstrum(signal);
+// or
+ct.Direct(input, output);
+
+// real cepstrum
+ct.RealCepstrum(input, output);
 
 ```
 
@@ -250,7 +272,7 @@ var real = ct.RealCepstrum(signal);
 
 ```C#
 
-var fwt = new Fwt(192, new Wavelet("db3"));
+var fwt = new Fwt(192, new Wavelet("db5"));
 
 // or
 //var fwt = new Fwt(192, new Wavelet(WaveletFamily.Daubechies, 5));
@@ -285,7 +307,7 @@ var updown = Operation.ResampleUpDown(signal, 3, 2);
 
 // time scale modification
 
-var stretch = Operation.TimeStretch(signal, 0.7, TsmAlgorithm.PhaseVocoderPhaseLocking);
+var stretch = Operation.TimeStretch(signal, 0.7, TsmAlgorithm.Wsola);
 var cool = Operation.TimeStretch(signal, 16, TsmAlgorithm.PaulStretch);
 
 // envelope following
@@ -317,13 +339,23 @@ var notchedSignal = notchFilter.ApplyTo(signal);
 
 // filter analysis:
 
-var filter = new IirFilter(new [] { 1, 0.5, 0.2 }, new [] { 1, -0.8, 0.3 });
+var transferFunction = new TransferFunction(new [] { 1, 0.5, 0.2 }, new [] { 1, -0.8, 0.3 });
 
-var impulseResponse = filter.ImpulseResponse();
-var magnitudeResponse = filter.FrequencyResponse().Magnitude;
-var phaseResponse = filter.FrequencyResponse().Phase;
+var filter = new IirFilter(transferFunction);
 
-var transferFunction = lowPassFilter.Tf;
+// we can also write this:
+
+// var filter = new IirFilter(new [] { 1, 0.5, 0.2 }, new [] { 1, -0.8, 0.3 });
+// var transferFunction = filter.Tf;
+// ...
+
+// if we simply want to apply filter and don't care much about FDA precision:
+// read more in tutorial
+
+
+var impulseResponse = transferFunction.ImpulseResponse();
+var magnitudeResponse = transferFunction.FrequencyResponse().Magnitude;
+var phaseResponse = transferFunction.FrequencyResponse().Phase;
 
 var b = transferFunction.Numerator;
 var a = transferFunction.Denominator;
@@ -334,23 +366,19 @@ var gd = transferFunction.GroupDelay();
 var pd = transferFunction.PhaseDelay();
 
 
-// some filter design:
+// some examples of FIR filter design:
 
-var lpFilter = DesignFilter.FirLp(345, 0.15f);
+var kernel = DesignFilter.FirWinLp(345, 0.15f);
+var lpFilter = new FirFilter(kernel);
 
 // HP filter can be obtained from LP with the same cutoff frequency:
-var hpFilter = DesignFilter.LpToHp(lpFilter);
-
-// and vice versa:
-var lowpass  = DesignFilter.HpToLp(hpFilter);
+var hpFilter = DesignFilter.FirLpToHp(lpFilter);
 
 // design BP filter
-var bpFilter = DesignFilter.FirBp(123, 0.05f, 0.15f);
+var bpFilter = DesignFilter.FirWinBp(123, 0.05f, 0.15f);
 
-// design BR filter
-var brFilter = DesignFilter.FirBr(201, 0.08f, 0.23f, WindowTypes.Kaiser);
-
-var kernel = lowpass.Tf.Numerator;
+// design equiripple HP filter
+var bpFilter = DesignFilter.FirEquirippleHp(123, 0.34, 0.355, 0.05, 0.95);
 
 
 // sequence of filters:
@@ -373,10 +401,20 @@ filtered = parallel.ApplyTo(signal);
 
 // audio effects:
 
-var pitchShift = new PitchShiftEffect(signal.SamplingRate, 1.2);
+var flanger = new FlangerEffect(signal.SamplingRate);
 var wahwah = new WahwahEffect(signal.SamplingRate, lfoFrequency: 2/*Hz*/);
 
-var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
+var processed = wahwah.ApplyTo(flanger.ApplyTo(signal));
+// this will create intermediate copy of the signal
+
+
+// FilterChain is memory-efficient:
+
+var filters = new FilterChain();
+filters.Add(flanger);
+filters.Add(wahwah);
+
+processed = filters.ApplyTo(signal);
 
 ```
 
@@ -384,9 +422,17 @@ var processed = wahwah.ApplyTo(pitchShift.ApplyTo(signal));
 ### Online processing
 
 Online processing is supported by all classes that implement the ```IOnlineFilter``` interface.
-Currently, all filters, block convolvers (```OlaBlockConvolver```, ```OlsBlockConvolver```) and audio effects contain the ```Process(sample)``` and ```Process(bufferIn, bufferOut)``` methods responsible for online processing.
+Currently, all LTI filters, ```FilterChain``` class, block convolvers (```OlaBlockConvolver```, ```OlsBlockConvolver```) and audio effects contain the ```Process(sample)``` and ```Process(bufferIn, bufferOut)``` methods responsible for online processing.
 
-Simply prepare necessary buffers or just use them if they come from another part of your system:
+Simply process data sample after sample:
+
+```C#
+
+var outputSample = filter.Process(sample);
+
+```
+
+Or prepare necessary buffers (or just use them if they come from another part of your system):
 
 ```C#
 
@@ -401,13 +447,6 @@ void NewChunkAvailable(float[] chunk)
 
 ```
 
-Sample after sample:
-
-```C#
-
-var outputSample = filter.Process(sample);
-
-```
 
 Block convolvers:
 
@@ -484,7 +523,7 @@ Pre-processing
 
 ```C#
 
-// Many extractors allow setting pre-emphasis coefficient.
+// Extractors allow setting pre-emphasis coefficient.
 
 // This is equivalent to applying pre-emphasis filter:
 
@@ -504,6 +543,7 @@ for (var i = 0; i < signal.Length; i++)
 }
 
 mfccVectors = mfccExtractor.ParallelComputeFrom(signal);
+
 ```
 
 ### Playing and recording
@@ -511,6 +551,7 @@ mfccVectors = mfccExtractor.ParallelComputeFrom(signal);
 ```MciAudioPlayer``` and ```MciAudioRecorder``` work only at Windows-side, since they use winmm.dll and MCI commands.
 
 ```C#
+
 IAudioPlayer player = new MciAudioPlayer();
 
 // play entire file
@@ -539,6 +580,7 @@ recorder.StartRecording(16000);
 
 // ...in some event handler
 recorder.StopRecording("temp.wav");
+
 ```
 
 ### Demos
@@ -556,5 +598,7 @@ recorder.StopRecording("temp.wav");
 ![spectral](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/spectral.png)
 
 ![effects](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/effects.png)
+
+![wavelets](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/wavelets.png)
 
 ![adaptive](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/adaptive.png)

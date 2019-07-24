@@ -93,16 +93,6 @@ namespace NWaves.FeatureExtractors
         protected readonly Dct2 _dct;
 
         /// <summary>
-        /// Type of the window function
-        /// </summary>
-        protected readonly WindowTypes _window;
-
-        /// <summary>
-        /// Window samples
-        /// </summary>
-        protected readonly float[] _windowSamples;
-
-        /// <summary>
         /// Internal buffer for a signal spectrum at each step
         /// </summary>
         protected readonly float[] _spectrum;
@@ -162,7 +152,7 @@ namespace NWaves.FeatureExtractors
                              double preEmphasis = 0,
                              WindowTypes window = WindowTypes.Hamming)
 
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
         {
             FeatureCount = featureCount;
 
@@ -189,9 +179,6 @@ namespace NWaves.FeatureExtractors
 
             _power = power;
 
-            _window = window;
-            _windowSamples = Window.OfType(_window, FrameSize);
-
             _spectrum = new float[_blockSize / 2 + 1];
             _spectrumQOut = new float[filterbankSize];
             _gammatoneSpectrum = new float[filterbankSize];
@@ -209,16 +196,14 @@ namespace NWaves.FeatureExtractors
 
         /// <summary>
         /// PNCC algorithm according to [Kim & Stern, 2016]:
-        ///     0) [Optional] pre-emphasis
-        /// 
         /// Decompose signal into overlapping (hopSize) frames of length fftSize. In each frame do:
         /// 
-        ///     1) Apply window (if rectangular window was specified then just do nothing)
-        ///     2) Obtain power spectrum
-        ///     3) Apply gammatone filters (squared)
-        ///     4) Medium-time processing (asymmetric noise suppression, temporal masking, spectral smoothing)
-        ///     5) Apply nonlinearity
-        ///     6) Do dct-II (normalized)
+        ///     0) Apply window (base extractor does it)
+        ///     1) Obtain power spectrum
+        ///     2) Apply gammatone filters (squared)
+        ///     3) Medium-time processing (asymmetric noise suppression, temporal masking, spectral smoothing)
+        ///     4) Apply nonlinearity
+        ///     5) Do dct-II (normalized)
         /// 
         /// </summary>
         /// <param name="samples">Samples for analysis</param>
@@ -232,33 +217,25 @@ namespace NWaves.FeatureExtractors
 
             _step++;
 
-            // fill zeros to fftSize if frameSize < fftSize
-
-            for (var k = FrameSize; k < block.Length; block[k++] = 0) ;
-
-            // 1) apply window
-
-            block.ApplyWindow(_windowSamples);
-
-            // 2) calculate power spectrum
+            // 1) calculate power spectrum
 
             _fft.PowerSpectrum(block, _spectrum, false);
 
-            // 3) apply gammatone filterbank
+            // 2) apply gammatone filterbank
 
             FilterBanks.Apply(FilterBank, _spectrum, _gammatoneSpectrum);
 
 
             // =============================================================
-            // 4) medium-time processing blocks:
+            // 3) medium-time processing blocks:
 
-            // 4.1) temporal integration (zero-phase moving average filter)
+            // 3.1) temporal integration (zero-phase moving average filter)
 
             _ringBuffer.Add(_gammatoneSpectrum);
 
             var spectrumQ = _ringBuffer.AverageSpectrum;
 
-            // 4.2) asymmetric noise suppression
+            // 3.2) asymmetric noise suppression
 
             if (_step == 2 * M)
             {
@@ -301,7 +278,7 @@ namespace NWaves.FeatureExtractors
                         _avgSpectrumQ1[j] = LambdaB * _avgSpectrumQ1[j] + (1 - LambdaB) * _filteredSpectrumQ[j];
                     }
 
-                    // 4.3) temporal masking
+                    // 3.3) temporal masking
 
                     var threshold = _filteredSpectrumQ[j];
 
@@ -323,7 +300,7 @@ namespace NWaves.FeatureExtractors
                 }
 
 
-                // 4.4) spectral smoothing 
+                // 3.4) spectral smoothing 
 
                 for (var j = 0; j < _spectrumS.Length; j++)
                 {
@@ -344,7 +321,7 @@ namespace NWaves.FeatureExtractors
                     _smoothedSpectrumS[j] /= total;
                 }
 
-                // 4.5) mean power normalization
+                // 3.5) mean power normalization
 
                 var centralSpectrum = _ringBuffer.CentralSpectrum;
 
@@ -365,7 +342,7 @@ namespace NWaves.FeatureExtractors
 
                 // =============================================================
 
-                // 5) nonlinearity (power ^ d  or  Log)
+                // 4) nonlinearity (power ^ d  or  Log)
 
                 if (_power != 0)
                 {
@@ -382,7 +359,7 @@ namespace NWaves.FeatureExtractors
                     }
                 }
 
-                // 6) dct-II (Norm = normalized)
+                // 5) dct-II (Norm = normalized)
 
                 var pnccs = new float[FeatureCount];
                 _dct.DirectNorm(_smoothedSpectrum, pnccs);

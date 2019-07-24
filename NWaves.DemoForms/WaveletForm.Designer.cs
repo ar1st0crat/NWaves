@@ -44,6 +44,8 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.comboBoxLevel = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // comboBoxFamily
@@ -84,11 +86,11 @@
             this.linePlotWavelet.AutoScroll = true;
             this.linePlotWavelet.BackColor = System.Drawing.Color.White;
             this.linePlotWavelet.ForeColor = System.Drawing.Color.Blue;
-            this.linePlotWavelet.Location = new System.Drawing.Point(15, 170);
+            this.linePlotWavelet.Location = new System.Drawing.Point(15, 194);
             this.linePlotWavelet.Name = "linePlotWavelet";
             this.linePlotWavelet.PaddingX = 30;
             this.linePlotWavelet.PaddingY = 20;
-            this.linePlotWavelet.Size = new System.Drawing.Size(357, 317);
+            this.linePlotWavelet.Size = new System.Drawing.Size(357, 293);
             this.linePlotWavelet.Stride = 1;
             this.linePlotWavelet.TabIndex = 5;
             this.linePlotWavelet.Thickness = 1;
@@ -111,7 +113,7 @@
             // 
             // buttonCompute
             // 
-            this.buttonCompute.Location = new System.Drawing.Point(66, 95);
+            this.buttonCompute.Location = new System.Drawing.Point(66, 124);
             this.buttonCompute.Name = "buttonCompute";
             this.buttonCompute.Size = new System.Drawing.Size(162, 56);
             this.buttonCompute.TabIndex = 8;
@@ -189,11 +191,30 @@
             this.label7.TabIndex = 16;
             this.label7.Text = "Reconstructed from FWT";
             // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(12, 97);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(42, 17);
+            this.label8.TabIndex = 18;
+            this.label8.Text = "Level";
+            // 
+            // comboBoxLevel
+            // 
+            this.comboBoxLevel.FormattingEnabled = true;
+            this.comboBoxLevel.Location = new System.Drawing.Point(66, 94);
+            this.comboBoxLevel.Name = "comboBoxLevel";
+            this.comboBoxLevel.Size = new System.Drawing.Size(162, 24);
+            this.comboBoxLevel.TabIndex = 17;
+            // 
             // WaveletForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1015, 547);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.comboBoxLevel);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
@@ -236,5 +257,7 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ComboBox comboBoxLevel;
     }
 }

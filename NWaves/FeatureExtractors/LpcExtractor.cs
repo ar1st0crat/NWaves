@@ -30,16 +30,6 @@ namespace NWaves.FeatureExtractors
         protected readonly int _order;
 
         /// <summary>
-        /// Type of the window function
-        /// </summary>
-        protected readonly WindowTypes _window;
-
-        /// <summary>
-        /// Window samples
-        /// </summary>
-        protected readonly float[] _windowSamples;
-
-        /// <summary>
         /// Internal convolver
         /// </summary>
         protected readonly Convolver _convolver;
@@ -70,18 +60,12 @@ namespace NWaves.FeatureExtractors
                             double preEmphasis = 0,
                             WindowTypes window = WindowTypes.Rectangular)
 
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
         {
             _order = order;
 
             _blockSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
             _convolver = new Convolver(_blockSize);
-
-            _window = window;
-            if (_window != WindowTypes.Rectangular)
-            {
-                _windowSamples = Window.OfType(_window, FrameSize);
-            }
 
             _reversed = new float[FrameSize];
             _cc = new float[_blockSize];
@@ -99,20 +83,13 @@ namespace NWaves.FeatureExtractors
         /// <returns>LPC vector</returns>
         public override float[] ProcessFrame(float[] block)
         {
-            // 1) apply window (usually signal isn't windowed for LPC, so we check first)
-
-            if (_window != WindowTypes.Rectangular)
-            {
-                block.ApplyWindow(_windowSamples);
-            }
-
             block.FastCopyTo(_reversed, FrameSize);
 
-            // 2) autocorrelation
+            // 1) autocorrelation
 
             _convolver.CrossCorrelate(block, _reversed, _cc);
 
-            // 3) levinson-durbin
+            // 2) levinson-durbin
 
             var lpc = new float[_order + 1];
             var err = Lpc.LevinsonDurbin(_cc, lpc, _order, FrameSize - 1);

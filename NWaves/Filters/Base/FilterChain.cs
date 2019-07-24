@@ -18,9 +18,9 @@ namespace NWaves.Filters.Base
         /// Constructor
         /// </summary>
         /// <param name="filters"></param>
-        public FilterChain(IEnumerable<IOnlineFilter> filters)
+        public FilterChain(IEnumerable<IOnlineFilter> filters = null)
         {
-            _filters = filters.ToList();
+            _filters = filters?.ToList() ?? new List<IOnlineFilter>();
         }
 
         /// <summary>
@@ -28,6 +28,12 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="filter"></param>
         public void Add(IOnlineFilter filter) => _filters.Add(filter);
+
+        /// <summary>
+        /// Remove filter at specified index from the chain
+        /// </summary>
+        /// <param name="idx"></param>
+        public void RemoveAt(int idx) => _filters.RemoveAt(idx);
 
         /// <summary>
         /// Process sample by the chain of filters

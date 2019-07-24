@@ -17,6 +17,8 @@ namespace NWaves.DemoForms
         {
             comboBoxFamily.Items.AddRange(Enum.GetNames(typeof(WaveletFamily)));
             comboBoxTaps.Items.AddRange(Enumerable.Range(1, 20).Select(i => i.ToString()).ToArray());
+            comboBoxLevel.Items.Add("Auto");
+            comboBoxLevel.Items.AddRange(Enumerable.Range(1, 20).Select(i => i.ToString()).ToArray());
         }
 
         private void buttonCompute_Click(object sender, EventArgs e)
@@ -24,6 +26,7 @@ namespace NWaves.DemoForms
             var size = int.Parse(textBoxSize.Text);
             var family = (WaveletFamily)comboBoxFamily.SelectedIndex;
             var taps = comboBoxTaps.SelectedIndex + 1;
+            var level = comboBoxLevel.SelectedIndex;
 
             var wavelet = new Wavelet(family, taps);
 
@@ -32,8 +35,8 @@ namespace NWaves.DemoForms
             var output = new float[size];
             var reconstructed = new float[size];
 
-            fwt.Direct(Enumerable.Range(0, size).Select(x => (float)x).ToArray(), output);
-            fwt.Inverse(output, reconstructed);
+            fwt.Direct(Enumerable.Range(0, size).Select(x => (float)x).ToArray(), output, level);
+            fwt.Inverse(output, reconstructed, level);
 
             var res = string.Join("\r\n", output.Select(o => o.ToString()));
             textBoxResult.Text = res;

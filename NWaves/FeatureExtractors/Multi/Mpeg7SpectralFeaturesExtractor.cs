@@ -90,16 +90,6 @@ namespace NWaves.FeatureExtractors.Multi
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// Type of the window function
-        /// </summary>
-        protected readonly WindowTypes _window;
-
-        /// <summary>
-        /// Window samples
-        /// </summary>
-        protected readonly float[] _windowSamples;
-
-        /// <summary>
         /// Internal buffer for magnitude spectrum
         /// </summary>
         protected readonly float[] _spectrum;
@@ -149,7 +139,7 @@ namespace NWaves.FeatureExtractors.Multi
                                               WindowTypes window = WindowTypes.Hamming,
                                               IReadOnlyDictionary<string, object> parameters = null)
 
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis)
+            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
         {
             if (featureList == "all" || featureList == "full")
             {
@@ -234,9 +224,6 @@ namespace NWaves.FeatureExtractors.Multi
 
             _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
             _fft = new RealFft(_blockSize);
-
-            _window = window;
-            _windowSamples = Window.OfType(_window, FrameSize);
 
             _frequencyBands = frequencyBands ?? FilterBanks.OctaveBands(6, _blockSize, samplingRate);
             _filterbank = FilterBanks.Rectangular(_blockSize, samplingRate, _frequencyBands);
@@ -386,14 +373,6 @@ namespace NWaves.FeatureExtractors.Multi
         /// <returns></returns>
         public override float[] ProcessFrame(float[] block)
         {
-            // fill zeros to fftSize if frameSize < fftSize
-
-            for (var k = FrameSize; k < block.Length; block[k++] = 0) ;
-
-            // apply window
-
-            block.ApplyWindow(_windowSamples);
-
             // compute and prepare spectrum
 
             _fft.MagnitudeSpectrum(block, _spectrum);

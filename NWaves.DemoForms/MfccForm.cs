@@ -167,6 +167,8 @@ namespace NWaves.DemoForms
                                                   window: WindowTypes.Hamming,
                                                   logFloor: logFloor);
 
+            //var mfccExtractor = new WaveletExtractor(samplingRate, 512.0 / samplingRate, 512.0 / samplingRate, "db5", 32);
+
             _mfccVectors = mfccExtractor.ComputeFrom(_signal);
 
             //FeaturePostProcessing.NormalizeMean(_mfccVectors);        // optional
@@ -205,7 +207,7 @@ namespace NWaves.DemoForms
     // HTK does this pre-processing per frame instead of entire signal
     // (which is weird given that frames overlap).
 
-    // Also: DON't normalize signal! If it's normalized then multiply by 32768 before processing:
+    // Also: HTK DOESN't normalize signal! If it's normalized then multiply by 32768 before processing:
 
     //      _signal *= 32768;
     //      _extractor.ComputeFrom(_signal);
@@ -332,7 +334,6 @@ namespace NWaves.DemoForms
 //_mfccVectors = mfccExtractor.ComputeFrom(_signal);
 
 //            FeaturePostProcessing.NormalizeMean(_mfccVectors);
-//            FeaturePostProcessing.AddDeltas(_mfccVectors);
 
 
 //            // ============== I use this code to test PNCC results (just ignore it))): ========================

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using NWaves.Signals;
 using NWaves.Utils;
+using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors.Base
 {
@@ -82,38 +83,42 @@ namespace NWaves.FeatureExtractors.Base
         protected float _preEmphasis;
 
         /// <summary>
-        /// Constructor requires FrameSize and HopSize to be set
+        /// Type of the window function
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="frameSize"></param>
-        /// <param name="hopSize"></param>
-        protected FeatureExtractor(int samplingRate, int frameSize, int hopSize, double preEmphasis = 0)
-        {
-            FrameDuration = (double) frameSize / samplingRate;
-            HopDuration = (double) hopSize / samplingRate;
-            FrameSize = frameSize;
-            HopSize = hopSize;
-            SamplingRate = samplingRate;
-            _blockSize = FrameSize;
-            _preEmphasis = (float)preEmphasis;
-        }
+        protected readonly WindowTypes _window;
 
         /// <summary>
-        /// Constructor requires FrameSize and HopSize to be set
+        /// Window samples
+        /// </summary>
+        protected readonly float[] _windowSamples;
+
+        /// <summary>
+        /// Construct extractor from sampling rate, frame duration and hop duration (in seconds)
         /// </summary>
         /// <param name="samplingRate"></param>
         /// <param name="frameDuration"></param>
         /// <param name="hopDuration"></param>
         /// <param name="preEmphasis"></param>
-        protected FeatureExtractor(int samplingRate, double frameDuration, double hopDuration, double preEmphasis = 0)
+        /// <param name="window"></param>
+        protected FeatureExtractor(int samplingRate,
+                                   double frameDuration,
+                                   double hopDuration,
+                                   double preEmphasis = 0,
+                                   WindowTypes window = WindowTypes.Rectangular)
         {
-            FrameSize = (int) (samplingRate * frameDuration);
-            HopSize = (int) (samplingRate * hopDuration);
+            FrameSize = (int)(samplingRate * frameDuration);
+            HopSize = (int)(samplingRate * hopDuration);
             FrameDuration = frameDuration;
             HopDuration = hopDuration;
             SamplingRate = samplingRate;
             _blockSize = FrameSize;
             _preEmphasis = (float)preEmphasis;
+            _window = window;
+
+            if (window != WindowTypes.Rectangular)
+            {
+                _windowSamples = Window.OfType(window, FrameSize);
+            }
         }
 
         /// <summary>
@@ -137,11 +142,28 @@ namespace NWaves.FeatureExtractors.Base
 
             var lastSample = endSample - frameSize;
 
+            // Main processing loop:
+
+            // at each iteration one frame is processed;
+            // the frame is contained within a block which, in general, can have larger size
+            // (usually it's a zero-padded frame for radix-2 FFT);
+            // this block array is reused so the frame needs to be zero-padded at each iteration.
+            // Array.Clear() is quite slow for *small* arrays compared to zero-fill in a for-loop.
+            // Since usually the frame size is chosen to be close to block (FFT) size 
+            // we don't need to pad very big number of zeros, so we use for-loop here.
+
             for (var i = startSample; i <= lastSample; i += hopSize)
             {
-                samples.FastCopyTo(block, frameSize, i);    // prepare new block for processing
+                // prepare new block for processing ====================================================
 
-                if (_preEmphasis > 1e-10f)                  // (optionally) do pre-emphasis
+                samples.FastCopyTo(block, frameSize, i);    // copy FrameSize samples to 'block' buffer
+
+                for (var k = frameSize; k < block.Length; block[k++] = 0) ;   // pad zeros to blockSize
+
+
+                // (optionally) do pre-emphasis ========================================================
+
+                if (_preEmphasis > 1e-10f)
                 {
                     for (var k = 0; k < frameSize; k++)
                     {
@@ -152,7 +174,17 @@ namespace NWaves.FeatureExtractors.Base
                     prevSample = samples[i + hopSize - 1];
                 }
 
-                var features = ProcessFrame(block);         // process this block and compute features
+                // (optionally) apply window
+
+                if (_windowSamples != null)
+                {
+                    block.ApplyWindow(_windowSamples);
+                }
+
+
+                // process this block and compute features =============================================
+
+                var features = ProcessFrame(block);
 
                 featureVectors.Add(new FeatureVector
                 {
