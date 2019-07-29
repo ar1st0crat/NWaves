@@ -48,7 +48,7 @@ namespace NWaves.DemoForms
 
             using (var stream = new FileStream(ofd.FileName, FileMode.Open))
             {
-                var waveFile = new WaveFile(stream, true);
+                var waveFile = new WaveFile(stream);
                 _signal = waveFile[Channels.Left];
             }
 
@@ -169,7 +169,7 @@ namespace NWaves.DemoForms
 
             //var mfccExtractor = new WaveletExtractor(samplingRate, 512.0 / samplingRate, 512.0 / samplingRate, "db5", 32);
 
-            _mfccVectors = mfccExtractor.ComputeFrom(_signal);
+            _mfccVectors = mfccExtractor.ParallelComputeFrom(_signal);
 
             //FeaturePostProcessing.NormalizeMean(_mfccVectors);        // optional
             //FeaturePostProcessing.AddDeltas(_mfccVectors);
@@ -214,6 +214,8 @@ namespace NWaves.DemoForms
 
     class MfccExtractorTestHtk : MfccExtractorHtk
     {
+        private readonly float[] _hammingWin;
+
         public MfccExtractorTestHtk(int samplingRate,
                                     int featureCount,
                                     double frameDuration = 0.0256/*sec*/,
@@ -226,10 +228,11 @@ namespace NWaves.DemoForms
                                     double preEmphasis = 0,
                                     bool includeEnergy = false,
                                     SpectrumType spectrumType = SpectrumType.Power,
-                                    WindowTypes window = WindowTypes.Hamming)
+                                    WindowTypes window = WindowTypes.Rectangular)       // we will apply Hamming window explicitly
             
             : base(samplingRate, featureCount, frameDuration, hopDuration, filterbankSize, lowFreq, highFreq, fftSize, lifterSize, preEmphasis, includeEnergy, spectrumType, window)
         {
+            _hammingWin = Window.OfType(window, FrameSize);
         }
 
         /// <summary>
@@ -264,6 +267,11 @@ namespace NWaves.DemoForms
             block[0] *= 1 - pre;
 
 
+            // 3) apply hamming window:
+
+            block.ApplyWindow(_hammingWin);
+
+            
             // ...and now continue standard computations:
 
             return base.ProcessFrame(block);

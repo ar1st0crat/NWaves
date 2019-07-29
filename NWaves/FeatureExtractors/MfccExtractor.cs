@@ -312,6 +312,11 @@ namespace NWaves.FeatureExtractors
             if (_includeEnergy)
             {
                 mfccs[0] = (float)(Math.Log(block.Sum(x => x * x)));
+
+                // TODO: apply floor?
+
+                // var en = block.Sum(x => x * x);
+                // mfccs[0] = (float)(Math.Log(Math.Max(en, someFloor)));
             }
 
             return mfccs;

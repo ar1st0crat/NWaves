@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.9.2</Version>
+    <Version>0.9.3</Version>
     <Company>Tim Sharii</Company>
     <Authors>Tim Sharii</Authors>
     <Description>.NET library for 1d signal processing focused specifically on audio processing</Description>

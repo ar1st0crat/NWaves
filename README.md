@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Version](https://img.shields.io/nuget/v/NWaves.svg?style=flat)
 ![NuGet](https://img.shields.io/nuget/dt/NWaves.svg?style=flat)
+[![Gitter](https://badges.gitter.im/NWaves/community.svg)](https://gitter.im/NWaves/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ![logo](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/logo_draft.bmp)
 
