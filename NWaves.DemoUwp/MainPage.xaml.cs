@@ -27,9 +27,6 @@ namespace NWaves.DemoUwp
         private AudioFileInputNode fileInputNode;
         private AudioDeviceOutputNode deviceOutputNode;
 
-        public float Freq { get; set; }
-        public float Q { get; set; }
-
         public MainPage()
         {
             this.InitializeComponent();
@@ -234,7 +231,7 @@ namespace NWaves.DemoUwp
         {
             if (fileInputNode != null)
             {
-                fileInputNode.EffectDefinitions.Last().Properties["Q"] = (float)e.NewValue;
+                fileInputNode.EffectDefinitions.Last().Properties["Q"] = (float)e.NewValue / 50;
             }
         }
     }

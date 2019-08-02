@@ -13,7 +13,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWaves.DemoUwp", "NWaves.De
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWaves.DemoUwpEffect", "NWaves.DemoUwpEffect\NWaves.DemoUwpEffect.csproj", "{3E65575D-3719-48D3-BB57-4E2453E83936}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWaves.DemoXamarin.Android", "NWaves.DemoXamarin\NWaves.DemoXamarin.Android\NWaves.DemoXamarin.Android.csproj", "{4E69D1A8-4D08-436A-9CBB-106770206401}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NWaves.DemoXamarin", "NWaves.DemoXamarin\NWaves.DemoXamarin\NWaves.DemoXamarin.shproj", "{7136AAF5-46B4-47D6-BE39-D331CD4345D0}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		NWaves.DemoXamarin\NWaves.DemoXamarin\NWaves.DemoXamarin.projitems*{4e69d1a8-4d08-436a-9cbb-106770206401}*SharedItemsImports = 4
+		NWaves.DemoXamarin\NWaves.DemoXamarin\NWaves.DemoXamarin.projitems*{7136aaf5-46b4-47d6-be39-d331cd4345d0}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|ARM = Debug|ARM
@@ -109,6 +117,30 @@ Global
 		{3E65575D-3719-48D3-BB57-4E2453E83936}.Release|x64.Build.0 = Release|x64
 		{3E65575D-3719-48D3-BB57-4E2453E83936}.Release|x86.ActiveCfg = Release|x86
 		{3E65575D-3719-48D3-BB57-4E2453E83936}.Release|x86.Build.0 = Release|x86
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Debug|ARM.Build.0 = Debug|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Debug|ARM.Deploy.0 = Debug|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Debug|x64.Build.0 = Debug|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Debug|x86.Build.0 = Debug|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Debug|x86.Deploy.0 = Debug|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Release|ARM.ActiveCfg = Release|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Release|ARM.Build.0 = Release|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Release|ARM.Deploy.0 = Release|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Release|x64.ActiveCfg = Release|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Release|x64.Build.0 = Release|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Release|x64.Deploy.0 = Release|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Release|x86.ActiveCfg = Release|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Release|x86.Build.0 = Release|Any CPU
+		{4E69D1A8-4D08-436A-9CBB-106770206401}.Release|x86.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

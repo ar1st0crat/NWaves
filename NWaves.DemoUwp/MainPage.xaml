@@ -50,13 +50,33 @@
             <StackPanel Grid.Row="1">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Max freq" VerticalAlignment="Center" Margin="0,0,20,0" />
-                    <Slider ValueChanged="MaxFreqChanged" Minimum="1000" Maximum="5000" TickFrequency="100" SmallChange="100" LargeChange="100" Width="300"  VerticalAlignment="Center" />
-                    <TextBox Text="{Binding Freq, UpdateSourceTrigger=PropertyChanged}" Height="50" Width="120"  VerticalAlignment="Center" />
+                    <Slider Name="FreqSlider"
+                            Value="{Binding Freq, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            ValueChanged="MaxFreqChanged"
+                            Minimum="500"
+                            Maximum="5000"
+                            Width="200"
+                            VerticalAlignment="Center" />
+                    <TextBox Text="{Binding ElementName=FreqSlider, Path=Value}"
+                             FontSize="24"
+                             Height="50"
+                             Width="120"
+                             VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Q factor" VerticalAlignment="Center" Margin="0,0,22,0" />
-                    <Slider ValueChanged="QChanged" Minimum="0.2" Maximum="5.0" TickFrequency="0.2" SmallChange="0.2" LargeChange="0.2" Width="300"  VerticalAlignment="Center" />
-                    <TextBox Text="{Binding Q, UpdateSourceTrigger=PropertyChanged}" Height="50" Width="120"  VerticalAlignment="Center" />
+                    <TextBlock Text="Q factor" VerticalAlignment="Center" Margin="0,0,25,0" />
+                    <Slider Name="QSlider"
+                            Value="{Binding Q, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            ValueChanged="QChanged"
+                            Minimum="1"
+                            Maximum="100"
+                            TickPlacement="BottomRight" 
+                            Width="200"
+                            VerticalAlignment="Center" />
+                    <TextBox Text="{Binding ElementName=QSlider, Path=Value}"
+                             FontSize="24"
+                             Height="50" Width="120"
+                             VerticalAlignment="Center" />
                 </StackPanel>
             </StackPanel>
             
