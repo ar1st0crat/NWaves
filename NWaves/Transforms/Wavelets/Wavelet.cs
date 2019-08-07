@@ -19,7 +19,7 @@ namespace NWaves.Transforms.Wavelets
         public int Length { get; set; }
 
         /// <summary>
-        /// HP coefficients for decomposition
+        /// LP coefficients for decomposition
         /// </summary>
         public float[] LoD { get; set; }
 

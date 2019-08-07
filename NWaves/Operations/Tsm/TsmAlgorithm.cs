@@ -23,6 +23,6 @@
         /// <summary>
         /// Paul stretch
         /// </summary>
-        PaulStetch = 3
+        PaulStretch = 3
     }
 }

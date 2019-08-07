@@ -15,8 +15,8 @@ namespace NWaves.DemoXamarin
 
 
         public MainPage()
-		{
-			InitializeComponent();
+        {
+            InitializeComponent();
 
             _audioService = DependencyService.Get<IAudioService>();
             _audioService.PitchEstimated += UpdatePitch;

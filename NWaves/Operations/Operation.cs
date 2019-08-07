@@ -207,7 +207,7 @@ namespace NWaves.Operations
                 case TsmAlgorithm.PhaseVocoderPhaseLocking:
                     stretchFilter = new PhaseLockingVocoder(stretch, hopSize, windowSize);
                     break;
-                case TsmAlgorithm.PaulStetch:
+                case TsmAlgorithm.PaulStretch:
                     stretchFilter = new PaulStretch(stretch, hopSize, windowSize);
                     break;
                 default:
@@ -246,7 +246,7 @@ namespace NWaves.Operations
                 case TsmAlgorithm.PhaseVocoderPhaseLocking:
                     stretchFilter = new PhaseLockingVocoder(stretch, frameSize / 8, frameSize);
                     break;
-                case TsmAlgorithm.PaulStetch:
+                case TsmAlgorithm.PaulStretch:
                     stretchFilter = new PaulStretch(stretch, frameSize / 10, frameSize * 4);
                     break;
                 default:
