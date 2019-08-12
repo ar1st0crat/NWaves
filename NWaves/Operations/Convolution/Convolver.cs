@@ -65,9 +65,6 @@ namespace NWaves.Operations.Convolution
         {
             var length = signal.Length + kernel.Length - 1;
 
-            var fft = _fft;
-            var fftSize = _fftSize;
-
             if (_fft == null)
             {
                 PrepareMemory(MathUtils.NextPowerOfTwo(length));
@@ -93,8 +90,6 @@ namespace NWaves.Operations.Convolution
         {
             Array.Clear(_real1, 0, _fftSize);
             Array.Clear(_real2, 0, _fftSize);
-            Array.Clear(_imag1, 0, _fftSize);
-            Array.Clear(_imag2, 0, _fftSize);
 
             input.FastCopyTo(_real1, input.Length);
             kernel.FastCopyTo(_real2, kernel.Length);

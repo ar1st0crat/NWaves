@@ -53,18 +53,18 @@ namespace NWaves.DemoForms
                 _signal = waveFile[Channels.Average];
             }
 
-            _stft = new Stft(512, 64, _windowType);
+            _stft = new Stft(400, 128, _windowType);
 
             _spectrogram = _stft.Spectrogram(_signal);
 
-            //var processed = _stft.Inverse(_stft.Direct(_signal));
-            //_processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
+            var processed = _stft.Inverse(_stft.Direct(_signal));
+            _processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
 
 
             // 1) check also this:
-            var mp = _stft.MagnitudePhaseSpectrogram(_signal);
-            var processed = _stft.ReconstructMagnitudePhase(mp);
-            _processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
+            //var mp = _stft.MagnitudePhaseSpectrogram(_signal);
+            //var processed = _stft.ReconstructMagnitudePhase(mp);
+            //_processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
 
             // 2) or check this:
             //var processed = new GriffinLimReconstructor(_spectrogram, _stft).Reconstruct();

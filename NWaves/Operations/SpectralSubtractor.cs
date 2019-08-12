@@ -125,16 +125,15 @@ namespace NWaves.Operations
         {
             var numFrames = 0;
 
-            var noiseAcc = new float[_fftSize / 2 + 1];
+            var noiseAcc = new float[_fftSize / 2 + 2];
 
             for (var pos = 0; pos + _fftSize < noise.Length; pos += _hopSize, numFrames++)
             {
                 noise.Samples.FastCopyTo(_re, _fftSize, pos);
-                Array.Clear(_im, 0, _fftSize);
 
                 _fft.Direct(_re, _re, _im);
 
-                for (var j = 0; j <= _fftSize / 2; j++)
+                for (var j = 1; j <= _fftSize / 2; j++)
                 {
                     noiseAcc[j] += _re[j] * _re[j] + _im[j] * _im[j];
                 }
@@ -142,13 +141,10 @@ namespace NWaves.Operations
 
             // (including smoothing)
 
-            for (var j = 1; j < _fftSize / 2; j++)
+            for (var j = 1; j <= _fftSize / 2; j++)
             {
                 _noiseEstimate[j] = (noiseAcc[j - 1] + noiseAcc[j] + noiseAcc[j + 1]) / (3 * numFrames);
             }
-
-            _noiseEstimate[0] /= numFrames;
-            _noiseEstimate[_fftSize / 2] /= numFrames;
         }
 
         /// <summary>
@@ -176,7 +172,6 @@ namespace NWaves.Operations
             float k = (AlphaMin - AlphaMax) / (SnrMax - SnrMin);
             float b = AlphaMax - k * SnrMin;
 
-            Array.Clear(_im, 0, _fftSize);
             _dl.FastCopyTo(_re, _fftSize);
 
             _re.ApplyWindow(_window);

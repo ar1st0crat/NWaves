@@ -62,16 +62,14 @@ namespace NWaves.Operations.Convolution
         /// <param name="fftSize"></param>
         public OlsBlockConvolver(IEnumerable<float> kernel, int fftSize)
         {
+            _kernel = kernel.ToArray();
+
             _fftSize = MathUtils.NextPowerOfTwo(fftSize);
 
-            if (kernel.Count() > _fftSize)
-            {
-                throw new ArgumentException("Kernel length must not exceed the size of FFT!");
-            }
+            Guard.AgainstExceedance(_kernel.Length, _fftSize, "Kernel length", "the size of FFT");
 
             _fft = new RealFft(_fftSize);
 
-            _kernel = kernel.ToArray();
             _kernelSpectrumRe = _kernel.PadZeros(_fftSize);
             _kernelSpectrumIm = new float[_fftSize];
             _convRe = new float[_fftSize];
@@ -134,7 +132,6 @@ namespace NWaves.Operations.Convolution
 
             var halfSize = _fftSize / 2;
 
-            Array.Clear(_blockIm, 0, _fftSize);
             _lastSaved.FastCopyTo(_blockRe, M - 1);
             _blockRe.FastCopyTo(_lastSaved, M - 1, HopSize);
 

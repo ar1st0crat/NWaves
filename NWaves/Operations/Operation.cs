@@ -93,11 +93,6 @@ namespace NWaves.Operations
                                                    int fftSize,
                                                    FilteringMethod method = FilteringMethod.OverlapSave)
         {
-            if (kernel.Length > fftSize)
-            {
-                throw new ArgumentException("Kernel length must not exceed the size of FFT!");
-            }
-
             IFilter blockConvolver;
 
             if (method == FilteringMethod.OverlapAdd)
@@ -321,7 +316,7 @@ namespace NWaves.Operations
         /// <param name="signal1"></param>
         /// <param name="signal2"></param>
         /// <returns></returns>
-        static DiscreteSignal ConvolveDirect(DiscreteSignal signal1, DiscreteSignal signal2)
+        public static DiscreteSignal ConvolveDirect(DiscreteSignal signal1, DiscreteSignal signal2)
         {
             var a = signal1.Samples;
             var b = signal2.Samples;
@@ -349,7 +344,7 @@ namespace NWaves.Operations
         /// <param name="signal1"></param>
         /// <param name="signal2"></param>
         /// <returns></returns>
-        static DiscreteSignal CrossCorrelateDirect(DiscreteSignal signal1, DiscreteSignal signal2)
+        public static DiscreteSignal CrossCorrelateDirect(DiscreteSignal signal1, DiscreteSignal signal2)
         {
             var a = signal1.Samples;
             var b = signal2.Samples;

@@ -16,62 +16,62 @@ namespace NWaves.Operations.Tsm
         /// <summary>
         /// Hop size at analysis stage (STFT decomposition)
         /// </summary>
-        private readonly int _hopAnalysis;
+        protected readonly int _hopAnalysis;
 
         /// <summary>
         /// Hop size at synthesis stage (STFT merging)
         /// </summary>
-        private readonly int _hopSynthesis;
+        protected readonly int _hopSynthesis;
 
         /// <summary>
         /// Size of FFT for analysis and synthesis
         /// </summary>
-        private readonly int _fftSize;
+        protected readonly int _fftSize;
 
         /// <summary>
         /// Stretch ratio
         /// </summary>
-        private readonly double _stretch;
+        protected readonly double _stretch;
 
         /// <summary>
         /// Internal FFT transformer
         /// </summary>
-        private readonly RealFft _fft;
+        protected readonly RealFft _fft;
 
         /// <summary>
         /// Window coefficients
         /// </summary>
-        private readonly float[] _window;
+        protected readonly float[] _window;
 
         /// <summary>
         /// ISTFT normalization gain
         /// </summary>
-        private readonly float _gain;
+        protected readonly float _gain;
 
         /// <summary>
         /// Linearly spaced frequencies
         /// </summary>
-        private readonly double[] _omega;
+        protected readonly double[] _omega;
 
         /// <summary>
         /// Internal buffer for real parts of analyzed block
         /// </summary>
-        private readonly float[] _re;
+        protected readonly float[] _re;
 
         /// <summary>
         /// Internal buffer for imaginary parts of analyzed block
         /// </summary>
-        private readonly float[] _im;
+        protected readonly float[] _im;
 
         /// <summary>
         /// Array of phases computed at previous step
         /// </summary>
-        private readonly double[] _prevPhase;
+        protected readonly double[] _prevPhase;
 
         /// <summary>
         /// Array of new synthesized phases
         /// </summary>
-        private readonly double[] _phaseTotal;
+        protected readonly double[] _phaseTotal;
 
         /// <summary>
         /// Constructor
@@ -119,30 +119,17 @@ namespace NWaves.Operations.Tsm
             for (var posAnalysis = 0; posAnalysis + _fftSize < input.Length; posAnalysis += _hopAnalysis)
             {
                 input.FastCopyTo(_re, _fftSize, posAnalysis);
-                Array.Clear(_im, 0, _fftSize);
+
+                // analysis ==================================================
 
                 _re.ApplyWindow(_window);
-
                 _fft.Direct(_re, _re, _im);
 
-                for (var j = 1; j <= _fftSize / 2; j++)
-                {
-                    var mag = Math.Sqrt(_re[j] * _re[j] + _im[j] * _im[j]);
-                    var phase = Math.Atan2(_im[j], _re[j]);
+                // processing ================================================
 
-                    var delta = phase - _prevPhase[j];
+                ProcessSpectrum();
 
-                    var deltaUnwrapped = delta - _hopAnalysis * _omega[j];
-                    var deltaWrapped = MathUtils.Mod(deltaUnwrapped + Math.PI, 2 * Math.PI) - Math.PI;
-
-                    var freq = _omega[j] + deltaWrapped / _hopAnalysis;
-
-                    _phaseTotal[j] += _hopSynthesis * freq;
-                    _prevPhase[j] = phase;
-
-                    _re[j] = (float)(mag * Math.Cos(_phaseTotal[j]));
-                    _im[j] = (float)(mag * Math.Sin(_phaseTotal[j]));
-                }
+                // synthesis =================================================
 
                 _fft.Inverse(_re, _im, _re);
 
@@ -167,7 +154,36 @@ namespace NWaves.Operations.Tsm
             return new DiscreteSignal(signal.SamplingRate, output);
         }
 
-        public void Reset()
+        /// <summary>
+        /// Process one spectrum at each STFT step.
+        /// This routine is different for different PV-based techniques.
+        /// </summary>
+        public virtual void ProcessSpectrum()
+        {
+            for (var j = 1; j <= _fftSize / 2; j++)
+            {
+                var mag = Math.Sqrt(_re[j] * _re[j] + _im[j] * _im[j]);
+                var phase = Math.Atan2(_im[j], _re[j]);
+
+                var delta = phase - _prevPhase[j];
+
+                var deltaUnwrapped = delta - _hopAnalysis * _omega[j];
+                var deltaWrapped = MathUtils.Mod(deltaUnwrapped + Math.PI, 2 * Math.PI) - Math.PI;
+
+                var freq = _omega[j] + deltaWrapped / _hopAnalysis;
+
+                _phaseTotal[j] += _hopSynthesis * freq;
+                _prevPhase[j] = phase;
+
+                _re[j] = (float)(mag * Math.Cos(_phaseTotal[j]));
+                _im[j] = (float)(mag * Math.Sin(_phaseTotal[j]));
+            }
+        }
+
+        /// <summary>
+        /// Reset phase vocoder
+        /// </summary>
+        public virtual void Reset()
         {
             Array.Clear(_phaseTotal, 0, _phaseTotal.Length);
             Array.Clear(_prevPhase, 0, _prevPhase.Length);

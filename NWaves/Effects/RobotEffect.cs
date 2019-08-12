@@ -119,7 +119,6 @@ namespace NWaves.Effects
         /// </summary>
         public void ProcessFrame()
         {
-            Array.Clear(_im, 0, _fftSize);
             _dl.FastCopyTo(_re, _fftSize);
 
             _re.ApplyWindow(_window);

@@ -112,8 +112,6 @@ namespace NWaves.Effects
         /// </summary>
         public void ProcessFrame()
         {
-            Array.Clear(_im1, 0, _fftSize);
-            Array.Clear(_im2, 0, _fftSize);
             _dl1.FastCopyTo(_re1, _fftSize);
             _dl2.FastCopyTo(_re2, _fftSize);
 

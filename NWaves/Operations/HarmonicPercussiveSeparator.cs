@@ -73,7 +73,7 @@ namespace NWaves.Operations
         /// </summary>
         /// <param name="signal"></param>
         /// <returns></returns>
-        public Tuple<MagnitudePhaseList, MagnitudePhaseList> EvaluateSpectrograms(DiscreteSignal signal)
+        public (MagnitudePhaseList, MagnitudePhaseList) EvaluateSpectrograms(DiscreteSignal signal)
         {
             // spectrogram memory will be reused for harmonic magnitudes
 
@@ -82,7 +82,7 @@ namespace NWaves.Operations
 
             // median filtering along frequency axis:
 
-            var percussiveMagnitudes = new List<float[]>();
+            var percussiveMagnitudes = new List<float[]>(harmonicMagnitudes.Count);
 
             for (var i = 0; i < harmonicMagnitudes.Count; i++)
             {
@@ -127,7 +127,7 @@ namespace NWaves.Operations
                 Phases = harmonicSpectrogram.Phases
             };
 
-            return new Tuple<MagnitudePhaseList, MagnitudePhaseList>(harmonicSpectrogram, percussiveSpectrogram);
+            return (harmonicSpectrogram, percussiveSpectrogram);
         }
 
         /// <summary>
@@ -135,35 +135,26 @@ namespace NWaves.Operations
         /// </summary>
         /// <param name="signal"></param>
         /// <returns>Harmonic signal and percussive signal</returns>
-        public Tuple<DiscreteSignal, DiscreteSignal> EvaluateSignals(DiscreteSignal signal)
+        public (DiscreteSignal, DiscreteSignal) EvaluateSignals(DiscreteSignal signal)
         {
-            var spectrograms = EvaluateSpectrograms(signal);
+            var (harmonicSpectrogram, percussiveSpectrogram) = EvaluateSpectrograms(signal);
 
             // reconstruct harmonic part:
 
-            var harmonic = new DiscreteSignal(signal.SamplingRate, _stft.ReconstructMagnitudePhase(spectrograms.Item1));
+            var harmonic = new DiscreteSignal(signal.SamplingRate, _stft.ReconstructMagnitudePhase(harmonicSpectrogram));
 
             // reconstruct percussive part:
 
-            var percussive = new DiscreteSignal(signal.SamplingRate, _stft.ReconstructMagnitudePhase(spectrograms.Item2));
+            var percussive = new DiscreteSignal(signal.SamplingRate, _stft.ReconstructMagnitudePhase(percussiveSpectrogram));
 
-            return new Tuple<DiscreteSignal, DiscreteSignal>(harmonic, percussive);
+            return (harmonic, percussive);
         }
 
-        private float BinaryMask(float h, float p)
-        {
-            return h > p ? 1 : 0;
-        }
+        private float BinaryMask(float h, float p) => h > p ? 1 : 0;
 
-        private float WienerMask1(float h, float p)
-        {
-            return h + p > 1e-10 ? h / (h + p) : 0;
-        }
+        private float WienerMask1(float h, float p) => h + p > 1e-10 ? h / (h + p) : 0;
 
-        private float WienerMask2(float h, float p)
-        {
-            return h + p > 1e-10 ? h * h / (h * h + p * p) : 0;
-        }
+        private float WienerMask2(float h, float p) => h + p > 1e-10 ? h * h / (h * h + p * p) : 0;
     }
 
     /// <summary>

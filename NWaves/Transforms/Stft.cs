@@ -61,7 +61,6 @@ namespace NWaves.Transforms
             _fft = new RealFft(_fftSize);
 
             _hopSize = hopSize;
-
             _windowSize = windowSize;
             _window = window;
             _windowSamples = Window.OfType(_window, _windowSize);
@@ -75,32 +74,32 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="samples">The samples of signal</param>
         /// <returns>STFT of the signal</returns>
-        public List<Tuple<float[], float[]>> Direct(float[] samples)
+        public List<(float[], float[])> Direct(float[] samples)
         {
             // pre-allocate memory:
 
             var len = (samples.Length - _windowSize) / _hopSize;
 
-            var stft = new List<Tuple<float[], float[]>>();
+            var stft = new List<(float[], float[])>(len + 1);
+
             for (var i = 0; i <= len; i++)
             {
-                stft.Add(new Tuple<float[], float[]>(new float[_fftSize], new float[_fftSize]));
+                stft.Add((new float[_fftSize], new float[_fftSize]));
             }
 
             // stft:
 
-            var windowedBuffer = new float[_windowSize];
+            var windowedBuffer = new float[_fftSize];
 
             for (int pos = 0, i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
             {
                 samples.FastCopyTo(windowedBuffer, _windowSize, pos);
 
-                if (_window != WindowTypes.Rectangular)
-                {
-                    windowedBuffer.ApplyWindow(_windowSamples);
-                }
+                windowedBuffer.ApplyWindow(_windowSamples);
 
-                _fft.Direct(windowedBuffer, stft[i].Item1, stft[i].Item2);
+                var (re, im) = stft[i];
+
+                _fft.Direct(windowedBuffer, re, im);
             }
 
             return stft;
@@ -111,7 +110,7 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="stft"></param>
         /// <returns></returns>
-        public float[] Inverse(List<Tuple<float[], float[]>> stft)
+        public float[] Inverse(List<(float[], float[])> stft)
         {
             var spectraCount = stft.Count;
             var output = new float[spectraCount * _hopSize + _fftSize];
@@ -121,7 +120,9 @@ namespace NWaves.Transforms
             var pos = 0;
             for (var i = 0; i < spectraCount; i++)
             {
-                _fft.Inverse(stft[i].Item1, stft[i].Item2, buf);
+                var (re, im) = stft[i];
+
+                _fft.Inverse(re, im, buf);
 
                 // windowing and reconstruction
 
@@ -151,7 +152,7 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="signal">The signal under analysis</param>
         /// <returns>STFT of the signal</returns>
-        public List<Tuple<float[], float[]>> Direct(DiscreteSignal signal)
+        public List<(float[], float[])> Direct(DiscreteSignal signal)
         {
             return Direct(signal.Samples);
         }
@@ -168,7 +169,8 @@ namespace NWaves.Transforms
 
             var len = (samples.Length - _windowSize) / _hopSize;
 
-            var spectrogram = new List<float[]>();
+            var spectrogram = new List<float[]>(len + 1);
+
             for (var i = 0; i <= len; i++)
             {
                 spectrogram.Add(new float[_fftSize / 2 + 1]);
@@ -180,11 +182,6 @@ namespace NWaves.Transforms
             
             for (int pos = 0, i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
             {
-                if (_windowSize < _fftSize)
-                {
-                    Array.Clear(windowedBuffer, 0, _fftSize);
-                }
-
                 samples.FastCopyTo(windowedBuffer, _windowSize, pos);
 
                 if (_window != WindowTypes.Rectangular)
@@ -217,10 +214,10 @@ namespace NWaves.Transforms
         {
             // pre-allocate memory:
 
-            var mag = new List<float[]>();
-            var phase = new List<float[]>();
-
             var len = (samples.Length - _windowSize) / _hopSize;
+
+            var mag = new List<float[]>(len + 1);
+            var phase = new List<float[]>(len + 1);
 
             for (var i = 0; i <= len; i++)
             {
@@ -230,7 +227,7 @@ namespace NWaves.Transforms
 
             // magnitude-phase spectrogram:
             
-            var windowedBuffer = new float[_windowSize];
+            var windowedBuffer = new float[_fftSize];
             var re = new float[_fftSize / 2 + 1];
             var im = new float[_fftSize / 2 + 1];
 
@@ -238,17 +235,14 @@ namespace NWaves.Transforms
             {
                 samples.FastCopyTo(windowedBuffer, _windowSize, pos);
 
-                if (_window != WindowTypes.Rectangular)
-                {
-                    windowedBuffer.ApplyWindow(_windowSamples);
-                }
+                windowedBuffer.ApplyWindow(_windowSamples);
 
                 _fft.Direct(windowedBuffer, re, im);
 
                 for (var j = 0; j <= _fftSize / 2; j++)
                 {
-                    mag[i][j] = (float)(Math.Sqrt(re[j] * re[j] + im[j] * im[j]));
-                    phase[i][j] = (float)(Math.Atan2(im[j], re[j]));
+                    mag[i][j] = (float)Math.Sqrt(re[j] * re[j] + im[j] * im[j]);
+                    phase[i][j] = (float)Math.Atan2(im[j], re[j]);
                 }
             }
 

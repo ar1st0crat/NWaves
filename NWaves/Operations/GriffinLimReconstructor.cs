@@ -44,8 +44,6 @@ namespace NWaves.Operations
                 }
             }
 
-            var spectrumSize = _magnitudes[0].Length;
-
             for (var i = 0; i < _magnitudes.Count; i++)
             {
                 for (var j = 0; j < _magnitudes[i].Length; j++)
