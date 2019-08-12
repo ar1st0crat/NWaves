@@ -23,12 +23,17 @@ namespace NWaves.Operations.Convolution
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="kernel"></param>
+        /// <param name="fftSize"></param>
         /// <returns></returns>
-        public ComplexDiscreteSignal Convolve(ComplexDiscreteSignal signal, ComplexDiscreteSignal kernel)
+        public ComplexDiscreteSignal Convolve(ComplexDiscreteSignal signal, ComplexDiscreteSignal kernel, int fftSize = 0)
         {
             var length = signal.Length + kernel.Length - 1;
 
-            var fftSize = MathUtils.NextPowerOfTwo(length);
+            if (fftSize == 0)
+            {
+                fftSize = MathUtils.NextPowerOfTwo(length);
+            }
+
             var fft = new Fft64(fftSize);
 
             signal = signal.ZeroPadded(fftSize);
@@ -65,13 +70,14 @@ namespace NWaves.Operations.Convolution
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="kernel"></param>
+        /// <param name="fftSize"></param>
         /// <returns></returns>
-        public ComplexDiscreteSignal CrossCorrelate(ComplexDiscreteSignal signal, ComplexDiscreteSignal kernel)
+        public ComplexDiscreteSignal CrossCorrelate(ComplexDiscreteSignal signal, ComplexDiscreteSignal kernel, int fftSize = 0)
         {
             var reversedKernel =
                 new ComplexDiscreteSignal(kernel.SamplingRate, kernel.Real.Reverse(), kernel.Imag.Reverse());
 
-            return Convolve(signal, reversedKernel);
+            return Convolve(signal, reversedKernel, fftSize);
         }
 
         /// <summary>
@@ -85,8 +91,9 @@ namespace NWaves.Operations.Convolution
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="kernel"></param>
+        /// <param name="fftSize"></param>
         /// <returns></returns>
-        public ComplexDiscreteSignal Deconvolve(ComplexDiscreteSignal signal, ComplexDiscreteSignal kernel)
+        public ComplexDiscreteSignal Deconvolve(ComplexDiscreteSignal signal, ComplexDiscreteSignal kernel, int fftSize = 0)
         {
             // first, try to divide polynomials
 
@@ -107,7 +114,11 @@ namespace NWaves.Operations.Convolution
 
             var length = signal.Length - kernel.Length + 1;
 
-            var fftSize = MathUtils.NextPowerOfTwo(signal.Length);
+            if (fftSize == 0)
+            {
+                fftSize = MathUtils.NextPowerOfTwo(signal.Length);
+            }
+
             var fft = new Fft64(fftSize);
 
             signal = signal.ZeroPadded(fftSize);

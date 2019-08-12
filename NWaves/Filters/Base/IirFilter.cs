@@ -21,7 +21,7 @@ namespace NWaves.Filters.Base
         /// For filter design & analysis specify transfer function (Tf property).
         /// 
         /// </summary>
-        protected float[] _a;
+        protected readonly float[] _a;
 
         /// <summary>
         /// Numerator part coefficients in filter's transfer function 
@@ -32,7 +32,7 @@ namespace NWaves.Filters.Base
         /// For filter design & analysis specify transfer function (Tf property).
         /// 
         /// </summary>
-        protected float[] _b;
+        protected readonly float[] _b;
         
         /// <summary>
         /// Transfer function (created lazily or set specifically if needed)
@@ -111,10 +111,6 @@ namespace NWaves.Filters.Base
         {
             switch (method)
             {
-                case FilteringMethod.Custom:
-                {
-                    return this.ProcessChunks(signal);
-                }
                 case FilteringMethod.OverlapAdd:       // are you sure you wanna do this? It's IIR filter!
                 case FilteringMethod.OverlapSave:
                 {
@@ -201,6 +197,30 @@ namespace NWaves.Filters.Base
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
+        }
+
+        /// <summary>
+        /// Change filter coefficients online (numerator part)
+        /// </summary>
+        /// <param name="b">New coefficients</param>
+        public void ChangeNumeratorCoeffs(float[] b)
+        {
+            if (b.Length == _b.Length)
+            {
+                for (var i = 0; i < _b.Length; _b[i] = b[i], i++) { }
+            }
+        }
+
+        /// <summary>
+        /// Change filter coefficients online (denominator / recursive part)
+        /// </summary>
+        /// <param name="a">New coefficients</param>
+        public void ChangeDenominatorCoeffs(float[] a)
+        {
+            if (a.Length == _a.Length)
+            {
+                for (var i = 0; i < _a.Length; _a[i] = a[i], i++) { }
+            }
         }
 
         /// <summary>

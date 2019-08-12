@@ -25,7 +25,7 @@ namespace NWaves.DemoForms
         private DiscreteSignal _signal;
         private DiscreteSignal _filteredSignal;
 
-        private readonly Stft _stft = new Stft(256, fftSize: 256);
+        private readonly Stft _stft = new Stft(256);
 
         private string _waveFileName;
         private short _bitDepth;
@@ -40,7 +40,7 @@ namespace NWaves.DemoForms
             magnitudeResponsePanel.Stride = 2;
             magnitudeResponsePanel.Thickness = 2;
             magnitudeResponsePanel.ForeColor = Color.SeaGreen;
-            phaseResponsePanel.Stride = 2;
+            phaseResponsePanel.Stride = 1;
             phaseResponsePanel.Thickness = 2;
             phaseResponsePanel.ForeColor = Color.SeaGreen;
 
@@ -239,12 +239,12 @@ namespace NWaves.DemoForms
                     phaseResponsePanel.Line = fr.PhaseUnwrapped.ToFloats();
                     break;
                 case "Group delay":
-                    phaseResponsePanel.Line = tf.GroupDelay().ToFloats();
+                    phaseResponsePanel.Line = tf.GroupDelay(256).ToFloats();
                     // or like this:
                     // fr.GroupDelay.ToFloats();
                     break;
                 case "Phase delay":
-                    phaseResponsePanel.Line = tf.PhaseDelay().ToFloats();
+                    phaseResponsePanel.Line = tf.PhaseDelay(256).ToFloats();
                     // or like this:
                     // fr.PhaseDelay.ToFloats();
                     break;
@@ -767,12 +767,12 @@ namespace NWaves.DemoForms
             orderNumeratorTextBox.Text = (order - 1).ToString();
             orderDenominatorTextBox.Text = (order - 1).ToString();
 
-            _filter = new FirFilter(DesignFilter.FirWinBp(order, freq1, freq2));
+            //_filter = new FirFilter(DesignFilter.FirWinBp(order, freq1, freq2));
 
             // for double precision and FDA:
 
-            //var tf = new TransferFunction(DesignFilter.FirWinBp(order, freq1, freq2));
-            //_filter = new FirFilter(tf);
+            var tf = new TransferFunction(DesignFilter.FirWinBp(order, freq1, freq2));
+            _filter = new FirFilter(tf);
 
             filterParamsDataGrid.RowCount = 3;
             filterParamsDataGrid.Rows[0].Cells[0].Value = "order";

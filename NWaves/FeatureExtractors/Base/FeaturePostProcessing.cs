@@ -54,7 +54,7 @@ namespace NWaves.FeatureExtractors.Base
                 var mean = vectors.Average(t => t.Features[i]);
                 var std = vectors.Sum(t => (t.Features[i] - mean) * (t.Features[i] - mean) / (n - bias));
 
-                if (std < Math.Abs(1e-10))      // avoid dividing by zero
+                if (std < Math.Abs(1e-30f))      // avoid dividing by zero
                 {
                     std = 1;
                 }

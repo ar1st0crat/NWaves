@@ -25,7 +25,7 @@ namespace NWaves.Filters.Base
         /// 
         /// </summary>
         public float[] Kernel => _kernel;
-        protected float[] _kernel;
+        protected readonly float[] _kernel;
 
         /// <summary>
         /// Transfer function (created lazily or set specifically if needed)
@@ -100,7 +100,7 @@ namespace NWaves.Filters.Base
         {
             if (_kernel.Length >= FilterSizeForOptimizedProcessing && method == FilteringMethod.Auto)
             {
-                method = FilteringMethod.OverlapAdd;
+                method = FilteringMethod.OverlapSave;
             }
 
             switch (method)
@@ -116,10 +116,6 @@ namespace NWaves.Filters.Base
                     var fftSize = MathUtils.NextPowerOfTwo(4 * _kernel.Length);
                     var blockConvolver = OlsBlockConvolver.FromFilter(this, fftSize);
                     return blockConvolver.ApplyTo(signal);
-                }
-                case FilteringMethod.Custom:
-                {
-                    return this.ProcessChunks(signal);
                 }
                 default:
                 {
@@ -181,6 +177,18 @@ namespace NWaves.Filters.Base
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
+        }
+
+        /// <summary>
+        /// Change filter kernel online
+        /// </summary>
+        /// <param name="kernel">New kernel</param>
+        public void ChangeKernel(float[] kernel)
+        {
+            if (kernel.Length == _kernel.Length)
+            {
+                kernel.FastCopyTo(_kernel, _kernel.Length);
+            }
         }
 
         /// <summary>

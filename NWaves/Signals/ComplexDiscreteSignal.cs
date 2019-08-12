@@ -260,60 +260,6 @@ namespace NWaves.Signals
         /// </summary>
         public double[] PhaseUnwrapped => MathUtils.Unwrap(Phase);
 
-        /// <summary>
-        /// Get group delay of complex-valued samples
-        /// </summary>
-        public double[] GroupDelay
-        {
-            get
-            {
-                var phase = MathUtils.Unwrap(Phase);
-
-                var gd = new double[phase.Length - 1];
-                for (var i = 0; i < gd.Length; i++)
-                {
-                    gd[i] = (phase[i] - phase[i + 1]) * gd.Length / Math.PI;
-                }
-
-                // replace each outlier with averaged value of neigboring samples
-
-                var diffThreshold = gd.Average(g => Math.Abs(g)) * 5;
-
-                for (var i = 1; i < gd.Length - 1; i++)
-                {
-                    if (Math.Abs(gd[i]) > diffThreshold)
-                    {
-                        gd[i] = (gd[i - 1] + gd[i + 1]) / 2;
-                    }
-                }
-
-                if (Math.Abs(gd[0]) > diffThreshold) gd[0] = gd[1];
-                if (Math.Abs(gd[gd.Length - 1]) > diffThreshold) gd[gd.Length - 1] = gd[gd.Length - 2];
-
-                return gd;
-            }
-        }
-
-        /// <summary>
-        /// Get phase delay of complex-valued samples
-        /// </summary>
-        public double[] PhaseDelay
-        {
-            get
-            {
-                var gd = GroupDelay;
-
-                var pd = new double[gd.Length];
-                var acc = 0.0;
-                for (var i = 0; i < pd.Length; i++)     // integrate group delay
-                {
-                    acc += gd[i];
-                    pd[i] = acc / (i + 1);
-                }
-                
-                return pd;
-            }
-        }
 
         #region overloaded operators
 

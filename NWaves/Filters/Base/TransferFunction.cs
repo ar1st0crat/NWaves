@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using NWaves.Operations;
+using NWaves.Operations.Convolution;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -38,7 +39,7 @@ namespace NWaves.Filters.Base
         public TransferFunction(double[] numerator, double[] denominator = null)
         {
             Numerator = numerator;
-            Denominator = denominator ?? new double[] { 1.0 };
+            Denominator = denominator ?? new [] { 1.0 };
         }
 
         /// <summary>
@@ -47,7 +48,7 @@ namespace NWaves.Filters.Base
         /// <param name="zeros">Zeros</param>
         /// <param name="poles">Poles</param>
         /// <param name="gain"></param>
-        public TransferFunction(ComplexDiscreteSignal zeros, ComplexDiscreteSignal poles, double gain = 1.0)
+        public TransferFunction(ComplexDiscreteSignal zeros, ComplexDiscreteSignal poles, double gain = 1)
         {
             Gain = gain;
             Zeros = zeros;
@@ -96,39 +97,37 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Gain ('k' in 'zpk' notation)
         /// </summary>
-        public double Gain { get; private set; } = 1.0;
+        public double Gain { get; private set; } = 1;
 
 
         /// <summary>
         /// Evaluate impulse response
         /// </summary>
-        /// <param name="length"></param>
+        /// <param name="length">Ignored for FIR filters (where IR is full copy of numerator)</param>
         /// <returns></returns>
         public double[] ImpulseResponse(int length = 512)
         {
             if (Denominator.Length == 1)
             {
-                return Numerator.Length < length ? Numerator.PadZeros(length) : Numerator.FastCopy();
+                return Numerator.FastCopy();
             }
-            else
+
+            var b = Numerator;
+            var a = Denominator;
+
+            var response = new double[length];
+
+            for (var n = 0; n < response.Length; n++)
             {
-                var b = Numerator;
-                var a = Denominator;
+                if (n < b.Length) response[n] = b[n];
 
-                var response = new double[length];
-
-                for (var n = 0; n < response.Length; n++)
+                for (var m = 1; m < a.Length; m++)
                 {
-                    if (n < b.Length) response[n] = b[n];
-
-                    for (var m = 1; m < a.Length; m++)
-                    {
-                        if (n >= m) response[n] -= a[m] * response[n - m];
-                    }
+                    if (n >= m) response[n] -= a[m] * response[n - m];
                 }
-
-                return response;
             }
+
+            return response;
         }
 
         /// <summary>
@@ -138,7 +137,11 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public ComplexDiscreteSignal FrequencyResponse(int length = 512)
         {
-            var real = ImpulseResponse(length);
+            var ir = ImpulseResponse(length);
+
+            var real = ir.Length == length ? ir :
+                       ir.Length  < length ? ir.PadZeros(length) :
+                                             ir.FastCopyFragment(length);
             var imag = new double[length];
 
             var fft = new Fft64(length);
@@ -153,39 +156,33 @@ namespace NWaves.Filters.Base
         /// </summary>
         public double[] GroupDelay(int fftSize = 512)
         {
-            var cc = Operation.CrossCorrelate(new ComplexDiscreteSignal(1, Numerator),
-                                              new ComplexDiscreteSignal(1, Denominator)).Real;
+            var cc = new ComplexConvolver()
+                            .CrossCorrelate(new ComplexDiscreteSignal(1, Numerator),
+                                            new ComplexDiscreteSignal(1, Denominator)).Real;
 
             var cr = Enumerable.Range(0, cc.Length)
                                .Zip(cc, (r, c) => r * c)
+                               .Reverse()
                                .ToArray();
 
-            var re = cc.PadZeros(fftSize);
-            var im = new double[fftSize];
+            cc = cc.Reverse().ToArray();    // reverse cc and cr (above) for EvaluatePolynomial()
+
+            var step = Math.PI / fftSize;
+            var omega = 0.0;
             
-            var fft = new Fft64(fftSize);
-            fft.Direct(re, im);
+            var dn = Denominator.Length - 1;
 
-            var rre = cr.PadZeros(fftSize);
-            var rim = new double[fftSize];
-            fft.Direct(rre, rim);
+            var gd = new double[fftSize];
 
-            var num = rre.Zip(rim, (r, i) => new Complex(r, i)).ToArray();
-            var den =  re.Zip( im, (r, i) => new Complex(r, i)).ToArray();
-
-            var dn = Numerator.Length - 1;
-
-            var gd = new double[fftSize / 2];
-            for (var i = 1; i <= gd.Length; i++)
+            for (var i = 0; i < gd.Length; i++)
             {
-                if (Complex.Abs(den[i]) < 1e-10)
-                {
-                    num[i] = Complex.Zero;
-                    den[i] = Complex.One;
-                }
+                var z = Complex.FromPolarCoordinates(1, -omega);
+                var num = MathUtils.EvaluatePolynomial(cr, z);
+                var den = MathUtils.EvaluatePolynomial(cc, z);
 
-                var t = dn - num[i] / den[i];
-                gd[i - 1] = t.Real;
+                gd[i] = Complex.Abs(den) < 1e-10 ? 0 : (num / den).Real - dn;
+
+                omega += step;
             }
 
             return gd;
@@ -234,7 +231,7 @@ namespace NWaves.Filters.Base
         {
             var a0 = Denominator[0];
 
-            if (Math.Abs(a0) < 1e-10)
+            if (Math.Abs(a0) < 1e-30)
             {
                 throw new ArgumentException("The first denominator coefficient can not be zero!");
             }
@@ -258,11 +255,6 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public static double[] ZpToTf(ComplexDiscreteSignal zp)
         {
-            if (zp == null)
-            {
-                throw new ArgumentException("");
-            }
-
             var tf = new ComplexDiscreteSignal(1, new[] { 1.0, -zp.Real[0] },
                                                   new[] { 0.0, -zp.Imag[0] });
 
