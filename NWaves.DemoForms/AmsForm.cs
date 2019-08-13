@@ -62,21 +62,21 @@ namespace NWaves.DemoForms
             var lowFreq = float.Parse(lowFreqTextBox.Text);
             var highFreq = float.Parse(highFreqTextBox.Text);
 
-            Tuple<double, double, double>[] bands;
+            (double, double, double)[] bands;
 
             switch (filterbankComboBox.Text)
             {
                 case "Mel":
-                    bands = FilterBanks.MelBands(filterCount, fftSize, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
+                    bands = FilterBanks.MelBands(filterCount, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
                     break;
                 case "Bark":
-                    bands = FilterBanks.BarkBands(filterCount, fftSize, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
+                    bands = FilterBanks.BarkBands(filterCount, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
                     break;
                 case "Critical bands":
-                    bands = FilterBanks.CriticalBands(filterCount, fftSize, samplingRate, lowFreq, highFreq);
+                    bands = FilterBanks.CriticalBands(filterCount, samplingRate, lowFreq, highFreq);
                     break;
                 case "Octave bands":
-                    bands = FilterBanks.OctaveBands(filterCount, fftSize, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
+                    bands = FilterBanks.OctaveBands(filterCount, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
                     break;
                 case "ERB":
                     bands = null;
@@ -101,7 +101,7 @@ namespace NWaves.DemoForms
 
                     break;
                 default:
-                    bands = FilterBanks.HerzBands(filterCount, fftSize, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
+                    bands = FilterBanks.HerzBands(filterCount, samplingRate, lowFreq, highFreq, overlapCheckBox.Checked);
                     break;
             }
 

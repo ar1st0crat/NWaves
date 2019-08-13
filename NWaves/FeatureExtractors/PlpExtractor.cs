@@ -155,7 +155,7 @@ namespace NWaves.FeatureExtractors
             {
                 _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-                var barkBands = FilterBanks.BarkBandsSlaney(filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
+                var barkBands = FilterBanks.BarkBandsSlaney(filterbankSize, samplingRate, _lowFreq, _highFreq);
                 FilterBank = FilterBanks.BarkBankSlaney(filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
 
                 _centerFrequencies = barkBands.Select(b => b.Item2).ToArray();

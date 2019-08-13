@@ -29,8 +29,11 @@ namespace NWaves.DemoForms
 
         private void loadsignalToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var ofd = new OpenFileDialog();
-            ofd.InitialDirectory = @"D:\Docs\Research\DATABASE\Dictor1\wav";
+            var ofd = new OpenFileDialog
+            {
+                InitialDirectory = @"D:\Docs\Research\DATABASE\Dictor1\wav"
+            };
+
             if (ofd.ShowDialog() != DialogResult.OK)
             {
                 return;
@@ -48,8 +51,11 @@ namespace NWaves.DemoForms
 
         private void loadnoiseToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var ofd = new OpenFileDialog();
-            ofd.InitialDirectory = @"D:\Docs\Research\DATABASE\Various\Фоновые звуки";
+            var ofd = new OpenFileDialog
+            {
+                InitialDirectory = @"D:\Docs\Research\DATABASE\Various\Фоновые звуки"
+            };
+
             if (ofd.ShowDialog() != DialogResult.OK)
             {
                 return;
@@ -63,6 +69,11 @@ namespace NWaves.DemoForms
             }
 
             _noise.Amplify(0.2f);
+
+            if (_noise.SamplingRate != _signal.SamplingRate)
+            {
+                _noise = Operation.Resample(_noise, _signal.SamplingRate);
+            }
 
             noisePlot.Signal = _signal + _noise;
         }

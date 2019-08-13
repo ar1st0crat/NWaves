@@ -7,15 +7,15 @@ namespace NWaves.Effects
     /// <summary>
     /// Audio effect
     /// </summary>
-    public abstract class AudioEffect : IFilter, IOnlineFilter
+    public abstract class AudioEffect : IFilter, IOnlineFilter, IMixable
     {
         /// <summary>
-        /// Wet
+        /// Wet mix
         /// </summary>
         public float Wet { get; set; } = 1f;
 
         /// <summary>
-        /// Dry
+        /// Dry mix
         /// </summary>
         public float Dry { get; set; } = 0f;
 

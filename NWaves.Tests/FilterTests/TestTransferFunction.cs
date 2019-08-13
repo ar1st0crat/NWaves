@@ -107,9 +107,8 @@ namespace NWaves.Tests.FilterTests
         public void TestGroupDelay()
         {
             var f = new MovingAverageFilter(5);
-            var fr = f.Tf.FrequencyResponse();
-
-            Assert.That(fr.GroupDelay, Is.All.EqualTo(2.0).Within(1e-10));
+            
+            Assert.That(f.Tf.GroupDelay(), Is.All.EqualTo(2.0).Within(1e-10));
         }
 
         [Test]

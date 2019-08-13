@@ -35,10 +35,7 @@ namespace NWaves.Signals
             {
                 delay = -delay;
 
-                if (delay >= length)
-                {
-                    throw new ArgumentException("Delay can not exceed the length of the signal!");
-                }
+                Guard.AgainstInvalidRange(delay, length, "Delay", "signal length");
 
                 return new DiscreteSignal(
                                 signal.SamplingRate,
@@ -60,10 +57,8 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal Superimpose(this DiscreteSignal signal1, DiscreteSignal signal2)
         {
-            if (signal1.SamplingRate != signal2.SamplingRate)
-            {
-                throw new ArgumentException("Sampling rates must be the same!");
-            }
+            Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
+                                        "Sampling rate of signal1", "sampling rate of signal2");
 
             DiscreteSignal superimposed;
 
@@ -99,10 +94,8 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal SuperimposeMany(this DiscreteSignal signal1, DiscreteSignal signal2, int[] positions)
         {
-            if (signal1.SamplingRate != signal2.SamplingRate)
-            {
-                throw new ArgumentException("Sampling rates must be the same!");
-            }
+            Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
+                                        "Sampling rate of signal1", "sampling rate of signal2");
 
             var totalLength = Math.Max(signal1.Length, signal2.Length + positions.Max());
 
@@ -132,10 +125,8 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal Subtract(this DiscreteSignal signal1, DiscreteSignal signal2)
         {
-            if (signal1.SamplingRate != signal2.SamplingRate)
-            {
-                throw new ArgumentException("Sampling rates must be the same!");
-            }
+            Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
+                                        "Sampling rate of signal1", "sampling rate of signal2");
 
             DiscreteSignal subtracted;
 
@@ -173,10 +164,8 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal Concatenate(this DiscreteSignal signal1, DiscreteSignal signal2)
         {
-            if (signal1.SamplingRate != signal2.SamplingRate)
-            {
-                throw new ArgumentException("Sampling rates must be the same!");
-            }
+            Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
+                                        "Sampling rate of signal1", "sampling rate of signal2");
 
             return new DiscreteSignal(
                             signal1.SamplingRate,
@@ -191,11 +180,8 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal Repeat(this DiscreteSignal signal, int times)
         {
-            if (times <= 0)
-            {
-                throw new ArgumentException("Number of repeat times must be at least once");
-            }
-
+            Guard.AgainstNonPositive(times, "Number of repeat times");
+            
             return new DiscreteSignal(
                             signal.SamplingRate,
                             signal.Samples.RepeatArray(times));
@@ -221,10 +207,7 @@ namespace NWaves.Signals
         /// <param name="coeff"></param>
         public static void Attenuate(this DiscreteSignal signal, float coeff)
         {
-            if (Math.Abs(coeff) < 1e-10)
-            {
-                throw new ArgumentException("Attenuation coefficient can't be zero");
-            }
+            Guard.AgainstNonPositive(coeff, "Attenuation coefficient");
 
             signal.Amplify(1 / coeff);
         }
@@ -237,10 +220,8 @@ namespace NWaves.Signals
         /// <returns>Copy of the first samples of signal</returns>
         public static DiscreteSignal First(this DiscreteSignal signal, int sampleCount)
         {
-            if (sampleCount <= 0 || sampleCount > signal.Length)
-            {
-                throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
-            }
+            Guard.AgainstNonPositive(sampleCount, "Number of samples");
+            Guard.AgainstExceedance(sampleCount, signal.Length, "Number of samples", "signal length");
             
             return new DiscreteSignal(
                             signal.SamplingRate,
@@ -256,10 +237,8 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static DiscreteSignal Last(this DiscreteSignal signal, int sampleCount)
         {
-            if (sampleCount <= 0 || sampleCount > signal.Length)
-            {
-                throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
-            }
+            Guard.AgainstNonPositive(sampleCount, "Number of samples");
+            Guard.AgainstExceedance(sampleCount, signal.Length, "Number of samples", "signal length");
 
             return new DiscreteSignal(
                             signal.SamplingRate,

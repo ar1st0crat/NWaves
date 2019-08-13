@@ -55,10 +55,7 @@ namespace NWaves.Signals
         /// <param name="allocateNew">Set to true if new memory should be allocated for data</param>
         public ComplexDiscreteSignal(int samplingRate, double[] real, double[] imag = null, bool allocateNew = false)
         {
-            if (samplingRate <= 0)
-            {
-                throw new ArgumentException("Sampling rate must be positive!");
-            }
+            Guard.AgainstNonPositive(samplingRate, "Sampling rate");
 
             SamplingRate = samplingRate;
             Real = allocateNew ? real.FastCopy() : real;
@@ -67,10 +64,7 @@ namespace NWaves.Signals
 
             if (imag != null)
             {
-                if (imag.Length != real.Length)
-                {
-                    throw new ArgumentException("Arrays of real and imaginary parts have different size!");
-                }
+                Guard.AgainstInequality(real.Length, imag.Length, "Number of real parts", "number of imaginary parts");
 
                 Imag = allocateNew ? imag.FastCopy() : imag;
             }
@@ -100,10 +94,7 @@ namespace NWaves.Signals
         /// <param name="imag"></param>
         public ComplexDiscreteSignal(int samplingRate, int length, double real = 0.0, double imag = 0.0)
         {
-            if (samplingRate <= 0)
-            {
-                throw new ArgumentException("Sampling rate must be positive!");
-            }
+            Guard.AgainstNonPositive(samplingRate, "Sampling rate");
 
             SamplingRate = samplingRate;
 
@@ -126,10 +117,7 @@ namespace NWaves.Signals
         /// <param name="normalizeFactor"></param>
         public ComplexDiscreteSignal(int samplingRate, IEnumerable<int> samples, double normalizeFactor = 1.0)
         {
-            if (samplingRate <= 0)
-            {
-                throw new ArgumentException("Sampling rate must be positive!");
-            }
+            Guard.AgainstNonPositive(samplingRate, "Sampling rate");
 
             SamplingRate = samplingRate;
 
@@ -158,9 +146,9 @@ namespace NWaves.Signals
         /// Indexer works only with array of real parts of samples. Use it with caution.
         /// </summary>
         public double this[int index]
-        { 
-            get { return Real[index]; }
-            set { Real[index] = value; }
+        {
+            get => Real[index];
+            set => Real[index] = value;
         }
 
         /// <summary>
@@ -182,12 +170,9 @@ namespace NWaves.Signals
         {
             get
             {
-                var rangeLength = endPos - startPos;
+                Guard.AgainstInvalidRange(startPos, endPos, "Left index", "Right index");
 
-                if (rangeLength <= 0)
-                {
-                    throw new ArgumentException("Wrong index range!");
-                }
+                var rangeLength = endPos - startPos;
 
                 return new ComplexDiscreteSignal(SamplingRate,
                                     Real.FastCopyFragment(rangeLength, startPos),

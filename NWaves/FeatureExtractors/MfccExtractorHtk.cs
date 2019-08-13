@@ -59,7 +59,7 @@ namespace NWaves.FeatureExtractors
 
             fftSize = fftSize > frameSize ? fftSize : MathUtils.NextPowerOfTwo(frameSize);
 
-            var melBands = FilterBanks.MelBands(filterbankSize, fftSize, samplingRate, lowFreq, highFreq);
+            var melBands = FilterBanks.MelBands(filterbankSize, samplingRate, lowFreq, highFreq);
 
             return FilterBanks.Triangular(fftSize, samplingRate, melBands, null, Scale.HerzToMel);
         }

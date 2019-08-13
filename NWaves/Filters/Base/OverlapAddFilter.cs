@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -7,39 +8,60 @@ using NWaves.Windows;
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// TODO
+    /// The base class for all filters working by the STFT overlap-add scheme:
+    /// 
+    /// - short-time frame analysis
+    /// - short-time frame processing
+    /// - short-time frame synthesis (overlap-add)
+    /// 
+    /// Subclasses must implement ProcessSpectrum() method
+    /// that corresponds to the second stage.
+    /// 
+    /// Also, it implements IMixable interface,
+    /// since audio effects can be built based on this class.
+    /// 
     /// </summary>
-    public class OverlapAddFilter : IFilter, IOnlineFilter
+    public abstract class OverlapAddFilter : IFilter, IOnlineFilter, IMixable
     {
+        /// <summary>
+        /// Wet mix
+        /// </summary>
+        public float Wet { get; set; } = 1f;
+
+        /// <summary>
+        /// Dry mix
+        /// </summary>
+        public float Dry { get; set; } = 0f;
+
         /// <summary>
         /// Hop size
         /// </summary>
-        private readonly int _hopSize;
+        protected readonly int _hopSize;
 
         /// <summary>
         /// Size of FFT for analysis and synthesis
         /// </summary>
-        private readonly int _fftSize;
-
-        /// <summary>
-        /// Size of frame overlap
-        /// </summary>
-        private readonly int _overlapSize;
-
-        /// <summary>
-        /// Internal FFT transformer
-        /// </summary>
-        private readonly RealFft _fft;
-
-        /// <summary>
-        /// Window coefficients
-        /// </summary>
-        private readonly float[] _window;
+        protected readonly int _fftSize;
 
         /// <summary>
         /// ISTFT normalization gain
         /// </summary>
-        private readonly float _gain;
+        protected float _gain;
+
+        /// <summary>
+        /// Size of frame overlap
+        /// </summary>
+        protected readonly int _overlapSize;
+
+        /// <summary>
+        /// Internal FFT transformer
+        /// </summary>
+        protected readonly RealFft _fft;
+
+        /// <summary>
+        /// Window coefficients
+        /// </summary>
+        protected readonly float[] _window;
 
         /// <summary>
         /// Delay line
@@ -65,6 +87,7 @@ namespace NWaves.Filters.Base
         private readonly float[] _filteredIm;
         private readonly float[] _lastSaved;
 
+
         /// <summary>
         /// Constuctor
         /// </summary>
@@ -82,7 +105,7 @@ namespace NWaves.Filters.Base
 
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
 
-            _gain = 2f / _fftSize;
+            _gain = 2 / (_fftSize * _window.Select(w => w * w).Sum() / _hopSize);
 
             _dl = new float[_fftSize];
             _re = new float[_fftSize];
@@ -90,14 +113,16 @@ namespace NWaves.Filters.Base
             _filteredRe = new float[_fftSize];
             _filteredIm = new float[_fftSize];
             _lastSaved = new float[_overlapSize];
+
+            _inOffset = _overlapSize;
         }
 
         /// <summary>
-        /// 
+        /// Online processing (sample after sample)
         /// </summary>
         /// <param name="sample"></param>
         /// <returns></returns>
-        public float Process(float sample)
+        public virtual float Process(float sample)
         {
             _dl[_inOffset++] = sample;
 
@@ -110,52 +135,58 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process one frame (block)
+        /// Process one frame (FFT block)
         /// </summary>
-        public void ProcessFrame()
+        public virtual void ProcessFrame()
         {
-            //_dl.FastCopyTo(_re, _fftSize);
+            // analysis =========================================================
 
-            //_re.ApplyWindow(_window);
+            _dl.FastCopyTo(_re, _fftSize);
+            _re.ApplyWindow(_window);
+            _fft.Direct(_re, _re, _im);
 
-            //_fft.Direct(_re, _re, _im);
+            // processing =======================================================
 
-            //for (var j = 1; j <= _fftSize / 2; j++)
-            //{
-            //    var mag = Math.Sqrt(_re[j] * _re[j] + _im[j] * _im[j]);
-            //    var phase = 2 * Math.PI * _rand.NextDouble();
+            ProcessSpectrum(_re, _im, _filteredRe, _filteredIm);
 
-            //    _filteredRe[j] = (float)(mag * Math.Cos(phase));
-            //    _filteredIm[j] = (float)(mag * Math.Sin(phase));
-            //}
+            // synthesis ========================================================
 
-            //_fft.Inverse(_filteredRe, _filteredIm, _filteredRe);
+            _fft.Inverse(_filteredRe, _filteredIm, _filteredRe);
+            _filteredRe.ApplyWindow(_window);
 
-            //_filteredRe.ApplyWindow(_window);
+            for (var j = 0; j < _overlapSize; j++)
+            {
+                _filteredRe[j] += _lastSaved[j];
+            }
 
-            //for (var j = 0; j < _overlapSize; j++)
-            //{
-            //    _filteredRe[j] += _lastSaved[j];
-            //}
+            _filteredRe.FastCopyTo(_lastSaved, _overlapSize, _hopSize);
 
-            //_filteredRe.FastCopyTo(_lastSaved, _overlapSize, _hopSize);
+            for (var i = 0; i < _filteredRe.Length; i++)  // Wet/Dry mix
+            {
+                _filteredRe[i] *= Wet * _gain;
+                _filteredRe[i] += _dl[i] * Dry;
+            }
 
-            //for (var i = 0; i < _filteredRe.Length; i++)        // Wet / Dry mix
-            //{
-            //    _filteredRe[i] *= Wet * _gain;
-            //    _filteredRe[i] += _dl[i] * Dry;
-            //}
+            _dl.FastCopyTo(_dl, _overlapSize, _hopSize);
 
-            //_dl.FastCopyTo(_dl, _overlapSize, _hopSize);
-
-            //_inOffset = _overlapSize;
-            //_outOffset = 0;
+            _inOffset = _overlapSize;
+            _outOffset = 0;
         }
+
+        /// <summary>
+        /// Process one spectrum at each STFT step
+        /// </summary>
+        /// <param name="re">Real parts of input spectrum</param>
+        /// <param name="im">Imaginary parts of input spectrum</param>
+        /// <param name="filteredRe">Real parts of output spectrum</param>
+        /// <param name="filteredIm">Imaginary parts of output spectrum</param>
+        public abstract void ProcessSpectrum(float[] re, float[] im,
+                                             float[] filteredRe, float[] filteredIm);
 
         /// <summary>
         /// Reset filter internals
         /// </summary>
-        public void Reset()
+        public virtual void Reset()
         {
             _inOffset = _overlapSize;
             _outOffset = 0;
@@ -168,9 +199,16 @@ namespace NWaves.Filters.Base
             Array.Clear(_lastSaved, 0, _lastSaved.Length);
         }
 
-        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
+        /// <summary>
+        /// Offline processing
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public DiscreteSignal ApplyTo(DiscreteSignal signal,
+                                      FilteringMethod method = FilteringMethod.Auto)
         {
-            throw new NotImplementedException();
+            return new DiscreteSignal(signal.SamplingRate, signal.Samples.Select(s => Process(s)));
         }
     }
 }

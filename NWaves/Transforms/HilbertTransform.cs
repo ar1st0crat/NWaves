@@ -86,7 +86,7 @@ namespace NWaves.Transforms
         /// <param name="samples">Array of samples</param>
         /// <param name="norm">Normalize by fft size</param>
         /// <returns>Complex analytic signal</returns>
-        public Tuple<float[], float[]> AnalyticSignal(float[] samples, bool norm = true)
+        public (float[], float[]) AnalyticSignal(float[] samples, bool norm = true)
         {
             var sre = new DiscreteSignal(1, samples, allocateNew: true);
             var sim = new DiscreteSignal(1, samples.Length);
@@ -116,7 +116,7 @@ namespace NWaves.Transforms
                 sim.Attenuate(im.Length);
             }
 
-            return new Tuple<float[], float[]>(re, im);
+            return (re, im);
         }
 
         /// <summary>

@@ -154,7 +154,7 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Group delay calculated from TF coefficients
         /// </summary>
-        public double[] GroupDelay(int fftSize = 512)
+        public double[] GroupDelay(int length = 512)
         {
             var cc = new ComplexConvolver()
                             .CrossCorrelate(new ComplexDiscreteSignal(1, Numerator),
@@ -167,12 +167,12 @@ namespace NWaves.Filters.Base
 
             cc = cc.Reverse().ToArray();    // reverse cc and cr (above) for EvaluatePolynomial()
 
-            var step = Math.PI / fftSize;
+            var step = Math.PI / length;
             var omega = 0.0;
             
             var dn = Denominator.Length - 1;
 
-            var gd = new double[fftSize];
+            var gd = new double[length];
 
             for (var i = 0; i < gd.Length; i++)
             {
@@ -180,7 +180,7 @@ namespace NWaves.Filters.Base
                 var num = MathUtils.EvaluatePolynomial(cr, z);
                 var den = MathUtils.EvaluatePolynomial(cc, z);
 
-                gd[i] = Complex.Abs(den) < 1e-10 ? 0 : (num / den).Real - dn;
+                gd[i] = Complex.Abs(den) < 1e-30 ? 0 : (num / den).Real - dn;
 
                 omega += step;
             }
@@ -191,9 +191,9 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Phase delay calculated from TF coefficients
         /// </summary>
-        public double[] PhaseDelay(int fftSize = 512)
+        public double[] PhaseDelay(int length = 512)
         {
-            var gd = GroupDelay(fftSize);
+            var gd = GroupDelay(length);
 
             var pd = new double[gd.Length];
             var acc = 0.0;

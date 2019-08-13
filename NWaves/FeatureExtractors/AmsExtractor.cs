@@ -145,7 +145,7 @@ namespace NWaves.FeatureExtractors
                     _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
                     _filterbank = FilterBanks.Triangular(_fftSize, samplingRate,
-                                     FilterBanks.MelBands(12, _fftSize, samplingRate, 100, 3200));
+                                     FilterBanks.MelBands(12, samplingRate, 100, 3200));
                 }
                 else
                 {

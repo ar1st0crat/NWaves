@@ -34,10 +34,7 @@ namespace NWaves.Signals
             {
                 delay = -delay;
 
-                if (delay >= length)
-                {
-                    throw new ArgumentException("Delay can not exceed the length of the signal!");
-                }
+                Guard.AgainstInvalidRange(delay, length, "Delay", "signal length");
 
                 return new ComplexDiscreteSignal(
                                 signal.SamplingRate,
@@ -61,10 +58,8 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static ComplexDiscreteSignal Superimpose(this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
         {
-            if (signal1.SamplingRate != signal2.SamplingRate)
-            {
-                throw new ArgumentException("Sampling rates must be the same!");
-            }
+            Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
+                                        "Sampling rate of signal1", "sampling rate of signal2");
 
             ComplexDiscreteSignal superimposed;
 
@@ -100,10 +95,8 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static ComplexDiscreteSignal Concatenate(this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
         {
-            if (signal1.SamplingRate != signal2.SamplingRate)
-            {
-                throw new ArgumentException("Sampling rates must be the same!");
-            }
+            Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
+                                        "Sampling rate of signal1", "sampling rate of signal2");
 
             return new ComplexDiscreteSignal(
                             signal1.SamplingRate,
@@ -119,10 +112,7 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static ComplexDiscreteSignal Repeat(this ComplexDiscreteSignal signal, int times)
         {
-            if (times <= 0)
-            {
-                throw new ArgumentException("Number of repeat times must be at least once");
-            }
+            Guard.AgainstNonPositive(times, "Number of repeat times");
 
             return new ComplexDiscreteSignal(
                             signal.SamplingRate,
@@ -151,10 +141,7 @@ namespace NWaves.Signals
         /// <param name="coeff"></param>
         public static void Attenuate(this ComplexDiscreteSignal signal, double coeff)
         {
-            if (Math.Abs(coeff) < 1e-10)
-            {
-                throw new ArgumentException("Attenuation coefficient can't be zero");
-            }
+            Guard.AgainstNonPositive(coeff, "Attenuation coefficient");
 
             signal.Amplify(1 / coeff);
         }
@@ -167,11 +154,9 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static ComplexDiscreteSignal First(this ComplexDiscreteSignal signal, int sampleCount)
         {
-            if (sampleCount <= 0 || sampleCount > signal.Length)
-            {
-                throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
-            }
-            
+            Guard.AgainstNonPositive(sampleCount, "Number of samples");
+            Guard.AgainstExceedance(sampleCount, signal.Length, "Number of samples", "signal length");
+
             return new ComplexDiscreteSignal(
                             signal.SamplingRate,
                             signal.Real.FastCopyFragment(sampleCount),
@@ -186,10 +171,8 @@ namespace NWaves.Signals
         /// <returns></returns>
         public static ComplexDiscreteSignal Last(this ComplexDiscreteSignal signal, int sampleCount)
         {
-            if (sampleCount <= 0 || sampleCount > signal.Length)
-            {
-                throw new ArgumentException("Number of samples must be positive and must not exceed the signal length!");
-            }
+            Guard.AgainstNonPositive(sampleCount, "Number of samples");
+            Guard.AgainstExceedance(sampleCount, signal.Length, "Number of samples", "signal length");
 
             return new ComplexDiscreteSignal(
                             signal.SamplingRate,
@@ -227,6 +210,9 @@ namespace NWaves.Signals
         public static ComplexDiscreteSignal Multiply(
             this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
         {
+            Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
+                                        "Sampling rate of signal1", "sampling rate of signal2");
+
             var length = signal1.Length;
 
             var real = new double[length];
@@ -239,8 +225,8 @@ namespace NWaves.Signals
 
             for (var i = 0; i < length; i++)
             {
-                real[i] = (real1[i] * real2[i] - imag1[i] * imag2[i]);
-                imag[i] = (real1[i] * imag2[i] + imag1[i] * real2[i]);
+                real[i] = real1[i] * real2[i] - imag1[i] * imag2[i];
+                imag[i] = real1[i] * imag2[i] + imag1[i] * real2[i];
             }
 
             return new ComplexDiscreteSignal(signal1.SamplingRate, real, imag);
@@ -256,6 +242,9 @@ namespace NWaves.Signals
         public static ComplexDiscreteSignal Divide(
             this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
         {
+            Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
+                                        "Sampling rate of signal1", "sampling rate of signal2");
+
             var length = signal1.Length;
 
             var real = new double[length];
@@ -292,11 +281,10 @@ namespace NWaves.Signals
         /// </summary>
         /// <param name="signal"></param>
         /// <returns></returns>
-        public static float[] Magnitude(this Tuple<float[], float[]> signal)
+        public static float[] Magnitude(this (float[], float[]) signal)
         {
-            var real = signal.Item1;
-            var imag = signal.Item2;
-
+            var (real, imag) = signal;
+            
             var magnitude = new float[real.Length];
 
             for (var i = 0; i < magnitude.Length; i++)
@@ -312,10 +300,9 @@ namespace NWaves.Signals
         /// </summary>
         /// <param name="signal"></param>
         /// <returns></returns>
-        public static float[] Phase(this Tuple<float[], float[]> signal)
+        public static float[] Phase(this (float[], float[]) signal)
         {
-            var real = signal.Item1;
-            var imag = signal.Item2;
+            var (real, imag) = signal;
 
             var magnitude = new float[real.Length];
 

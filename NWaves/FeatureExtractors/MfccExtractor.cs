@@ -174,7 +174,7 @@ namespace NWaves.FeatureExtractors
             {
                 _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-                var melBands = FilterBanks.MelBands(filterbankSize, _blockSize, SamplingRate, _lowFreq, _highFreq);
+                var melBands = FilterBanks.MelBands(filterbankSize, SamplingRate, _lowFreq, _highFreq);
                 FilterBank = FilterBanks.Triangular(_blockSize, SamplingRate, melBands, mapper: Scale.HerzToMel);   // HTK/Kaldi-style
             }
             else

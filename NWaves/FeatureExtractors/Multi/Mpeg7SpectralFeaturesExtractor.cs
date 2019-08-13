@@ -52,7 +52,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Internal buffer for frequency bands
         /// </summary>
-        protected readonly Tuple<double, double, double>[] _frequencyBands;
+        protected readonly (double, double, double)[] _frequencyBands;
 
         /// <summary>
         /// Internal buffer for central frequencies
@@ -134,7 +134,7 @@ namespace NWaves.FeatureExtractors.Multi
                                               double frameDuration = 0.0256/*sec*/,
                                               double hopDuration = 0.010/*sec*/,
                                               int fftSize = 0,
-                                              Tuple<double, double, double>[] frequencyBands = null,
+                                              (double, double, double)[] frequencyBands = null,
                                               double preEmphasis = 0,
                                               WindowTypes window = WindowTypes.Hamming,
                                               IReadOnlyDictionary<string, object> parameters = null)
