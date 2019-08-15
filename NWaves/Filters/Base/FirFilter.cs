@@ -27,6 +27,12 @@ namespace NWaves.Filters.Base
         public float[] Kernel => _kernel;
         protected readonly float[] _kernel;
 
+        //fields for the fast online fir filter copied from Math.NET Filtering
+        private float[] _coefficients;
+        private float[] _buffer;
+        private int _offset;
+        private int _size;
+
         /// <summary>
         /// Transfer function (created lazily or set specifically if needed)
         /// </summary>
@@ -131,26 +137,37 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var output = 0.0f;
+            //var output = 0.0f;
 
-            _delayLine[_delayLineOffset] = sample;
+            //_delayLine[_delayLineOffset] = sample;
 
-            var pos = 0;
-            for (var k = _delayLineOffset; k < _kernel.Length; k++)
+            //var pos = 0;
+            //for (var k = _delayLineOffset; k < _kernel.Length; k++)
+            //{
+            //    output += _kernel[pos++] * _delayLine[k];
+            //}
+            //for (var k = 0; k < _delayLineOffset; k++)
+            //{
+            //    output += _kernel[pos++] * _delayLine[k];
+            //}
+
+            //if (--_delayLineOffset < 0)
+            //{
+            //    _delayLineOffset = _delayLine.Length - 1;
+            //}
+
+            //return output;
+
+            _offset = (_offset != 0) ? _offset - 1 : _size - 1;
+            _buffer[_offset] = sample;
+
+            float acc = 0;
+            for (int i = 0, j = _size - _offset; i < _size; i++, j++)
             {
-                output += _kernel[pos++] * _delayLine[k];
-            }
-            for (var k = 0; k < _delayLineOffset; k++)
-            {
-                output += _kernel[pos++] * _delayLine[k];
+                acc += _buffer[i] * _coefficients[j];
             }
 
-            if (--_delayLineOffset < 0)
-            {
-                _delayLineOffset = _delayLine.Length - 1;
-            }
-
-            return output;
+            return acc;
         }
 
         /// <summary>
@@ -208,6 +225,15 @@ namespace NWaves.Filters.Base
                 }
             }
             _delayLineOffset = _delayLine.Length - 1;
+
+            //fields for online fir filtering
+            _size = _kernel.Length;
+            _buffer = new float[_size];
+            _coefficients = new float[_size << 1];
+            for (int i = 0; i < _size; i++)
+            {
+                _coefficients[i] = _coefficients[_size + i] = _kernel[i];
+            }
         }
 
         /// <summary>
