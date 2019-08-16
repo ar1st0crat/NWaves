@@ -27,7 +27,7 @@ namespace NWaves.Filters
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var output = _kernel[0] * sample + _kernel[1] * _prev;
+            var output = _b[0] * sample + _b[1] * _prev;
             _prev = sample;
 
             return output;

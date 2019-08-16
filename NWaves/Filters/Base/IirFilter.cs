@@ -13,41 +13,63 @@ namespace NWaves.Filters.Base
     public class IirFilter : LtiFilter
     {
         /// <summary>
-        /// Denominator part coefficients in filter's transfer function 
-        /// (recursive part in difference equations).
+        /// Numerator part coefficients in filter's transfer function 
+        /// (non-recursive part in difference equations)
         /// 
-        /// NOTE.
         /// These coefficients have single precision since they are used for filtering!
         /// For filter design & analysis specify transfer function (Tf property).
         /// 
+        /// Note.
+        /// This array is created from duplicated coefficients:
+        /// 
+        ///  numerator              _b
+        /// [1 2 3 4 5] -> [1 2 3 4 5 1 2 3 4 5]
+        /// 
+        /// Such memory layout leads to speed-up of online filtering.
+        /// </summary>
+        protected readonly float[] _b;
+
+        /// <summary>
+        /// Denominator part coefficients in filter's transfer function 
+        /// (recursive part in difference equations).
+        /// 
+        /// These coefficients have single precision since they are used for filtering!
+        /// For filter design & analysis specify transfer function (Tf property).
+        /// 
+        /// Note.
+        /// This array is created from duplicated coefficients:
+        /// 
+        ///  denominator             _a
+        ///  [1 2 3 4 5] -> [1 2 3 4 5 1 2 3 4 5]
+        /// 
+        /// Such memory layout leads to speed-up of online filtering.
         /// </summary>
         protected readonly float[] _a;
 
         /// <summary>
-        /// Numerator part coefficients in filter's transfer function 
-        /// (non-recursive part in difference equations)
-        /// 
-        /// NOTE.
-        /// These coefficients have single precision since they are used for filtering!
-        /// For filter design & analysis specify transfer function (Tf property).
-        /// 
+        /// Number of numerator coefficients
         /// </summary>
-        protected readonly float[] _b;
-        
+        protected readonly int _numeratorSize;
+
+        /// <summary>
+        /// Number of denominator (feedback) coefficients
+        /// </summary>
+        protected readonly int _denominatorSize;
+
         /// <summary>
         /// Transfer function (created lazily or set specifically if needed)
         /// </summary>
         protected TransferFunction _tf;
         public override TransferFunction Tf
         {
-            get => _tf ?? new TransferFunction(_b.ToDoubles(), _a.ToDoubles());
+            get => _tf ?? new TransferFunction(_b.Take(_numeratorSize).ToDoubles(), _a.Take(_denominatorSize).ToDoubles());
             protected set => _tf = value;
         }
        
         /// <summary>
         /// Default length of truncated impulse response
         /// </summary>
-        public const int DefaultImpulseResponseLength = 512;
+        public int DefaultImpulseResponseLength { get; set; } = 512;
 
         /// <summary>
         /// Internal buffers for delay lines
@@ -68,8 +90,23 @@ namespace NWaves.Filters.Base
         /// <param name="a">TF denominator coefficients</param>
         public IirFilter(IEnumerable<float> b, IEnumerable<float> a)
         {
-            _b = b.ToArray();
-            _a = a.ToArray();
+            _numeratorSize = b.Count();
+            _denominatorSize = a.Count();
+
+            _b = new float[_numeratorSize * 2];
+
+            for (var i = 0; i < _numeratorSize; i++)
+            {
+                _b[i] = _b[_numeratorSize + i] = b.ElementAt(i);
+            }
+
+            _a = new float[_denominatorSize * 2];
+
+            for (var i = 0; i < _denominatorSize; i++)
+            {
+                _a[i] = _a[_denominatorSize + i] = a.ElementAt(i);
+            }
+
             ResetInternals();
         }
 
@@ -114,7 +151,7 @@ namespace NWaves.Filters.Base
                 case FilteringMethod.OverlapAdd:       // are you sure you wanna do this? It's IIR filter!
                 case FilteringMethod.OverlapSave:
                 {
-                    var length = Math.Max(DefaultImpulseResponseLength, _a.Length + _b.Length);
+                    var length = Math.Max(DefaultImpulseResponseLength, _denominatorSize + _numeratorSize);
                     var fftSize = MathUtils.NextPowerOfTwo(4 * length);
                     var ir = new DiscreteSignal(signal.SamplingRate, Tf.ImpulseResponse(length).ToFloats());
                     return Operation.BlockConvolve(signal, ir, fftSize, method);
@@ -133,40 +170,31 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var output = 0.0f;
+            var output = 0f;
 
             _delayLineB[_delayLineOffsetB] = sample;
+            _delayLineA[_delayLineOffsetA] = 0;
 
-            var pos = 0;
-            for (var k = _delayLineOffsetB; k < _b.Length; k++)
+            for (int i = 0, j = _numeratorSize - _delayLineOffsetB; i < _numeratorSize; i++, j++)
             {
-                output += _b[pos++] * _delayLineB[k];
-            }
-            for (var k = 0; k < _delayLineOffsetB; k++)
-            {
-                output += _b[pos++] * _delayLineB[k];
+                output += _delayLineB[i] * _b[j];
             }
 
-            pos = 1;
-            for (var p = _delayLineOffsetA + 1; p < _a.Length; p++)
+            for (int i = 0, j = _denominatorSize - _delayLineOffsetA; i < _denominatorSize; i++, j++)
             {
-                output -= _a[pos++] * _delayLineA[p];
-            }
-            for (var p = 0; p < _delayLineOffsetA; p++)
-            {
-                output -= _a[pos++] * _delayLineA[p];
+                output -= _delayLineA[i] * _a[j];
             }
 
             _delayLineA[_delayLineOffsetA] = output;
 
             if (--_delayLineOffsetB < 0)
             {
-                _delayLineOffsetB = _delayLineB.Length - 1;
+                _delayLineOffsetB = _numeratorSize - 1;
             }
 
             if (--_delayLineOffsetA < 0)
             {
-                _delayLineOffsetA = _delayLineA.Length - 1;
+                _delayLineOffsetA = _denominatorSize - 1;
             }
 
             return output;
@@ -186,11 +214,11 @@ namespace NWaves.Filters.Base
 
             for (var n = 0; n < input.Length; n++)
             {
-                for (var k = 0; k < _b.Length; k++)
+                for (var k = 0; k < _numeratorSize; k++)
                 {
                     if (n >= k) output[n] += _b[k] * input[n - k];
                 }
-                for (var m = 1; m < _a.Length; m++)
+                for (var m = 1; m < _denominatorSize; m++)
                 {
                     if (n >= m) output[n] -= _a[m] * output[n - m];
                 }
@@ -205,9 +233,12 @@ namespace NWaves.Filters.Base
         /// <param name="b">New coefficients</param>
         public void ChangeNumeratorCoeffs(float[] b)
         {
-            if (b.Length == _b.Length)
+            if (b.Length == _numeratorSize)
             {
-                for (var i = 0; i < _b.Length; _b[i] = b[i], i++) { }
+                for (var i = 0; i < _numeratorSize; i++)
+                {
+                    _b[i] = _b[_numeratorSize + i] = b[i];
+                }
             }
         }
 
@@ -217,9 +248,12 @@ namespace NWaves.Filters.Base
         /// <param name="a">New coefficients</param>
         public void ChangeDenominatorCoeffs(float[] a)
         {
-            if (a.Length == _a.Length)
+            if (a.Length == _denominatorSize)
             {
-                for (var i = 0; i < _a.Length; _a[i] = a[i], i++) { }
+                for (var i = 0; i < _denominatorSize; i++)
+                {
+                    _a[i] = _a[_denominatorSize + i] = a[i];
+                }
             }
         }
 
@@ -228,10 +262,13 @@ namespace NWaves.Filters.Base
         /// </summary>
         protected void ResetInternals()
         {
+            _delayLineOffsetB = _numeratorSize - 1;
+            _delayLineOffsetA = _denominatorSize - 1;
+
             if (_delayLineB == null || _delayLineA == null)
             {
-                _delayLineB = new float[_b.Length];
-                _delayLineA = new float[_a.Length];
+                _delayLineB = new float[_numeratorSize];
+                _delayLineA = new float[_denominatorSize];
             }
             else
             {
@@ -244,9 +281,6 @@ namespace NWaves.Filters.Base
                     _delayLineA[i] = 0;
                 }
             }
-
-            _delayLineOffsetB = _delayLineB.Length - 1;
-            _delayLineOffsetA = _delayLineA.Length - 1;
         }
 
         /// <summary>
@@ -255,19 +289,18 @@ namespace NWaves.Filters.Base
         public override void Reset() => ResetInternals();
 
         /// <summary>
-        /// Divide all filter coefficients by Tf.Denominator[0] if Tf is specified (double precision)
-        /// or by _a[0] otherwise (single precision)
+        /// Divide all filter coefficients by _a[0] and normalize TF
         /// </summary>
         public void Normalize()
         {
             var a0 = _a[0];
 
-            if (Math.Abs(a0 - 1.0) < 1e-10)
+            if (Math.Abs(a0 - 1) < 1e-10f)
             {
                 return;
             }
 
-            if (Math.Abs(a0) < 1e-10)
+            if (Math.Abs(a0) < 1e-30f)
             {
                 throw new ArgumentException("The first A coefficient can not be zero!");
             }

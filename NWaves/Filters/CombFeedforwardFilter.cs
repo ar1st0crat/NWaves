@@ -59,8 +59,8 @@ namespace NWaves.Filters
             var input = signal.Samples;
             var output = new float[input.Length];
 
-            var b0 = _kernel[0];
-            var bm = _kernel[_delay];
+            var b0 = _b[0];
+            var bm = _b[_delay];
 
             for (var i = 0; i < _delay; i++)
             {
@@ -81,8 +81,8 @@ namespace NWaves.Filters
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var b0 = _kernel[0];
-            var bm = _kernel[_delay];
+            var b0 = _b[0];
+            var bm = _b[_delay];
 
             var output = b0 * sample + bm * _delayLine[_delayLineOffset];
 
@@ -103,8 +103,8 @@ namespace NWaves.Filters
         /// <param name="bm"></param>
         public void Change(double b0, double bm)
         {
-            _kernel[0] = (float)b0;
-            _kernel[_delay] = (float)bm;
+            _b[0] = (float)b0;
+            _b[_delay] = (float)bm;
         }
     }
 }
