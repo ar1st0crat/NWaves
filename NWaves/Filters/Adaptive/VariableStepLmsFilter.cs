@@ -16,22 +16,17 @@ namespace NWaves.Filters.Adaptive
         /// <summary>
         /// Leakage
         /// </summary>
-        protected readonly float _leakage;
+        private readonly float _leakage;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="order"></param>
         /// <param name="mu"></param>
-        /// <param name="weights"></param>
         /// <param name="leakage"></param>
-        public VariableStepLmsFilter(int order,
-                                     float[] mu = null,
-                                     float[] weights = null,
-                                     float leakage = 0)
-            : base(order, weights)
+        public VariableStepLmsFilter(int order, float[] mu = null, float leakage = 0) : base(order)
         {
-            _mu = mu ?? Enumerable.Repeat(0.1f, order).ToArray();
+            _mu = mu ?? Enumerable.Repeat(0.75f, order).ToArray();
             Guard.AgainstInequality(order, _mu.Length, "Filter order", "Steps array size");
 
             _leakage = leakage;
@@ -45,13 +40,18 @@ namespace NWaves.Filters.Adaptive
         /// <returns></returns>
         public override float Process(float input, float desired)
         {
+            var offset = _delayLineOffset;
+
+            _delayLine[offset + _kernelSize] = input;   // duplicate it for better loop performance
+
+
             var y = Process(input);
 
             var e = desired - y;
 
-            for (var i = 0; i < _order; i++)
+            for (var i = 0; i < _kernelSize; i++, offset++)
             {
-                _w[i] = (1 - _leakage * _mu[i]) * _w[i] + _mu[i] * e * _x[i];
+                _b[i] = _b[_kernelSize + i] = (1 - _leakage * _mu[i]) * _b[i] + _mu[i] * e * _delayLine[offset];
             }
 
             return y;

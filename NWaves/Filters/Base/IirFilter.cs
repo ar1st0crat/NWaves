@@ -156,9 +156,13 @@ namespace NWaves.Filters.Base
                     var ir = new DiscreteSignal(signal.SamplingRate, Tf.ImpulseResponse(length).ToFloats());
                     return Operation.BlockConvolve(signal, ir, fftSize, method);
                 }
-                default:
+                case FilteringMethod.DifferenceEquation:
                 {
                     return ApplyFilterDirectly(signal);
+                }
+                default:
+                {
+                    return new DiscreteSignal(signal.SamplingRate, signal.Samples.Select(s => Process(s)));
                 }
             }
         }

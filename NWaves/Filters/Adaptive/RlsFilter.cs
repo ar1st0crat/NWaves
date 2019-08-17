@@ -13,45 +13,37 @@
         /// <summary>
         /// Inverse corr matrix
         /// </summary>
-        private float[,] _p;
+        private readonly float[,] _p;
 
         /// <summary>
         /// Matrix of gain coefficients
         /// </summary>
-        private float[] _gains;
+        private readonly float[] _gains;
 
         /// <summary>
         /// Temporary matrices for calculations
         /// </summary>
-        private float[,] _dp, _tmp;
+        private readonly float[,] _dp, _tmp;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="order"></param>
-        /// <param name="mu"></param>
-        /// <param name="weights"></param>
-        /// <param name="leakage"></param>
         /// <param name="lambda"></param>
         /// <param name="initCoeff"></param>
-        public RlsFilter(int order,
-                         float mu = 0.1f,
-                         float[] weights = null,
-                         float lambda = 0.99f,
-                         float initCoeff = 1e2f)
-            : base(order, weights)
+        public RlsFilter(int order, float lambda = 0.99f, float initCoeff = 1e2f) : base(order)
         {
             _lambda = lambda;
 
-            _p = new float[_order, _order];
-            for (var i = 0; i < _order; i++)
+            _p = new float[_kernelSize, _kernelSize];
+            for (var i = 0; i < _kernelSize; i++)
             {
                 _p[i, i] = initCoeff;
             }
 
-            _gains = new float[_order];
-            _dp = new float[_order, _order];
-            _tmp = new float[_order, _order];
+            _gains = new float[_kernelSize];
+            _dp = new float[_kernelSize, _kernelSize];
+            _tmp = new float[_kernelSize, _kernelSize];
         }
 
         /// <summary>
@@ -62,42 +54,41 @@
         /// <returns></returns>
         public override float Process(float input, float desired)
         {
+            var offset = _delayLineOffset;
+
+            _delayLine[offset + _kernelSize] = input;   // duplicate it for better loop performance
+
+            
+            var y = Process(input);
+
+            var e = desired - y;
+                                 
+
+            // ======================================================================
+            // ============= lot of calculations before updating weights ============
+            // ======================================================================
+
             // =========== calculate gain coefficients ===========
             // ===========   p*x / (lambda + xT*p*x)   ===========
 
+            for (int i = 0; i < _kernelSize; _gains[i] = 0, i++) { }
+
             var g = _lambda;
 
-            for (var i = 0; i < _order; i++)
+            for (int i = 0; i < _kernelSize; i++)    // calculate  p*x
             {
-                _gains[i] = 0;
-            }
-
-            var pos = 0;
-
-            for (var i = 0; i < _order; i++)    // calculate  p*x
-            {
-                pos = 0;
-                for (var k = _delayLineOffset; k < _order; k++, pos++)
+                for (int k = 0, pos = offset; k < _kernelSize; k++, pos++)
                 {
-                    _gains[i] += _p[i, pos] * _x[k];
-                }
-                for (var k = 0; k < _delayLineOffset; k++, pos++)
-                {
-                    _gains[i] += _p[i, pos] * _x[k];
+                    _gains[i] += _p[i, k] * _delayLine[pos];
                 }
             }
 
-            pos = 0;
-            for (var k = _delayLineOffset; k < _order; k++, pos++)      // calculate xT*p*x
+            for (int k = 0, pos = offset; k < _kernelSize; k++, pos++)      // calculate xT*p*x
             {
-                g += _x[k] * _gains[pos];
-            }
-            for (var k = 0; k < _delayLineOffset; k++, pos++)
-            {
-                g += _x[k] * _gains[pos];
+                g += _gains[k] * _delayLine[pos];
             }
 
-            for (var i = 0; i < _order; i++)
+            for (int i = 0; i < _kernelSize; i++)
             {
                 _gains[i] /= g;
             }
@@ -105,48 +96,40 @@
             // ============ update inv corr matrix ================
             // ========== (p - gain*xT*p) / lambda ================
 
-            for (var i = 0; i < _order; i++)        // calculate  _tmp = gain * xT
+            for (int i = 0; i < _kernelSize; i++)        // calculate  _tmp = gain * xT
             {
-                pos = 0;
-                for (var k = _delayLineOffset; k < _w.Length; k++, pos++)
+                for (int k = 0, pos = offset; k < _kernelSize; k++, pos++)
                 {
-                    _tmp[i, pos] = _gains[i] * _x[k];
-                }
-                for (var k = 0; k < _delayLineOffset; k++, pos++)
-                {
-                    _tmp[i, pos] = _gains[i] * _x[k];
+                    _tmp[i, k] = _gains[i] * _delayLine[pos];
                 }
             }
 
-            for (var i = 0; i < _order; i++)        // calculate  _dp = _tmp * p
+            for (int i = 0; i < _kernelSize; i++)        // calculate  _dp = _tmp * p
             {
-                for (var j = 0; j < _order; j++)
+                for (int j = 0; j < _kernelSize; j++)
                 {
-                    for (var k = 0; k < _order; k++)
+                    for (int k = 0; k < _kernelSize; k++)
                     {
                         _dp[i, j] = _tmp[i, k] * _p[k, j];
                     }
                 }
             }
 
-            for (var i = 0; i < _order; i++)        // update inv corr matrix
+            for (int i = 0; i < _kernelSize; i++)        // update inv corr matrix
             {
-                for (var j = 0; j < _order; j++)
+                for (int j = 0; j < _kernelSize; j++)
                 {
                     _p[i, j] = (_p[i, j] - _dp[i, j]) / _lambda;
                 }
             }
 
+            // ======================================================================
+            // ===================== finally, update weights: =======================
+            // ======================================================================
 
-            // ================= update weights ===================
-
-            var y = Process(input);
-
-            var e = desired - y;
-
-            for (var i = 0; i < _order; i++)
+            for (int i = 0; i < _kernelSize; i++)
             {
-                _w[i] += _gains[i] * e;
+                _b[i] = _b[_kernelSize + i] = _b[i] + _gains[i] * e;
             }
 
             return y;

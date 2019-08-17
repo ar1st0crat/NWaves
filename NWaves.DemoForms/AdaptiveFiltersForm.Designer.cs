@@ -193,7 +193,7 @@
             this.muTextBox.Name = "muTextBox";
             this.muTextBox.Size = new System.Drawing.Size(53, 22);
             this.muTextBox.TabIndex = 6;
-            this.muTextBox.Text = "0,5";
+            this.muTextBox.Text = "0,95";
             // 
             // label3
             // 

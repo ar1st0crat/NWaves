@@ -40,7 +40,7 @@ namespace NWaves.DemoForms
             
             linePlot1.Markline = a;
 
-            weightsListBox.DataSource = new BindingList<float>(filter.Weights);
+            weightsListBox.DataSource = new BindingList<float>(filter.Kernel);
         }
 
         private void generateButton_Click(object sender, EventArgs e)

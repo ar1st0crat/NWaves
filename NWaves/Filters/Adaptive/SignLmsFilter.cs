@@ -15,20 +15,15 @@ namespace NWaves.Filters.Adaptive
         /// <summary>
         /// Leakage
         /// </summary>
-        protected readonly float _leakage;
+        private readonly float _leakage;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="order"></param>
         /// <param name="mu"></param>
-        /// <param name="weights"></param>
         /// <param name="leakage"></param>
-        public SignLmsFilter(int order,
-                             float mu = 0.02f,
-                             float[] weights = null,
-                             float leakage = 0)
-            : base(order, weights)
+        public SignLmsFilter(int order, float mu = 0.75f, float leakage = 0) : base(order)
         {
             _mu = mu;
             _leakage = leakage;
@@ -42,13 +37,18 @@ namespace NWaves.Filters.Adaptive
         /// <returns></returns>
         public override float Process(float input, float desired)
         {
+            var offset = _delayLineOffset;
+
+            _delayLine[offset + _kernelSize] = input;   // duplicate it for better loop performance
+
+
             var y = Process(input);
 
             var e = desired - y;
 
-            for (var i = 0; i < _order; i++)
+            for (var i = 0; i < _kernelSize; i++, offset++)
             {
-                _w[i] = (1 - _leakage * _mu) * _w[i] + _mu * Math.Sign(e) * Math.Sign(_x[i]);
+                _b[i] = _b[_kernelSize + i] = (1 - _leakage * _mu) * _b[i] + _mu * Math.Sign(e) * Math.Sign(_delayLine[offset]);
             }
 
             return y;

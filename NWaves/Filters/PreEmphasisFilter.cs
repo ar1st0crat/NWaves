@@ -8,16 +8,22 @@ namespace NWaves.Filters
     public class PreEmphasisFilter : FirFilter
     {
         /// <summary>
+        /// Pre-emphasis coefficient
+        /// </summary>
+        private readonly float _pre;
+
+        /// <summary>
         /// Delay line
         /// </summary>
-        private float _prev;
+        private float _prevSample;
 
         /// <summary>
         /// Constructor computes simple 1st order kernel
         /// </summary>
         /// <param name="a">Pre-emphasis coefficient</param>
-        public PreEmphasisFilter(double a = 0.97) : base(new [] { 1, -(float)a })
+        public PreEmphasisFilter(double a = 0.97) : base(new [] { 1, -a })
         {
+            _pre = -(float)a;
         }
 
         /// <summary>
@@ -27,8 +33,8 @@ namespace NWaves.Filters
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var output = _b[0] * sample + _b[1] * _prev;
-            _prev = sample;
+            var output = sample + _pre * _prevSample;
+            _prevSample = sample;
 
             return output;
         }
@@ -38,7 +44,7 @@ namespace NWaves.Filters
         /// </summary>
         public override void Reset()
         {
-            _prev = 0;
+            _prevSample = 0;
         }
     }
 }

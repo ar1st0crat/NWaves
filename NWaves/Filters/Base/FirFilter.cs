@@ -85,6 +85,8 @@ namespace NWaves.Filters.Base
                 _b[i] = _b[_kernelSize + i] = kernel.ElementAt(i);
             }
 
+            _delayLine = new float[_kernelSize];
+
             ResetInternals();
         }
 
@@ -142,9 +144,13 @@ namespace NWaves.Filters.Base
                     var blockConvolver = OlsBlockConvolver.FromFilter(this, fftSize);
                     return blockConvolver.ApplyTo(signal);
                 }
-                default:
+                case FilteringMethod.DifferenceEquation:
                 {
                     return ApplyFilterDirectly(signal);
+                }
+                default:
+                {
+                    return new DiscreteSignal(signal.SamplingRate, signal.Samples.Select(s => Process(s)));
                 }
             }
         }
@@ -220,15 +226,7 @@ namespace NWaves.Filters.Base
         private void ResetInternals()
         {
             _delayLineOffset = _kernelSize - 1;
-
-            if (_delayLine == null)
-            {
-                _delayLine = new float[_kernelSize];
-            }
-            else
-            {
-                Array.Clear(_delayLine, 0, _kernelSize);
-            }
+            Array.Clear(_delayLine, 0, _kernelSize);
         }
 
         /// <summary>
