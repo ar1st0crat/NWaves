@@ -11,8 +11,13 @@ namespace NWaves.Filters
         /// Constructor
         /// </summary>
         /// <param name="a">De-emphasis coefficient</param>
-        public DeEmphasisFilter(double a = 0.97) : base(1.0, -a)
+        /// <param name="normalize">Normalize freq response to unit gain</param>
+        public DeEmphasisFilter(double a = 0.97, bool normalize = false) : base(1.0, -a)
         {
+            if (normalize)
+            {
+                _b[0] = (float)(1 - a);
+            }
         }
     }
 }

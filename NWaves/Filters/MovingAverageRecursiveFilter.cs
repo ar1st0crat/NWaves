@@ -73,14 +73,14 @@ namespace NWaves.Filters
 
             output[0] = input[0] * b0;
 
-            for (var n = 1; n < size; n++)
+            for (int n = 1, k = 0; n < size; n++, k++)
             {
-                output[n] = input[n] * b0 + output[n - 1];
+                output[n] = input[n] * b0 + output[k];
             }
 
-            for (var n = size; n < input.Length; n++)
+            for (int n = size, k = size - 1, delay = 0; n < input.Length; n++, k++, delay++)
             {
-                output[n] = input[n - size] * bs + input[n] * b0 + output[n - 1];
+                output[n] = input[delay] * bs + input[n] * b0 + output[k];
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
@@ -103,7 +103,7 @@ namespace NWaves.Filters
 
             if (--_delayLineOffsetB < 1)
             {
-                _delayLineOffsetB = _delayLineB.Length - 1;
+                _delayLineOffsetB = _numeratorSize - 1;
             }
 
             return output;

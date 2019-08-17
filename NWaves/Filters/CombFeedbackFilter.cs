@@ -32,6 +32,28 @@ namespace NWaves.Filters
         }
 
         /// <summary>
+        /// Online filtering (sample-by-sample)
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        public override float Process(float sample)
+        {
+            var b0 = _b[0];
+            var am = _a[_delay];
+
+            var output = b0 * sample - am * _delayLineA[_delayLineOffsetA];
+
+            _delayLineA[_delayLineOffsetA] = output;
+
+            if (--_delayLineOffsetA < 1)
+            {
+                _delayLineOffsetA = _denominatorSize - 1;
+            }
+
+            return output;
+        }
+
+        /// <summary>
         /// Apply filter
         /// </summary>
         /// <param name="signal"></param>
@@ -51,38 +73,16 @@ namespace NWaves.Filters
             var b0 = _b[0];
             var am = _a[_delay];
 
-            for (var i = 0; i < _delay; i++)
+            for (int i = 0; i < _delay; i++)
             {
                 output[i] = b0 * input[i];
             }
-            for (var i = _delay; i < signal.Length; i++)
+            for (int i = _delay, j = 0; i < signal.Length; i++, j++)
             {
-                output[i] = b0 * input[i] - am * output[i - _delay];
+                output[i] = b0 * input[i] - am * output[j];
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
-        }
-
-        /// <summary>
-        /// Online filtering (sample-by-sample)
-        /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
-        public override float Process(float sample)
-        {
-            var b0 = _b[0];
-            var am = _a[_delay];
-
-            var output = b0 * sample - am * _delayLineA[_delayLineOffsetA];
-
-            _delayLineA[_delayLineOffsetA] = output;
-
-            if (--_delayLineOffsetA < 1)
-            {
-                _delayLineOffsetA = _delayLineA.Length - 1;
-            }
-
-            return output;
         }
 
         /// <summary>

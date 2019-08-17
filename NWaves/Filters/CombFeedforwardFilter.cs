@@ -22,7 +22,9 @@ namespace NWaves.Filters
         /// <param name="m">Delay</param>
         /// <param name="b0">Coefficient b0</param>
         /// <param name="bm">Coefficient bm</param>
-        public CombFeedforwardFilter(int m, double b0 = 1, double bm = 0.5) : base(MakeKernel(m, b0, bm))
+        /// <param name="normalize"></param>
+        public CombFeedforwardFilter(int m, double b0 = 1, double bm = 0.5, bool normalize = true)
+            : base(MakeKernel(m, b0, bm, normalize))
         {
             _delay = m;
         }
@@ -33,13 +35,43 @@ namespace NWaves.Filters
         /// <param name="m">Delay</param>
         /// <param name="b0">Coefficient b0</param>
         /// <param name="bm">Coefficient bm</param>
-        private static float[] MakeKernel(int m, double b0, double bm)
+        /// <param name="normalize"></param>
+        private static float[] MakeKernel(int m, double b0, double bm, bool normalize)
         {
             var kernel = new float[m + 1];
             kernel[0] = (float)b0;
             kernel[m] = (float)bm;
 
+            if (normalize)
+            {
+                var sum = (float)(b0 + bm);
+                kernel[0] /= sum;
+                kernel[m] /= sum;
+            }
+
             return kernel;
+        }
+        
+        /// <summary>
+        /// Online filtering (sample-by-sample)
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        public override float Process(float sample)
+        {
+            var b0 = _b[0];
+            var bm = _b[_delay];
+
+            var output = b0 * sample + bm * _delayLine[_delayLineOffset];
+
+            _delayLine[_delayLineOffset] = sample;
+
+            if (--_delayLineOffset < 1)
+            {
+                _delayLineOffset = _kernelSize - 1;
+            }
+
+            return output;
         }
 
         /// <summary>
@@ -57,43 +89,27 @@ namespace NWaves.Filters
             }
 
             var input = signal.Samples;
-            var output = new float[input.Length];
+            var output = new float[input.Length + _kernelSize - 1];
 
             var b0 = _b[0];
             var bm = _b[_delay];
 
-            for (var i = 0; i < _delay; i++)
+            int i = 0, j = 0;
+
+            for (; i < _delay; i++)
             {
                 output[i] = b0 * input[i];
             }
-            for (var i = _delay; i < signal.Length; i++)
+            for (; i < signal.Length; i++, j++)
             {
-                output[i] = b0 * input[i] + bm * input[i - _delay];
+                output[i] = b0 * input[i] + bm * input[j];
+            }
+            for (; i < output.Length; i++, j++)
+            {
+                output[i] = bm * input[j];
             }
 
             return new DiscreteSignal(signal.SamplingRate, output);
-        }
-
-        /// <summary>
-        /// Online filtering (sample-by-sample)
-        /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
-        public override float Process(float sample)
-        {
-            var b0 = _b[0];
-            var bm = _b[_delay];
-
-            var output = b0 * sample + bm * _delayLine[_delayLineOffset];
-
-            _delayLine[_delayLineOffset] = sample;
-
-            if (--_delayLineOffset < 1)
-            {
-                _delayLineOffset = _delayLine.Length - 1;
-            }
-
-            return output;
         }
 
         /// <summary>

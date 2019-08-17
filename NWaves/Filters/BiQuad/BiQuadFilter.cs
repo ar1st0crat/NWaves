@@ -33,7 +33,7 @@ namespace NWaves.Filters.BiQuad
         /// <param name="a2"></param>
         public BiQuadFilter(double b0, double b1, double b2,
                             double a0, double a1, double a2) : 
-            base(new[] { b1, b1, b2 }, new[] { a0, a1, a2 })
+            base(new[] { b0, b1, b2 }, new[] { a0, a1, a2 })
         {
         }
 
