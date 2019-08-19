@@ -36,7 +36,7 @@ namespace NWaves.Audio
         /// <summary>
         /// This constructor loads signals from a wave file.
         /// 
-        /// Since NWaves is Portable library, there's no universal FileStream class.
+        /// Since NWaves is .NET Standard 2.0 library, there's no universal FileStream class.
         /// So it's supposed that the client code will take care 
         /// for extracting the stream from a wave file.
         /// 
