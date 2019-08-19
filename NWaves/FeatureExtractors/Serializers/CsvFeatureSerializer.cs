@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using NWaves.FeatureExtractors.Base;
 
 namespace NWaves.FeatureExtractors.Serializers
 {
@@ -13,14 +12,19 @@ namespace NWaves.FeatureExtractors.Serializers
     public class CsvFeatureSerializer
     {
         /// <summary>
-        /// Collection of feature vectors for serialization
+        /// List of feature vectors for serialization
         /// </summary>
-        private readonly IEnumerable<FeatureVector> _vectors;
+        private readonly IList<float[]> _vectors;
 
         /// <summary>
-        /// Collection of feature names for serialization
+        /// List of time markers for serialization
         /// </summary>
-        private readonly IEnumerable<string> _names;
+        private readonly IList<double> _timeMarkers;
+
+        /// <summary>
+        /// List of feature names for serialization
+        /// </summary>
+        private readonly IList<string> _names;
 
         /// <summary>
         /// Delimiter
@@ -31,13 +35,16 @@ namespace NWaves.FeatureExtractors.Serializers
         /// Constructor accepting the list of feature vectors
         /// </summary>
         /// <param name="featureVectors">List of feature vectors for serialization</param>
+        /// <param name="timeMarkers">List of time markers for serialization</param>
         /// <param name="featureNames">List of feature vectors for serialization</param>
         /// <param name="delimiter">Delimiter char</param>
-        public CsvFeatureSerializer(IEnumerable<FeatureVector> featureVectors,
-                                    IEnumerable<string> featureNames = null,
+        public CsvFeatureSerializer(IList<float[]> featureVectors,
+                                    IList<double> timeMarkers = null,
+                                    IList<string> featureNames = null,
                                     char delimiter = ',')
         {
             _vectors = featureVectors;
+            _timeMarkers = timeMarkers;
             _names = featureNames;
             _delimiter = delimiter;
         }
@@ -61,14 +68,26 @@ namespace NWaves.FeatureExtractors.Serializers
                     await writer.WriteLineAsync(header).ConfigureAwait(false);
                 }
 
-                foreach (var vector in _vectors)
+                if (_timeMarkers == null)
                 {
-                    var line = string.Format("{0}{1}{2}",
-                                         vector.TimePosition.ToString(timeFormat, CultureInfo.InvariantCulture),
-                                         comma,
-                                         string.Join(comma, vector.Features.Select(f => f.ToString(format, CultureInfo.InvariantCulture))));
+                    foreach (var vector in _vectors)
+                    {
+                        var line = string.Join(comma, vector.Select(f => f.ToString(format, CultureInfo.InvariantCulture)));
 
-                    await writer.WriteLineAsync(line).ConfigureAwait(false);
+                        await writer.WriteLineAsync(line).ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i < _vectors.Count; i++)
+                    {
+                        var line = string.Format("{0}{1}{2}",
+                                             _timeMarkers[i].ToString(timeFormat, CultureInfo.InvariantCulture),
+                                             comma,
+                                             string.Join(comma, _vectors[i].Select(f => f.ToString(format, CultureInfo.InvariantCulture))));
+
+                        await writer.WriteLineAsync(line).ConfigureAwait(false);
+                    }
                 }
             }
         }

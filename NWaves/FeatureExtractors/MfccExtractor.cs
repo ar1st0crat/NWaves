@@ -282,8 +282,8 @@ namespace NWaves.FeatureExtractors
         /// 
         /// </summary>
         /// <param name="block">Samples for analysis</param>
-        /// <returns>MFCC vector</returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features">MFCC vector</param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             // 1) calculate magnitude/power spectrum (with/without normalization)
 
@@ -295,31 +295,27 @@ namespace NWaves.FeatureExtractors
 
             // 3) dct
 
-            var mfccs = new float[FeatureCount];
-
-            _applyDct(mfccs);           // _melSpectrum -> mfccs
+            _applyDct(features);           // _melSpectrum -> mfccs
 
 
             // 4) (optional) liftering
 
             if (_lifterCoeffs != null)
             {
-                mfccs.ApplyWindow(_lifterCoeffs);
+                features.ApplyWindow(_lifterCoeffs);
             }
 
             // 5) (optional) replace first coeff with log(energy) 
 
             if (_includeEnergy)
             {
-                mfccs[0] = (float)(Math.Log(block.Sum(x => x * x)));
+                features[0] = (float)Math.Log(block.Sum(x => x * x));
 
                 // TODO: apply floor?
 
                 // var en = block.Sum(x => x * x);
                 // mfccs[0] = (float)(Math.Log(Math.Max(en, someFloor)));
             }
-
-            return mfccs;
         }
 
         /// <summary>

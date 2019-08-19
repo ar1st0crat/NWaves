@@ -206,11 +206,9 @@ namespace NWaves.FeatureExtractors
         ///     5) Do dct-II (normalized)
         /// 
         /// </summary>
-        /// <param name="samples">Samples for analysis</param>
-        /// <param name="startSample">The number (position) of the first sample for processing</param>
-        /// <param name="endSample">The number (position) of last sample for processing</param>
-        /// <returns>List of pncc vectors</returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="block">Block of samples for analysis</param>
+        /// <param name="features">List of pncc vectors</param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             const float MeanPower = 1e10f;
             const float Epsilon = 2.22e-16f;
@@ -245,138 +243,135 @@ namespace NWaves.FeatureExtractors
                 }
             }
 
-            if (_step >= 2 * M)
+            // first 2*M vectors are zeros
+
+            if (_step < 2 * M)
             {
-                for (var j = 0; j < _spectrumQOut.Length; j++)
+                return;
+            }
+
+            for (var j = 0; j < _spectrumQOut.Length; j++)
+            {
+                if (spectrumQ[j] > _spectrumQOut[j])
                 {
-                    if (spectrumQ[j] > _spectrumQOut[j])
-                    {
-                        _spectrumQOut[j] = LambdaA * _spectrumQOut[j] + (1 - LambdaA) * spectrumQ[j];
-                    }
-                    else
-                    {
-                        _spectrumQOut[j] = LambdaB * _spectrumQOut[j] + (1 - LambdaB) * spectrumQ[j];
-                    }
-                }
-
-                for (var j = 0; j < _filteredSpectrumQ.Length; j++)
-                {
-                    _filteredSpectrumQ[j] = Math.Max(spectrumQ[j] - _spectrumQOut[j], 0.0f);
-
-                    if (_step == 2 * M)
-                    {
-                        _avgSpectrumQ1[j] = 0.9f * _filteredSpectrumQ[j];
-                        _avgSpectrumQ2[j] = _filteredSpectrumQ[j];
-                    }
-
-                    if (_filteredSpectrumQ[j] > _avgSpectrumQ1[j])
-                    {
-                        _avgSpectrumQ1[j] = LambdaA * _avgSpectrumQ1[j] + (1 - LambdaA) * _filteredSpectrumQ[j];
-                    }
-                    else
-                    {
-                        _avgSpectrumQ1[j] = LambdaB * _avgSpectrumQ1[j] + (1 - LambdaB) * _filteredSpectrumQ[j];
-                    }
-
-                    // 3.3) temporal masking
-
-                    var threshold = _filteredSpectrumQ[j];
-
-                    _avgSpectrumQ2[j] *= LambdaT;
-                    if (spectrumQ[j] < C * _spectrumQOut[j])
-                    {
-                        _filteredSpectrumQ[j] = _avgSpectrumQ1[j];
-                    }
-                    else
-                    {
-                        if (_filteredSpectrumQ[j] <= _avgSpectrumQ2[j])
-                        {
-                            _filteredSpectrumQ[j] = MuT * _avgSpectrumQ2[j];
-                        }
-                    }
-                    _avgSpectrumQ2[j] = Math.Max(_avgSpectrumQ2[j], threshold);
-
-                    _filteredSpectrumQ[j] = Math.Max(_filteredSpectrumQ[j], _avgSpectrumQ1[j]);
-                }
-
-
-                // 3.4) spectral smoothing 
-
-                for (var j = 0; j < _spectrumS.Length; j++)
-                {
-                    _spectrumS[j] = _filteredSpectrumQ[j] / Math.Max(spectrumQ[j], Epsilon);
-                }
-
-                for (var j = 0; j < _smoothedSpectrumS.Length; j++)
-                {
-                    _smoothedSpectrumS[j] = 0.0f;
-
-                    var total = 0;
-                    for (var k = Math.Max(j - N, 0);
-                             k < Math.Min(j + N + 1, FilterBank.Length);
-                             k++, total++)
-                    {
-                        _smoothedSpectrumS[j] += _spectrumS[k];
-                    }
-                    _smoothedSpectrumS[j] /= total;
-                }
-
-                // 3.5) mean power normalization
-
-                var centralSpectrum = _ringBuffer.CentralSpectrum;
-
-                var sumPower = 0.0f;
-                for (var j = 0; j < _smoothedSpectrum.Length; j++)
-                {
-                    _smoothedSpectrum[j] = _smoothedSpectrumS[j] * centralSpectrum[j];
-                    sumPower += _smoothedSpectrum[j];
-                }
-
-                _mean = LambdaMu * _mean + (1 - LambdaMu) * sumPower;
-
-                for (var j = 0; j < _smoothedSpectrum.Length; j++)
-                {
-                    _smoothedSpectrum[j] /= _mean;
-                    _smoothedSpectrum[j] *= MeanPower;
-                }
-
-                // =============================================================
-
-                // 4) nonlinearity (power ^ d  or  Log)
-
-                if (_power != 0)
-                {
-                    for (var j = 0; j < _smoothedSpectrum.Length; j++)
-                    {
-                        _smoothedSpectrum[j] = (float)Math.Pow(_smoothedSpectrum[j], 1.0 / _power);
-                    }
+                    _spectrumQOut[j] = LambdaA * _spectrumQOut[j] + (1 - LambdaA) * spectrumQ[j];
                 }
                 else
                 {
-                    for (var j = 0; j < _smoothedSpectrum.Length; j++)
-                    {
-                        _smoothedSpectrum[j] = (float)Math.Log(_smoothedSpectrum[j] + Epsilon);
-                    }
+                    _spectrumQOut[j] = LambdaB * _spectrumQOut[j] + (1 - LambdaB) * spectrumQ[j];
                 }
-
-                // 5) dct-II (Norm = normalized)
-
-                var pnccs = new float[FeatureCount];
-                _dct.DirectNorm(_smoothedSpectrum, pnccs);
-
-                // wow, who knows, maybe it'll happen!
-
-                if (_step == int.MaxValue - 1)
-                {
-                    _step = 2 * M + 1;
-                }
-
-                return pnccs;
             }
 
-            // first 2*M vectors are zeros
+            for (var j = 0; j < _filteredSpectrumQ.Length; j++)
+            {
+                _filteredSpectrumQ[j] = Math.Max(spectrumQ[j] - _spectrumQOut[j], 0.0f);
 
-            return new float[FeatureCount];
+                if (_step == 2 * M)
+                {
+                    _avgSpectrumQ1[j] = 0.9f * _filteredSpectrumQ[j];
+                    _avgSpectrumQ2[j] = _filteredSpectrumQ[j];
+                }
+
+                if (_filteredSpectrumQ[j] > _avgSpectrumQ1[j])
+                {
+                    _avgSpectrumQ1[j] = LambdaA * _avgSpectrumQ1[j] + (1 - LambdaA) * _filteredSpectrumQ[j];
+                }
+                else
+                {
+                    _avgSpectrumQ1[j] = LambdaB * _avgSpectrumQ1[j] + (1 - LambdaB) * _filteredSpectrumQ[j];
+                }
+
+                // 3.3) temporal masking
+
+                var threshold = _filteredSpectrumQ[j];
+
+                _avgSpectrumQ2[j] *= LambdaT;
+                if (spectrumQ[j] < C * _spectrumQOut[j])
+                {
+                    _filteredSpectrumQ[j] = _avgSpectrumQ1[j];
+                }
+                else
+                {
+                    if (_filteredSpectrumQ[j] <= _avgSpectrumQ2[j])
+                    {
+                        _filteredSpectrumQ[j] = MuT * _avgSpectrumQ2[j];
+                    }
+                }
+                _avgSpectrumQ2[j] = Math.Max(_avgSpectrumQ2[j], threshold);
+
+                _filteredSpectrumQ[j] = Math.Max(_filteredSpectrumQ[j], _avgSpectrumQ1[j]);
+            }
+
+
+            // 3.4) spectral smoothing 
+
+            for (var j = 0; j < _spectrumS.Length; j++)
+            {
+                _spectrumS[j] = _filteredSpectrumQ[j] / Math.Max(spectrumQ[j], Epsilon);
+            }
+
+            for (var j = 0; j < _smoothedSpectrumS.Length; j++)
+            {
+                _smoothedSpectrumS[j] = 0.0f;
+
+                var total = 0;
+                for (var k = Math.Max(j - N, 0);
+                         k < Math.Min(j + N + 1, FilterBank.Length);
+                         k++, total++)
+                {
+                    _smoothedSpectrumS[j] += _spectrumS[k];
+                }
+                _smoothedSpectrumS[j] /= total;
+            }
+
+            // 3.5) mean power normalization
+
+            var centralSpectrum = _ringBuffer.CentralSpectrum;
+
+            var sumPower = 0.0f;
+            for (var j = 0; j < _smoothedSpectrum.Length; j++)
+            {
+                _smoothedSpectrum[j] = _smoothedSpectrumS[j] * centralSpectrum[j];
+                sumPower += _smoothedSpectrum[j];
+            }
+
+            _mean = LambdaMu * _mean + (1 - LambdaMu) * sumPower;
+
+            for (var j = 0; j < _smoothedSpectrum.Length; j++)
+            {
+                _smoothedSpectrum[j] /= _mean;
+                _smoothedSpectrum[j] *= MeanPower;
+            }
+
+            // =============================================================
+
+            // 4) nonlinearity (power ^ d  or  Log)
+
+            if (_power != 0)
+            {
+                for (var j = 0; j < _smoothedSpectrum.Length; j++)
+                {
+                    _smoothedSpectrum[j] = (float)Math.Pow(_smoothedSpectrum[j], 1.0 / _power);
+                }
+            }
+            else
+            {
+                for (var j = 0; j < _smoothedSpectrum.Length; j++)
+                {
+                    _smoothedSpectrum[j] = (float)Math.Log(_smoothedSpectrum[j] + Epsilon);
+                }
+            }
+
+            // 5) dct-II (Norm = normalized)
+
+            _dct.DirectNorm(_smoothedSpectrum, features);
+
+            // wow, who knows, maybe it'll happen!
+
+            if (_step == int.MaxValue - 1)
+            {
+                _step = 2 * M + 1;
+            }
         }
 
         /// <summary>

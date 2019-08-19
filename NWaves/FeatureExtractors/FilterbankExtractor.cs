@@ -157,11 +157,9 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Compute sequence of filter bank channel outputs
         /// </summary>
-        /// <param name="samples"></param>
-        /// <param name="startSample"></param>
-        /// <param name="endSample"></param>
-        /// <returns></returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="block"></param>
+        /// <param name="features"></param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             // 1) calculate magnitude/power spectrum (with/without normalization)
 
@@ -171,9 +169,9 @@ namespace NWaves.FeatureExtractors
 
             _postProcessSpectrum();     // _spectrum -> _bandSpectrum
 
-            // add vector to output sequence
+            // fill output feature vector
 
-            return _bandSpectrum.FastCopy();
+            _bandSpectrum.FastCopyTo(features, FeatureCount);
         }
 
         /// <summary>

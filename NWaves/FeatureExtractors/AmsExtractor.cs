@@ -201,14 +201,14 @@ namespace NWaves.FeatureExtractors
         /// <param name="startSample">The number (position) of the first sample for processing</param>
         /// <param name="endSample">The number (position) of last sample for processing</param>
         /// <returns>List of flattened modulation spectra</returns>
-        public override List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
+        public override List<float[]> ComputeFrom(float[] samples, int startSample, int endSample)
         {
             Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
 
             var frameSize = FrameSize;
             var hopSize = HopSize;
 
-            var featureVectors = new List<FeatureVector>();
+            var featureVectors = new List<float[]>();
 
             var en = 0;
             var i = startSample;
@@ -323,7 +323,7 @@ namespace NWaves.FeatureExtractors
                     var len = Math.Min(_modulationFftSize, envelopeLength - i);
                     envelope.FastCopyTo(_modBlock, len, i);
                     // fill zeros to modFftSize if len < modFftSize
-                    for (var k = len; k < _modBlock.Length; _modBlock[k++] = 0) ;
+                    for (var k = len; k < _modBlock.Length; _modBlock[k++] = 0) { }
 
                     _modulationFft.PowerSpectrum(_modBlock, _modSpectrum);
                     _modSpectrum.FastCopyTo(vector, _modSpectrum.Length, 0, offset);
@@ -331,11 +331,7 @@ namespace NWaves.FeatureExtractors
                     offset += _modSpectrum.Length;
                 }
 
-                featureVectors.Add(new FeatureVector
-                {
-                    Features = vector,
-                    TimePosition = (double)i * hopSize / SamplingRate
-                });
+                featureVectors.Add(vector);
 
                 i += _modulationHopSize;
             }
@@ -349,7 +345,7 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <param name="featureVector"></param>
         /// <returns></returns>
-        public float[][] MakeSpectrum2D(FeatureVector featureVector)
+        public float[][] MakeSpectrum2D(float[] featureVector)
         {
             var length = _filterbank?.Length ?? _featuregram[0].Length;
 
@@ -359,7 +355,7 @@ namespace NWaves.FeatureExtractors
             var offset = 0;
             for (var i = 0; i < spectrum.Length; i++)
             {
-                spectrum[i] = featureVector.Features.FastCopyFragment(spectrumSize, offset);
+                spectrum[i] = featureVector.FastCopyFragment(spectrumSize, offset);
                 offset += spectrumSize;
             }
 
@@ -373,7 +369,7 @@ namespace NWaves.FeatureExtractors
         /// <param name="featureVectors"></param>
         /// <param name="herz"></param>
         /// <returns>Short-time spectra corresponding to particular modulation frequency</returns>
-        public List<float[]> VectorsAtHerz(IList<FeatureVector> featureVectors, float herz = 4)
+        public List<float[]> VectorsAtHerz(IList<float[]> featureVectors, float herz = 4)
         {
             var length = _filterbank?.Length ?? _featuregram[0].Length;
             var modulationSamplingRate = (float) SamplingRate / HopSize;
@@ -388,7 +384,7 @@ namespace NWaves.FeatureExtractors
                 var spectrum = new float[length];
                 for (var i = 0; i < spectrum.Length; i++)
                 {
-                    spectrum[i] = vector.Features[freq + i * spectrumSize];
+                    spectrum[i] = vector[freq + i * spectrumSize];
                 }
                 freqVectors.Add(spectrum);
             }
@@ -400,10 +396,15 @@ namespace NWaves.FeatureExtractors
         /// All logic is fully implemented in ComputeFrom() method
         /// </summary>
         /// <param name="block"></param>
-        /// <returns></returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features"></param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             throw new NotImplementedException("AmsExtractor does not provide this function. Please call ComputeFrom() method");
+        }
+
+        public override void ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
+        {
+            throw new NotImplementedException("AmsExtractor does not provide this function. Please call overloaded ComputeFrom() method");
         }
     }
 }

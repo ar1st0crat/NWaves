@@ -216,14 +216,12 @@ namespace NWaves.FeatureExtractors.Multi
         /// Compute spectral features in one frame
         /// </summary>
         /// <param name="block"></param>
-        /// <returns></returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features"></param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             // compute and prepare spectrum
 
             _fft.MagnitudeSpectrum(block, _spectrum);
-
-            var featureVector = new float[FeatureCount];
 
             if (_spectrum.Length == _frequencies.Length)
             {
@@ -241,10 +239,8 @@ namespace NWaves.FeatureExtractors.Multi
 
             for (var j = 0; j < _extractors.Count; j++)
             {
-                featureVector[j] = _extractors[j](_mappedSpectrum, _frequencies);
+                features[j] = _extractors[j](_mappedSpectrum, _frequencies);
             }
-
-            return featureVector;
         }
 
         /// <summary>

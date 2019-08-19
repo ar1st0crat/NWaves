@@ -19,7 +19,7 @@ namespace NWaves.DemoForms
         private DiscreteSignal _signal;
         private AmsExtractor _extractor;
 
-        private List<FeatureVector> _features;
+        private List<float[]> _features;
         private int _featIndex;
 
         private float[][] _filterbank;
@@ -168,7 +168,7 @@ namespace NWaves.DemoForms
             _features = _extractor.ComputeFrom(_signal);
             _featIndex = 0;
 
-            infoLabel.Text = $"{_features.Count}x{_features[0].Features.Length}";
+            infoLabel.Text = $"{_features.Count}x{_features[0].Length}";
 
             DrawEnvelopes(_extractor.Envelopes);
             DrawModulationSpectrum(_extractor.MakeSpectrum2D(_features[_featIndex]));

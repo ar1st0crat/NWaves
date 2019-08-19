@@ -28,7 +28,7 @@ namespace NWaves.DemoForms
         private int _hopSize;
         private int _cepstrumSize;
 
-        private List<FeatureVector> _pitches;
+        private List<float[]> _pitches;
 
         private int _specNo;
 
@@ -66,8 +66,8 @@ namespace NWaves.DemoForms
             _cepstralTransform = new CepstralTransform(_cepstrumSize, _fftSize);
 
             var pitchExtractor = new PitchExtractor(_signal.SamplingRate,
-                                                    (float)_fftSize / _signal.SamplingRate,
-                                                    (float)_hopSize / _signal.SamplingRate);
+                                                    (double)_fftSize / _signal.SamplingRate,
+                                                    (double)_hopSize / _signal.SamplingRate);
 
             _pitches = pitchExtractor.ParallelComputeFrom(_signal);
 
@@ -82,7 +82,7 @@ namespace NWaves.DemoForms
             spectrogramPanel.ColorMapName = "viridis";
             spectrogramPanel.MarklineThickness = 6;
             spectrogramPanel.Spectrogram = spectrogram.Select(s => s.Take(224).ToArray()).ToList();
-            spectrogramPanel.Markline = _pitches.Select(p => p.Features[0] * _fftSize / _signal.SamplingRate).ToArray();
+            spectrogramPanel.Markline = _pitches.Select(p => p[0] * _fftSize / _signal.SamplingRate).ToArray();
         }
 
         private void specNoComboBox_TextChanged(object sender, EventArgs e)

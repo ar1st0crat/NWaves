@@ -80,8 +80,8 @@ namespace NWaves.FeatureExtractors
         /// 
         /// </summary>
         /// <param name="block">Samples for analysis</param>
-        /// <returns>LPC vector</returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features">LPC vector</param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             block.FastCopyTo(_reversed, FrameSize);
 
@@ -91,11 +91,9 @@ namespace NWaves.FeatureExtractors
 
             // 2) levinson-durbin
 
-            var lpc = new float[_order + 1];
-            var err = Lpc.LevinsonDurbin(_cc, lpc, _order, FrameSize - 1);
-            lpc[0] = err;
+            var err = Lpc.LevinsonDurbin(_cc, features, _order, FrameSize - 1);
 
-            return lpc;
+            features[0] = err;
         }
 
         /// <summary>

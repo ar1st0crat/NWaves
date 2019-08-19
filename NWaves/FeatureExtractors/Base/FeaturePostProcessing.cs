@@ -14,22 +14,22 @@ namespace NWaves.FeatureExtractors.Base
         /// Method for mean subtraction (in particular, CMN).
         /// </summary>
         /// <param name="vectors">Sequence of feature vectors</param>
-        public static void NormalizeMean(IList<FeatureVector> vectors)
+        public static void NormalizeMean(IList<float[]> vectors)
         {
             if (vectors.Count < 2)
             {
                 return;
             }
 
-            var featureCount = vectors[0].Features.Length;
+            var featureCount = vectors[0].Length;
 
             for (var i = 0; i < featureCount; i++)
             {
-                var mean = vectors.Average(t => t.Features[i]);
+                var mean = vectors.Average(t => t[i]);
                 
                 foreach (var vector in vectors)
                 {
-                    vector.Features[i] -= mean;
+                    vector[i] -= mean;
                 }
             }
         }
@@ -38,7 +38,7 @@ namespace NWaves.FeatureExtractors.Base
         /// Variance normalization (divide by unbiased estimate of stdev)
         /// </summary>
         /// <param name="vectors">Sequence of feature vectors</param>
-        public static void NormalizeVariance(IList<FeatureVector> vectors, int bias = 1)
+        public static void NormalizeVariance(IList<float[]> vectors, int bias = 1)
         {
             var n = vectors.Count;
 
@@ -47,12 +47,12 @@ namespace NWaves.FeatureExtractors.Base
                 return;
             }
 
-            var featureCount = vectors[0].Features.Length;
+            var featureCount = vectors[0].Length;
 
             for (var i = 0; i < featureCount; i++)
             {
-                var mean = vectors.Average(t => t.Features[i]);
-                var std = vectors.Sum(t => (t.Features[i] - mean) * (t.Features[i] - mean) / (n - bias));
+                var mean = vectors.Average(t => t[i]);
+                var std = vectors.Sum(t => (t[i] - mean) * (t[i] - mean) / (n - bias));
 
                 if (std < Math.Abs(1e-30f))      // avoid dividing by zero
                 {
@@ -61,7 +61,7 @@ namespace NWaves.FeatureExtractors.Base
 
                 foreach (var vector in vectors)
                 {
-                    vector.Features[i] /= (float)Math.Sqrt(std);
+                    vector[i] /= (float)Math.Sqrt(std);
                 }
             }
         }
@@ -74,22 +74,24 @@ namespace NWaves.FeatureExtractors.Base
         /// <param name="next"></param>
         /// <param name="includeDeltaDelta"></param>
         /// <param name="N"></param>
-        public static void AddDeltas(IList<FeatureVector> vectors, 
-                                     IList<FeatureVector> previous = null,
-                                     IList<FeatureVector> next = null,
+        public static void AddDeltas(IList<float[]> vectors, 
+                                     IList<float[]> previous = null,
+                                     IList<float[]> next = null,
                                      bool includeDeltaDelta = true,
                                      int N = 2)
         {
             if (previous == null)
             {
-                previous = new List<FeatureVector> { vectors[0], vectors[0] };
+                previous = new List<float[]>(N);
+                for (var n = 0; n < N; n++) previous.Add(vectors[0]);
             }
             if (next == null)
             {
-                next = new List<FeatureVector> { vectors.Last(), vectors.Last() };
+                next = new List<float[]>(N);
+                for (var n = 0; n < N; n++) next.Add(vectors.Last());
             }
 
-            var featureCount = vectors[0].Features.Length;
+            var featureCount = vectors[0].Length;
 
             var sequence = previous.Concat(vectors).Concat(next).ToArray();
 
@@ -97,34 +99,37 @@ namespace NWaves.FeatureExtractors.Base
 
             int M = 2 * Enumerable.Range(1, N).Sum(x => x * x);  // scaling in denominator
 
+            var newSize = includeDeltaDelta ? 3 * featureCount : 2 * featureCount;
+
             for (var i = N; i < sequence.Length - N; i++)
             {
-                var f = includeDeltaDelta ? new float[3 * featureCount] : new float[2 * featureCount];
+                var f = new float[newSize];
 
                 for (var j = 0; j < featureCount; j++)
                 {
-                    f[j] = vectors[i - N].Features[j];
+                    f[j] = vectors[i - N][j];
                 }
                 for (var j = 0; j < featureCount; j++)
                 {
                     var num = 0.0f;
                     for (var n = 1; n <= N; n++)
                     {
-                        num += n * (sequence[i + n].Features[j] - sequence[i - n].Features[j]);
+                        num += n * (sequence[i + n][j] - sequence[i - n][j]);
                     }
                     f[j + featureCount] = num / M;
                 }
-                vectors[i - N].Features = f;
+                sequence[i] = vectors[i - N] = f;
             }
 
             if (!includeDeltaDelta) return;
 
             // delta-deltas:
 
-            vectors[0].Features.FastCopyTo(sequence[0].Features, featureCount, featureCount, featureCount);
-            vectors[0].Features.FastCopyTo(sequence[1].Features, featureCount, featureCount, featureCount);
-            vectors.Last().Features.FastCopyTo(sequence[vectors.Count].Features, featureCount, featureCount, featureCount);
-            vectors.Last().Features.FastCopyTo(sequence[vectors.Count+1].Features, featureCount, featureCount, featureCount);
+            for (var n = 1; n <= N; n++)
+            {
+                sequence[n - 1] = vectors[0];
+                sequence[sequence.Length - n] = vectors.Last();
+            }
 
             for (var i = N; i < sequence.Length - N; i++)
             {
@@ -133,10 +138,10 @@ namespace NWaves.FeatureExtractors.Base
                     var num = 0.0f;
                     for (var n = 1; n <= N; n++)
                     {
-                        num += n * (sequence[i + n].Features[j + featureCount] -
-                                    sequence[i - n].Features[j + featureCount]);
+                        num += n * (sequence[i + n][j + featureCount] -
+                                    sequence[i - n][j + featureCount]);
                     }
-                    vectors[i - N].Features[j + 2 * featureCount] = num / M;
+                    vectors[i - N][j + 2 * featureCount] = num / M;
                 }
             }
         }
@@ -147,7 +152,7 @@ namespace NWaves.FeatureExtractors.Base
         /// </summary>
         /// <param name="vectors"></param>
         /// <returns></returns>
-        public static FeatureVector[] Join(params IList<FeatureVector>[] vectors)
+        public static float[][] Join(params IList<float[]>[] vectors)
         {
             var vectorCount = vectors.Length;
 
@@ -165,8 +170,8 @@ namespace NWaves.FeatureExtractors.Base
                 throw new InvalidOperationException("All sequences of feature vectors must have the same length!");
             }
 
-            var length = vectors.Sum(v => v[0].Features.Length);
-            var joined = new FeatureVector[totalVectors];
+            var length = vectors.Sum(v => v[0].Length);
+            var joined = new float[totalVectors][];
             
             for (var i = 0; i < joined.Length; i++)
             {
@@ -174,16 +179,12 @@ namespace NWaves.FeatureExtractors.Base
 
                 for (int offset = 0, j = 0; j < vectorCount; j++)
                 {
-                    var size = vectors[j][i].Features.Length;
-                    vectors[j][i].Features.FastCopyTo(features, size, 0, offset);
+                    var size = vectors[j][i].Length;
+                    vectors[j][i].FastCopyTo(features, size, 0, offset);
                     offset += size;
                 }
 
-                joined[i] = new FeatureVector
-                {
-                    TimePosition = vectors[0][i].TimePosition,
-                    Features = features
-                };
+                joined[i] = features;
             }
 
             return joined;

@@ -31,7 +31,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Number of features (currently it's 1 pitch value estimated by autocorrelation)
         /// </summary>
-        public override int FeatureCount { get; }
+        public override int FeatureCount => 1;
 
         /// <summary>
         /// Names of pitch algorithms
@@ -99,8 +99,8 @@ namespace NWaves.FeatureExtractors
         /// Pitch tracking
         /// </summary>
         /// <param name="block">Samples</param>
-        /// <returns>Array of one element: pitch</returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features">Pitch</param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             block.FastCopyTo(_reversed, FrameSize);
 
@@ -128,9 +128,7 @@ namespace NWaves.FeatureExtractors
                 }
             }
 
-            var f0 = max > 1.0f ? (float)SamplingRate / peakIndex : 0;
-
-            return new float[] { f0 };
+            features[0] = max > 1.0f ? (float)SamplingRate / peakIndex : 0;
         }
 
         /// <summary>

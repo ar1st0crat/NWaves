@@ -146,9 +146,9 @@ namespace NWaves.FeatureExtractors
         ///     5) Do dct-II (normalized)
         /// 
         /// </summary>
-        /// <param name="samples">Samples for analysis</param>
-        /// <returns>List of pncc vectors</returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="block">Block of samples for analysis</param>
+        /// <param name="features">List of spncc vectors</param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             const float meanPower = 1e10f;
 
@@ -194,10 +194,7 @@ namespace NWaves.FeatureExtractors
 
             // 5) dct-II (normalized)
 
-            var spnccs = new float[FeatureCount];
-            _dct.DirectNorm(_filteredSpectrum, spnccs);
-
-            return spnccs;
+            _dct.DirectNorm(_filteredSpectrum, features);
         }
 
         /// <summary>

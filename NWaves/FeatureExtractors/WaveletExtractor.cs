@@ -86,15 +86,13 @@ namespace NWaves.FeatureExtractors
         /// Compute FWT coeffs in each frame
         /// </summary>
         /// <param name="block"></param>
+        /// <param name="features"></param>
         /// <returns></returns>
-        public override float[] ProcessFrame(float[] block)
+        public override void ProcessFrame(float[] block, float[] features)
         {
             _fwt.Direct(block, _coeffs, _level);
 
-            var coeffs = new float[_coeffCount];
-            _coeffs.FastCopyTo(coeffs, coeffs.Length);
-
-            return coeffs;
+            _coeffs.FastCopyTo(features, _coeffCount);
         }
 
         /// <summary>

@@ -282,8 +282,8 @@ namespace NWaves.FeatureExtractors
         /// 
         /// </summary>
         /// <param name="block">Samples for analysis</param>
-        /// <returns>PLP vector</returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features">PLP vectors</param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             // 1) calculate power spectrum (without normalization)
 
@@ -341,19 +341,15 @@ namespace NWaves.FeatureExtractors
 
             // 7) compute LPCC coefficients from LPC
 
-            var lpcc = new float[FeatureCount];
-
-            Lpc.ToCepstrum(_lpc, err, lpcc);
+            Lpc.ToCepstrum(_lpc, err, features);
 
 
             // 8) (optional) liftering
 
             if (_lifterCoeffs != null)
             {
-                lpcc.ApplyWindow(_lifterCoeffs);
+                features.ApplyWindow(_lifterCoeffs);
             }
-
-            return lpcc;
         }
 
         /// <summary>

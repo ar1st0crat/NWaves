@@ -21,7 +21,7 @@ namespace NWaves.DemoForms
     public partial class MfccForm : Form
     {
         private DiscreteSignal _signal;
-        private List<FeatureVector> _mfccVectors, pnccVectors;
+        private List<float[]> _mfccVectors, pnccVectors;
 
         public MfccForm()
         {
@@ -55,8 +55,9 @@ namespace NWaves.DemoForms
             buttonCompute_Click(this, null);    // :-D
         }
 
-        private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors,
-                                      IEnumerable<string> featureDescriptions)
+        private void FillFeaturesList(IList<float[]> featureVectors,
+                                      IList<string> featureDescriptions,
+                                      IList<double> timeMarkers)
         {
             mfccListView.Clear();
             mfccListView.Columns.Add("time", 50);
@@ -66,10 +67,10 @@ namespace NWaves.DemoForms
                 mfccListView.Columns.Add(feat, 70);
             }
 
-            foreach (var vector in featureVectors)
+            for (var i = 0; i < featureVectors.Count; i++)
             {
-                var item = new ListViewItem { Text = vector.TimePosition.ToString() };
-                item.SubItems.AddRange(vector.Features.Select(f => f.ToString("F4")).ToArray());
+                var item = new ListViewItem { Text = timeMarkers[i].ToString("F4") };
+                item.SubItems.AddRange(featureVectors[i].Select(f => f.ToString("F4")).ToArray());
 
                 mfccListView.Items.Add(item);
             }
@@ -178,22 +179,22 @@ namespace NWaves.DemoForms
                                            //.Concat(mfccExtractor.DeltaFeatureDescriptions)
                                            //.Concat(mfccExtractor.DeltaDeltaFeatureDescriptions);
 
-            FillFeaturesList(_mfccVectors, header);
+            FillFeaturesList(_mfccVectors, header, mfccExtractor.TimeMarkers(_mfccVectors.Count));
             mfccListView.Items[0].Selected = true;
 
             melFilterBankPanel.Groups = mfccExtractor.FilterBank;
 
-            mfccPanel.Line = _mfccVectors[0].Features;
+            mfccPanel.Line = _mfccVectors[0];
         }
 
         private void mfccListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
-            mfccPanel.Line = _mfccVectors[e.ItemIndex].Features;
+            mfccPanel.Line = _mfccVectors[e.ItemIndex];
 
             // ============== I use this code to test PNCC results (just ignore it))): ========================
 
-            //mfccPanel.Line = _mfccVectors[e.ItemIndex].Features;
-            //mfccPanel.Markline = pnccVectors[e.ItemIndex].Features;
+            //mfccPanel.Line = _mfccVectors[e.ItemIndex];
+            //mfccPanel.Markline = pnccVectors[e.ItemIndex];
 
             // ================================================================================================
         }
@@ -239,8 +240,8 @@ namespace NWaves.DemoForms
         /// HTK-style pre-processing (zero-mean and pre-emphasis)
         /// </summary>
         /// <param name="block"></param>
-        /// <returns></returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features"></param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             // 1) HTK zero-mean:
 
@@ -274,7 +275,7 @@ namespace NWaves.DemoForms
             
             // ...and now continue standard computations:
 
-            return base.ProcessFrame(block);
+            base.ProcessFrame(block, features);
         }
 
         /// <summary>

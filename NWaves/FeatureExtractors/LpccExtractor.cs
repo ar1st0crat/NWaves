@@ -101,8 +101,8 @@ namespace NWaves.FeatureExtractors
         /// and then post-processes LPC vectors to obtain LPCC coefficients.
         /// </summary>
         /// <param name="block">Samples for analysis</param>
-        /// <returns>LPCC vector</returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features">LPCC vector</param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             block.FastCopyTo(_reversed, FrameSize);
 
@@ -118,18 +118,14 @@ namespace NWaves.FeatureExtractors
 
             // 3) compute LPCC coefficients from LPC
 
-            var lpcc = new float[FeatureCount];
-
-            Lpc.ToCepstrum(_lpc, err, lpcc);
+            Lpc.ToCepstrum(_lpc, err, features);
 
             // 4) (optional) liftering
 
             if (_lifterCoeffs != null)
             {
-                lpcc.ApplyWindow(_lifterCoeffs);
+                features.ApplyWindow(_lifterCoeffs);
             }
-
-            return lpcc;
         }
 
         /// <summary>

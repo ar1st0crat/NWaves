@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
 using NWaves.Signals;
-using NWaves.Utils;
 
 namespace NWaves.FeatureExtractors.Multi
 {
@@ -104,50 +103,35 @@ namespace NWaves.FeatureExtractors.Multi
         /// <param name="samples">Signal</param>
         /// <param name="startSample">The number (position) of the first sample for processing</param>
         /// <param name="endSample">The number (position) of last sample for processing</param>
-        /// <returns>Sequence of feature vectors</returns>
-        public override List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
+        /// <param name="vectors">Pre-allocated sequence of feature vectors</param>
+        public override void ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
-            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
-
             var nullExtractorPos = _extractors.IndexOf(null);
             if (nullExtractorPos >= 0)
             {
                 throw new ArgumentException($"Unknown feature: {FeatureDescriptions[nullExtractorPos]}");
             }
 
+            var featureCount = FeatureCount;
             var ds = new DiscreteSignal(SamplingRate, samples);
 
-            var featureVectors = new List<FeatureVector>();
-            var featureCount = FeatureCount;
-            
-            var i = startSample;
-            while (i + FrameSize < endSample)
+            for (int sample = startSample, fv = 0; sample + FrameSize < endSample; sample += HopSize, fv++)
             {
-                var featureVector = new float[featureCount];
+                var featureVector = vectors[fv];
 
                 for (var j = 0; j < featureCount; j++)
                 {
-                    featureVector[j] = _extractors[j](ds, i, i + FrameSize);
+                    featureVector[j] = _extractors[j](ds, sample, sample + FrameSize);
                 }
-
-                featureVectors.Add(new FeatureVector
-                {
-                    Features = featureVector,
-                    TimePosition = (double) i / SamplingRate
-                });
-
-                i += HopSize;
             }
-
-            return featureVectors;
         }
 
         /// <summary>
         /// All logic is implemented in ComputeFrom() method
         /// </summary>
         /// <param name="block"></param>
-        /// <returns></returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features"></param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             throw new NotImplementedException("TimeDomainExtractor does not provide this function. Please call ComputeFrom() method");
         }

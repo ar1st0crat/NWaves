@@ -40,7 +40,7 @@ namespace NWaves.FeatureExtractors.Multi
         public override List<string> FeatureDescriptions { get; }
 
         /// <summary>
-        /// Number of features to extract
+        /// Number of features to extract (_extractors.Count + _harmonicExtractors.Count)
         /// </summary>
         public override int FeatureCount => FeatureDescriptions.Count;
 
@@ -225,7 +225,7 @@ namespace NWaves.FeatureExtractors.Multi
             _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
             _fft = new RealFft(_blockSize);
 
-            _frequencyBands = frequencyBands ?? FilterBanks.OctaveBands(6, _blockSize, samplingRate);
+            _frequencyBands = frequencyBands ?? FilterBanks.OctaveBands(6, samplingRate);
             _filterbank = FilterBanks.Rectangular(_blockSize, samplingRate, _frequencyBands);
 
             var cfs = _frequencyBands.Select(b => b.Item2).ToList();
@@ -350,11 +350,9 @@ namespace NWaves.FeatureExtractors.Multi
         /// <param name="samples">Signal</param>
         /// <param name="startSample">The number (position) of the first sample for processing</param>
         /// <param name="endSample">The number (position) of last sample for processing</param>
-        /// <returns>Sequence of feature vectors</returns>
-        public override List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
+        /// <param name="vectors">Output sequence of feature vectors</param>
+        public override void ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
-            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
-
             var nullExtractorPos = _extractors.IndexOf(null);
             if (nullExtractorPos >= 0)
             {
@@ -363,15 +361,15 @@ namespace NWaves.FeatureExtractors.Multi
 
             _pitchPos = 0;
 
-            return base.ComputeFrom(samples, startSample, endSample);
+            base.ComputeFrom(samples, startSample, endSample, vectors);
         }
 
         /// <summary>
         /// Compute MPEG7 spectral features in one frame
         /// </summary>
         /// <param name="block"></param>
-        /// <returns></returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features"></param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             // compute and prepare spectrum
 
@@ -391,11 +389,9 @@ namespace NWaves.FeatureExtractors.Multi
 
             // extract spectral features
 
-            var featureVector = new float[FeatureCount];
-
             for (var j = 0; j < _extractors.Count; j++)
             {
-                featureVector[j] = _extractors[j](_mappedSpectrum, _frequencies);
+                features[j] = _extractors[j](_mappedSpectrum, _frequencies);
             }
 
             // ...and maybe harmonic features
@@ -409,11 +405,9 @@ namespace NWaves.FeatureExtractors.Multi
                 var offset = _extractors.Count;
                 for (var j = 0; j < _harmonicExtractors.Count; j++)
                 {
-                    featureVector[j + offset] = _harmonicExtractors[j](_spectrum, _peaks, _peakFrequencies);
+                    features[j + offset] = _harmonicExtractors[j](_spectrum, _peaks, _peakFrequencies);
                 }
             }
-
-            return featureVector;
         }
 
         /// <summary>
