@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using NWaves.FeatureExtractors.Base;
 
 namespace NWaves.FeatureExtractors.Options
 {

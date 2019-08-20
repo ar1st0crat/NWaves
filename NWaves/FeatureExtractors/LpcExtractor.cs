@@ -50,7 +50,6 @@ namespace NWaves.FeatureExtractors
 
             _blockSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
             _convolver = new Convolver(_blockSize);
-
             _reversed = new float[FrameSize];
             _cc = new float[_blockSize];
         }

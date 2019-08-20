@@ -171,7 +171,8 @@ namespace NWaves.DemoForms
                 //HighFrequency = 8000,
                 //PreEmphasis = 0.97,
                 //LifterSize = 22,
-                //IncludeEnergy = true
+                //IncludeEnergy = true,
+                //LogEnergyFloor = 1e-10
             };
 
             var mfccExtractor = new MfccExtractor(mfccOptions);
@@ -283,22 +284,24 @@ namespace NWaves.DemoForms
         /// </summary>
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
-            new MfccExtractorTestHtk(new MfccOptions
-            {
-                SamplingRate = SamplingRate,
-                FeatureCount = FeatureCount,
-                FrameDuration = FrameDuration,
-                HopDuration = HopDuration,
-                FilterBankSize = FilterBank.Length,
-                LowFrequency = _lowFreq,
-                HighFrequency = _highFreq,
-                FftSize = _blockSize,
-                LifterSize = _lifterSize,
-                PreEmphasis = _preEmphasis,
-                IncludeEnergy = _includeEnergy,
-                SpectrumType = _spectrumType,
-                Window = _window
-            });
+            new MfccExtractorTestHtk(
+                new MfccOptions
+                {
+                    SamplingRate = SamplingRate,
+                    FeatureCount = FeatureCount,
+                    FrameDuration = FrameDuration,
+                    HopDuration = HopDuration,
+                    FilterBankSize = FilterBank.Length,
+                    LowFrequency = _lowFreq,
+                    HighFrequency = _highFreq,
+                    FftSize = _blockSize,
+                    LifterSize = _lifterSize,
+                    PreEmphasis = _preEmphasis,
+                    IncludeEnergy = _includeEnergy,
+                    LogEnergyFloor = _logEnergyFloor,
+                    SpectrumType = _spectrumType,
+                    Window = _window
+                });
     }
 }
 

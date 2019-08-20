@@ -1,17 +1,19 @@
-﻿using NWaves.FeatureExtractors.Base;
-using NWaves.Windows;
+﻿using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors.Options
 {
-    public class PnccOptions : FeatureExtractorOptions
+    public class PnccOptions : FilterbankOptions
     {
         public int Power { get; set; } = 15;
-        public double LowFrequency { get; set; } = 100;
-        public double HighFrequency { get; set; } = 6800;
-        public int FilterBankSize { get; set; } = 40;
-        public float[][] FilterBank { get; set; }
-        public int FftSize { get; set; }
+        public bool IncludeEnergy { get; set; }
+        public float LogEnergyFloor { get; set; } = float.Epsilon;
 
-        public PnccOptions() => Window = WindowTypes.Hamming;
+        public PnccOptions()
+        {
+            LowFrequency = 100;
+            HighFrequency = 6800;
+            FilterBankSize = 40;
+            Window = WindowTypes.Hamming;
+        }
     }
 }

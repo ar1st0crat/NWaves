@@ -99,14 +99,14 @@ namespace NWaves.FeatureExtractors.Base
         /// <param name="samplingRate"></param>
         protected FeatureExtractor(FeatureExtractorOptions options)
         {
-            if (!options.IsValid)
+            if (options.Errors.Count > 0)
             {
-                throw new ArgumentException("Invalid configuration!");
+                throw new ArgumentException("Invalid configuration:\r\n" + string.Join("\r\n", options.Errors));
             }
 
+            SamplingRate = options.SamplingRate;
             FrameDuration = options.FrameDuration;
             HopDuration = options.HopDuration;
-            SamplingRate = options.SamplingRate;
             FrameSize = (int)(SamplingRate * FrameDuration);
             HopSize = (int)(SamplingRate * HopDuration);
             _blockSize = FrameSize;

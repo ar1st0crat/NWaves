@@ -339,12 +339,6 @@ namespace NWaves.FeatureExtractors.Multi
         /// <param name="vectors">Output sequence of feature vectors</param>
         public override void ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
-            var nullExtractorPos = _extractors.IndexOf(null);
-            if (nullExtractorPos >= 0)
-            {
-                throw new ArgumentException($"Unknown feature: {FeatureDescriptions[nullExtractorPos]}");
-            }
-
             _pitchPos = 0;
 
             base.ComputeFrom(samples, startSample, endSample, vectors);

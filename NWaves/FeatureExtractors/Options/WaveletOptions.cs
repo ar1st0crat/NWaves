@@ -1,6 +1,4 @@
-﻿using NWaves.FeatureExtractors.Base;
-
-namespace NWaves.FeatureExtractors.Options
+﻿namespace NWaves.FeatureExtractors.Options
 {
     public class WaveletOptions : FeatureExtractorOptions
     {

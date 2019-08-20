@@ -97,20 +97,13 @@ namespace NWaves.FeatureExtractors.Multi
         /// <param name="vectors">Pre-allocated sequence of feature vectors</param>
         public override void ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
-            var nullExtractorPos = _extractors.IndexOf(null);
-            if (nullExtractorPos >= 0)
-            {
-                throw new ArgumentException($"Unknown feature: {FeatureDescriptions[nullExtractorPos]}");
-            }
-
-            var featureCount = FeatureCount;
             var ds = new DiscreteSignal(SamplingRate, samples);
 
             for (int sample = startSample, fv = 0; sample + FrameSize < endSample; sample += HopSize, fv++)
             {
                 var featureVector = vectors[fv];
 
-                for (var j = 0; j < featureCount; j++)
+                for (var j = 0; j < featureVector.Length; j++)
                 {
                     featureVector[j] = _extractors[j](ds, sample, sample + FrameSize);
                 }
@@ -139,13 +132,12 @@ namespace NWaves.FeatureExtractors.Multi
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy()
         {
-            var featureset = string.Join(",", FeatureDescriptions);
             var options = new MultiFeatureOptions
             {
                 SamplingRate = SamplingRate,
-                FeatureList = featureset,
                 FrameDuration = FrameDuration,
                 HopDuration = HopDuration,
+                FeatureList = string.Join(",", FeatureDescriptions),
                 Parameters = _parameters
             };
 

@@ -91,37 +91,28 @@ namespace NWaves.FeatureExtractors
             switch (_nonLinearityType)
             {
                 case NonLinearityType.Log10:
-                    _postProcessSpectrum = () => FilterBanks.ApplyAndLog10(FilterBank, _spectrum, _bandSpectrum, _logFloor);
-                    break;
+                    _postProcessSpectrum = () => FilterBanks.ApplyAndLog10(FilterBank, _spectrum, _bandSpectrum, _logFloor); break;
                 case NonLinearityType.LogE:
-                    _postProcessSpectrum = () => FilterBanks.ApplyAndLog(FilterBank, _spectrum, _bandSpectrum, _logFloor);
-                    break;
+                    _postProcessSpectrum = () => FilterBanks.ApplyAndLog(FilterBank, _spectrum, _bandSpectrum, _logFloor); break;
                 case NonLinearityType.ToDecibel:
-                    _postProcessSpectrum = () => FilterBanks.ApplyAndToDecibel(FilterBank, _spectrum, _bandSpectrum, _logFloor);
-                    break;
+                    _postProcessSpectrum = () => FilterBanks.ApplyAndToDecibel(FilterBank, _spectrum, _bandSpectrum, _logFloor); break;
                 case NonLinearityType.CubicRoot:
-                    _postProcessSpectrum = () => FilterBanks.ApplyAndPow(FilterBank, _spectrum, _bandSpectrum, 0.33);
-                    break;
+                    _postProcessSpectrum = () => FilterBanks.ApplyAndPow(FilterBank, _spectrum, _bandSpectrum, 0.33); break;
                 default:
-                    _postProcessSpectrum = () => FilterBanks.Apply(FilterBank, _spectrum, _bandSpectrum);
-                    break;
+                    _postProcessSpectrum = () => FilterBanks.Apply(FilterBank, _spectrum, _bandSpectrum); break;
             }
 
             _spectrumType = options.SpectrumType;
             switch (_spectrumType)
             {
                 case SpectrumType.Magnitude:
-                    _getSpectrum = block => _fft.MagnitudeSpectrum(block, _spectrum, false);
-                    break;
-                case SpectrumType.Power:
-                    _getSpectrum = block => _fft.PowerSpectrum(block, _spectrum, false);
-                    break;
+                    _getSpectrum = block => _fft.MagnitudeSpectrum(block, _spectrum, false); break;
                 case SpectrumType.MagnitudeNormalized:
-                    _getSpectrum = block => _fft.MagnitudeSpectrum(block, _spectrum, true);
-                    break;
+                    _getSpectrum = block => _fft.MagnitudeSpectrum(block, _spectrum, true); break;
                 case SpectrumType.PowerNormalized:
-                    _getSpectrum = block => _fft.PowerSpectrum(block, _spectrum, true);
-                    break;
+                    _getSpectrum = block => _fft.PowerSpectrum(block, _spectrum, true); break;
+                default:
+                    _getSpectrum = block => _fft.PowerSpectrum(block, _spectrum, false); break;
             }
 
             // reserve memory for reusable blocks

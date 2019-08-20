@@ -17,8 +17,15 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Descriptions (simply "spncc0", "spncc1", "spncc2", etc.)
         /// </summary>
-        public override List<string> FeatureDescriptions =>
-            Enumerable.Range(0, FeatureCount).Select(i => "spncc" + i).ToList();
+        public override List<string> FeatureDescriptions
+        {
+            get
+            {
+                var names = Enumerable.Range(0, FeatureCount).Select(i => "spncc" + i).ToList();
+                if (_includeEnergy) names[0] = "log_En";
+                return names;
+            }
+        }
 
         /// <summary>
         /// Forgetting factor in formula (15) in [Kim & Stern, 2016]
@@ -44,6 +51,16 @@ namespace NWaves.FeatureExtractors
         /// Nonlinearity coefficient (if 0 then Log10 is applied)
         /// </summary>
         protected readonly int _power;
+
+        /// <summary>
+        /// Should the first SPNCC coefficient be replaced with LOG(energy)
+        /// </summary>
+        protected readonly bool _includeEnergy;
+
+        /// <summary>
+        /// Floor value for LOG-energy calculation
+        /// </summary>
+        protected readonly float _logEnergyFloor;
 
         /// <summary>
         /// FFT transformer
@@ -80,12 +97,12 @@ namespace NWaves.FeatureExtractors
 
             var filterbankSize = options.FilterBankSize;
 
+            _lowFreq = options.LowFrequency;
+            _highFreq = options.HighFrequency;
+
             if (options.FilterBank == null)
             {
                 _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
-
-                _lowFreq = options.LowFrequency;
-                _highFreq = options.HighFrequency;
 
                 FilterBank = FilterBanks.Erb(filterbankSize, _blockSize, SamplingRate, _lowFreq, _highFreq);
             }
@@ -99,6 +116,9 @@ namespace NWaves.FeatureExtractors
             }
 
             _power = options.Power;
+
+            _includeEnergy = options.IncludeEnergy;
+            _logEnergyFloor = options.LogEnergyFloor;
 
             _fft = new RealFft(_blockSize);
             _dct = new Dct2(filterbankSize);
@@ -168,6 +188,13 @@ namespace NWaves.FeatureExtractors
             // 5) dct-II (normalized)
 
             _dct.DirectNorm(_filteredSpectrum, features);
+
+            // 6) (optional) replace first coeff with log(energy) 
+
+            if (_includeEnergy)
+            {
+                features[0] = (float)Math.Log(Math.Max(block.Sum(x => x * x), _logEnergyFloor));
+            }
         }
 
         /// <summary>

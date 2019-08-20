@@ -19,11 +19,6 @@ namespace NWaves.FeatureExtractors
             Enumerable.Range(0, FeatureCount).Select(i => "w" + i).ToList();
 
         /// <summary>
-        /// Number of wavelet coefficients to keep in feature vector
-        /// </summary>
-        protected readonly int _numCoefficients;
-
-        /// <summary>
         /// Fast Wavelet Transformer
         /// </summary>
         protected readonly Fwt _fwt;
@@ -51,8 +46,7 @@ namespace NWaves.FeatureExtractors
         {
             _blockSize = options.FwtSize > FrameSize ? options.FwtSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-            _numCoefficients = options.FeatureCount > 0 ? options.FeatureCount : _blockSize;
-            FeatureCount = _numCoefficients;
+            FeatureCount = options.FeatureCount > 0 ? options.FeatureCount : _blockSize;
 
             _waveletName = options.WaveletName;
             _level = options.FwtLevel;
@@ -71,7 +65,7 @@ namespace NWaves.FeatureExtractors
         {
             _fwt.Direct(block, _coeffs, _level);
 
-            _coeffs.FastCopyTo(features, _numCoefficients);
+            _coeffs.FastCopyTo(features, FeatureCount);
         }
 
         /// <summary>
@@ -85,17 +79,18 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
-            new WaveletExtractor(new WaveletOptions
-            {
-                SamplingRate = SamplingRate,
-                FrameDuration = FrameDuration,
-                HopDuration = HopDuration,
-                WaveletName = _waveletName,
-                FeatureCount = _numCoefficients,
-                FwtSize = _blockSize,
-                FwtLevel = _level,
-                PreEmphasis = _preEmphasis,
-                Window = _window
-            });
+            new WaveletExtractor(
+                new WaveletOptions
+                {
+                    SamplingRate = SamplingRate,
+                    FrameDuration = FrameDuration,
+                    HopDuration = HopDuration,
+                    WaveletName = _waveletName,
+                    FeatureCount = FeatureCount,
+                    FwtSize = _blockSize,
+                    FwtLevel = _level,
+                    PreEmphasis = _preEmphasis,
+                    Window = _window
+                });
     }
 }
