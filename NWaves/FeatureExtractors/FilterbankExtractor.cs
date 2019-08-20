@@ -1,8 +1,8 @@
 ﻿using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Filters.Fda;
 using NWaves.Transforms;
 using NWaves.Utils;
-using NWaves.Windows;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,11 +18,6 @@ namespace NWaves.FeatureExtractors
     /// </summary>
     public class FilterbankExtractor : FeatureExtractor
     {
-        /// <summary>
-        /// Number of coefficients (number of filters in the filter bank)
-        /// </summary>
-        public override int FeatureCount { get; }
-
         /// <summary>
         /// Descriptions (simply "fb0", "fb1", "fb2", etc.)
         /// </summary>
@@ -77,32 +72,13 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="featureCount"></param>
-        /// <param name="filterbank"></param>
-        /// <param name="frameDuration"></param>
-        /// <param name="hopDuration"></param>
-        /// <param name="preEmphasis"></param>
-        /// <param name="nonLinearity"></param>
-        /// <param name="spectrumType"></param>
-        /// <param name="window"></param>
-        /// <param name="logFloor"></param>
-        public FilterbankExtractor(int samplingRate,
-                                   float[][] filterbank,
-                                   double frameDuration = 0.0256/*sec*/,
-                                   double hopDuration = 0.010/*sec*/,
-                                   double preEmphasis = 0,
-                                   NonLinearityType nonLinearity = NonLinearityType.None,
-                                   SpectrumType spectrumType = SpectrumType.Power,
-                                   WindowTypes window = WindowTypes.Hamming,
-                                   float logFloor = float.Epsilon)
-            
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
+        /// <param name="options">Filterbank options</param>
+        public FilterbankExtractor(FilterbankOptions options) : base(options)
         {
-            FilterBank = filterbank;
-            FeatureCount = filterbank.Length;
+            FilterBank = options.FilterBank;
+            FeatureCount = FilterBank.Length;
 
-            _blockSize = 2 * (filterbank[0].Length - 1);
+            _blockSize = 2 * (FilterBank[0].Length - 1);
 
             Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
 
@@ -110,9 +86,9 @@ namespace NWaves.FeatureExtractors
 
             // setup spectrum post-processing: =======================================================
 
-            _logFloor = logFloor;
-            _nonLinearityType = nonLinearity;
-            switch (nonLinearity)
+            _logFloor = options.LogFloor;
+            _nonLinearityType = options.NonLinearity;
+            switch (_nonLinearityType)
             {
                 case NonLinearityType.Log10:
                     _postProcessSpectrum = () => FilterBanks.ApplyAndLog10(FilterBank, _spectrum, _bandSpectrum, _logFloor);
@@ -131,7 +107,7 @@ namespace NWaves.FeatureExtractors
                     break;
             }
 
-            _spectrumType = spectrumType;
+            _spectrumType = options.SpectrumType;
             switch (_spectrumType)
             {
                 case SpectrumType.Magnitude:
@@ -151,7 +127,7 @@ namespace NWaves.FeatureExtractors
             // reserve memory for reusable blocks
 
             _spectrum = new float[_blockSize / 2 + 1];
-            _bandSpectrum = new float[filterbank.Length];
+            _bandSpectrum = new float[FilterBank.Length];
         }
 
         /// <summary>
@@ -185,14 +161,18 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
-            new FilterbankExtractor( SamplingRate,
-                                     FilterBank,
-                                     FrameDuration,
-                                     HopDuration,
-                                    _preEmphasis,
-                                    _nonLinearityType,
-                                    _spectrumType,
-                                    _window,
-                                    _logFloor);
+            new FilterbankExtractor(
+                new FilterbankOptions
+                {
+                    SamplingRate = SamplingRate,
+                    FilterBank = FilterBank,
+                    FrameDuration = FrameDuration,
+                    HopDuration = HopDuration,
+                    PreEmphasis = _preEmphasis,
+                    NonLinearity = _nonLinearityType,
+                    SpectrumType = _spectrumType,
+                    Window = _window,
+                    LogFloor = _logFloor
+                });
     }
 }

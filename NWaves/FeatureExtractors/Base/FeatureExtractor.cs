@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Signals;
 using NWaves.Utils;
 using NWaves.Windows;
@@ -23,7 +24,7 @@ namespace NWaves.FeatureExtractors.Base
         /// <summary>
         /// Number of features to extract
         /// </summary>
-        public abstract int FeatureCount { get; }
+        public int FeatureCount { get; protected set; }
 
         /// <summary>
         /// String annotations (or simply names) of features
@@ -96,28 +97,25 @@ namespace NWaves.FeatureExtractors.Base
         /// Construct extractor from sampling rate, frame duration and hop duration (in seconds)
         /// </summary>
         /// <param name="samplingRate"></param>
-        /// <param name="frameDuration"></param>
-        /// <param name="hopDuration"></param>
-        /// <param name="preEmphasis"></param>
-        /// <param name="window"></param>
-        protected FeatureExtractor(int samplingRate,
-                                   double frameDuration,
-                                   double hopDuration,
-                                   double preEmphasis = 0,
-                                   WindowTypes window = WindowTypes.Rectangular)
+        protected FeatureExtractor(FeatureExtractorOptions options)
         {
-            FrameSize = (int)(samplingRate * frameDuration);
-            HopSize = (int)(samplingRate * hopDuration);
-            FrameDuration = frameDuration;
-            HopDuration = hopDuration;
-            SamplingRate = samplingRate;
-            _blockSize = FrameSize;
-            _preEmphasis = (float)preEmphasis;
-            _window = window;
-
-            if (window != WindowTypes.Rectangular)
+            if (!options.IsValid)
             {
-                _windowSamples = Window.OfType(window, FrameSize);
+                throw new ArgumentException("Invalid configuration!");
+            }
+
+            FrameDuration = options.FrameDuration;
+            HopDuration = options.HopDuration;
+            SamplingRate = options.SamplingRate;
+            FrameSize = (int)(SamplingRate * FrameDuration);
+            HopSize = (int)(SamplingRate * HopDuration);
+            _blockSize = FrameSize;
+            _preEmphasis = (float)options.PreEmphasis;
+            _window = options.Window;
+
+            if (_window != WindowTypes.Rectangular)
+            {
+                _windowSamples = Window.OfType(_window, FrameSize);
             }
         }
 

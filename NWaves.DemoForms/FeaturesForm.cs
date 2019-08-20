@@ -7,6 +7,7 @@ using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
 using NWaves.FeatureExtractors.Multi;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Signals;
 using NWaves.Features;
 using System.Drawing;
@@ -50,19 +51,37 @@ namespace NWaves.DemoForms
 
             var freqs = new[] { 300f, 600, 1000, 2000, 4000, 7000 };
 
-            var pitchExtractor = new PitchExtractor(_signal.SamplingRate, frameDuration, hopDuration, high: 900/*Hz*/);
+            var pitchOptions = new PitchOptions
+            {
+                SamplingRate = _signal.SamplingRate,
+                FrameDuration = frameDuration,
+                HopDuration = hopDuration,
+                HighFrequency = 900/*Hz*/
+            };
+
+            var pitchExtractor = new PitchExtractor(pitchOptions);
             var pitchTrack = pitchExtractor.ParallelComputeFrom(_signal)
                                            .Select(p => p[0])
                                            .ToArray();
 
-            var tdExtractor = new TimeDomainFeaturesExtractor(_signal.SamplingRate, "all", frameDuration, hopDuration);
-            var spectralExtractor = new SpectralFeaturesExtractor(_signal.SamplingRate, "sc+sn", frameDuration, hopDuration, frequencies: freqs);
-            var mpeg7Extractor = new Mpeg7SpectralFeaturesExtractor(_signal.SamplingRate, "all", frameDuration, hopDuration);
+            var options = new MultiFeatureOptions
+            {
+                SamplingRate = _signal.SamplingRate,
+                FrameDuration = frameDuration,
+                HopDuration = hopDuration
+            };
+
+            var tdExtractor = new TimeDomainFeaturesExtractor(options);
+            tdExtractor.AddFeature("pitch_zcr", (signal, start, end) => Pitch.FromZeroCrossingsSchmitt(signal, start, end));
+
+            var mpeg7Extractor = new Mpeg7SpectralFeaturesExtractor(options);
             mpeg7Extractor.IncludeHarmonicFeatures("all");
             mpeg7Extractor.SetPitchTrack(pitchTrack);
 
-            tdExtractor.AddFeature("pitch_zcr", (signal, start, end) => { return Pitch.FromZeroCrossingsSchmitt(signal, start, end); });
-            //spectralExtractor.AddFeature("pitch_hss", (spectrum, fs) => { return Pitch.FromHss(spectrum, _signal.SamplingRate); } );
+            options.FeatureList = "sc+sn";
+            options.Frequencies = freqs;
+            var spectralExtractor = new SpectralFeaturesExtractor(options);
+            //spectralExtractor.AddFeature("pitch_hss", (spectrum, fs) => Pitch.FromHss(spectrum, _signal.SamplingRate));
 
             var tdVectors = tdExtractor.ParallelComputeFrom(_signal);
             var spectralVectors = spectralExtractor.ParallelComputeFrom(_signal);

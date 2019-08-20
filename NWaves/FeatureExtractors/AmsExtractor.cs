@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Filters.Fda;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -15,12 +16,6 @@ namespace NWaves.FeatureExtractors
     public class AmsExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Total number of coefficients in amplitude modulation spectrum
-        /// </summary>
-        public override int FeatureCount => _featureCount;
-        protected readonly int _featureCount;
-
-        /// <summary>
         /// Feature descriptions.
         /// Initialized in constructor in the following manner (example):
         /// 
@@ -30,8 +25,7 @@ namespace NWaves.FeatureExtractors
         ///     band_32_mf_0.5_Hz  band_32_mf_1.0_Hz  ...    band_32_mf_8.0_Hz
         /// 
         /// </summary>
-        public override List<string> FeatureDescriptions => _featureDescriptions;
-        protected readonly List<string> _featureDescriptions;
+        public override List<string> FeatureDescriptions { get; }
 
         /// <summary>
         /// The "featuregram": the sequence of (feature) vectors;
@@ -103,61 +97,41 @@ namespace NWaves.FeatureExtractors
         protected readonly float[] _modSpectrum;
 
         /// <summary>
-        /// Main constructor
+        /// Constructor
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="frameDuration">In seconds</param>
-        /// <param name="hopDuration">In seconds</param>
-        /// <param name="modulationFftSize">In samples</param>
-        /// <param name="modulationHopSize">In samples</param>
-        /// <param name="fftSize">In samples</param>
-        /// <param name="featuregram"></param>
-        /// <param name="filterbank"></param>
-        /// <param name="preEmphasis"></param>
-        /// <param name="window"></param>
-        public AmsExtractor(int samplingRate,
-                            double frameDuration = 0.0256/*sec*/,
-                            double hopDuration = 0.010/*sec*/, 
-                            int modulationFftSize = 64,
-                            int modulationHopSize = 4,
-                            int fftSize = 0,
-                            IEnumerable<float[]> featuregram = null,
-                            float[][] filterbank = null,
-                            double preEmphasis = 0,
-                            WindowTypes window = WindowTypes.Rectangular)
-
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
+        /// <param name="options">AMS options</param>
+        public AmsExtractor(AmsOptions options) : base(options)
         {
-            _modulationFftSize = modulationFftSize;
-            _modulationHopSize = modulationHopSize;
+            _modulationFftSize = options.ModulationFftSize;
+            _modulationHopSize = options.ModulationHopSize;
             _modulationFft = new RealFft(_modulationFftSize);
 
-            _featuregram = featuregram?.ToArray();
+            _featuregram = options.Featuregram?.ToArray();
 
-            if (featuregram != null)
+            if (_featuregram != null)
             {
-                _featureCount = _featuregram[0].Length * (_modulationFftSize / 2 + 1);
+                FeatureCount = _featuregram[0].Length * (_modulationFftSize / 2 + 1);
             }
             else
             {
-                if (_filterbank == null)
+                if (options.FilterBank == null)
                 {
-                    _fftSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
+                    _fftSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-                    _filterbank = FilterBanks.Triangular(_fftSize, samplingRate,
-                                     FilterBanks.MelBands(12, samplingRate, 100, 3200));
+                    _filterbank = FilterBanks.Triangular(_fftSize, SamplingRate,
+                                     FilterBanks.MelBands(12, SamplingRate, 100, 3200));
                 }
                 else
                 {
-                    _filterbank = filterbank;
-                    _fftSize = 2 * (filterbank[0].Length - 1);
+                    _filterbank = options.FilterBank;
+                    _fftSize = 2 * (_filterbank[0].Length - 1);
 
                     Guard.AgainstExceedance(FrameSize, _fftSize, "frame size", "FFT size");
                 }
 
                 _fft = new RealFft(_fftSize);
                 
-                _featureCount = _filterbank.Length * (_modulationFftSize / 2 + 1);
+                FeatureCount = _filterbank.Length * (_modulationFftSize / 2 + 1);
 
                 _spectrum = new float[_fftSize / 2 + 1];
                 _filteredSpectrum = new float[_filterbank.Length];
@@ -179,16 +153,16 @@ namespace NWaves.FeatureExtractors
                 length = _filterbank.Length;
             }
 
-            _featureDescriptions = new List<string>();
+            FeatureDescriptions = new List<string>();
 
-            var modulationSamplingRate = (float)samplingRate / HopSize;
+            var modulationSamplingRate = (float)SamplingRate / HopSize;
             var resolution = modulationSamplingRate / _modulationFftSize;
 
             for (var fi = 0; fi < length; fi++)
             {
                 for (var fj = 0; fj <= _modulationFftSize / 2; fj++)
                 {
-                    _featureDescriptions.Add(string.Format("band_{0}_mf_{1:F2}_Hz", fi + 1, fj * resolution));
+                    FeatureDescriptions.Add(string.Format("band_{0}_mf_{1:F2}_Hz", fi + 1, fj * resolution));
                 }
             }
         }
@@ -237,7 +211,7 @@ namespace NWaves.FeatureExtractors
 
                     // 0) pre-emphasis (if needed)
 
-                    if (_preEmphasis > 1e-10)
+                    if (_preEmphasis > 1e-10f)
                     {
                         for (var k = 0; k < frameSize; k++)
                         {

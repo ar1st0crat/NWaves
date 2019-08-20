@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Filters.Fda;
 using NWaves.Transforms;
 using NWaves.Utils;
-using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors
 {
@@ -14,11 +14,6 @@ namespace NWaves.FeatureExtractors
     /// </summary>
     public class SpnccExtractor : FeatureExtractor
     {
-        /// <summary>
-        /// Number of coefficients (including coeff #0)
-        /// </summary>
-        public override int FeatureCount { get; }
-
         /// <summary>
         /// Descriptions (simply "spncc0", "spncc1", "spncc2", etc.)
         /// </summary>
@@ -78,54 +73,32 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Main constructor
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="featureCount"></param>
-        /// <param name="frameDuration">Length of analysis window (in seconds)</param>
-        /// <param name="hopDuration">Length of overlap (in seconds)</param>
-        /// <param name="power"></param>
-        /// <param name="lowFreq"></param>
-        /// <param name="highFreq"></param>
-        /// <param name="filterbankSize"></param>
-        /// <param name="filterbank"></param>
-        /// <param name="fftSize">Size of FFT (in samples)</param>
-        /// <param name="preEmphasis"></param>
-        /// <param name="window"></param>
-        public SpnccExtractor(int samplingRate, 
-                              int featureCount,
-                              double frameDuration = 0.0256/*sec*/,
-                              double hopDuration = 0.010/*sec*/,
-                              int power = 15,
-                              double lowFreq = 100,
-                              double highFreq = 6800,
-                              int filterbankSize = 40,
-                              float[][] filterbank = null,
-                              int fftSize = 0,
-                              double preEmphasis = 0,
-                              WindowTypes window = WindowTypes.Hamming)
-
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
+        /// <param name="options">PNCC options</param>
+        public SpnccExtractor(PnccOptions options) : base(options)
         {
-            FeatureCount = featureCount;
+            FeatureCount = options.FeatureCount;
 
-            _power = power;
+            var filterbankSize = options.FilterBankSize;
 
-            if (filterbank == null)
+            if (options.FilterBank == null)
             {
-                _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
+                _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-                _lowFreq = lowFreq;
-                _highFreq = highFreq;
+                _lowFreq = options.LowFrequency;
+                _highFreq = options.HighFrequency;
 
-                FilterBank = FilterBanks.Erb(filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
+                FilterBank = FilterBanks.Erb(filterbankSize, _blockSize, SamplingRate, _lowFreq, _highFreq);
             }
             else
             {
-                FilterBank = filterbank;
-                filterbankSize = filterbank.Length;
-                _blockSize = 2 * (filterbank[0].Length - 1);
+                FilterBank = options.FilterBank;
+                filterbankSize = FilterBank.Length;
+                _blockSize = 2 * (FilterBank[0].Length - 1);
 
                 Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
             }
+
+            _power = options.Power;
 
             _fft = new RealFft(_blockSize);
             _dct = new Dct2(filterbankSize);

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.FeatureExtractors;
-using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Filters.Fda;
 using NWaves.Signals;
 using NWaves.Windows;
@@ -138,8 +138,8 @@ namespace NWaves.DemoForms
 
         private void computeButton_Click(object sender, EventArgs e)
         {
-            var frameSize = float.Parse(analysisFftTextBox.Text);
-            var hopSize = float.Parse(hopSizeTextBox.Text);
+            var frameDuration = double.Parse(analysisFftTextBox.Text);
+            var hopDuration = double.Parse(hopSizeTextBox.Text);
             var modulationFftSize = int.Parse(longTermFftSizeTextBox.Text);
             var modulationHopSize = int.Parse(longTermHopSizeTextBox.Text);
 
@@ -156,16 +156,22 @@ namespace NWaves.DemoForms
             //                             hopSize,
             //                             modulationFftSize,
             //                             modulationHopSize,
-            //                             featuregram: vectors.Select(v => v.Features));
+            //                             featuregram: vectors);
 
-            _extractor = new AmsExtractor(_signal.SamplingRate,
-                                          frameSize,
-                                          hopSize,
-                                          modulationFftSize,
-                                          modulationHopSize,
-                                          filterbank: _filterbank,
-                                          window: WindowTypes.Hamming);
+            var options = new AmsOptions
+            {
+                SamplingRate = _signal.SamplingRate,
+                FrameDuration = frameDuration,
+                HopDuration = hopDuration,
+                ModulationFftSize = modulationFftSize,
+                ModulationHopSize = modulationHopSize,
+                FilterBank = _filterbank,
+                Window = WindowTypes.Hamming
+            };
+
+            _extractor = new AmsExtractor(options);
             _features = _extractor.ComputeFrom(_signal);
+
             _featIndex = 0;
 
             infoLabel.Text = $"{_features.Count}x{_features[0].Length}";

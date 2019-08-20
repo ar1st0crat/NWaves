@@ -8,6 +8,7 @@ using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
 using NWaves.FeatureExtractors.Multi;
+using NWaves.FeatureExtractors.Options;
 using NWaves.FeatureExtractors.Serializers;
 using NWaves.Filters;
 using NWaves.Filters.Base;
@@ -154,19 +155,26 @@ namespace NWaves.DemoForms
             var nonLinearity = (NonLinearityType)comboBoxNonLinearity.SelectedIndex;
             var logFloor = float.Parse(textBoxLogFloor.Text);
 
-            var mfccExtractor = new MfccExtractor(//samplingRate, 13, 0.025, 0.01,
-                                                  samplingRate, 13, 512.0 / samplingRate, 0.01,
-                                                  filterbank: filterbank,
-                                                  //filterbankSize: 26,
-                                                  //highFreq: 8000,
-                                                  //preEmphasis: 0.97,
-                                                  //lifterSize: 22,
-                                                  //includeEnergy: true,
-                                                  spectrumType: spectrumType,
-                                                  nonLinearity: nonLinearity,
-                                                  dctType: comboBoxDct.Text,
-                                                  window: WindowTypes.Hamming,
-                                                  logFloor: logFloor);
+            var mfccOptions = new MfccOptions
+            {
+                SamplingRate = samplingRate,
+                FeatureCount = 13,
+                FrameDuration = 512.0 / samplingRate,
+                HopDuration = 0.01,
+                FilterBank = filterbank,
+                SpectrumType = spectrumType,
+                NonLinearity = nonLinearity,
+                DctType = comboBoxDct.Text,
+                Window = WindowTypes.Hamming,
+                LogFloor = logFloor,
+                //FilterBankSize = 26,
+                //HighFrequency = 8000,
+                //PreEmphasis = 0.97,
+                //LifterSize = 22,
+                //IncludeEnergy = true
+            };
+
+            var mfccExtractor = new MfccExtractor(mfccOptions);
 
             //var mfccExtractor = new WaveletExtractor(samplingRate, 512.0 / samplingRate, 512.0 / samplingRate, "db5", 32);
 
@@ -213,27 +221,13 @@ namespace NWaves.DemoForms
     //      _signal *= 32768;
     //      _extractor.ComputeFrom(_signal);
 
-    class MfccExtractorTestHtk : MfccExtractorHtk
+    class MfccExtractorTestHtk : MfccExtractor
     {
         private readonly float[] _hammingWin;
 
-        public MfccExtractorTestHtk(int samplingRate,
-                                    int featureCount,
-                                    double frameDuration = 0.0256/*sec*/,
-                                    double hopDuration = 0.010/*sec*/,
-                                    int filterbankSize = 24,
-                                    double lowFreq = 0,
-                                    double highFreq = 0,
-                                    int fftSize = 0,
-                                    int lifterSize = 0,
-                                    double preEmphasis = 0,
-                                    bool includeEnergy = false,
-                                    SpectrumType spectrumType = SpectrumType.Power,
-                                    WindowTypes window = WindowTypes.Rectangular)       // we will apply Hamming window explicitly
-            
-            : base(samplingRate, featureCount, frameDuration, hopDuration, filterbankSize, lowFreq, highFreq, fftSize, lifterSize, preEmphasis, includeEnergy, spectrumType, window)
+        public MfccExtractorTestHtk(MfccOptions options) : base(options)
         {
-            _hammingWin = Window.OfType(window, FrameSize);
+            _hammingWin = Window.OfType(WindowTypes.Hamming, FrameSize);
         }
 
         /// <summary>
@@ -289,19 +283,22 @@ namespace NWaves.DemoForms
         /// </summary>
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
-            new MfccExtractorTestHtk( SamplingRate,
-                                      FeatureCount,
-                                      FrameDuration,
-                                      HopDuration,
-                                      FilterBank.Length,
-                                     _lowFreq,
-                                     _highFreq,
-                                     _blockSize,
-                                     _lifterSize,
-                                     _preEmphasis,
-                                     _includeEnergy,
-                                     _spectrumType,
-                                     _window);
+            new MfccExtractorTestHtk(new MfccOptions
+            {
+                SamplingRate = SamplingRate,
+                FeatureCount = FeatureCount,
+                FrameDuration = FrameDuration,
+                HopDuration = HopDuration,
+                FilterBankSize = FilterBank.Length,
+                LowFrequency = _lowFreq,
+                HighFrequency = _highFreq,
+                FftSize = _blockSize,
+                LifterSize = _lifterSize,
+                PreEmphasis = _preEmphasis,
+                IncludeEnergy = _includeEnergy,
+                SpectrumType = _spectrumType,
+                Window = _window
+            });
     }
 }
 

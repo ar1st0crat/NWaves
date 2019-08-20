@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Filters.Base;
 using NWaves.Filters.Fda;
 using NWaves.Signals;
@@ -52,7 +53,15 @@ namespace NWaves.DemoForms
 
             _fft = new RealFft(512);
 
-            var lpcExtractor = new LpcExtractor(_signal.SamplingRate, 16, FrameDuration, HopDuration);
+            var options = new LpcOptions
+            {
+                SamplingRate = _signal.SamplingRate,
+                LpcOrder = 10,
+                FrameDuration = FrameDuration,
+                HopDuration = HopDuration
+            };
+
+            var lpcExtractor = new LpcExtractor(options);
 
             //var lpcExtractor = new LpccExtractor(_signal.SamplingRate, 15, FrameDuration, HopDuration, lifterSize: 0);
 
@@ -63,7 +72,7 @@ namespace NWaves.DemoForms
             //                                    //lifterSize: 22,
             //                                    window: WindowTypes.Hann);
 
-            _lpcVectors = lpcExtractor.ComputeFrom(_signal);
+            _lpcVectors = lpcExtractor.ParallelComputeFrom(_signal);
 
             FillFeaturesList(_lpcVectors, lpcExtractor.FeatureDescriptions, lpcExtractor.TimeMarkers(_lpcVectors.Count));
             lpcListView.Items[0].Selected = true;

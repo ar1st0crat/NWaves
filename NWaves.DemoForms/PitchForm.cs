@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Features;
 using NWaves.Operations;
 using NWaves.Signals;
@@ -65,9 +66,14 @@ namespace NWaves.DemoForms
             _fft = new RealFft(_fftSize);
             _cepstralTransform = new CepstralTransform(_cepstrumSize, _fftSize);
 
-            var pitchExtractor = new PitchExtractor(_signal.SamplingRate,
-                                                    (double)_fftSize / _signal.SamplingRate,
-                                                    (double)_hopSize / _signal.SamplingRate);
+            var options = new PitchOptions
+            {
+                SamplingRate = _signal.SamplingRate,
+                FrameDuration = (double)_fftSize / _signal.SamplingRate,
+                HopDuration = (double)_hopSize / _signal.SamplingRate
+            };
+
+            var pitchExtractor = new PitchExtractor(options);
 
             _pitches = pitchExtractor.ParallelComputeFrom(_signal);
 

@@ -1,7 +1,7 @@
 ﻿using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Transforms.Wavelets;
 using NWaves.Utils;
-using NWaves.Windows;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,11 +13,6 @@ namespace NWaves.FeatureExtractors
     public class WaveletExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Number of FWT coefficients
-        /// </summary>
-        public override int FeatureCount => _coeffCount;
-
-        /// <summary>
         /// Descriptions (simply "w0", "w1", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions =>
@@ -26,7 +21,7 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Number of wavelet coefficients to keep in feature vector
         /// </summary>
-        protected readonly int _coeffCount;
+        protected readonly int _numCoefficients;
 
         /// <summary>
         /// Fast Wavelet Transformer
@@ -51,34 +46,18 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="frameDuration"></param>
-        /// <param name="hopDuration"></param>
-        /// <param name="waveletName"></param>
-        /// <param name="fwtSize"></param>
-        /// <param name="fwtLevel"></param>
-        /// <param name="preEmphasis"></param>
-        /// <param name="window"></param>
-        public WaveletExtractor(int samplingRate,
-                                double frameDuration,
-                                double hopDuration,
-                                string waveletName,
-                                int coeffCount = 0,
-                                int fwtSize = 0,
-                                int fwtLevel = 0,
-                                double preEmphasis = 0,
-                                WindowTypes window = WindowTypes.Rectangular)
-            
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
+        /// <param name="options">Wavelet options</param>
+        public WaveletExtractor(WaveletOptions options) : base(options)
         {
-            _blockSize = fwtSize > FrameSize ? fwtSize : MathUtils.NextPowerOfTwo(FrameSize);
+            _blockSize = options.FwtSize > FrameSize ? options.FwtSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-            _fwt = new Fwt(_blockSize, new Wavelet(waveletName));
+            _numCoefficients = options.FeatureCount > 0 ? options.FeatureCount : _blockSize;
+            FeatureCount = _numCoefficients;
 
-            _waveletName = waveletName;
-            _level = fwtLevel;
-
-            _coeffCount = coeffCount > 0 ? coeffCount : _blockSize;
+            _waveletName = options.WaveletName;
+            _level = options.FwtLevel;
+            _fwt = new Fwt(_blockSize, new Wavelet(_waveletName));
+            
             _coeffs = new float[_blockSize];
         }
 
@@ -92,7 +71,7 @@ namespace NWaves.FeatureExtractors
         {
             _fwt.Direct(block, _coeffs, _level);
 
-            _coeffs.FastCopyTo(features, _coeffCount);
+            _coeffs.FastCopyTo(features, _numCoefficients);
         }
 
         /// <summary>
@@ -106,6 +85,17 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
-            new WaveletExtractor(SamplingRate, FrameDuration, HopDuration, _waveletName, _coeffCount, _blockSize, _level, _preEmphasis, _window);
+            new WaveletExtractor(new WaveletOptions
+            {
+                SamplingRate = SamplingRate,
+                FrameDuration = FrameDuration,
+                HopDuration = HopDuration,
+                WaveletName = _waveletName,
+                FeatureCount = _numCoefficients,
+                FwtSize = _blockSize,
+                FwtLevel = _level,
+                PreEmphasis = _preEmphasis,
+                Window = _window
+            });
     }
 }
