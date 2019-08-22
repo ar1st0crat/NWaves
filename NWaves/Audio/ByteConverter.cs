@@ -89,7 +89,7 @@
                     {
                         for (int i = 2 * n, j = 0; i < bytes.Length; i += step, j++)
                         {
-                            floats[n][j] = (bytes[i] << 8 | bytes[i + 1]) / 32768f;
+                            floats[n][j] = (short)(bytes[i] << 8 | bytes[i + 1]) / 32768f;
                         }
                     }
                 }
@@ -99,7 +99,7 @@
                     {
                         for (int i = 2 * n, j = 0; i < bytes.Length; i += step, j++)
                         {
-                            floats[n][j] = bytes[i] << 8 | bytes[i + 1];
+                            floats[n][j] = (short)(bytes[i] << 8 | bytes[i + 1]);
                         }
                     }
                 }
@@ -112,7 +112,7 @@
                     {
                         for (int i = 2 * n, j = 0; i < bytes.Length; i += step, j++)
                         {
-                            floats[n][j] = (bytes[i] | bytes[i + 1] << 8) / 32768f;
+                            floats[n][j] = (short)(bytes[i] | bytes[i + 1] << 8) / 32768f;
                         }
                     }
                 }
@@ -122,7 +122,7 @@
                     {
                         for (int i = 2 * n, j = 0; i < bytes.Length; i += step, j++)
                         {
-                            floats[n][j] = bytes[i] | bytes[i + 1] << 8;
+                            floats[n][j] = (short)(bytes[i] | bytes[i + 1] << 8);
                         }
                     }
                 }
@@ -149,7 +149,7 @@
                     {
                         for (int i = 2 * n, j = 0; j < floats[n].Length; i += step, j++)
                         {
-                            var s = (int)(floats[n][j] * 32768);
+                            var s = (short)(floats[n][j] * 32768);
 
                             bytes[i] = (byte)(s >> 8);
                             bytes[i + 1] = (byte)s;
@@ -162,7 +162,7 @@
                     {
                         for (int i = 2 * n, j = 0; j < floats[n].Length; i += step, j++)
                         {
-                            var s = (int)floats[n][j];
+                            var s = (short)floats[n][j];
 
                             bytes[i] = (byte)(s >> 8);
                             bytes[i + 1] = (byte)s;
@@ -178,7 +178,7 @@
                     {
                         for (int i = 2 * n, j = 0; j < floats[n].Length; i += step, j++)
                         {
-                            var s = (int)(floats[n][j] * 32768);
+                            var s = (short)(floats[n][j] * 32768);
 
                             bytes[i] = (byte)s;
                             bytes[i + 1] = (byte)(s >> 8);
@@ -191,7 +191,7 @@
                     {
                         for (int i = 2 * n, j = 0; j < floats[n].Length; i += step, j++)
                         {
-                            var s = (int)floats[n][j];
+                            var s = (short)floats[n][j];
 
                             bytes[i] = (byte)s;
                             bytes[i + 1] = (byte)(s >> 8);
