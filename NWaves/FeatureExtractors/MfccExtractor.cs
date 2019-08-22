@@ -49,16 +49,6 @@ namespace NWaves.FeatureExtractors
         public float[][] FilterBank { get; }
 
         /// <summary>
-        /// Lower frequency (Hz)
-        /// </summary>
-        protected readonly double _lowFreq;
-
-        /// <summary>
-        /// Upper frequency (Hz)
-        /// </summary>
-        protected readonly double _highFreq;
-
-        /// <summary>
         /// Size of liftering window
         /// </summary>
         protected readonly int _lifterSize;
@@ -143,14 +133,11 @@ namespace NWaves.FeatureExtractors
 
             var filterbankSize = options.FilterBankSize;
 
-            _lowFreq = options.LowFrequency;
-            _highFreq = options.HighFrequency;
-
             if (options.FilterBank == null)
             {
                 _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-                var melBands = FilterBanks.MelBands(filterbankSize, SamplingRate, _lowFreq, _highFreq);
+                var melBands = FilterBanks.MelBands(filterbankSize, SamplingRate, options.LowFrequency, options.HighFrequency);
                 FilterBank = FilterBanks.Triangular(_blockSize, SamplingRate, melBands, mapper: Scale.HerzToMel);   // HTK/Kaldi-style
             }
             else
@@ -290,8 +277,6 @@ namespace NWaves.FeatureExtractors
                     FrameDuration = FrameDuration,
                     HopDuration = HopDuration,
                     FilterBankSize = FilterBank.Length,
-                    LowFrequency = _lowFreq,
-                    HighFrequency = _highFreq,
                     FftSize = _blockSize,
                     FilterBank = FilterBank,
                     LifterSize = _lifterSize,

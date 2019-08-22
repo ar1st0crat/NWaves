@@ -56,14 +56,14 @@ namespace NWaves.DemoForms
             var options = new LpcOptions
             {
                 SamplingRate = _signal.SamplingRate,
-                LpcOrder = 10,
+                LpcOrder = 16,
                 FrameDuration = FrameDuration,
                 HopDuration = HopDuration
             };
 
             var lpcExtractor = new LpcExtractor(options);
 
-            //var lpcExtractor = new LpccExtractor(_signal.SamplingRate, 15, FrameDuration, HopDuration, lifterSize: 0);
+            //var lpcExtractor = new LpccExtractor(options);
 
             //var lpcExtractor = new PlpExtractor(_signal.SamplingRate, 10,
             //                                    lpcOrder: 8,
@@ -71,7 +71,7 @@ namespace NWaves.DemoForms
             //                                    filterbankSize: 20,
             //                                    //lifterSize: 22,
             //                                    window: WindowTypes.Hann);
-
+            
             _lpcVectors = lpcExtractor.ParallelComputeFrom(_signal);
 
             FillFeaturesList(_lpcVectors, lpcExtractor.FeatureDescriptions, lpcExtractor.TimeMarkers(_lpcVectors.Count));
@@ -156,13 +156,19 @@ namespace NWaves.DemoForms
 // ============================================== TEST PLP extractor against HTK: ========================================================
 
 //const int sr = 16000;
-//var melbands = FilterBanks.MelBands(24, 512, sr, 0, 8000);
+//var melbands = FilterBanks.MelBands(24, sr, 0, 8000);
 //var melbank = FilterBanks.Triangular(512, sr, melbands, null, Utils.Scale.HerzToMel);
 
-//var lpcExtractor = new PlpExtractor(sr, 13, 512.0 / sr,
-//                                    filterbank: melbank,
-//                                    centerFrequencies: melbands.Select(m => m.Item2).ToArray(),
-//                                    window: WindowTypes.Rectangular);
+//var opts = new PlpOptions
+//{
+//    SamplingRate = sr,
+//    FeatureCount = 13,
+//    FrameDuration = 512.0 / sr,
+//    FilterBank = melbank,
+//    CenterFrequencies = melbands.Select(m => m.Item2).ToArray(),
+//    Window = WindowTypes.Rectangular
+//};
+//var lpcExtractor = new PlpExtractor(opts);
 
 //var data = new float[] { 1, 7, 2, 5, 4, 9, 1, 2, 3, 4, 5, 3, 4, 7, 6, 5, 1, 2, 3, 4, 5, 7, 7, 2, 3, 1, 9 }.PadZeros(512);
 

@@ -68,16 +68,6 @@ namespace NWaves.FeatureExtractors
         /// By default it's gammatone filterbank.
         /// </summary>
         public float[][] FilterBank { get; }
-
-        /// <summary>
-        /// Lower frequency
-        /// </summary>
-        protected readonly double _lowFreq;
-
-        /// <summary>
-        /// Upper frequency
-        /// </summary>
-        protected readonly double _highFreq;
         
         /// <summary>
         /// Nonlinearity coefficient (if 0 then Log10 is applied)
@@ -146,14 +136,11 @@ namespace NWaves.FeatureExtractors
 
             var filterbankSize = options.FilterBankSize;
 
-            _lowFreq = options.LowFrequency;
-            _highFreq = options.HighFrequency;
-
             if (options.FilterBank == null)
             {
                 _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-                FilterBank = FilterBanks.Erb(options.FilterBankSize, _blockSize, SamplingRate, _lowFreq, _highFreq);
+                FilterBank = FilterBanks.Erb(options.FilterBankSize, _blockSize, SamplingRate, options.LowFrequency, options.HighFrequency);
             }
             else
             {

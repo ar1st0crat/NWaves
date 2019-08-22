@@ -42,16 +42,6 @@ namespace NWaves.FeatureExtractors
         protected readonly double[] _centerFrequencies;
 
         /// <summary>
-        /// Lower frequency
-        /// </summary>
-        protected readonly double _lowFreq;
-
-        /// <summary>
-        /// Upper frequency
-        /// </summary>
-        protected readonly double _highFreq;
-
-        /// <summary>
         /// RASTA coefficient (if zero, then no RASTA filtering)
         /// </summary>
         protected readonly double _rasta;
@@ -133,16 +123,16 @@ namespace NWaves.FeatureExtractors
 
             var filterbankSize = options.FilterBankSize;
 
-            _lowFreq = options.LowFrequency;
-            _highFreq = options.HighFrequency;
-
             if (options.FilterBank == null)
             {
                 _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-                var barkBands = FilterBanks.BarkBandsSlaney(filterbankSize, SamplingRate, _lowFreq, _highFreq);
-                FilterBank = FilterBanks.BarkBankSlaney(filterbankSize, _blockSize, SamplingRate, _lowFreq, _highFreq);
+                var low = options.LowFrequency;
+                var high = options.HighFrequency;
 
+                FilterBank = FilterBanks.BarkBankSlaney(filterbankSize, _blockSize, SamplingRate, low, high);
+
+                var barkBands = FilterBanks.BarkBandsSlaney(filterbankSize, SamplingRate, low, high);
                 _centerFrequencies = barkBands.Select(b => b.Item2).ToArray();
             }
             else
@@ -382,8 +372,6 @@ namespace NWaves.FeatureExtractors
                     Rasta = _rasta,
                     FilterBank = FilterBank,
                     FilterBankSize = FilterBank.Length,
-                    LowFrequency = _lowFreq,
-                    HighFrequency = _highFreq,
                     FftSize = _blockSize,
                     LifterSize = _lifterSize,
                     PreEmphasis = _preEmphasis,

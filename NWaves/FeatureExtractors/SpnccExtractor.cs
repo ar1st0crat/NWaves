@@ -38,16 +38,6 @@ namespace NWaves.FeatureExtractors
         public float[][] FilterBank { get; }
 
         /// <summary>
-        /// Lower frequency
-        /// </summary>
-        protected readonly double _lowFreq;
-
-        /// <summary>
-        /// Upper frequency
-        /// </summary>
-        protected readonly double _highFreq;
-
-        /// <summary>
         /// Nonlinearity coefficient (if 0 then Log10 is applied)
         /// </summary>
         protected readonly int _power;
@@ -97,14 +87,11 @@ namespace NWaves.FeatureExtractors
 
             var filterbankSize = options.FilterBankSize;
 
-            _lowFreq = options.LowFrequency;
-            _highFreq = options.HighFrequency;
-
             if (options.FilterBank == null)
             {
                 _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-                FilterBank = FilterBanks.Erb(filterbankSize, _blockSize, SamplingRate, _lowFreq, _highFreq);
+                FilterBank = FilterBanks.Erb(filterbankSize, _blockSize, SamplingRate, options.LowFrequency, options.HighFrequency);
             }
             else
             {

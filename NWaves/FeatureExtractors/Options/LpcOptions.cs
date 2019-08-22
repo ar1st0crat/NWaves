@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace NWaves.FeatureExtractors.Options
 {
+    [DataContract]
     public class LpcOptions : FeatureExtractorOptions
     {
+        [DataMember]
         public int LpcOrder { get; set; }
 
         public override List<string> Errors
@@ -11,7 +14,7 @@ namespace NWaves.FeatureExtractors.Options
             get
             {
                 var errors = base.Errors;
-                if (LpcOrder <= 1) errors.Add("LPC order must be greater than 1");
+                if (LpcOrder <= 0) errors.Add("LPC order must be greater than 0");
                 return errors;
             }
         }

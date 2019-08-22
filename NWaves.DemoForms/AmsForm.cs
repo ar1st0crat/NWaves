@@ -145,18 +145,28 @@ namespace NWaves.DemoForms
 
             // ===== test modulation spectrum for Mfcc features =====
             //
-            //var mfccExtractor = new MfccExtractor(_signal.SamplingRate, 13,
-            //                                      frameSize,
-            //                                      hopSize);
+            //var mfccExtractor = new MfccExtractor(
+            //    new MfccOptions
+            //    {
+            //        SamplingRate = _signal.SamplingRate,
+            //        FeatureCount = 13,
+            //        FrameDuration = frameDuration,
+            //        HopDuration = hopDuration
+            //    });
             //var vectors = mfccExtractor.ComputeFrom(_signal);
-            //FeaturePostProcessing.NormalizeMean(vectors);
+            ////FeaturePostProcessing.NormalizeMean(vectors);
 
-            //_extractor = new AmsExtractor(_signal.SamplingRate,
-            //                             frameSize,
-            //                             hopSize,
-            //                             modulationFftSize,
-            //                             modulationHopSize,
-            //                             featuregram: vectors);
+            //var options = new AmsOptions
+            //{
+            //    SamplingRate = _signal.SamplingRate,
+            //    FrameDuration = frameDuration,
+            //    HopDuration = hopDuration,
+            //    ModulationFftSize = modulationFftSize,
+            //    ModulationHopSize = modulationHopSize,
+            //    Featuregram = vectors
+            //};
+            //_extractor = new AmsExtractor(options);
+
 
             var options = new AmsOptions
             {

@@ -27,7 +27,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Parameters
         /// </summary>
-        protected readonly IReadOnlyDictionary<string, object> _parameters;
+        protected readonly Dictionary<string, object> _parameters;
 
         /// <summary>
         /// Constructor

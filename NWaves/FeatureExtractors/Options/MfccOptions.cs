@@ -1,13 +1,19 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors.Options
 {
+    [DataContract]
     public class MfccOptions : FilterbankOptions
     {
+        [DataMember]
         public int LifterSize { get; set; }
+        [DataMember]
         public string DctType { get; set; } = "2N";
+        [DataMember]
         public bool IncludeEnergy { get; set; }
+        [DataMember]
         public float LogEnergyFloor { get; set; } = float.Epsilon;
 
         public MfccOptions()

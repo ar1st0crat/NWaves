@@ -168,7 +168,7 @@ namespace NWaves.DemoForms
                 Window = WindowTypes.Hamming,
                 LogFloor = logFloor,
                 //FilterBankSize = 26,
-                //HighFrequency = 8000,
+                //HighFrequency = 6000,
                 //PreEmphasis = 0.97,
                 //LifterSize = 22,
                 //IncludeEnergy = true,
@@ -176,10 +176,7 @@ namespace NWaves.DemoForms
             };
 
             var mfccExtractor = new MfccExtractor(mfccOptions);
-
-            //var mfccExtractor = new WaveletExtractor(samplingRate, 512.0 / samplingRate, 512.0 / samplingRate, "db5", 32);
-
-            _mfccVectors = mfccExtractor.ParallelComputeFrom(_signal);
+            _mfccVectors = mfccExtractor.ComputeFrom(_signal);
 
             //FeaturePostProcessing.NormalizeMean(_mfccVectors);        // optional
             //FeaturePostProcessing.AddDeltas(_mfccVectors);
@@ -292,8 +289,6 @@ namespace NWaves.DemoForms
                     FrameDuration = FrameDuration,
                     HopDuration = HopDuration,
                     FilterBankSize = FilterBank.Length,
-                    LowFrequency = _lowFreq,
-                    HighFrequency = _highFreq,
                     FftSize = _blockSize,
                     LifterSize = _lifterSize,
                     PreEmphasis = _preEmphasis,
@@ -313,17 +308,11 @@ namespace NWaves.DemoForms
 
 //for (var i = 0; i < _mfccVectors.Count; i++)
 //{
-//    for (var j = 0; j < _mfccVectors[i].Features.Length; j++)
+//    for (var j = 0; j < _mfccVectors[i].Length; j++)
 //    {
-//        if (Math.Abs(_mfccVectors[i].Features[j] - mfccVectorsP[i].Features[j]) > 1e-32f)
+//        if (Math.Abs(_mfccVectors[i][j] - mfccVectorsP[i][j]) > 1e-32f)
 //        {
 //            MessageBox.Show($"Nope: {i} - {j}");
-//            return;
-//        }
-
-//        if (Math.Abs(_mfccVectors[i].TimePosition - mfccVectorsP[i].TimePosition) > 1e-32f)
-//        {
-//            MessageBox.Show($"Time: {i} - {j}");
 //            return;
 //        }
 //    }
@@ -334,11 +323,15 @@ namespace NWaves.DemoForms
 
 // ====================================================== test PNCC: =============================================================
 
-//var mfccExtractor = new PnccExtractor(_signal.SamplingRate,
-//                                      13,
-//                                      preEmphasis: 0.97,
-//                                      fftSize: 1024,
-//                                      window: WindowTypes.Hamming);
+//var mfccExtractor = new PnccExtractor(
+//    new PnccOptions
+//    {
+//        SamplingRate = _signal.SamplingRate,
+//        FeatureCount = 13,
+//        PreEmphasis = 0.97,
+//        FftSize = 1024,
+//        Window = WindowTypes.Hamming
+//    });
 
 //_mfccVectors = mfccExtractor.ComputeFrom(_signal);
 
@@ -347,27 +340,27 @@ namespace NWaves.DemoForms
 
 //            // ============== I use this code to test PNCC results (just ignore it))): ========================
 
-//            //pnccVectors = new List<FeatureVector>();
-//            //var vector = new FeatureVector() { Features = new float[13] };
-//            //var pos = 1;
+//            pnccVectors = new List<float[]>();
+//            var vector = new float[13];
+//var pos = 1;
 
-//            //using (var fs = new FileStream(@"E:\Projects\github\NWaves_Materials\pncc\esh_ru_0001.pncc", FileMode.Open))
-//            //using (var br = new BinaryReader(fs))
-//            //{
-//            //    while (pos < 700)
-//            //    {
-//            //        br.ReadSingle();
-//            //        for (var i = 0; i < 12; i++)
-//            //        {
-//            //            vector.Features[i] = br.ReadSingle();
-//            //        }
-//            //        pnccVectors.Add(vector);
-//            //        vector = new FeatureVector() { Features = new float[13] };
-//            //        pos++;
-//            //    }
-//            //}
+//            using (var fs = new FileStream(@"E:\Projects\github\NWaves_Materials\pncc\esh_ru_0001.pncc", FileMode.Open))
+//            using (var br = new BinaryReader(fs))
+//            {
+//                while (pos< 700)
+//                {
+//                    br.ReadSingle();
+//                    for (var i = 0; i< 12; i++)
+//                    {
+//                        vector[i] = br.ReadSingle();
+//                    }
+//                    pnccVectors.Add(vector);
+//                    vector = new float[13];
+//                    pos++;
+//                }
+//            }
 
-//            //mfccPanel.Markline = pnccVectors[0].Features;
+//            mfccPanel.Markline = pnccVectors[0];
 
 //            // ================================================================================================
 

@@ -34,7 +34,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Extractor parameters
         /// </summary>
-        protected readonly IReadOnlyDictionary<string, object> _parameters;
+        protected readonly Dictionary<string, object> _parameters;
 
         /// <summary>
         /// FFT transformer
