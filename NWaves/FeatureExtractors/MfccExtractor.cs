@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Filters.Fda;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -29,31 +30,23 @@ namespace NWaves.FeatureExtractors
     public class MfccExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Number of coefficients (including coeff #0)
-        /// </summary>
-        public override int FeatureCount { get; }
-
-        /// <summary>
         /// Descriptions (simply "mfcc0", "mfcc1", "mfcc2", etc.)
         /// </summary>
-        public override List<string> FeatureDescriptions =>
-            Enumerable.Range(0, FeatureCount).Select(i => "mfcc" + i).ToList();
+        public override List<string> FeatureDescriptions
+        {
+            get
+            {
+                var names = Enumerable.Range(0, FeatureCount).Select(i => "mfcc" + i).ToList();
+                if (_includeEnergy) names[0] = "log_En";
+                return names;
+            }
+        }
 
         /// <summary>
         /// Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)].
         /// By default it's mel filterbank.
         /// </summary>
         public float[][] FilterBank { get; }
-
-        /// <summary>
-        /// Lower frequency (Hz)
-        /// </summary>
-        protected readonly double _lowFreq;
-
-        /// <summary>
-        /// Upper frequency (Hz)
-        /// </summary>
-        protected readonly double _highFreq;
 
         /// <summary>
         /// Size of liftering window
@@ -91,14 +84,19 @@ namespace NWaves.FeatureExtractors
         protected readonly SpectrumType _spectrumType;
 
         /// <summary>
+        /// Floor value for LOG calculations
+        /// </summary>
+        protected readonly float _logFloor;
+
+        /// <summary>
         /// Should the first MFCC coefficient be replaced with LOG(energy)
         /// </summary>
         protected readonly bool _includeEnergy;
 
         /// <summary>
-        /// Floor value for LOG calculations
+        /// Floor value for LOG-energy calculation
         /// </summary>
-        protected readonly float _logFloor;
+        protected readonly float _logEnergyFloor;
 
         /// <summary>
         /// Delegate for calculating spectrum
@@ -128,93 +126,49 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="featureCount"></param>
-        /// <param name="frameDuration"></param>
-        /// <param name="hopDuration"></param>
-        /// <param name="filterbankSize"></param>
-        /// <param name="lowFreq"></param>
-        /// <param name="highFreq"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="filterbank"></param>
-        /// <param name="lifterSize"></param>
-        /// <param name="preEmphasis"></param>
-        /// <param name="includeEnergy"></param>
-        /// <param name="dctType">"1", "1N", "2", "2N", "3", "3N", "4", "4N"</param>
-        /// <param name="nonLinearity"></param>
-        /// <param name="spectrumType"></param>
-        /// <param name="window"></param>
-        /// <param name="logFloor"></param>
-        public MfccExtractor(int samplingRate,
-                             int featureCount,
-                             double frameDuration = 0.0256/*sec*/,
-                             double hopDuration = 0.010/*sec*/,
-                             int filterbankSize = 24,
-                             double lowFreq = 0,
-                             double highFreq = 0,
-                             int fftSize = 0,
-                             float[][] filterbank = null,
-                             int lifterSize = 0,
-                             double preEmphasis = 0,
-                             bool includeEnergy = false,
-                             string dctType = "2N",
-                             NonLinearityType nonLinearity = NonLinearityType.Log10,
-                             SpectrumType spectrumType = SpectrumType.Power,
-                             WindowTypes window = WindowTypes.Hamming,
-                             float logFloor = float.Epsilon)
-
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
+        /// <param name="options">MFCC options</param>
+        public MfccExtractor(MfccOptions options) : base(options)
         {
-            FeatureCount = featureCount;
+            FeatureCount = options.FeatureCount;
 
-            _lowFreq = lowFreq;
-            _highFreq = highFreq;
+            var filterbankSize = options.FilterBankSize;
 
-            if (filterbank == null)
+            if (options.FilterBank == null)
             {
-                _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
+                _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-                var melBands = FilterBanks.MelBands(filterbankSize, SamplingRate, _lowFreq, _highFreq);
+                var melBands = FilterBanks.MelBands(filterbankSize, SamplingRate, options.LowFrequency, options.HighFrequency);
                 FilterBank = FilterBanks.Triangular(_blockSize, SamplingRate, melBands, mapper: Scale.HerzToMel);   // HTK/Kaldi-style
             }
             else
             {
-                FilterBank = filterbank;
-                filterbankSize = filterbank.Length;
-                _blockSize = 2 * (filterbank[0].Length - 1);
+                FilterBank = options.FilterBank;
+                filterbankSize = FilterBank.Length;
+                _blockSize = 2 * (FilterBank[0].Length - 1);
 
                 Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
             }
 
             _fft = new RealFft(_blockSize);
 
-            _lifterSize = lifterSize;
+            _lifterSize = options.LifterSize;
             _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
 
-            _includeEnergy = includeEnergy;
+            _includeEnergy = options.IncludeEnergy;
+            _logEnergyFloor = options.LogEnergyFloor;
 
             // setup DCT: ============================================================================
 
-            _dctType = dctType;
-            switch (dctType[0])
+            _dctType = options.DctType;
+            switch (_dctType[0])
             {
-                case '1':
-                    _dct = new Dct1(filterbankSize);
-                    break;
-                case '2':
-                    _dct = new Dct2(filterbankSize);
-                    break;
-                case '3':
-                    _dct = new Dct3(filterbankSize);
-                    break;
-                case '4':
-                    _dct = new Dct4(filterbankSize);
-                    break;
-                default:
-                    throw new ArgumentException("Only DCT-1, 2, 3 and 4 are supported!");
+                case '1': _dct = new Dct1(filterbankSize); break;
+                case '3': _dct = new Dct3(filterbankSize); break;
+                case '4': _dct = new Dct4(filterbankSize); break;
+                default:  _dct = new Dct2(filterbankSize); break;
             }
 
-            if (dctType.Length > 1 && char.ToUpper(dctType[1]) == 'N')
+            if (_dctType.EndsWith("N", StringComparison.OrdinalIgnoreCase))
             {
                 _applyDct = mfccs => _dct.DirectNorm(_melSpectrum, mfccs);
             }
@@ -225,42 +179,33 @@ namespace NWaves.FeatureExtractors
 
             // setup spectrum post-processing: =======================================================
 
-            _logFloor = logFloor;
-            _nonLinearityType = nonLinearity;
-            switch (nonLinearity)
+            _logFloor = options.LogFloor;
+            _nonLinearityType = options.NonLinearity;
+            switch (_nonLinearityType)
             {
                 case NonLinearityType.Log10:
-                    _postProcessSpectrum = () => FilterBanks.ApplyAndLog10(FilterBank, _spectrum, _melSpectrum, _logFloor);
-                    break;
+                    _postProcessSpectrum = () => FilterBanks.ApplyAndLog10(FilterBank, _spectrum, _melSpectrum, _logFloor); break;
                 case NonLinearityType.LogE:
-                    _postProcessSpectrum = () => FilterBanks.ApplyAndLog(FilterBank, _spectrum, _melSpectrum, _logFloor);
-                    break;
+                    _postProcessSpectrum = () => FilterBanks.ApplyAndLog(FilterBank, _spectrum, _melSpectrum, _logFloor); break;
                 case NonLinearityType.ToDecibel:
-                    _postProcessSpectrum = () => FilterBanks.ApplyAndToDecibel(FilterBank, _spectrum, _melSpectrum, _logFloor);
-                    break;
+                    _postProcessSpectrum = () => FilterBanks.ApplyAndToDecibel(FilterBank, _spectrum, _melSpectrum, _logFloor); break;
                 case NonLinearityType.CubicRoot:
-                    _postProcessSpectrum = () => FilterBanks.ApplyAndPow(FilterBank, _spectrum, _melSpectrum, 0.33);
-                    break;
+                    _postProcessSpectrum = () => FilterBanks.ApplyAndPow(FilterBank, _spectrum, _melSpectrum, 0.33); break;
                 default:
-                    _postProcessSpectrum = () => FilterBanks.Apply(FilterBank, _spectrum, _melSpectrum);
-                    break;
+                    _postProcessSpectrum = () => FilterBanks.Apply(FilterBank, _spectrum, _melSpectrum); break;
             }
 
-            _spectrumType = spectrumType;
+            _spectrumType = options.SpectrumType;
             switch (_spectrumType)
             {
                 case SpectrumType.Magnitude:
-                    _getSpectrum = block => _fft.MagnitudeSpectrum(block, _spectrum, false);
-                    break;
-                case SpectrumType.Power:
-                    _getSpectrum = block => _fft.PowerSpectrum(block, _spectrum, false);
-                    break;
+                    _getSpectrum = block => _fft.MagnitudeSpectrum(block, _spectrum, false); break;
                 case SpectrumType.MagnitudeNormalized:
-                    _getSpectrum = block => _fft.MagnitudeSpectrum(block, _spectrum, true);
-                    break;
+                    _getSpectrum = block => _fft.MagnitudeSpectrum(block, _spectrum, true); break;
                 case SpectrumType.PowerNormalized:
-                    _getSpectrum = block => _fft.PowerSpectrum(block, _spectrum, true);
-                    break;
+                    _getSpectrum = block => _fft.PowerSpectrum(block, _spectrum, true); break;
+                default:
+                    _getSpectrum = block => _fft.PowerSpectrum(block, _spectrum, false); break;
             }
 
             // reserve memory for reusable blocks
@@ -282,8 +227,8 @@ namespace NWaves.FeatureExtractors
         /// 
         /// </summary>
         /// <param name="block">Samples for analysis</param>
-        /// <returns>MFCC vector</returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features">MFCC vector</param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             // 1) calculate magnitude/power spectrum (with/without normalization)
 
@@ -295,31 +240,22 @@ namespace NWaves.FeatureExtractors
 
             // 3) dct
 
-            var mfccs = new float[FeatureCount];
-
-            _applyDct(mfccs);           // _melSpectrum -> mfccs
+            _applyDct(features);        // _melSpectrum -> mfccs
 
 
             // 4) (optional) liftering
 
             if (_lifterCoeffs != null)
             {
-                mfccs.ApplyWindow(_lifterCoeffs);
+                features.ApplyWindow(_lifterCoeffs);
             }
 
             // 5) (optional) replace first coeff with log(energy) 
 
             if (_includeEnergy)
             {
-                mfccs[0] = (float)(Math.Log(block.Sum(x => x * x)));
-
-                // TODO: apply floor?
-
-                // var en = block.Sum(x => x * x);
-                // mfccs[0] = (float)(Math.Log(Math.Max(en, someFloor)));
+                features[0] = (float)Math.Log(Math.Max(block.Sum(x => x * x), _logEnergyFloor));
             }
-
-            return mfccs;
         }
 
         /// <summary>
@@ -333,22 +269,25 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
-            new MfccExtractor( SamplingRate, 
-                               FeatureCount,
-                               FrameDuration, 
-                               HopDuration,
-                               FilterBank.Length, 
-                              _lowFreq,
-                              _highFreq,
-                              _blockSize, 
-                               FilterBank, 
-                              _lifterSize, 
-                              _preEmphasis,
-                              _includeEnergy,
-                              _dctType,
-                              _nonLinearityType,
-                              _spectrumType,
-                              _window,
-                              _logFloor);
+            new MfccExtractor(
+                new MfccOptions
+                {
+                    SamplingRate = SamplingRate,
+                    FeatureCount = FeatureCount,
+                    FrameDuration = FrameDuration,
+                    HopDuration = HopDuration,
+                    FilterBankSize = FilterBank.Length,
+                    FftSize = _blockSize,
+                    FilterBank = FilterBank,
+                    LifterSize = _lifterSize,
+                    PreEmphasis = _preEmphasis,
+                    DctType = _dctType,
+                    NonLinearity = _nonLinearityType,
+                    SpectrumType = _spectrumType,
+                    Window = _window,
+                    LogFloor = _logFloor,
+                    IncludeEnergy = _includeEnergy,
+                    LogEnergyFloor = _logEnergyFloor
+                });
     }
 }

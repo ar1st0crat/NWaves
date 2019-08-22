@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Operations.Convolution;
 using NWaves.Utils;
-using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors
 {
@@ -13,16 +13,10 @@ namespace NWaves.FeatureExtractors
     public class LpcExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Number of features equals to order of LPC + 1
-        /// </summary>
-        public override int FeatureCount => _order + 1;
-
-        /// <summary>
         /// Descriptions ("error", "lpc1", "lpc2", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions => 
-            new[] { "error" }.Concat(
-                    Enumerable.Range(1, FeatureCount).Select(i => "lpc" + i)).ToList();
+            new[] { "error" }.Concat(Enumerable.Range(1, _order).Select(i => "lpc" + i)).ToList();
 
         /// <summary>
         /// Order of an LPC-filter
@@ -47,26 +41,15 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="order"></param>
-        /// <param name="frameDuration"></param>
-        /// <param name="hopDuration"></param>
-        /// <param name="preEmphasis"></param>
-        /// <param name="window"></param>
-        public LpcExtractor(int samplingRate, 
-                            int order, 
-                            double frameDuration = 0.0256/*sec*/,
-                            double hopDuration = 0.010/*sec*/,
-                            double preEmphasis = 0,
-                            WindowTypes window = WindowTypes.Rectangular)
-
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
+        /// <param name="options">LPC options</param>
+        public LpcExtractor(LpcOptions options) : base(options)
         {
-            _order = order;
+            _order = options.LpcOrder;
+
+            FeatureCount = _order + 1;
 
             _blockSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
             _convolver = new Convolver(_blockSize);
-
             _reversed = new float[FrameSize];
             _cc = new float[_blockSize];
         }
@@ -80,8 +63,8 @@ namespace NWaves.FeatureExtractors
         /// 
         /// </summary>
         /// <param name="block">Samples for analysis</param>
-        /// <returns>LPC vector</returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features">LPC vector</param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             block.FastCopyTo(_reversed, FrameSize);
 
@@ -91,11 +74,9 @@ namespace NWaves.FeatureExtractors
 
             // 2) levinson-durbin
 
-            var lpc = new float[_order + 1];
-            var err = Lpc.LevinsonDurbin(_cc, lpc, _order, FrameSize - 1);
-            lpc[0] = err;
+            var err = Lpc.LevinsonDurbin(_cc, features, _order, FrameSize - 1);
 
-            return lpc;
+            features[0] = err;
         }
 
         /// <summary>
@@ -109,6 +90,14 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() => 
-            new LpcExtractor(SamplingRate, _order, FrameDuration, HopDuration, _preEmphasis, _window);
+            new LpcExtractor(new LpcOptions
+            {
+                SamplingRate = SamplingRate,
+                LpcOrder = _order,
+                FrameDuration = FrameDuration,
+                HopDuration = HopDuration,
+                PreEmphasis = _preEmphasis,
+                Window = _window
+            });
     }
 }

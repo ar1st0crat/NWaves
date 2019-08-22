@@ -8,6 +8,7 @@ using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
 using NWaves.FeatureExtractors.Multi;
+using NWaves.FeatureExtractors.Options;
 using NWaves.FeatureExtractors.Serializers;
 using NWaves.Filters;
 using NWaves.Filters.Base;
@@ -21,7 +22,7 @@ namespace NWaves.DemoForms
     public partial class MfccForm : Form
     {
         private DiscreteSignal _signal;
-        private List<FeatureVector> _mfccVectors, pnccVectors;
+        private List<float[]> _mfccVectors, pnccVectors;
 
         public MfccForm()
         {
@@ -55,8 +56,9 @@ namespace NWaves.DemoForms
             buttonCompute_Click(this, null);    // :-D
         }
 
-        private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors,
-                                      IEnumerable<string> featureDescriptions)
+        private void FillFeaturesList(IList<float[]> featureVectors,
+                                      IList<string> featureDescriptions,
+                                      IList<double> timeMarkers)
         {
             mfccListView.Clear();
             mfccListView.Columns.Add("time", 50);
@@ -66,10 +68,10 @@ namespace NWaves.DemoForms
                 mfccListView.Columns.Add(feat, 70);
             }
 
-            foreach (var vector in featureVectors)
+            for (var i = 0; i < featureVectors.Count; i++)
             {
-                var item = new ListViewItem { Text = vector.TimePosition.ToString() };
-                item.SubItems.AddRange(vector.Features.Select(f => f.ToString("F4")).ToArray());
+                var item = new ListViewItem { Text = timeMarkers[i].ToString("F4") };
+                item.SubItems.AddRange(featureVectors[i].Select(f => f.ToString("F4")).ToArray());
 
                 mfccListView.Items.Add(item);
             }
@@ -153,23 +155,28 @@ namespace NWaves.DemoForms
             var nonLinearity = (NonLinearityType)comboBoxNonLinearity.SelectedIndex;
             var logFloor = float.Parse(textBoxLogFloor.Text);
 
-            var mfccExtractor = new MfccExtractor(//samplingRate, 13, 0.025, 0.01,
-                                                  samplingRate, 13, 512.0 / samplingRate, 0.01,
-                                                  filterbank: filterbank,
-                                                  //filterbankSize: 26,
-                                                  //highFreq: 8000,
-                                                  //preEmphasis: 0.97,
-                                                  //lifterSize: 22,
-                                                  //includeEnergy: true,
-                                                  spectrumType: spectrumType,
-                                                  nonLinearity: nonLinearity,
-                                                  dctType: comboBoxDct.Text,
-                                                  window: WindowTypes.Hamming,
-                                                  logFloor: logFloor);
+            var mfccOptions = new MfccOptions
+            {
+                SamplingRate = samplingRate,
+                FeatureCount = 13,
+                FrameDuration = 512.0 / samplingRate,
+                HopDuration = 0.01,
+                FilterBank = filterbank,
+                SpectrumType = spectrumType,
+                NonLinearity = nonLinearity,
+                DctType = comboBoxDct.Text,
+                Window = WindowTypes.Hamming,
+                LogFloor = logFloor,
+                //FilterBankSize = 26,
+                //HighFrequency = 6000,
+                //PreEmphasis = 0.97,
+                //LifterSize = 22,
+                //IncludeEnergy = true,
+                //LogEnergyFloor = 1e-10
+            };
 
-            //var mfccExtractor = new WaveletExtractor(samplingRate, 512.0 / samplingRate, 512.0 / samplingRate, "db5", 32);
-
-            _mfccVectors = mfccExtractor.ParallelComputeFrom(_signal);
+            var mfccExtractor = new MfccExtractor(mfccOptions);
+            _mfccVectors = mfccExtractor.ComputeFrom(_signal);
 
             //FeaturePostProcessing.NormalizeMean(_mfccVectors);        // optional
             //FeaturePostProcessing.AddDeltas(_mfccVectors);
@@ -178,22 +185,22 @@ namespace NWaves.DemoForms
                                            //.Concat(mfccExtractor.DeltaFeatureDescriptions)
                                            //.Concat(mfccExtractor.DeltaDeltaFeatureDescriptions);
 
-            FillFeaturesList(_mfccVectors, header);
+            FillFeaturesList(_mfccVectors, header, mfccExtractor.TimeMarkers(_mfccVectors.Count));
             mfccListView.Items[0].Selected = true;
 
             melFilterBankPanel.Groups = mfccExtractor.FilterBank;
 
-            mfccPanel.Line = _mfccVectors[0].Features;
+            mfccPanel.Line = _mfccVectors[0];
         }
 
         private void mfccListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
-            mfccPanel.Line = _mfccVectors[e.ItemIndex].Features;
+            mfccPanel.Line = _mfccVectors[e.ItemIndex];
 
             // ============== I use this code to test PNCC results (just ignore it))): ========================
 
-            //mfccPanel.Line = _mfccVectors[e.ItemIndex].Features;
-            //mfccPanel.Markline = pnccVectors[e.ItemIndex].Features;
+            //mfccPanel.Line = _mfccVectors[e.ItemIndex];
+            //mfccPanel.Markline = pnccVectors[e.ItemIndex];
 
             // ================================================================================================
         }
@@ -212,35 +219,21 @@ namespace NWaves.DemoForms
     //      _signal *= 32768;
     //      _extractor.ComputeFrom(_signal);
 
-    class MfccExtractorTestHtk : MfccExtractorHtk
+    class MfccExtractorTestHtk : MfccExtractor
     {
         private readonly float[] _hammingWin;
 
-        public MfccExtractorTestHtk(int samplingRate,
-                                    int featureCount,
-                                    double frameDuration = 0.0256/*sec*/,
-                                    double hopDuration = 0.010/*sec*/,
-                                    int filterbankSize = 24,
-                                    double lowFreq = 0,
-                                    double highFreq = 0,
-                                    int fftSize = 0,
-                                    int lifterSize = 0,
-                                    double preEmphasis = 0,
-                                    bool includeEnergy = false,
-                                    SpectrumType spectrumType = SpectrumType.Power,
-                                    WindowTypes window = WindowTypes.Rectangular)       // we will apply Hamming window explicitly
-            
-            : base(samplingRate, featureCount, frameDuration, hopDuration, filterbankSize, lowFreq, highFreq, fftSize, lifterSize, preEmphasis, includeEnergy, spectrumType, window)
+        public MfccExtractorTestHtk(MfccOptions options) : base(options)
         {
-            _hammingWin = Window.OfType(window, FrameSize);
+            _hammingWin = Window.OfType(WindowTypes.Hamming, FrameSize);
         }
 
         /// <summary>
         /// HTK-style pre-processing (zero-mean and pre-emphasis)
         /// </summary>
         /// <param name="block"></param>
-        /// <returns></returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features"></param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             // 1) HTK zero-mean:
 
@@ -274,7 +267,7 @@ namespace NWaves.DemoForms
             
             // ...and now continue standard computations:
 
-            return base.ProcessFrame(block);
+            base.ProcessFrame(block, features);
         }
 
         /// <summary>
@@ -288,19 +281,22 @@ namespace NWaves.DemoForms
         /// </summary>
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
-            new MfccExtractorTestHtk( SamplingRate,
-                                      FeatureCount,
-                                      FrameDuration,
-                                      HopDuration,
-                                      FilterBank.Length,
-                                     _lowFreq,
-                                     _highFreq,
-                                     _blockSize,
-                                     _lifterSize,
-                                     _preEmphasis,
-                                     _includeEnergy,
-                                     _spectrumType,
-                                     _window);
+            new MfccExtractorTestHtk(
+                new MfccOptions
+                {
+                    SamplingRate = SamplingRate,
+                    FeatureCount = FeatureCount,
+                    FrameDuration = FrameDuration,
+                    HopDuration = HopDuration,
+                    FilterBankSize = FilterBank.Length,
+                    FftSize = _blockSize,
+                    LifterSize = _lifterSize,
+                    PreEmphasis = _preEmphasis,
+                    IncludeEnergy = _includeEnergy,
+                    LogEnergyFloor = _logEnergyFloor,
+                    SpectrumType = _spectrumType,
+                    Window = _window
+                });
     }
 }
 
@@ -312,17 +308,11 @@ namespace NWaves.DemoForms
 
 //for (var i = 0; i < _mfccVectors.Count; i++)
 //{
-//    for (var j = 0; j < _mfccVectors[i].Features.Length; j++)
+//    for (var j = 0; j < _mfccVectors[i].Length; j++)
 //    {
-//        if (Math.Abs(_mfccVectors[i].Features[j] - mfccVectorsP[i].Features[j]) > 1e-32f)
+//        if (Math.Abs(_mfccVectors[i][j] - mfccVectorsP[i][j]) > 1e-32f)
 //        {
 //            MessageBox.Show($"Nope: {i} - {j}");
-//            return;
-//        }
-
-//        if (Math.Abs(_mfccVectors[i].TimePosition - mfccVectorsP[i].TimePosition) > 1e-32f)
-//        {
-//            MessageBox.Show($"Time: {i} - {j}");
 //            return;
 //        }
 //    }
@@ -333,11 +323,15 @@ namespace NWaves.DemoForms
 
 // ====================================================== test PNCC: =============================================================
 
-//var mfccExtractor = new PnccExtractor(_signal.SamplingRate,
-//                                      13,
-//                                      preEmphasis: 0.97,
-//                                      fftSize: 1024,
-//                                      window: WindowTypes.Hamming);
+//var mfccExtractor = new PnccExtractor(
+//    new PnccOptions
+//    {
+//        SamplingRate = _signal.SamplingRate,
+//        FeatureCount = 13,
+//        PreEmphasis = 0.97,
+//        FftSize = 1024,
+//        Window = WindowTypes.Hamming
+//    });
 
 //_mfccVectors = mfccExtractor.ComputeFrom(_signal);
 
@@ -346,27 +340,27 @@ namespace NWaves.DemoForms
 
 //            // ============== I use this code to test PNCC results (just ignore it))): ========================
 
-//            //pnccVectors = new List<FeatureVector>();
-//            //var vector = new FeatureVector() { Features = new float[13] };
-//            //var pos = 1;
+//            pnccVectors = new List<float[]>();
+//            var vector = new float[13];
+//var pos = 1;
 
-//            //using (var fs = new FileStream(@"E:\Projects\github\NWaves_Materials\pncc\esh_ru_0001.pncc", FileMode.Open))
-//            //using (var br = new BinaryReader(fs))
-//            //{
-//            //    while (pos < 700)
-//            //    {
-//            //        br.ReadSingle();
-//            //        for (var i = 0; i < 12; i++)
-//            //        {
-//            //            vector.Features[i] = br.ReadSingle();
-//            //        }
-//            //        pnccVectors.Add(vector);
-//            //        vector = new FeatureVector() { Features = new float[13] };
-//            //        pos++;
-//            //    }
-//            //}
+//            using (var fs = new FileStream(@"E:\Projects\github\NWaves_Materials\pncc\esh_ru_0001.pncc", FileMode.Open))
+//            using (var br = new BinaryReader(fs))
+//            {
+//                while (pos< 700)
+//                {
+//                    br.ReadSingle();
+//                    for (var i = 0; i< 12; i++)
+//                    {
+//                        vector[i] = br.ReadSingle();
+//                    }
+//                    pnccVectors.Add(vector);
+//                    vector = new float[13];
+//                    pos++;
+//                }
+//            }
 
-//            //mfccPanel.Markline = pnccVectors[0].Features;
+//            mfccPanel.Markline = pnccVectors[0];
 
 //            // ================================================================================================
 

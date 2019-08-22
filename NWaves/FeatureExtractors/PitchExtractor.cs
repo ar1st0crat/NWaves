@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Operations.Convolution;
 using NWaves.Utils;
-using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors
 {
@@ -28,11 +28,6 @@ namespace NWaves.FeatureExtractors
     /// </summary>
     public class PitchExtractor : FeatureExtractor
     {
-        /// <summary>
-        /// Number of features (currently it's 1 pitch value estimated by autocorrelation)
-        /// </summary>
-        public override int FeatureCount { get; }
-
         /// <summary>
         /// Names of pitch algorithms
         /// </summary>
@@ -66,25 +61,11 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="frameDuration"></param>
-        /// <param name="hopDuration"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        /// <param name="preEmphasis"></param>
-        /// <param name="window"></param>
-        public PitchExtractor(int samplingRate,
-                              double frameDuration = 0.0256/*sec*/,
-                              double hopDuration = 0.010/*sec*/,
-                              float low = 80,
-                              float high = 400,
-                              double preEmphasis = 0,
-                              WindowTypes window = WindowTypes.Rectangular)
-
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
+        /// <param name="options">Pitch options</param>
+        public PitchExtractor(PitchOptions options) : base(options)
         {
-            _low = low;
-            _high = high;
+            _low = (float)options.LowFrequency;
+            _high = (float)options.HighFrequency;
 
             _blockSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
             _convolver = new Convolver(_blockSize);
@@ -92,6 +73,7 @@ namespace NWaves.FeatureExtractors
             _reversed = new float[FrameSize];
             _cc = new float[_blockSize];
 
+            FeatureCount = 1;
             FeatureDescriptions = new List<string>() { "pitch" };
         }
 
@@ -99,8 +81,8 @@ namespace NWaves.FeatureExtractors
         /// Pitch tracking
         /// </summary>
         /// <param name="block">Samples</param>
-        /// <returns>Array of one element: pitch</returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features">Pitch</param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             block.FastCopyTo(_reversed, FrameSize);
 
@@ -128,9 +110,7 @@ namespace NWaves.FeatureExtractors
                 }
             }
 
-            var f0 = max > 1.0f ? (float)SamplingRate / peakIndex : 0;
-
-            return new float[] { f0 };
+            features[0] = max > 1.0f ? (float)SamplingRate / peakIndex : 0;
         }
 
         /// <summary>
@@ -144,6 +124,15 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() => 
-            new PitchExtractor(SamplingRate, FrameDuration, HopDuration, _low, _high, _preEmphasis, _window);
+            new PitchExtractor(new PitchOptions
+            {
+                SamplingRate = SamplingRate,
+                FrameDuration = FrameDuration,
+                HopDuration = HopDuration,
+                LowFrequency = _low,
+                HighFrequency = _high,
+                PreEmphasis = _preEmphasis,
+                Window = _window
+            });
     }
 }

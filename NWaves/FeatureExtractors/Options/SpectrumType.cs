@@ -1,4 +1,4 @@
-﻿namespace NWaves.FeatureExtractors
+﻿namespace NWaves.FeatureExtractors.Options
 {
     /// <summary>
     /// Spectrum calculations

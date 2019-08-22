@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Features;
 using NWaves.Filters.Fda;
 using NWaves.Transforms;
 using NWaves.Utils;
-using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors.Multi
 {
@@ -38,11 +38,6 @@ namespace NWaves.FeatureExtractors.Multi
         /// String annotations (or simply names) of features
         /// </summary>
         public override List<string> FeatureDescriptions { get; }
-
-        /// <summary>
-        /// Number of features to extract
-        /// </summary>
-        public override int FeatureCount => FeatureDescriptions.Count;
 
         /// <summary>
         /// Filterbank from frequency bands
@@ -77,7 +72,7 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Extractor parameters
         /// </summary>
-        protected readonly IReadOnlyDictionary<string, object> _parameters;
+        protected readonly Dictionary<string, object> _parameters;
 
         /// <summary>
         /// Harmonic extractor functions (optional)
@@ -122,32 +117,21 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="featureList"></param>
-        /// <param name="frameDuration"></param>
-        /// <param name="hopDuration"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="frequencyBands"></param>
-        /// <param name="parameters"></param>
-        public Mpeg7SpectralFeaturesExtractor(int samplingRate,
-                                              string featureList,
-                                              double frameDuration = 0.0256/*sec*/,
-                                              double hopDuration = 0.010/*sec*/,
-                                              int fftSize = 0,
-                                              (double, double, double)[] frequencyBands = null,
-                                              double preEmphasis = 0,
-                                              WindowTypes window = WindowTypes.Hamming,
-                                              IReadOnlyDictionary<string, object> parameters = null)
-
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
+        /// <param name="options">Options</param>
+        public Mpeg7SpectralFeaturesExtractor(MultiFeatureOptions options) : base(options)
         {
+            var featureList = options.FeatureList;
+
             if (featureList == "all" || featureList == "full")
             {
                 featureList = FeatureSet;
             }
 
             var features = featureList.Split(',', '+', '-', ';', ':')
-                                      .Select(f => f.Trim().ToLower());
+                                      .Select(f => f.Trim().ToLower())
+                                      .ToList();
+
+            _parameters = options.Parameters;
 
             _extractors = features.Select<string, Func<float[], float[], float>>(feature =>
             {
@@ -163,9 +147,9 @@ namespace NWaves.FeatureExtractors.Multi
 
                     case "sfm":
                     case "flatness":
-                        if (parameters?.ContainsKey("minLevel") ?? false)
+                        if (_parameters?.ContainsKey("minLevel") ?? false)
                         {
-                            var minLevel = (float)parameters["minLevel"];
+                            var minLevel = (float)_parameters["minLevel"];
                             return (spectrum, freqs) => Spectral.Flatness(spectrum, minLevel);
                         }
                         else
@@ -175,9 +159,9 @@ namespace NWaves.FeatureExtractors.Multi
 
                     case "sn":
                     case "noiseness":
-                        if (parameters?.ContainsKey("noiseFrequency") ?? false)
+                        if (_parameters?.ContainsKey("noiseFrequency") ?? false)
                         {
-                            var noiseFrequency = (float)parameters["noiseFrequency"];
+                            var noiseFrequency = (float)_parameters["noiseFrequency"];
                             return (spectrum, freqs) => Spectral.Noiseness(spectrum, freqs, noiseFrequency);
                         }
                         else
@@ -186,9 +170,9 @@ namespace NWaves.FeatureExtractors.Multi
                         }
 
                     case "rolloff":
-                        if (parameters?.ContainsKey("rolloffPercent") ?? false)
+                        if (_parameters?.ContainsKey("rolloffPercent") ?? false)
                         {
-                            var rolloffPercent = (float)parameters["rolloffPercent"];
+                            var rolloffPercent = (float)_parameters["rolloffPercent"];
                             return (spectrum, freqs) => Spectral.Rolloff(spectrum, freqs, rolloffPercent);
                         }
                         else
@@ -220,21 +204,20 @@ namespace NWaves.FeatureExtractors.Multi
                 }
             }).ToList();
 
-            FeatureDescriptions = features.ToList();
+            FeatureCount = features.Count;
+            FeatureDescriptions = features;
 
-            _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
+            _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
             _fft = new RealFft(_blockSize);
 
-            _frequencyBands = frequencyBands ?? FilterBanks.OctaveBands(6, _blockSize, samplingRate);
-            _filterbank = FilterBanks.Rectangular(_blockSize, samplingRate, _frequencyBands);
+            _frequencyBands = options.FrequencyBands ?? FilterBanks.OctaveBands(6, SamplingRate);
+            _filterbank = FilterBanks.Rectangular(_blockSize, SamplingRate, _frequencyBands);
 
             var cfs = _frequencyBands.Select(b => b.Item2).ToList();
             // insert zero frequency so that it'll be ignored during calculations
             // just like in case of FFT spectrum (0th DC component)
             cfs.Insert(0, 0);
             _frequencies = cfs.ToFloats();
-
-            _parameters = parameters;
 
             // reserve memory for reusable blocks
 
@@ -263,7 +246,8 @@ namespace NWaves.FeatureExtractors.Multi
             }
 
             var features = featureList.Split(',', '+', '-', ';', ':')
-                                      .Select(f => f.Trim().ToLower());
+                                      .Select(f => f.Trim().ToLower())
+                                      .ToList();
 
             _harmonicExtractors = features.Select<string, Func<float[], int[], float[], float>>(feature =>
             {
@@ -295,6 +279,7 @@ namespace NWaves.FeatureExtractors.Multi
                 }
             }).ToList();
 
+            FeatureCount += features.Count;
             FeatureDescriptions.AddRange(features);
 
             if (pitchEstimator == null)
@@ -331,6 +316,7 @@ namespace NWaves.FeatureExtractors.Multi
                 return;
             }
 
+            FeatureCount++;
             FeatureDescriptions.Add(name);
             _harmonicExtractors.Add(algorithm);
         }
@@ -350,28 +336,20 @@ namespace NWaves.FeatureExtractors.Multi
         /// <param name="samples">Signal</param>
         /// <param name="startSample">The number (position) of the first sample for processing</param>
         /// <param name="endSample">The number (position) of last sample for processing</param>
-        /// <returns>Sequence of feature vectors</returns>
-        public override List<FeatureVector> ComputeFrom(float[] samples, int startSample, int endSample)
+        /// <param name="vectors">Output sequence of feature vectors</param>
+        public override void ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
-            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
-
-            var nullExtractorPos = _extractors.IndexOf(null);
-            if (nullExtractorPos >= 0)
-            {
-                throw new ArgumentException($"Unknown feature: {FeatureDescriptions[nullExtractorPos]}");
-            }
-
             _pitchPos = 0;
 
-            return base.ComputeFrom(samples, startSample, endSample);
+            base.ComputeFrom(samples, startSample, endSample, vectors);
         }
 
         /// <summary>
         /// Compute MPEG7 spectral features in one frame
         /// </summary>
         /// <param name="block"></param>
-        /// <returns></returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features"></param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             // compute and prepare spectrum
 
@@ -391,11 +369,9 @@ namespace NWaves.FeatureExtractors.Multi
 
             // extract spectral features
 
-            var featureVector = new float[FeatureCount];
-
             for (var j = 0; j < _extractors.Count; j++)
             {
-                featureVector[j] = _extractors[j](_mappedSpectrum, _frequencies);
+                features[j] = _extractors[j](_mappedSpectrum, _frequencies);
             }
 
             // ...and maybe harmonic features
@@ -409,11 +385,9 @@ namespace NWaves.FeatureExtractors.Multi
                 var offset = _extractors.Count;
                 for (var j = 0; j < _harmonicExtractors.Count; j++)
                 {
-                    featureVector[j + offset] = _harmonicExtractors[j](_spectrum, _peaks, _peakFrequencies);
+                    features[j + offset] = _harmonicExtractors[j](_spectrum, _peaks, _peakFrequencies);
                 }
             }
-
-            return featureVector;
         }
 
         /// <summary>
@@ -429,8 +403,20 @@ namespace NWaves.FeatureExtractors.Multi
         public override FeatureExtractor ParallelCopy()
         {
             var spectralFeatureSet = string.Join(",", FeatureDescriptions.Take(_extractors.Count));
+            var options = new MultiFeatureOptions
+            {
+                SamplingRate = SamplingRate,
+                FeatureList = spectralFeatureSet,
+                FrameDuration = FrameDuration,
+                HopDuration = HopDuration,
+                FftSize = _blockSize,
+                FrequencyBands = _frequencyBands,
+                PreEmphasis = _preEmphasis,
+                Window = _window,
+                Parameters = _parameters
+            };
 
-            var copy = new Mpeg7SpectralFeaturesExtractor(SamplingRate, spectralFeatureSet, FrameDuration, HopDuration, _blockSize, _frequencyBands, _preEmphasis, _window, _parameters)
+            var copy = new Mpeg7SpectralFeaturesExtractor(options)
             {
                 _extractors = _extractors,
                 _pitchTrack = _pitchTrack

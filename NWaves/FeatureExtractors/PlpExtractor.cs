@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Filters;
 using NWaves.Filters.Fda;
 using NWaves.Transforms;
@@ -16,15 +17,17 @@ namespace NWaves.FeatureExtractors
     public class PlpExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Number of coefficients
-        /// </summary>
-        public override int FeatureCount { get; }
-
-        /// <summary>
         /// Descriptions (simply "plp0", "plp1", "plp2", etc.)
         /// </summary>
-        public override List<string> FeatureDescriptions =>
-            Enumerable.Range(0, FeatureCount).Select(i => "plp" + i).ToList();
+        public override List<string> FeatureDescriptions
+        {
+            get
+            {
+                var names = Enumerable.Range(0, FeatureCount).Select(i => "plp" + i).ToList();
+                if (_includeEnergy) names[0] = "log_En";
+                return names;
+            }
+        }
 
         /// <summary>
         /// Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)].
@@ -37,16 +40,6 @@ namespace NWaves.FeatureExtractors
         /// Filterbank center frequencies
         /// </summary>
         protected readonly double[] _centerFrequencies;
-
-        /// <summary>
-        /// Lower frequency
-        /// </summary>
-        protected readonly double _lowFreq;
-
-        /// <summary>
-        /// Upper frequency
-        /// </summary>
-        protected readonly double _highFreq;
 
         /// <summary>
         /// RASTA coefficient (if zero, then no RASTA filtering)
@@ -67,6 +60,16 @@ namespace NWaves.FeatureExtractors
         /// Liftering window coefficients
         /// </summary>
         protected readonly float[] _lifterCoeffs;
+
+        /// <summary>
+        /// Should the first PLP coefficient be replaced with LOG(energy)
+        /// </summary>
+        protected readonly bool _includeEnergy;
+
+        /// <summary>
+        /// Floor value for LOG-energy calculation
+        /// </summary>
+        protected readonly float _logEnergyFloor;
 
         /// <summary>
         /// FFT transformer
@@ -111,91 +114,63 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="featureCount"></param>
-        /// <param name="frameDuration"></param>
-        /// <param name="hopDuration"></param>
-        /// <param name="lpcOrder"></param>
-        /// <param name="rasta"></param>
-        /// <param name="filterbankSize"></param>
-        /// <param name="lowFreq"></param>
-        /// <param name="highFreq"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="lifterSize"></param>
-        /// <param name="preEmphasis"></param>
-        /// <param name="window"></param>
-        /// <param name="filterbank"></param>
-        /// <param name="centerFrequencies"></param>
-        public PlpExtractor(int samplingRate,
-                            int featureCount,
-                            double frameDuration = 0.0256/*sec*/,
-                            double hopDuration = 0.010/*sec*/,
-                            int lpcOrder = 0,                       // will be autocalculated as featureCount - 1
-                            double rasta = 0,
-                            int filterbankSize = 24,
-                            double lowFreq = 0,
-                            double highFreq = 0,
-                            int fftSize = 0,
-                            int lifterSize = 0,
-                            double preEmphasis = 0,
-                            WindowTypes window = WindowTypes.Hamming,
-                            float[][] filterbank = null,
-                            double[] centerFrequencies = null)
-            
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
+        /// <param name="options">PLP options</param>
+        public PlpExtractor(PlpOptions options) : base(options)
         {
-            FeatureCount = featureCount;
+            FeatureCount = options.FeatureCount;
 
             // ================================ Prepare filter bank and center frequencies: ===========================================
 
-            _lowFreq = lowFreq;
-            _highFreq = highFreq;
+            var filterbankSize = options.FilterBankSize;
 
-            if (filterbank == null)
+            if (options.FilterBank == null)
             {
-                _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
+                _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-                var barkBands = FilterBanks.BarkBandsSlaney(filterbankSize, samplingRate, _lowFreq, _highFreq);
-                FilterBank = FilterBanks.BarkBankSlaney(filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
+                var low = options.LowFrequency;
+                var high = options.HighFrequency;
 
+                FilterBank = FilterBanks.BarkBankSlaney(filterbankSize, _blockSize, SamplingRate, low, high);
+
+                var barkBands = FilterBanks.BarkBandsSlaney(filterbankSize, SamplingRate, low, high);
                 _centerFrequencies = barkBands.Select(b => b.Item2).ToArray();
             }
             else
             {
-                FilterBank = filterbank;
-                filterbankSize = filterbank.Length;
-                _blockSize = 2 * (filterbank[0].Length - 1);
+                FilterBank = options.FilterBank;
+                filterbankSize = FilterBank.Length;
+                _blockSize = 2 * (FilterBank[0].Length - 1);
 
                 Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
 
-                if (centerFrequencies != null)
+                if (options.CenterFrequencies != null)
                 {
-                    _centerFrequencies = centerFrequencies;
+                    _centerFrequencies = options.CenterFrequencies;
                 }
                 else
                 {
-                    var herzResolution = (double)samplingRate / _blockSize;
+                    var herzResolution = (double)SamplingRate / _blockSize;
 
                     // try to determine center frequencies automatically from filterbank weights:
 
                     _centerFrequencies = new double[filterbankSize];
 
-                    for (var i = 0; i < filterbank.Length; i++)
+                    for (var i = 0; i < FilterBank.Length; i++)
                     {
                         var minPos = 0;
                         var maxPos = _blockSize / 2;
 
-                        for (var j = 0; j < filterbank[i].Length; j++)
+                        for (var j = 0; j < FilterBank[i].Length; j++)
                         {
-                            if (filterbank[i][j] > 0)
+                            if (FilterBank[i][j] > 0)
                             {
                                 minPos = j;
                                 break;
                             }
                         }
-                        for (var j = minPos; j < filterbank[i].Length; j++)
+                        for (var j = minPos; j < FilterBank[i].Length; j++)
                         {
-                            if (filterbank[i][j] == 0)
+                            if (FilterBank[i][j] == 0)
                             {
                                 maxPos = j;
                                 break;
@@ -220,18 +195,18 @@ namespace NWaves.FeatureExtractors
 
             // ============================== Prepare RASTA filters (if necessary): =======================================
 
-            _rasta = rasta;
+            _rasta = options.Rasta;
 
-            if (rasta > 0)
+            if (_rasta > 0)
             {
                 _rastaFilters = Enumerable.Range(0, filterbankSize)
-                                          .Select(f => new RastaFilter(rasta))
+                                          .Select(f => new RastaFilter(_rasta))
                                           .ToArray();
             }
 
             // ============== Precompute IDFT table for obtaining autocorrelation coeffs from power spectrum: =============
 
-            _lpcOrder = lpcOrder > 0 ? lpcOrder : FeatureCount - 1;
+            _lpcOrder = options.LpcOrder > 0 ? options.LpcOrder : FeatureCount - 1;
 
             _idftTable = new float[_lpcOrder + 1][];
 
@@ -259,8 +234,11 @@ namespace NWaves.FeatureExtractors
 
             _fft = new RealFft(_blockSize);
 
-            _lifterSize = lifterSize;
+            _lifterSize = options.LifterSize;
             _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
+
+            _includeEnergy = options.IncludeEnergy;
+            _logEnergyFloor = options.LogEnergyFloor;
 
             _spectrum = new float[_blockSize / 2 + 1];
             _bandSpectrum = new float[filterbankSize];
@@ -282,8 +260,8 @@ namespace NWaves.FeatureExtractors
         /// 
         /// </summary>
         /// <param name="block">Samples for analysis</param>
-        /// <returns>PLP vector</returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features">PLP vectors</param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             // 1) calculate power spectrum (without normalization)
 
@@ -341,19 +319,22 @@ namespace NWaves.FeatureExtractors
 
             // 7) compute LPCC coefficients from LPC
 
-            var lpcc = new float[FeatureCount];
-
-            Lpc.ToCepstrum(_lpc, err, lpcc);
+            Lpc.ToCepstrum(_lpc, err, features);
 
 
             // 8) (optional) liftering
 
             if (_lifterCoeffs != null)
             {
-                lpcc.ApplyWindow(_lifterCoeffs);
+                features.ApplyWindow(_lifterCoeffs);
             }
 
-            return lpcc;
+            // 9) (optional) replace first coeff with log(energy) 
+
+            if (_includeEnergy)
+            {
+                features[0] = (float)Math.Log(Math.Max(block.Sum(x => x * x), _logEnergyFloor));
+            }
         }
 
         /// <summary>
@@ -380,20 +361,24 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() => 
-            new PlpExtractor( SamplingRate,
-                              FeatureCount,
-                              FrameDuration,
-                              HopDuration,
-                             _lpcOrder,
-                             _rasta,
-                              FilterBank.Length,
-                             _lowFreq,
-                             _highFreq,
-                             _blockSize,
-                             _lifterSize,
-                             _preEmphasis,
-                             _window,
-                              FilterBank,
-                             _centerFrequencies);
+            new PlpExtractor(
+                new PlpOptions
+                {
+                    SamplingRate = SamplingRate,
+                    FeatureCount = FeatureCount,
+                    FrameDuration = FrameDuration,
+                    HopDuration = HopDuration,
+                    LpcOrder = _lpcOrder,
+                    Rasta = _rasta,
+                    FilterBank = FilterBank,
+                    FilterBankSize = FilterBank.Length,
+                    FftSize = _blockSize,
+                    LifterSize = _lifterSize,
+                    PreEmphasis = _preEmphasis,
+                    Window = _window,
+                    CenterFrequencies = _centerFrequencies,
+                    IncludeEnergy = _includeEnergy,
+                    LogEnergyFloor = _logEnergyFloor
+                });
     }
 }

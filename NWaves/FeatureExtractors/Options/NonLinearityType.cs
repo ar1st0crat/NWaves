@@ -1,4 +1,4 @@
-﻿namespace NWaves.FeatureExtractors
+﻿namespace NWaves.FeatureExtractors.Options
 {
     /// <summary>
     /// Non-linear post-processing schemes

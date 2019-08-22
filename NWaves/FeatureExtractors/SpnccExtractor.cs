@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Filters.Fda;
 using NWaves.Transforms;
 using NWaves.Utils;
-using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors
 {
@@ -15,15 +15,17 @@ namespace NWaves.FeatureExtractors
     public class SpnccExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Number of coefficients (including coeff #0)
-        /// </summary>
-        public override int FeatureCount { get; }
-
-        /// <summary>
         /// Descriptions (simply "spncc0", "spncc1", "spncc2", etc.)
         /// </summary>
-        public override List<string> FeatureDescriptions =>
-            Enumerable.Range(0, FeatureCount).Select(i => "spncc" + i).ToList();
+        public override List<string> FeatureDescriptions
+        {
+            get
+            {
+                var names = Enumerable.Range(0, FeatureCount).Select(i => "spncc" + i).ToList();
+                if (_includeEnergy) names[0] = "log_En";
+                return names;
+            }
+        }
 
         /// <summary>
         /// Forgetting factor in formula (15) in [Kim & Stern, 2016]
@@ -36,19 +38,19 @@ namespace NWaves.FeatureExtractors
         public float[][] FilterBank { get; }
 
         /// <summary>
-        /// Lower frequency
-        /// </summary>
-        protected readonly double _lowFreq;
-
-        /// <summary>
-        /// Upper frequency
-        /// </summary>
-        protected readonly double _highFreq;
-
-        /// <summary>
         /// Nonlinearity coefficient (if 0 then Log10 is applied)
         /// </summary>
         protected readonly int _power;
+
+        /// <summary>
+        /// Should the first SPNCC coefficient be replaced with LOG(energy)
+        /// </summary>
+        protected readonly bool _includeEnergy;
+
+        /// <summary>
+        /// Floor value for LOG-energy calculation
+        /// </summary>
+        protected readonly float _logEnergyFloor;
 
         /// <summary>
         /// FFT transformer
@@ -78,54 +80,32 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Main constructor
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="featureCount"></param>
-        /// <param name="frameDuration">Length of analysis window (in seconds)</param>
-        /// <param name="hopDuration">Length of overlap (in seconds)</param>
-        /// <param name="power"></param>
-        /// <param name="lowFreq"></param>
-        /// <param name="highFreq"></param>
-        /// <param name="filterbankSize"></param>
-        /// <param name="filterbank"></param>
-        /// <param name="fftSize">Size of FFT (in samples)</param>
-        /// <param name="preEmphasis"></param>
-        /// <param name="window"></param>
-        public SpnccExtractor(int samplingRate, 
-                              int featureCount,
-                              double frameDuration = 0.0256/*sec*/,
-                              double hopDuration = 0.010/*sec*/,
-                              int power = 15,
-                              double lowFreq = 100,
-                              double highFreq = 6800,
-                              int filterbankSize = 40,
-                              float[][] filterbank = null,
-                              int fftSize = 0,
-                              double preEmphasis = 0,
-                              WindowTypes window = WindowTypes.Hamming)
-
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
+        /// <param name="options">PNCC options</param>
+        public SpnccExtractor(PnccOptions options) : base(options)
         {
-            FeatureCount = featureCount;
+            FeatureCount = options.FeatureCount;
 
-            _power = power;
+            var filterbankSize = options.FilterBankSize;
 
-            if (filterbank == null)
+            if (options.FilterBank == null)
             {
-                _blockSize = fftSize > FrameSize ? fftSize : MathUtils.NextPowerOfTwo(FrameSize);
+                _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-                _lowFreq = lowFreq;
-                _highFreq = highFreq;
-
-                FilterBank = FilterBanks.Erb(filterbankSize, _blockSize, samplingRate, _lowFreq, _highFreq);
+                FilterBank = FilterBanks.Erb(filterbankSize, _blockSize, SamplingRate, options.LowFrequency, options.HighFrequency);
             }
             else
             {
-                FilterBank = filterbank;
-                filterbankSize = filterbank.Length;
-                _blockSize = 2 * (filterbank[0].Length - 1);
+                FilterBank = options.FilterBank;
+                filterbankSize = FilterBank.Length;
+                _blockSize = 2 * (FilterBank[0].Length - 1);
 
                 Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
             }
+
+            _power = options.Power;
+
+            _includeEnergy = options.IncludeEnergy;
+            _logEnergyFloor = options.LogEnergyFloor;
 
             _fft = new RealFft(_blockSize);
             _dct = new Dct2(filterbankSize);
@@ -146,9 +126,9 @@ namespace NWaves.FeatureExtractors
         ///     5) Do dct-II (normalized)
         /// 
         /// </summary>
-        /// <param name="samples">Samples for analysis</param>
-        /// <returns>List of pncc vectors</returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="block">Block of samples for analysis</param>
+        /// <param name="features">List of spncc vectors</param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             const float meanPower = 1e10f;
 
@@ -194,10 +174,14 @@ namespace NWaves.FeatureExtractors
 
             // 5) dct-II (normalized)
 
-            var spnccs = new float[FeatureCount];
-            _dct.DirectNorm(_filteredSpectrum, spnccs);
+            _dct.DirectNorm(_filteredSpectrum, features);
 
-            return spnccs;
+            // 6) (optional) replace first coeff with log(energy) 
+
+            if (_includeEnergy)
+            {
+                features[0] = (float)Math.Log(Math.Max(block.Sum(x => x * x), _logEnergyFloor));
+            }
         }
 
         /// <summary>

@@ -7,6 +7,7 @@ using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
 using NWaves.FeatureExtractors.Multi;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Signals;
 using NWaves.Features;
 using System.Drawing;
@@ -17,7 +18,7 @@ namespace NWaves.DemoForms
     public partial class FeaturesForm : Form
     {
         private DiscreteSignal _signal;
-        private FeatureVector[] _vectors;
+        private float[][] _vectors;
 
         private int _frameSize = 512;
         private int _hopSize = 128;
@@ -50,19 +51,37 @@ namespace NWaves.DemoForms
 
             var freqs = new[] { 300f, 600, 1000, 2000, 4000, 7000 };
 
-            var pitchExtractor = new PitchExtractor(_signal.SamplingRate, frameDuration, hopDuration, high: 900/*Hz*/);
+            var pitchOptions = new PitchOptions
+            {
+                SamplingRate = _signal.SamplingRate,
+                FrameDuration = frameDuration,
+                HopDuration = hopDuration,
+                HighFrequency = 900/*Hz*/
+            };
+
+            var pitchExtractor = new PitchExtractor(pitchOptions);
             var pitchTrack = pitchExtractor.ParallelComputeFrom(_signal)
-                                           .Select(p => p.Features[0])
+                                           .Select(p => p[0])
                                            .ToArray();
 
-            var tdExtractor = new TimeDomainFeaturesExtractor(_signal.SamplingRate, "all", frameDuration, hopDuration);
-            var spectralExtractor = new SpectralFeaturesExtractor(_signal.SamplingRate, "sc+sn", frameDuration, hopDuration, frequencies: freqs);
-            var mpeg7Extractor = new Mpeg7SpectralFeaturesExtractor(_signal.SamplingRate, "all", frameDuration, hopDuration);
+            var options = new MultiFeatureOptions
+            {
+                SamplingRate = _signal.SamplingRate,
+                FrameDuration = frameDuration,
+                HopDuration = hopDuration
+            };
+
+            var tdExtractor = new TimeDomainFeaturesExtractor(options);
+            tdExtractor.AddFeature("pitch_zcr", (signal, start, end) => Pitch.FromZeroCrossingsSchmitt(signal, start, end));
+
+            var mpeg7Extractor = new Mpeg7SpectralFeaturesExtractor(options);
             mpeg7Extractor.IncludeHarmonicFeatures("all");
             mpeg7Extractor.SetPitchTrack(pitchTrack);
 
-            tdExtractor.AddFeature("pitch_zcr", (signal, start, end) => { return Pitch.FromZeroCrossingsSchmitt(signal, start, end); });
-            //spectralExtractor.AddFeature("pitch_hss", (spectrum, fs) => { return Pitch.FromHss(spectrum, _signal.SamplingRate); } );
+            options.FeatureList = "sc+sn";
+            options.Frequencies = freqs;
+            var spectralExtractor = new SpectralFeaturesExtractor(options);
+            //spectralExtractor.AddFeature("pitch_hss", (spectrum, fs) => Pitch.FromHss(spectrum, _signal.SamplingRate));
 
             var tdVectors = tdExtractor.ParallelComputeFrom(_signal);
             var spectralVectors = spectralExtractor.ParallelComputeFrom(_signal);
@@ -75,17 +94,19 @@ namespace NWaves.DemoForms
 
             var descriptions = tdExtractor.FeatureDescriptions
                                           .Concat(spectralExtractor.FeatureDescriptions)
-                                          .Concat(mpeg7Extractor.FeatureDescriptions);
+                                          .Concat(mpeg7Extractor.FeatureDescriptions)
+                                          .ToList();
 
-            FillFeaturesList(_vectors, descriptions);
+            FillFeaturesList(_vectors, descriptions, tdExtractor.TimeMarkers(_vectors.Length));
 
             spectrogramPlot.ColorMapName = "afmhot";
             spectrogramPlot.MarklineThickness = 2;
             spectrogramPlot.Spectrogram = _stft.Spectrogram(_signal);
         }
 
-        private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors,
-                                      IEnumerable<string> featureDescriptions)
+        private void FillFeaturesList(IList<float[]> featureVectors,
+                                      IList<string> featureDescriptions,
+                                      IList<double> timeMarkers)
         {
             featuresListView.Clear();
             featuresListView.Columns.Add("time", 50);
@@ -95,10 +116,10 @@ namespace NWaves.DemoForms
                 featuresListView.Columns.Add(feat, 70);
             }
 
-            foreach (var vector in featureVectors)
+            for (var i = 0; i < featureVectors.Count; i++)
             {
-                var item = new ListViewItem { Text = vector.TimePosition.ToString("F4") };
-                item.SubItems.AddRange(vector.Features.Select(f => f.ToString("F4")).ToArray());
+                var item = new ListViewItem { Text = timeMarkers[i].ToString("F4") };
+                item.SubItems.AddRange(featureVectors[i].Select(f => f.ToString("F4")).ToArray());
 
                 featuresListView.Items.Add(item);
             }
@@ -113,12 +134,12 @@ namespace NWaves.DemoForms
 
             featureLabel.Text = featuresListView.Columns[e.Column].Text;
 
-            var max = _vectors.Select(v => v.Features[e.Column - 1]).Max();
-            var min = _vectors.Select(v => v.Features[e.Column - 1]).Min();
+            var max = _vectors.Select(v => v[e.Column - 1]).Max();
+            var min = _vectors.Select(v => v[e.Column - 1]).Min();
 
             var height = spectrogramPlot.Height;
 
-            spectrogramPlot.Markline = _vectors.Select(v =>  height * (v.Features[e.Column - 1] - min) / (max - min)).ToArray();
+            spectrogramPlot.Markline = _vectors.Select(v =>  height * (v[e.Column - 1] - min) / (max - min)).ToArray();
 
             //featurePlotPanel.Stride = 1;
             //featurePlotPanel.Line = _vectors.Select(v => v.Features[e.Column - 1]).ToArray();

@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.FeatureExtractors;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Filters.Base;
 using NWaves.Filters.Fda;
 using NWaves.Signals;
@@ -22,7 +23,7 @@ namespace NWaves.DemoForms
         private const double HopDuration = 0.010;
 
         private DiscreteSignal _signal;
-        private List<FeatureVector> _lpcVectors;
+        private List<float[]> _lpcVectors;
 
         private RealFft _fft;
 
@@ -52,9 +53,17 @@ namespace NWaves.DemoForms
 
             _fft = new RealFft(512);
 
-            var lpcExtractor = new LpcExtractor(_signal.SamplingRate, 16, FrameDuration, HopDuration);
+            var options = new LpcOptions
+            {
+                SamplingRate = _signal.SamplingRate,
+                LpcOrder = 16,
+                FrameDuration = FrameDuration,
+                HopDuration = HopDuration
+            };
 
-            //var lpcExtractor = new LpccExtractor(_signal.SamplingRate, 15, FrameDuration, HopDuration, lifterSize: 0);
+            var lpcExtractor = new LpcExtractor(options);
+
+            //var lpcExtractor = new LpccExtractor(options);
 
             //var lpcExtractor = new PlpExtractor(_signal.SamplingRate, 10,
             //                                    lpcOrder: 8,
@@ -62,17 +71,17 @@ namespace NWaves.DemoForms
             //                                    filterbankSize: 20,
             //                                    //lifterSize: 22,
             //                                    window: WindowTypes.Hann);
+            
+            _lpcVectors = lpcExtractor.ParallelComputeFrom(_signal);
 
-            _lpcVectors = lpcExtractor.ComputeFrom(_signal);
-
-            FillFeaturesList(_lpcVectors, lpcExtractor.FeatureDescriptions);
+            FillFeaturesList(_lpcVectors, lpcExtractor.FeatureDescriptions, lpcExtractor.TimeMarkers(_lpcVectors.Count));
             lpcListView.Items[0].Selected = true;
 
             spectrumPanel.Line = ComputeSpectrum(0);
             spectrumPanel.Markline = EstimateSpectrum(0);
             spectrumPanel.ToDecibel();
 
-            lpcPanel.Line = _lpcVectors[0].Features.Skip(1).ToArray();
+            lpcPanel.Line = _lpcVectors[0].Skip(1).ToArray();
         }
 
         float[] ComputeSpectrum(int idx)
@@ -87,7 +96,7 @@ namespace NWaves.DemoForms
         {
             // LPC-reconstructed spectrum:
 
-            var vector = _lpcVectors[idx].Features.ToDoubles();  // make new copy of array of features
+            var vector = _lpcVectors[idx].ToDoubles();  // make new copy of array of features
             var gain = Math.Sqrt(vector[0]);
             vector[0] = 1.0;
 
@@ -110,8 +119,9 @@ namespace NWaves.DemoForms
             //return lpcTf.FrequencyResponse().Power.ToFloats();
         }
 
-        private void FillFeaturesList(IEnumerable<FeatureVector> featureVectors, 
-                                      IEnumerable<string> featureDescriptions)
+        private void FillFeaturesList(IList<float[]> featureVectors, 
+                                      IList<string> featureDescriptions,
+                                      IList<double> timeMarkers)
         {
             lpcListView.Clear();
             lpcListView.Columns.Add("time", 50);
@@ -121,10 +131,10 @@ namespace NWaves.DemoForms
                 lpcListView.Columns.Add(name, 70);
             }
 
-            foreach (var vector in featureVectors)
+            for (var i = 0; i < featureVectors.Count; i++)
             {
-                var item = new ListViewItem { Text = vector.TimePosition.ToString() };
-                item.SubItems.AddRange(vector.Features.Select(f => f.ToString("F4")).ToArray());
+                var item = new ListViewItem { Text = timeMarkers[i].ToString("F4") };
+                item.SubItems.AddRange(featureVectors[i].Select(f => f.ToString("F4")).ToArray());
 
                 lpcListView.Items.Add(item);
             }
@@ -138,7 +148,7 @@ namespace NWaves.DemoForms
             spectrumPanel.Markline = EstimateSpectrum(pos);
             spectrumPanel.ToDecibel();
 
-            lpcPanel.Line = _lpcVectors[pos].Features.Skip(1).ToArray();
+            lpcPanel.Line = _lpcVectors[pos].Skip(1).ToArray();
         }
     }
 }
@@ -146,13 +156,19 @@ namespace NWaves.DemoForms
 // ============================================== TEST PLP extractor against HTK: ========================================================
 
 //const int sr = 16000;
-//var melbands = FilterBanks.MelBands(24, 512, sr, 0, 8000);
+//var melbands = FilterBanks.MelBands(24, sr, 0, 8000);
 //var melbank = FilterBanks.Triangular(512, sr, melbands, null, Utils.Scale.HerzToMel);
 
-//var lpcExtractor = new PlpExtractor(sr, 13, 512.0 / sr,
-//                                    filterbank: melbank,
-//                                    centerFrequencies: melbands.Select(m => m.Item2).ToArray(),
-//                                    window: WindowTypes.Rectangular);
+//var opts = new PlpOptions
+//{
+//    SamplingRate = sr,
+//    FeatureCount = 13,
+//    FrameDuration = 512.0 / sr,
+//    FilterBank = melbank,
+//    CenterFrequencies = melbands.Select(m => m.Item2).ToArray(),
+//    Window = WindowTypes.Rectangular
+//};
+//var lpcExtractor = new PlpExtractor(opts);
 
 //var data = new float[] { 1, 7, 2, 5, 4, 9, 1, 2, 3, 4, 5, 3, 4, 7, 6, 5, 1, 2, 3, 4, 5, 7, 7, 2, 3, 1, 9 }.PadZeros(512);
 

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.FeatureExtractors;
-using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Filters.Fda;
 using NWaves.Signals;
 using NWaves.Windows;
@@ -19,7 +19,7 @@ namespace NWaves.DemoForms
         private DiscreteSignal _signal;
         private AmsExtractor _extractor;
 
-        private List<FeatureVector> _features;
+        private List<float[]> _features;
         private int _featIndex;
 
         private float[][] _filterbank;
@@ -138,37 +138,53 @@ namespace NWaves.DemoForms
 
         private void computeButton_Click(object sender, EventArgs e)
         {
-            var frameSize = float.Parse(analysisFftTextBox.Text);
-            var hopSize = float.Parse(hopSizeTextBox.Text);
+            var frameDuration = double.Parse(analysisFftTextBox.Text);
+            var hopDuration = double.Parse(hopSizeTextBox.Text);
             var modulationFftSize = int.Parse(longTermFftSizeTextBox.Text);
             var modulationHopSize = int.Parse(longTermHopSizeTextBox.Text);
 
             // ===== test modulation spectrum for Mfcc features =====
             //
-            //var mfccExtractor = new MfccExtractor(_signal.SamplingRate, 13,
-            //                                      frameSize,
-            //                                      hopSize);
+            //var mfccExtractor = new MfccExtractor(
+            //    new MfccOptions
+            //    {
+            //        SamplingRate = _signal.SamplingRate,
+            //        FeatureCount = 13,
+            //        FrameDuration = frameDuration,
+            //        HopDuration = hopDuration
+            //    });
             //var vectors = mfccExtractor.ComputeFrom(_signal);
-            //FeaturePostProcessing.NormalizeMean(vectors);
+            ////FeaturePostProcessing.NormalizeMean(vectors);
 
-            //_extractor = new AmsExtractor(_signal.SamplingRate,
-            //                             frameSize,
-            //                             hopSize,
-            //                             modulationFftSize,
-            //                             modulationHopSize,
-            //                             featuregram: vectors.Select(v => v.Features));
+            //var options = new AmsOptions
+            //{
+            //    SamplingRate = _signal.SamplingRate,
+            //    FrameDuration = frameDuration,
+            //    HopDuration = hopDuration,
+            //    ModulationFftSize = modulationFftSize,
+            //    ModulationHopSize = modulationHopSize,
+            //    Featuregram = vectors
+            //};
+            //_extractor = new AmsExtractor(options);
 
-            _extractor = new AmsExtractor(_signal.SamplingRate,
-                                          frameSize,
-                                          hopSize,
-                                          modulationFftSize,
-                                          modulationHopSize,
-                                          filterbank: _filterbank,
-                                          window: WindowTypes.Hamming);
+
+            var options = new AmsOptions
+            {
+                SamplingRate = _signal.SamplingRate,
+                FrameDuration = frameDuration,
+                HopDuration = hopDuration,
+                ModulationFftSize = modulationFftSize,
+                ModulationHopSize = modulationHopSize,
+                FilterBank = _filterbank,
+                Window = WindowTypes.Hamming
+            };
+
+            _extractor = new AmsExtractor(options);
             _features = _extractor.ComputeFrom(_signal);
+
             _featIndex = 0;
 
-            infoLabel.Text = $"{_features.Count}x{_features[0].Features.Length}";
+            infoLabel.Text = $"{_features.Count}x{_features[0].Length}";
 
             DrawEnvelopes(_extractor.Envelopes);
             DrawModulationSpectrum(_extractor.MakeSpectrum2D(_features[_featIndex]));

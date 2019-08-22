@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Options;
 using NWaves.Operations.Convolution;
 using NWaves.Utils;
 using NWaves.Windows;
@@ -12,11 +13,6 @@ namespace NWaves.FeatureExtractors
     /// </summary>
     public class LpccExtractor : FeatureExtractor
     {
-        /// <summary>
-        /// Number of LPCC coefficients
-        /// </summary>
-        public override int FeatureCount { get; }
-
         /// <summary>
         /// Descriptions (simply "lpcc0", "lpcc1", etc.)
         /// </summary>
@@ -61,32 +57,17 @@ namespace NWaves.FeatureExtractors
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="featureCount"></param>
-        /// <param name="frameSize"></param>
-        /// <param name="hopSize"></param>
-        /// <param name="lifterSize"></param>
-        /// <param name="preEmphasis"></param>
-        /// <param name="window"></param>
-        public LpccExtractor(int samplingRate,
-                             int featureCount,
-                             double frameDuration = 0.0256/*sec*/,
-                             double hopDuration = 0.010/*sec*/,
-                             int lpcOrder = 0,
-                             int lifterSize = 22,
-                             double preEmphasis = 0,
-                             WindowTypes window = WindowTypes.Rectangular)
-
-            : base(samplingRate, frameDuration, hopDuration, preEmphasis, window)
+        /// <param name="options">LPCC options</param>
+        public LpccExtractor(LpccOptions options) : base(options)
         {
-            FeatureCount = featureCount;
+            FeatureCount = options.FeatureCount;
 
-            _order = lpcOrder > 0 ? lpcOrder : featureCount - 1;
+            _order = options.LpcOrder > 0 ? options.LpcOrder : FeatureCount - 1;
 
             _blockSize = MathUtils.NextPowerOfTwo(2 * FrameSize - 1);
             _convolver = new Convolver(_blockSize);
 
-            _lifterSize = lifterSize;
+            _lifterSize = options.LifterSize;
             _lifterCoeffs = _lifterSize > 0 ? Window.Liftering(FeatureCount, _lifterSize) : null;
 
             _reversed = new float[FrameSize];
@@ -101,8 +82,8 @@ namespace NWaves.FeatureExtractors
         /// and then post-processes LPC vectors to obtain LPCC coefficients.
         /// </summary>
         /// <param name="block">Samples for analysis</param>
-        /// <returns>LPCC vector</returns>
-        public override float[] ProcessFrame(float[] block)
+        /// <param name="features">LPCC vector</param>
+        public override void ProcessFrame(float[] block, float[] features)
         {
             block.FastCopyTo(_reversed, FrameSize);
 
@@ -118,18 +99,14 @@ namespace NWaves.FeatureExtractors
 
             // 3) compute LPCC coefficients from LPC
 
-            var lpcc = new float[FeatureCount];
-
-            Lpc.ToCepstrum(_lpc, err, lpcc);
+            Lpc.ToCepstrum(_lpc, err, features);
 
             // 4) (optional) liftering
 
             if (_lifterCoeffs != null)
             {
-                lpcc.ApplyWindow(_lifterCoeffs);
+                features.ApplyWindow(_lifterCoeffs);
             }
-
-            return lpcc;
         }
 
         /// <summary>
@@ -143,6 +120,16 @@ namespace NWaves.FeatureExtractors
         /// </summary>
         /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
-            new LpccExtractor(SamplingRate, FeatureCount, FrameDuration, HopDuration, _order, _lifterSize, _preEmphasis, _window);
+            new LpccExtractor(new LpccOptions
+            {
+                SamplingRate = SamplingRate,
+                FeatureCount = FeatureCount,
+                FrameDuration = FrameDuration,
+                HopDuration = HopDuration,
+                LpcOrder = _order,
+                LifterSize = _lifterSize,
+                PreEmphasis = _preEmphasis,
+                Window = _window
+            });
     }
 }
