@@ -288,6 +288,7 @@ namespace NWaves.DemoForms
                     FeatureCount = FeatureCount,
                     FrameDuration = FrameDuration,
                     HopDuration = HopDuration,
+                    FilterBank = FilterBank,
                     FilterBankSize = FilterBank.Length,
                     FftSize = _blockSize,
                     LifterSize = _lifterSize,

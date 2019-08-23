@@ -1,4 +1,5 @@
 ﻿using NWaves.Windows;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace NWaves.FeatureExtractors.Options
@@ -23,6 +24,16 @@ namespace NWaves.FeatureExtractors.Options
         {
             FilterBankSize = 24;
             Window = WindowTypes.Hamming;
+        }
+
+        public override List<string> Errors
+        {
+            get
+            {
+                var errors = base.Errors;
+                if (FeatureCount <= 0) errors.Add("Positive number of PLP coefficients must be specified");
+                return errors;
+            }
         }
     }
 }

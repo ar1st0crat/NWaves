@@ -14,7 +14,7 @@ namespace NWaves.FeatureExtractors.Options
             get
             {
                 var errors = base.Errors;
-                if (LpcOrder <= 0) errors.Add("LPC order must be greater than 0");
+                if (LpcOrder <= 0) errors.Add("Positive order of LPC must be specified");
                 return errors;
             }
         }

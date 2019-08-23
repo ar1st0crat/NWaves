@@ -75,12 +75,25 @@ namespace NWaves.FeatureExtractors
         /// <param name="options">Filterbank options</param>
         public FilterbankExtractor(FilterbankOptions options) : base(options)
         {
-            FilterBank = options.FilterBank;
-            FeatureCount = FilterBank.Length;
+            var filterbankSize = options.FilterBankSize;
 
-            _blockSize = 2 * (FilterBank[0].Length - 1);
+            if (options.FilterBank == null)
+            {
+                _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-            Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
+                var melBands = FilterBanks.MelBands(filterbankSize, SamplingRate, options.LowFrequency, options.HighFrequency, false);
+                FilterBank = FilterBanks.Rectangular(_blockSize, SamplingRate, melBands, mapper: Scale.HerzToMel);
+            }
+            else
+            {
+                FilterBank = options.FilterBank;
+                filterbankSize = FilterBank.Length;
+                _blockSize = 2 * (FilterBank[0].Length - 1);
+
+                Guard.AgainstExceedance(FrameSize, _blockSize, "frame size", "FFT size");
+            }
+
+            FeatureCount = filterbankSize;
 
             _fft = new RealFft(_blockSize);
 
@@ -118,7 +131,7 @@ namespace NWaves.FeatureExtractors
             // reserve memory for reusable blocks
 
             _spectrum = new float[_blockSize / 2 + 1];
-            _bandSpectrum = new float[FilterBank.Length];
+            _bandSpectrum = new float[filterbankSize];
         }
 
         /// <summary>

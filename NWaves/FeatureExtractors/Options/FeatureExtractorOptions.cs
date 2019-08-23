@@ -24,14 +24,14 @@ namespace NWaves.FeatureExtractors.Options
         {
             get
             {
-                _errors.Clear();
-                if (SamplingRate <= 0) _errors.Add("Sampling rate must be positive");
-                if (FrameDuration <= 0) _errors.Add("Frame duration must be positive");
-                if (HopDuration <= 0) _errors.Add("Hop duration must be positive");
-                return _errors;
+                var errors = new List<string>();
+
+                if (SamplingRate <= 0) errors.Add("Positive sampling rate must be specified");
+                if (FrameDuration <= 0) errors.Add("Positive frame duration must be specified");
+                if (HopDuration <= 0) errors.Add("Positive hop duration must be specified");
+
+                return errors;
             }
         }
-
-        private readonly List<string> _errors = new List<string>();
     }
 }

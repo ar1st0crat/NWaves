@@ -1,4 +1,5 @@
 ﻿using NWaves.Windows;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace NWaves.FeatureExtractors.Options
@@ -19,6 +20,16 @@ namespace NWaves.FeatureExtractors.Options
             HighFrequency = 6800;
             FilterBankSize = 40;
             Window = WindowTypes.Hamming;
+        }
+
+        public override List<string> Errors
+        {
+            get
+            {
+                var errors = base.Errors;
+                if (FeatureCount <= 0) errors.Add("Positive number of PNCC coefficients must be specified");
+                return errors;
+            }
         }
     }
 }

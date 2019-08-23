@@ -237,6 +237,22 @@ var powerSpectrum =
 
 ```
 
+Lot of methods in NWaves have overloaded versions with output buffers as parameters. So reuse memory whenever possible:
+
+```C#
+
+float[] spectrum = new float[1024];
+
+for (var i = start; i < end; i += step)
+{
+    rfft.MagnitudeSpectrum(signal[i, i + 1024], spectrum);
+    // ...
+    // do something with spectrum
+}
+
+```
+
+
 #### STFT
 
 ```C#
@@ -446,6 +462,14 @@ void NewChunkAvailable(float[] chunk)
     filter.Process(chunk, output);
 }
 
+
+// if input chunk shouldn't necessarily be preserved, it can be overwritten:
+
+void NewChunkAvailable(float[] chunk)
+{
+    filter.Process(chunk, chunk);
+}
+
 ```
 
 
@@ -542,6 +566,9 @@ for (var i = 0; i < signal.Length; i++)
 {
     signal[i] = pre.Process(signal[i]);
 }
+
+// or simply like this:
+pre.Process(signal.Samples, signal.Samples);
 
 mfccVectors = mfccExtractor.ParallelComputeFrom(signal);
 

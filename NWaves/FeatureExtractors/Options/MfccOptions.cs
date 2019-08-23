@@ -29,6 +29,11 @@ namespace NWaves.FeatureExtractors.Options
             {
                 var errors = base.Errors;
 
+                if (FeatureCount <= 0)
+                {
+                    errors.Add("Positive number of MFCC coefficients must be specified");
+                }
+
                 if (FilterBank == null && FilterBankSize < FeatureCount ||
                     FilterBank != null && FilterBank.Length < FeatureCount)
                 {
