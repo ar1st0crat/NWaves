@@ -11,10 +11,13 @@ namespace NWaves.Operations
         /// <summary>
         /// Attack time
         /// </summary>
+        private float _attackTime;
         public float AttackTime
         {
+            get => _attackTime;
             set
             {
+                _attackTime = value;
                 _ga = (float)Math.Exp(-1.0 / (value * _fs));
             }
         }
@@ -22,10 +25,13 @@ namespace NWaves.Operations
         /// <summary>
         /// Release time
         /// </summary>
+        private float _releaseTime;
         public float ReleaseTime
         {
+            get => _releaseTime;
             set
             {
+                _releaseTime = value;
                 _gr = (float)Math.Exp(-1.0 / (value * _fs));
             }
         }

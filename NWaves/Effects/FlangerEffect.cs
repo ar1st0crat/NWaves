@@ -4,28 +4,21 @@ using System;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Flanger effect.
-    /// 
-    /// It's almost identical to vibrato effect
-    /// except that LFO is always sinusoidal
-    /// and the original signal is superimposed (wet/dry).
+    /// Flanger effect
     /// </summary>
     public class FlangerEffect : AudioEffect
     {
         /// <summary>
         /// LFO frequency
         /// </summary>
-        public float LfoFrequency { set { Lfo.SetParameter("freq", value); } }
-
-        /// <summary>
-        /// Max delay (in seconds)
-        /// </summary>
-        public float MaxDelay
+        private float _lfoFrequency;
+        public float LfoFrequency
         {
+            get => _lfoFrequency;
             set
             {
-                _maxDelayPos = (int)(Math.Ceiling(_fs * value));
-                _delayLine = new float[_maxDelayPos + 1];
+                _lfoFrequency = value;
+                _lfo.SetParameter("freq", value);
             }
         }
 
@@ -35,7 +28,7 @@ namespace NWaves.Effects
         private SignalBuilder _lfo;
         public SignalBuilder Lfo
         {
-            get { return _lfo; }
+            get => _lfo;
             set
             {
                 _lfo = value;
@@ -44,24 +37,99 @@ namespace NWaves.Effects
         }
 
         /// <summary>
+        /// Width (max delay in seconds)
+        /// </summary>
+        private float _width;
+        public float Width
+        {
+            get => _width;
+            set
+            {
+                _width = value;
+                _maxDelayPos = (int)Math.Ceiling(_fs * value);
+                _delayLine = new float[_maxDelayPos + 1];
+            }
+        }
+
+        /// <summary>
+        /// Depth
+        /// </summary>
+        public float Depth { get; set; }
+
+        /// <summary>
+        /// Feedback coefficient
+        /// </summary>
+        public float Feedback { get; set; }
+
+        /// <summary>
+        /// Inverted mode
+        /// </summary>
+        public bool Inverted { get; set; }
+
+        /// <summary>
         /// Sampling rate
         /// </summary>
-        private int _fs;
+        private readonly int _fs;
+
+        /// <summary>
+        /// Delay line
+        /// </summary>
+        private float[] _delayLine;
+        private int _maxDelayPos;
+        private int _n = 1;
+
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="samplingRate"></param>
-        /// <param name="maxDelay"></param>
         /// <param name="lfoFrequency"></param>
-        public FlangerEffect(int samplingRate, float maxDelay = 0.003f/*sec*/, float lfoFrequency = 1/*Hz*/)
+        /// <param name="width"></param>
+        /// <param name="depth"></param>
+        /// <param name="feedback"></param>
+        /// <param name="inverted"></param>
+        public FlangerEffect(int samplingRate,
+                             float lfoFrequency = 1/*Hz*/,
+                             float width = 0.003f/*sec*/,
+                             float depth = 0.5f,
+                             float feedback = 0,
+                             bool inverted = false)
         {
             _fs = samplingRate;
 
+            Width = width;
+            Depth = depth;
+            Feedback = feedback;
+            Inverted = inverted;
+            
             Lfo = new SineBuilder().SampledAt(samplingRate);
-
-            MaxDelay = maxDelay;
             LfoFrequency = lfoFrequency;
+        }
+
+        /// <summary>
+        /// Constructor with LFO
+        /// </summary>
+        /// <param name="samplingRate"></param>
+        /// <param name="lfo"></param>
+        /// <param name="width"></param>
+        /// <param name="lfoFrequency"></param>
+        /// <param name="depth"></param>
+        /// <param name="feedback"></param>
+        /// <param name="inverted"></param>
+        public FlangerEffect(int samplingRate,
+                             SignalBuilder lfo,
+                             float width = 0.003f/*sec*/,
+                             float depth = 0.5f,
+                             float feedback = 0,
+                             bool inverted = false)
+        {
+            _fs = samplingRate;
+
+            Width = width;
+            Depth = depth;
+            Feedback = feedback;
+            Inverted = inverted;
+            Lfo = lfo;
         }
 
         /// <summary>
@@ -71,17 +139,15 @@ namespace NWaves.Effects
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var preciseDelay = Lfo.NextSample() * _maxDelayPos;
-
-            var delay = (int)preciseDelay;
-            var fracDelay = preciseDelay - delay;
-
             if (_n == _delayLine.Length)
             {
                 _n = 1;
             }
 
-            _delayLine[_n] = sample;
+            var preciseDelay = _lfo.NextSample() * _maxDelayPos;
+
+            var delay = (int)preciseDelay;
+            var fracDelay = preciseDelay - delay;
 
             // linear interpolation:
 
@@ -90,26 +156,21 @@ namespace NWaves.Effects
 
             var delayedSample = _delayLine[offset2] + (1 - fracDelay) * (_delayLine[offset1] - _delayLine[offset2]);
 
-            _n++;
-            
-            return Dry * sample + Wet * delayedSample;
+
+            _delayLine[_n++] = sample + Feedback * delayedSample;
+
+            return Inverted ? Dry * sample - Wet * Depth * delayedSample
+                            : Dry * sample + Wet * Depth * delayedSample;
         }
 
+        /// <summary>
+        /// Reset effect
+        /// </summary>
         public override void Reset()
         {
+            Array.Clear(_delayLine, 0, _delayLine.Length);
+            _lfo.Reset();
             _n = 1;
-
-            for (var i = 0; i < _delayLine.Length; i++)
-            {
-                _delayLine[i] = 0;
-            }
-
-            Lfo.Reset();
         }
-
-        private float[] _delayLine;
-        private int _maxDelayPos;
-
-        private int _n = 1;
     }
 }

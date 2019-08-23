@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.Effects;
@@ -123,14 +124,16 @@ namespace NWaves.DemoForms
                 var minFrequency = float.Parse(minFreqTextBox.Text);
                 var maxFrequency = float.Parse(maxFreqTextBox.Text);
                 var q = float.Parse(lfoQTextBox.Text);
-                //effect = new WahwahEffect(fs, lfoFrequency, minFrequency, maxFrequency, q);
-                effect = new AutowahEffect(fs, minFrequency, maxFrequency, q);
+                effect = new WahwahEffect(fs, lfoFrequency, minFrequency, maxFrequency, q);
+                //effect = new AutowahEffect(fs, minFrequency, maxFrequency, q);
             }
             else if (flangerRadioButton.Checked)
             {
                 var lfoFrequency = float.Parse(lfoFreqTextBox.Text);
-                var maxDelay = float.Parse(maxDelayTextBox.Text);
-                effect = new FlangerEffect(fs, maxDelay, lfoFrequency);
+                var width = float.Parse(widthTextBox.Text);
+                effect = new FlangerEffect(fs, lfoFrequency, width);//, 0.7f, 0.5f);
+                //effect = new VibratoEffect(fs, lfoFrequency, width);
+                //effect = new ChorusEffect(fs, new[] { 1f, 1f, 1f, 1f }, new[] { 0.004f, 0.0042f, 0.0045f, 0.0038f });
             }
             else if (pitchShiftRadioButton.Checked)
             {

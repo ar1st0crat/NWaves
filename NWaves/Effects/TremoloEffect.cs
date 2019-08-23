@@ -10,23 +10,37 @@ namespace NWaves.Effects
         /// <summary>
         /// Modulation frequency
         /// </summary>
-        public float Frequency { set { Lfo.SetParameter("freq", value); } }
+        private float _frequency;
+        public float Frequency
+        {
+            get => _frequency;
+            set
+            {
+                _frequency = value;
+                Lfo.SetParameter("freq", value);
+            }
+        }
 
         /// <summary>
         /// Tremolo index (modulation index)
         /// </summary>
-        public float TremoloIndex { set { Lfo.SetParameter("min", 0).SetParameter("max", value * 2); } }
+        private float _tremoloIndex;
+        public float TremoloIndex
+        {
+            get => _tremoloIndex;
+            set
+            {
+                _tremoloIndex = value;
+                Lfo.SetParameter("min", 0).SetParameter("max", value * 2);
+            }
+        }
 
         /// <summary>
         /// LFO
         /// </summary>
         public SignalBuilder Lfo { get; set; }
 
-        /// <summary>
-        /// Sampling rate
-        /// </summary>
-        private int _fs;
-        
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -35,8 +49,6 @@ namespace NWaves.Effects
         /// <param name="tremoloIndex"></param>
         public TremoloEffect(int samplingRate, float frequency = 10/*Hz*/, float tremoloIndex = 0.5f)
         {
-            _fs = samplingRate;
-            
             Lfo = new CosineBuilder().SampledAt(samplingRate);
 
             Frequency = frequency;
@@ -46,11 +58,9 @@ namespace NWaves.Effects
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="samplingRate"></param>
         /// <param name="lfo"></param>
-        public TremoloEffect(int samplingRate, SignalBuilder lfo)
+        public TremoloEffect(SignalBuilder lfo)
         {
-            _fs = samplingRate;
             Lfo = lfo;
         }
 
@@ -66,6 +76,9 @@ namespace NWaves.Effects
             return output * Wet + sample * Dry;
         }
 
+        /// <summary>
+        /// Reset effect
+        /// </summary>
         public override void Reset()
         {
             Lfo.Reset();

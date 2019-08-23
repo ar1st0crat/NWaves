@@ -41,7 +41,7 @@ namespace NWaves.DemoForms
             this.applyEffectButton = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.maxDelayTextBox = new System.Windows.Forms.TextBox();
+            this.widthTextBox = new System.Windows.Forms.TextBox();
             this.flangerRadioButton = new System.Windows.Forms.RadioButton();
             this.label18 = new System.Windows.Forms.Label();
             this.dryTextBox = new System.Windows.Forms.TextBox();
@@ -193,7 +193,7 @@ namespace NWaves.DemoForms
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Controls.Add(this.maxDelayTextBox);
+            this.groupBox1.Controls.Add(this.widthTextBox);
             this.groupBox1.Controls.Add(this.flangerRadioButton);
             this.groupBox1.Controls.Add(this.label18);
             this.groupBox1.Controls.Add(this.dryTextBox);
@@ -248,19 +248,19 @@ namespace NWaves.DemoForms
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(570, 96);
+            this.label2.Location = new System.Drawing.Point(597, 95);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(71, 17);
+            this.label2.Size = new System.Drawing.Size(44, 17);
             this.label2.TabIndex = 47;
-            this.label2.Text = "Max delay";
+            this.label2.Text = "Width";
             // 
-            // maxDelayTextBox
+            // widthTextBox
             // 
-            this.maxDelayTextBox.Location = new System.Drawing.Point(647, 93);
-            this.maxDelayTextBox.Name = "maxDelayTextBox";
-            this.maxDelayTextBox.Size = new System.Drawing.Size(41, 22);
-            this.maxDelayTextBox.TabIndex = 46;
-            this.maxDelayTextBox.Text = "0,003";
+            this.widthTextBox.Location = new System.Drawing.Point(647, 93);
+            this.widthTextBox.Name = "widthTextBox";
+            this.widthTextBox.Size = new System.Drawing.Size(41, 22);
+            this.widthTextBox.TabIndex = 46;
+            this.widthTextBox.Text = "0,003";
             // 
             // flangerRadioButton
             // 
@@ -683,20 +683,20 @@ namespace NWaves.DemoForms
             this.openToolStripMenuItem,
             this.saveAsToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(44, 24);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
             this.fileToolStripMenuItem.Text = "&File";
             // 
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(144, 26);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 26);
             this.openToolStripMenuItem.Text = "&Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(144, 26);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(152, 26);
             this.saveAsToolStripMenuItem.Text = "&Save As...";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
@@ -823,6 +823,6 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.TextBox wetTextBox;
         private System.Windows.Forms.RadioButton flangerRadioButton;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox maxDelayTextBox;
+        private System.Windows.Forms.TextBox widthTextBox;
     }
 }

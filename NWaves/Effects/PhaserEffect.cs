@@ -16,17 +16,44 @@ namespace NWaves.Effects
         /// <summary>
         /// LFO frequency
         /// </summary>
-        public float LfoFrequency { set { Lfo.SetParameter("freq", value); } }
+        private float _lfoFrequency;
+        public float LfoFrequency
+        {
+            get => _lfoFrequency;
+            set
+            {
+                _lfoFrequency = value;
+                Lfo.SetParameter("freq", value);
+            }
+        }
 
         /// <summary>
         /// Min LFO frequency
         /// </summary>
-        public float MinFrequency { set { Lfo.SetParameter("min", value); } }
+        private float _minFrequency;
+        public float MinFrequency
+        {
+            get => _minFrequency;
+            set
+            {
+                _minFrequency = value;
+                Lfo.SetParameter("min", value);
+            }
+        }
 
         /// <summary>
         /// Max LFO frequency
         /// </summary>
-        public float MaxFrequency { set { Lfo.SetParameter("max", value); } }
+        private float _maxFrequency;
+        public float MaxFrequency
+        {
+            get => _maxFrequency;
+            set
+            {
+                _maxFrequency = value;
+                Lfo.SetParameter("max", value);
+            }
+        }
 
         /// <summary>
         /// LFO
@@ -36,12 +63,13 @@ namespace NWaves.Effects
         /// <summary>
         /// Sampling rate
         /// </summary>
-        private int _fs;
+        private readonly int _fs;
 
         /// <summary>
         /// Notch filter with varying center frequency
         /// </summary>
         private NotchFilter _filter;
+
 
         /// <summary>
         /// Constructor

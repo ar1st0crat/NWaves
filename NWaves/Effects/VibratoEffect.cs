@@ -9,19 +9,31 @@ namespace NWaves.Effects
     public class VibratoEffect : AudioEffect
     {
         /// <summary>
-        /// LFO frequency
+        /// Width (max delay in seconds)
         /// </summary>
-        public float LfoFrequency { set { Lfo.SetParameter("freq", value); } }
-
-        /// <summary>
-        /// Max delay (in seconds)
-        /// </summary>
-        public float MaxDelay
+        private float _width;
+        public float Width
         {
+            get => _width;
             set
             {
-                _maxDelayPos = (int)(Math.Ceiling(_fs * value));
+                _width = value;
+                _maxDelayPos = (int)Math.Ceiling(_fs * value);
                 _delayLine = new float[_maxDelayPos + 1];
+            }
+        }
+
+        /// <summary>
+        /// LFO frequency
+        /// </summary>
+        private float _lfoFrequency = 1;
+        public float LfoFrequency
+        {
+            get => _lfoFrequency;
+            set
+            {
+                _lfoFrequency = value;
+                _lfo.SetParameter("freq", value);
             }
         }
 
@@ -31,7 +43,7 @@ namespace NWaves.Effects
         private SignalBuilder _lfo;
         public SignalBuilder Lfo
         {
-            get { return _lfo; }
+            get => _lfo;
             set
             {
                 _lfo = value;
@@ -42,22 +54,44 @@ namespace NWaves.Effects
         /// <summary>
         /// Sampling rate
         /// </summary>
-        private int _fs;
+        private readonly int _fs;
+
+        /// <summary>
+        /// Delay line
+        /// </summary>
+        private float[] _delayLine;
+        private int _maxDelayPos;
+        private int _n = 1;
+
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="samplingRate"></param>
-        /// <param name="maxDelay"></param>
         /// <param name="lfoFrequency"></param>
-        public VibratoEffect(int samplingRate, float maxDelay = 0.003f/*sec*/, float lfoFrequency = 1/*Hz*/)
+        /// <param name="width"></param>
+        public VibratoEffect(int samplingRate, float lfoFrequency = 1/*Hz*/, float width = 0.003f/*sec*/)
         {
             _fs = samplingRate;
 
-            Lfo = new SineBuilder().SampledAt(samplingRate);
+            Width = width;
 
-            MaxDelay = maxDelay;
+            Lfo = new SineBuilder().SampledAt(samplingRate);
             LfoFrequency = lfoFrequency;
+        }
+
+        /// <summary>
+        /// Constructor with LFO
+        /// </summary>
+        /// <param name="samplingRate"></param>
+        /// <param name="lfo"></param>
+        /// <param name="width"></param>
+        public VibratoEffect(int samplingRate, SignalBuilder lfo, float width = 0.003f/*sec*/)
+        {
+            _fs = samplingRate;
+
+            Width = width;
+            Lfo = lfo;
         }
 
         /// <summary>
@@ -67,18 +101,16 @@ namespace NWaves.Effects
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var preciseDelay = Lfo.NextSample() * _maxDelayPos;
-
-            var delay = (int)preciseDelay;
-            var fracDelay = preciseDelay - delay;
-
             if (_n == _delayLine.Length)
             {
                 _n = 1;
             }
 
-            _delayLine[_n] = sample;
+            var preciseDelay = _lfo.NextSample() * _maxDelayPos;
 
+            var delay = (int)preciseDelay;
+            var fracDelay = preciseDelay - delay;
+            
             // linear interpolation:
 
             var offset1 = _n > delay ? _n - delay : _n + _maxDelayPos - delay;
@@ -86,29 +118,20 @@ namespace NWaves.Effects
 
             var delayedSample = _delayLine[offset2] + (1 - fracDelay) * (_delayLine[offset1] - _delayLine[offset2]);
 
-            _n++;
 
-            return delayedSample;
-            
-            // instead of:
-            // return Dry * sample + Wet * delayedSample;
+            _delayLine[_n++] = sample;
+
+            return Dry * sample + Wet * delayedSample;
         }
 
+        /// <summary>
+        /// Reset effect
+        /// </summary>
         public override void Reset()
         {
+            Array.Clear(_delayLine, 0, _delayLine.Length);
+            _lfo.Reset();
             _n = 1;
-
-            for (var i = 0; i < _delayLine.Length; i++)
-            {
-                _delayLine[i] = 0;
-            }
-
-            Lfo.Reset();
         }
-
-        private float[] _delayLine;
-        private int _maxDelayPos;
-
-        private int _n = 1;
     }
 }

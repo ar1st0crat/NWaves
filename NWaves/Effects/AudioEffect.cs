@@ -12,12 +12,12 @@ namespace NWaves.Effects
         /// <summary>
         /// Wet mix
         /// </summary>
-        public float Wet { get; set; } = 1f;
+        public virtual float Wet { get; set; } = 1f;
 
         /// <summary>
         /// Dry mix
         /// </summary>
-        public float Dry { get; set; } = 0f;
+        public virtual float Dry { get; set; } = 0f;
 
         /// <summary>
         /// Online processing

@@ -26,22 +26,31 @@ namespace NWaves.Effects
         /// <summary>
         /// Attack time
         /// </summary>
-        public float AttackTime { set { _envelopeFollower.AttackTime = value; } }
+        public float AttackTime
+        {
+            get => _envelopeFollower.AttackTime;
+            set => _envelopeFollower.AttackTime = value;
+        }
 
         /// <summary>
         /// Release time
         /// </summary>
-        public float ReleaseTime { set { _envelopeFollower.ReleaseTime = value; } }
+        public float ReleaseTime
+        {
+            get => _envelopeFollower.ReleaseTime;
+            set => _envelopeFollower.ReleaseTime = value;
+        }
 
         /// <summary>
         /// Sampling rate
         /// </summary>
-        private int _fs;
+        private readonly int _fs;
 
         /// <summary>
         /// Envelope follower
         /// </summary>
-        private EnvelopeFollower _envelopeFollower;
+        private readonly EnvelopeFollower _envelopeFollower;
+
 
         /// <summary>
         /// Constructor
@@ -60,11 +69,13 @@ namespace NWaves.Effects
                              float releaseTime = 0.05f)
         {
             _fs = samplingRate;
+
             MinFrequency = minFrequency;
             MaxFrequency = maxFrequency;
             Q = q;
 
             _envelopeFollower = new EnvelopeFollower(samplingRate, attackTime, releaseTime);
+
         }
 
         /// <summary>
@@ -78,19 +89,21 @@ namespace NWaves.Effects
 
             var frequencyRange = Math.PI * (MaxFrequency - MinFrequency) / _fs;
             var minFreq = Math.PI * MinFrequency / _fs;
-            var maxFreq = Math.PI * MaxFrequency / _fs;
 
             var centerFrequency = filt * frequencyRange + minFreq;
 
-            _f = (float)(2 * Math.Sin(centerFrequency));
+            var f = (float)(2 * Math.Sin(centerFrequency));
 
             _yh = sample - _yl - Q * _yb;
-            _yb += _f * _yh;
-            _yl += _f * _yb;
+            _yb += f * _yh;
+            _yl += f * _yb;
 
             return Wet * _yb + Dry * sample;
         }
 
+        /// <summary>
+        /// Reset effect
+        /// </summary>
         public override void Reset()
         {
             _yh = _yl = _yb = 0;
@@ -98,6 +111,5 @@ namespace NWaves.Effects
         }
 
         private float _yh, _yb, _yl;
-        private float _f;
     }
 }

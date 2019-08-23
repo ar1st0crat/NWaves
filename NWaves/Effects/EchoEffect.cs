@@ -11,7 +11,16 @@ namespace NWaves.Effects
         /// <summary>
         /// Echo length (in seconds)
         /// </summary>
-        public float Length { set { _filter = new CombFeedbackFilter((int)(value * _fs), am: _decay); } }
+        private float _length;
+        public float Length
+        {
+            get => _length;
+            set
+            {
+                _length = value;
+                _filter = new CombFeedbackFilter((int)(value * _fs), am: _decay);
+            }
+        }
 
         /// <summary>
         /// Decay
@@ -35,7 +44,8 @@ namespace NWaves.Effects
         /// <summary>
         /// Sampling rate
         /// </summary>
-        private int _fs;
+        private readonly int _fs;
+
 
         /// <summary>
         /// Constructor

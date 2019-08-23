@@ -11,17 +11,44 @@ namespace NWaves.Effects
         /// <summary>
         /// LFO frequency
         /// </summary>
-        public float LfoFrequency { set { Lfo.SetParameter("freq", value); } }
+        private float _lfoFrequency;
+        public float LfoFrequency
+        {
+            get => _lfoFrequency;
+            set
+            {
+                _lfoFrequency = value;
+                Lfo.SetParameter("freq", value);
+            }
+        }
 
         /// <summary>
         /// Min LFO frequency
         /// </summary>
-        public float MinFrequency { set { Lfo.SetParameter("min", value); } }
+        private float _minFrequency;
+        public float MinFrequency
+        {
+            get => _minFrequency;
+            set
+            {
+                _minFrequency = value;
+                Lfo.SetParameter("min", value);
+            }
+        }
 
         /// <summary>
         /// Max LFO frequency
         /// </summary>
-        public float MaxFrequency { set { Lfo.SetParameter("max", value); } }
+        private float _maxFrequency;
+        public float MaxFrequency
+        {
+            get => _maxFrequency;
+            set
+            {
+                _maxFrequency = value;
+                Lfo.SetParameter("max", value);
+            }
+        }
 
         /// <summary>
         /// Q
@@ -37,6 +64,7 @@ namespace NWaves.Effects
         /// Sampling rate
         /// </summary>
         private int _fs;
+
 
         /// <summary>
         /// Constructor
@@ -84,15 +112,18 @@ namespace NWaves.Effects
         {
             var fs2pi = 2 * Math.PI / _fs;
 
-            _f = (float)(2 * Math.Sin(Lfo.NextSample() * fs2pi));
+            var f = (float)(2 * Math.Sin(Lfo.NextSample() * fs2pi));
 
             _yh = sample - _yl - Q * _yb;
-            _yb += _f * _yh;
-            _yl += _f * _yb;
+            _yb += f * _yh;
+            _yl += f * _yb;
 
             return _yb * Wet + sample * Dry;
         }
 
+        /// <summary>
+        /// Reset effect
+        /// </summary>
         public override void Reset()
         {
             _yh = _yb = _yl = 0;
@@ -100,6 +131,5 @@ namespace NWaves.Effects
         }
 
         private float _yh, _yb, _yl;
-        private float _f;
     }
 }

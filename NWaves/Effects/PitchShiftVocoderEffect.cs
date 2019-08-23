@@ -13,7 +13,7 @@ namespace NWaves.Effects
         /// <summary>
         /// Shift ratio
         /// </summary>
-        private readonly float _shift;
+        public float Shift { get; set; }
 
         /// <summary>
         /// Frequency resolution
@@ -50,7 +50,7 @@ namespace NWaves.Effects
         public PitchShiftVocoderEffect(int samplingRate, double shift, int fftSize = 1024, int hopSize = 64)
             : base(hopSize, fftSize)
         {
-            _shift = (float)shift;
+            Shift = (float)shift;
 
             _gain = (float)(2 * Math.PI / (_fftSize * _window.Select(w => w * w).Sum() / _hopSize));
 
@@ -97,9 +97,9 @@ namespace NWaves.Effects
             for (var j = 0; j <= _fftSize / 2 && stretchPos <= _fftSize / 2; j++)
             {
                 re[stretchPos] += _mag[j];
-                im[stretchPos] = _phase[j] * _shift;
+                im[stretchPos] = _phase[j] * Shift;
 
-                stretchPos = (int)(j * _shift);
+                stretchPos = (int)(j * Shift);
             }
 
             for (var j = 1; j <= _fftSize / 2; j++)
