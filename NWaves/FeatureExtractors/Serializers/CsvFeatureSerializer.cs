@@ -36,7 +36,7 @@ namespace NWaves.FeatureExtractors.Serializers
         /// </summary>
         /// <param name="featureVectors">List of feature vectors for serialization</param>
         /// <param name="timeMarkers">List of time markers for serialization</param>
-        /// <param name="featureNames">List of feature vectors for serialization</param>
+        /// <param name="featureNames">List of feature names for serialization</param>
         /// <param name="delimiter">Delimiter char</param>
         public CsvFeatureSerializer(IList<float[]> featureVectors,
                                     IList<double> timeMarkers = null,
@@ -64,7 +64,8 @@ namespace NWaves.FeatureExtractors.Serializers
             {
                 if (_names != null)
                 {
-                    var header = $"time_pos{comma}{string.Join(comma, _names)}";
+                    var names = string.Join(comma, _names);
+                    var header = _timeMarkers == null ? $"{names}" : $"time_pos{comma}{names}";
                     await writer.WriteLineAsync(header).ConfigureAwait(false);
                 }
 

@@ -17,9 +17,9 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install 
 
 [Read wiki documentation](https://github.com/ar1st0crat/NWaves/wiki)
 
-New version **0.9.2** is out! Faster, smarter, more features. [Read about changes here](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
+New version **0.9.3** is out! Faster, smarter, more features. [Read about changes here](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
 
-## Main features 
+## Main features
 
 - [x] major DSP transforms (FFT, DCT, STFT, FWT, Hilbert, Hartley, Mellin, cepstral, Goertzel)
 - [x] signal builders (sine, white/pink/red/Perlin noise, awgn, triangle, sawtooth, square, pulse, ramp, ADSR, wavetable)
@@ -50,7 +50,7 @@ New version **0.9.2** is out! Faster, smarter, more features. [Read about change
 - [x] polyphase filters
 - [x] noise reduction (spectral subtraction, sciPy-style Wiener filtering)
 - [x] envelope following
-- [x] sound effects (delay, echo, tremolo, wahwah, phaser, vibrato, flanger, pitch shift, sound morphing, robotize, whisperize)
+- [x] sound effects (echo, tremolo, wahwah, phaser, chorus, vibrato, flanger, pitch shift, morphing, robotize, whisperize)
 - [x] harmonic/percussive separation
 - [x] Griffin-Lim algorithm
 - [x] adaptive filtering (LMS, NLMS, LMF, SignLMS, RLS)
@@ -508,29 +508,69 @@ Highly customizable feature extractors are available for offline and online proc
 
 ```C#
 
-var sr = signal.SamplingRate;
+var mfccOptions = new MfccOptions
+{
+    SamplingRate = signal.SamplingRate,
+    FeatureCount = 13,
+    FrameDuration = 0.032/*sec*/,
+    HopDuration = 0.015/*sec*/,
+    FilterBankSize = 26,
+    PreEmphasis = 0.97,
+    //...unspecified parameters will have default values 
+};
 
-var lpcExtractor = new LpcExtractor(sr, 16, 0.032/*sec*/, 0.015/*sec*/);
-var lpcVectors = lpcExtractor.ComputeFrom(signal);
+var mfccExtractor = new MfccExtractor(mfccOptions);
+var mfccVectors = mfccExtractor.ComputeFrom(signal);
 
 
-var mfccExtractor = new MfccExtractor(sr, 13, filterbankSize: 24, preEmphasis: 0.95);
-var mfccVectors = mfccExtractor.ParallelComputeFrom(signal);
+// serialize current config to JSON file:
+
+using (var config = new FileStream("file.json", FileMode.Create))
+{
+    config.SaveOptions(mfccOptions);
+}
 
 
-var tdExtractor = new TimeDomainFeaturesExtractor(sr, "all", frameDuration, hopDuration);
-var spectralExtractor = new SpectralFeaturesExtractor(sr, "centroid, flatness, c1+c2+c3", 0.032, 0.015);
+var lpcOptions = new LpcOptions
+{
+    SamplingRate = signal.SamplingRate,
+    LpcOrder = 15
+};
+
+var lpcExtractor = new LpcExtractor(lpcOptions);
+var lpcVectors = lpcExtractor.ParallelComputeFrom(signal);
+
+
+
+var opts = new MultiFeatureOptions
+{
+    SamplingRate = signal.SamplingRate,
+    FeatureList = "centroid, flatness, c1+c2+c3"
+};
+
+var spectralExtractor = new SpectralFeaturesExtractor(opts);
+
+opts.FeatureList = "all";
+var tdExtractor = new TimeDomainFeaturesExtractor(opts);
 
 var vectors = FeaturePostProcessing.Join(
-                tdExtractor.ParallelComputeFrom(signal), 
-                spectralExtractor.ParallelComputeFrom(signal));
+                  tdExtractor.ParallelComputeFrom(signal), 
+                  spectralExtractor.ParallelComputeFrom(signal));
 
 // each vector will contain 1) all time-domain features (energy, rms, entropy, zcr)
 //                          2) specified spectral features
 
 
-var pnccExtractor = new PnccExtractor(sr, 13);
-var pnccVectors = pnccExtractor.ComputeFrom(signal, /*from*/1000, /*to*/10000 /*sample*/);
+// open config from JSON file:
+
+PnccOptions options;
+using (var config = new FileStream("file.json", FileMode.Open))
+{
+    options = config.LoadOptions<PnccOptions>();
+}
+
+var pnccExtractor = new PnccExtractor(pnccOptions);
+var pnccVectors = pnccExtractor.ComputeFrom(signal, /*from*/1000, /*to*/60000 /*sample*/);
 FeaturePostProcessing.NormalizeMean(pnccVectors);
 
 

@@ -63,7 +63,7 @@ namespace NWaves.Effects
         /// <summary>
         /// Sampling rate
         /// </summary>
-        private int _fs;
+        private readonly int _fs;
 
 
         /// <summary>

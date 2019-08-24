@@ -1,4 +1,5 @@
 ﻿using NWaves.Signals.Builders;
+using NWaves.Utils;
 using System.Linq;
 
 namespace NWaves.Effects
@@ -62,12 +63,12 @@ namespace NWaves.Effects
             get => _lfoFrequencies;
             set
             {
+                _lfoFrequencies = value;
+
                 for (var i = 0; i < _voices.Length; i++)
                 {
                     _voices[i].LfoFrequency = value[i];
                 }
-
-                _lfoFrequencies = value;
             }
         }
 
@@ -85,6 +86,8 @@ namespace NWaves.Effects
         /// <param name="widths"></param>
         public ChorusEffect(int samplingRate, float[] lfoFrequencies, float[] widths)
         {
+            Guard.AgainstInequality(lfoFrequencies.Length, widths.Length, "Size of frequency array", "size of widths array");
+
             _lfoFrequencies = lfoFrequencies;
 
             _voices = new VibratoEffect[widths.Length];
@@ -104,9 +107,11 @@ namespace NWaves.Effects
         /// </summary>
         /// <param name="samplingRate"></param>
         /// <param name="lfos"></param>
-        /// /// <param name="widths"></param>
+        /// <param name="widths"></param>
         public ChorusEffect(int samplingRate, SignalBuilder[] lfos, float[] widths)
         {
+            Guard.AgainstInequality(lfos.Length, widths.Length, "Size of frequency array", "number of LFOs");
+
             _voices = new VibratoEffect[widths.Length];
 
             for (var i = 0; i < _voices.Length; i++)
@@ -120,7 +125,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Simple flanger effect
+        /// Process sample
         /// </summary>
         /// <param name="sample"></param>
         /// <returns></returns>

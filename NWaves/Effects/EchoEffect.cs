@@ -28,7 +28,7 @@ namespace NWaves.Effects
         private float _decay;
         public float Decay
         {
-            get { return _decay; }
+            get => _decay;
             set
             {
                 _decay = value;
