@@ -586,31 +586,49 @@ using (var csvFile = new FileStream("mfccs.csv", FileMode.Create))
 
 Pre-processing
 
+In speech processing, pre-emphasis filters are often applied to signal before main processing.
+
+There are 3 options to perform pre-emphasis filtering:
+
+1) Set pre-emphasis coefficient in constructor of a feature extractor
+2) Apply filter before processing and process filtered signal
+3) Filter signal in-place and process it
+
+The first option is slightly slower, however it won't allocate extra memory and it won't mutate input signal (so, perhaps, it should be the choice by default). If preserving of the input signal is not required, then the third option is the best. If the input signal must be preserved and extra memory is not an issue, then the second approach is preferred (it'll be faster).
+
 ```C#
 
-// Extractors allow setting pre-emphasis coefficient.
-
-// This is equivalent to applying pre-emphasis filter:
-
-var mfccExtractor = new MfccExtractor(sr, 13, filterbankSize: 24);
-var pre = new PreEmphasisFilter(0.95);
-
 // option 1:
-// ApplyTo() will create new signal (allocate new memory)
-var mfccVectors = mfccExtractor.ParallelComputeFrom(pre.ApplyTo(signal));
+
+var opts = new MfccOptions
+{
+    SamplingRate = signal.SamplingRate,
+    FeatureCount = 13,
+    PreEmphasis = 0.95
+};
+var mfccExtractor = new MfccExtractor(opts);
+var mfccVectors = mfccExtractor.ComputeFrom(signal);
 
 // option 2:
+// ApplyTo() will create new signal (allocate new memory)
+
+opts.PreEmphasis = 0;
+mfccExtractor = new MfccExtractor(opts);
+var pre = new PreEmphasisFilter(0.95);
+var filtered = pre.ApplyTo(signal);
+mfccVectors = mfccExtractor.ComputeFrom(filtered);
+
+// option 3:
 // process array or DiscreteSignal samples in-place:
 
 for (var i = 0; i < signal.Length; i++)
 {
     signal[i] = pre.Process(signal[i]);
 }
+// or simply:
+// pre.Process(signal.Samples, signal.Samples);
 
-// or simply like this:
-pre.Process(signal.Samples, signal.Samples);
-
-mfccVectors = mfccExtractor.ParallelComputeFrom(signal);
+mfccVectors = mfccExtractor.ComputeFrom(signal);
 
 ```
 
