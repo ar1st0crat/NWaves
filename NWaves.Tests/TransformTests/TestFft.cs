@@ -29,6 +29,7 @@ namespace NWaves.Tests.TransformTests
         {
             float[] array = { 1, 5, 3, 7, 2, 3, 0, 7 };
             float[] output = new float[array.Length];
+            float[] outputNorm = new float[array.Length];
 
             float[] re = new float[5];
             float[] im = new float[5];
@@ -37,8 +38,27 @@ namespace NWaves.Tests.TransformTests
 
             realFft.Direct(array, re, im);
             realFft.Inverse(re, im, output);
+            realFft.InverseNorm(re, im, outputNorm);
 
-            Assert.That(output, Is.EqualTo(array.Select(a => a * 4)).Within(1e-5));
+            Assert.Multiple(() =>
+            {
+                Assert.That(output, Is.EqualTo(array.Select(a => a * 4)).Within(1e-5));
+                Assert.That(outputNorm, Is.EqualTo(array).Within(1e-5));
+            });
+        }
+
+        [Test]
+        public void TestInverseFftNormalized()
+        {
+            float[] re = { 1, 5, 3, 7, 2, 3, 0, 7 };
+            float[] im = new float[re.Length];
+
+            var fft = new Fft(8);
+
+            fft.Direct(re, im);
+            fft.InverseNorm(re, im);
+
+            Assert.That(re, Is.EqualTo(new[] { 1, 5, 3, 7, 2, 3, 0, 7 }).Within(1e-5));
         }
 
         [Test]
@@ -77,7 +97,6 @@ namespace NWaves.Tests.TransformTests
         public void TestHartley()
         {
             float[] re = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-            float[] im = new float[16];
 
             var dht = new HartleyTransform(16);
 

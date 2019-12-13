@@ -181,6 +181,22 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
+        /// Inverse Fast Fourier Transform algorithm (with normalization by FFT size)
+        /// </summary>
+        /// <param name="re">Array of real parts</param>
+        /// <param name="im">Array of imaginary parts</param>
+        public void InverseNorm(float[] re, float[] im)
+        {
+            Inverse(re, im);
+
+            for (int i = 0; i < _fftSize; i++)
+            {
+                re[i] /= _fftSize;
+                im[i] /= _fftSize;
+            }
+        }
+
+        /// <summary>
         /// Magnitude spectrum:
         /// 
         ///     spectrum = sqrt(re * re + im * im)
