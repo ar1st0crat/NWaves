@@ -19,6 +19,9 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install 
 
 New version **0.9.3** is out! Faster, smarter, more features. [Read about changes here](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
 
+[Watch survey video](https://www.youtube.com/watch?v=GyRixqQ613A)
+
+
 ## Main features
 
 - [x] major DSP transforms (FFT, DCT, STFT, FWT, Hilbert, Hartley, Mellin, cepstral, Goertzel)
