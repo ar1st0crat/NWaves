@@ -65,7 +65,7 @@ namespace NWaves.Transforms
             _window = window;
             _windowSamples = Window.OfType(_window, _windowSize);
 
-            _gain = 2 / (_fftSize * _windowSamples.Select(w => w * w).Sum() / _hopSize);
+            _gain = 1 / (_fftSize * _windowSamples.Select(w => w * w).Sum() / _hopSize);
         }
 
         /// <summary>

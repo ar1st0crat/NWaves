@@ -23,7 +23,7 @@ namespace NWaves.Effects
         /// <param name="fftSize"></param>
         public WhisperEffect(int hopSize, int fftSize = 0) : base(hopSize, fftSize)
         {
-            _gain = 2f / _fftSize;  // slightly correct the ISTFT gain
+            _gain = 1f / _fftSize;  // slightly correct the ISTFT gain
         }
 
         /// <summary>

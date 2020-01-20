@@ -90,7 +90,7 @@ namespace NWaves.Operations.Tsm
 
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
 
-            _gain = 2 / (_fftSize * _window.Select(w => w * w).Sum() / _hopSynthesis);
+            _gain = 1 / (_fftSize * _window.Select(w => w * w).Sum() / _hopSynthesis);
 
             _omega = Enumerable.Range(0, _fftSize / 2 + 1)
                                .Select(f => 2 * Math.PI * f / _fftSize)

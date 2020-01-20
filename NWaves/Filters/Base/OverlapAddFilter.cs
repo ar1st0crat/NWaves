@@ -105,7 +105,7 @@ namespace NWaves.Filters.Base
 
             _window = Window.OfType(WindowTypes.Hann, _fftSize);
 
-            _gain = 2 / (_fftSize * _window.Select(w => w * w).Sum() / _hopSize);
+            _gain = 1 / (_fftSize * _window.Select(w => w * w).Sum() / _hopSize);
 
             _dl = new float[_fftSize];
             _re = new float[_fftSize];

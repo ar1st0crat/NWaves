@@ -177,7 +177,13 @@ namespace NWaves.DemoForms
                 //    morph = Operation.Resample(morph, _signal.SamplingRate);
                 //}
 
-                //_filteredSignal = ((MorphEffect)effect).ApplyTo(_signal, morph);
+                //var eff = new MorphEffect(hopSize /*50*/, winSize/*256*/)
+                //{
+                //    Wet = effect.Wet,
+                //    Dry = effect.Dry
+                //};
+
+                //_filteredSignal = eff.ApplyTo(_signal, morph);
             }
             else
             {

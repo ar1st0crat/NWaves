@@ -235,8 +235,8 @@ namespace NWaves.Transforms
 
             for (int i = 0, k = 0; i < _fftSize; i++)
             {
-                output[k++] = _re[i];
-                output[k++] = _im[i];
+                output[k++] = _re[i] * 2;
+                output[k++] = _im[i] * 2;
             }
         }
 

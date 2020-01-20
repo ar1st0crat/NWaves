@@ -11,7 +11,7 @@ namespace NWaves.Tests.TransformTests
         [Test]
         public void TestRealFft()
         {
-            float[] array = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+            float[] array = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }; // Enumerable.Range(0, 16);
 
             float[] re = new float[9];
             float[] im = new float[9];
@@ -42,9 +42,38 @@ namespace NWaves.Tests.TransformTests
 
             Assert.Multiple(() =>
             {
-                Assert.That(output, Is.EqualTo(array.Select(a => a * 4)).Within(1e-5));
+                Assert.That(output, Is.EqualTo(array.Select(a => a * 8)).Within(1e-5));
                 Assert.That(outputNorm, Is.EqualTo(array).Within(1e-5));
             });
+        }
+
+        [Test]
+        public void TestComplexFft()
+        {
+            float[] re = { 0, 1, 2, 3, 4, 5, 6, 7 };
+            float[] im = new float[8];
+
+            var fft = new Fft(8);
+
+            fft.Direct(re, im);
+
+            Assert.That(re, Is.EqualTo(new float[] { 28, -4, -4, -4, -4, -4, -4, -4 }).Within(1e-5));
+            Assert.That(im, Is.EqualTo(new float[] { 0, 9.65685f, 4, 1.65685f, 0, -1.65685f, -4, -9.65685f }).Within(1e-5));
+        }
+
+        [Test]
+        public void TestInverseFft()
+        {
+            float[] re = { 1, 5, 3, 7, 2, 3, 0, 7 };
+            float[] im = new float[re.Length];
+
+            var fft = new Fft(8);
+
+            fft.Direct(re, im);
+            fft.Inverse(re, im);
+
+            Assert.That(re, Is.EqualTo(new[] { 8, 40, 24, 56, 16, 24, 0, 56 }).Within(1e-5)); 
+            // re[i] * 8,  i = 0..7
         }
 
         [Test]

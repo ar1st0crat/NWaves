@@ -101,12 +101,12 @@ namespace NWaves.Operations.Convolution
 
             // 2) do complex multiplication of spectra and normalize
 
-            for (var i = 0; i <= _fftSize/2; i++)
+            for (var i = 0; i <= _fftSize / 2; i++)
             {
                 var re = _real1[i] * _real2[i] - _imag1[i] * _imag2[i];
                 var im = _real1[i] * _imag2[i] + _imag1[i] * _real2[i];
-                _real1[i] = 2 * re / _fftSize;
-                _imag1[i] = 2 * im / _fftSize;
+                _real1[i] = re / _fftSize;
+                _imag1[i] = im / _fftSize;
             }
 
             // 3) do inverse FFT of resulting spectrum
