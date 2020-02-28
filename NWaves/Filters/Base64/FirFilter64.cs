@@ -65,7 +65,7 @@ namespace NWaves.Filters.Base64
         protected int _delayLineOffset;
 
         /// <summary>
-        /// Constructor accepting the 32-bit kernel of a filter
+        /// Constructor accepting the 64-bit kernel of a filter
         /// </summary>
         /// <param name="kernel"></param>
         public FirFilter64(IEnumerable<double> kernel)

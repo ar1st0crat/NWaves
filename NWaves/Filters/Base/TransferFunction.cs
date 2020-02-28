@@ -97,7 +97,7 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Gain ('k' in 'zpk' notation)
         /// </summary>
-        public double Gain { get; private set; } = 1;
+        public double Gain { get; set; } = 1;
 
 
         /// <summary>
@@ -245,6 +245,54 @@ namespace NWaves.Filters.Base
             {
                 Numerator[i] /= a0;
             }
+        }
+
+        /// <summary>
+        /// Initial state 'zi' for filtering that corresponds to the steady state of the step response
+        /// </summary>
+        /// <returns>Initial state</returns>
+        public double[] Zi()
+        {
+            var size = Math.Max(Numerator.Length, Denominator.Length);
+
+            var a = Denominator.PadZeros(size);
+            var b = Numerator.PadZeros(size);
+
+            var a0 = a[0];
+
+            for (var i = 0; i < a.Length; a[i++] /= a0) ;
+            for (var i = 0; i < b.Length; b[i++] /= a0) ;
+
+            var B = new double[size - 1];
+
+            for (var i = 1; i < size; i++)
+            {
+                B[i - 1] = b[i] - a[i] * b[0];
+            }
+
+            Matrix m = Matrix.Eye(size - 1) - Matrix.Companion(a).T;
+
+            var sum = 0.0;
+
+            for (var i = 0; i < size - 1; i++)
+            {
+                sum += m[i][0];
+            }
+
+            var zi = new double[size];
+
+            zi[0] = B.Sum() / sum;
+
+            var asum = 1.0;
+            var csum = 0.0;
+            for (var i = 1; i < size - 1; i++)
+            {
+                asum += a[i];
+                csum += b[i] - a[i] * b[0];
+                zi[i] = asum * zi[0] - csum;
+            }
+
+            return zi;
         }
 
 

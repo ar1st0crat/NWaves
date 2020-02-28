@@ -75,7 +75,7 @@ namespace NWaves.Filters.Base64
         protected int _delayLineOffsetB;
 
         /// <summary>
-        /// Parameterized constructor (from arrays of 32-bit coefficients)
+        /// Parameterized constructor (from arrays of 64-bit coefficients)
         /// </summary>
         /// <param name="b">TF numerator coefficients</param>
         /// <param name="a">TF denominator coefficients</param>
