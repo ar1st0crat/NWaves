@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.9.3</Version>
+    <Version>0.9.3.1</Version>
     <Company>Tim Sharii</Company>
     <Authors>Tim Sharii</Authors>
     <Description>.NET library for 1d signal processing focused specifically on audio processing</Description>
@@ -13,6 +13,7 @@
     <PackageIconUrl>https://raw.githubusercontent.com/ar1st0crat/NWaves/master/screenshots/logo_draft.bmp</PackageIconUrl>
     <RepositoryUrl></RepositoryUrl>
     <PackageTags>audio, dsp, filtering, tsm, sound-effects, feature-extraction, psychoacoustics, wav, mfcc, lpc, plp, pncc, resampling, pitch, wavelets, mir, fda, noise, adaptive-filtering</PackageTags>
+    <FileVersion>0.9.3.1</FileVersion>
   </PropertyGroup>
 
   <ItemGroup><!--<PackageReference Include="" Version=""/>-->

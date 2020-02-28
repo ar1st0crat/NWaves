@@ -303,17 +303,15 @@ namespace NWaves.Filters.Base
         /// <returns></returns>
         public static double[] ZpToTf(ComplexDiscreteSignal zp)
         {
-            var tf = new ComplexDiscreteSignal(1, new[] { 1.0, -zp.Real[0] },
-                                                  new[] { 0.0, -zp.Imag[0] });
+            var poly = new Complex[] { 1, new Complex(-zp.Real[0], -zp.Imag[0]) };
 
             for (var k = 1; k < zp.Length; k++)
             {
-                tf = Operation.Convolve(tf, new ComplexDiscreteSignal(1,
-                                                  new[] { 1.0, -zp.Real[k] },
-                                                  new[] { 0.0, -zp.Imag[k] }));
+                var poly1 = new Complex[] { 1, new Complex(-zp.Real[k], -zp.Imag[k]) };
+                poly = MathUtils.MultiplyPolynomials(poly, poly1);
             }
 
-            return tf.Real;
+            return poly.Select(p => p.Real).ToArray();
         }
 
         /// <summary>

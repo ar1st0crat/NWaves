@@ -384,6 +384,28 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Multiply polynomials
+        /// </summary>
+        /// <param name="poly1"></param>
+        /// <param name="poly2"></param>
+        /// <returns></returns>
+        public static Complex[] MultiplyPolynomials(Complex[] poly1, Complex[] poly2)
+        {
+            var length = poly1.Length + poly2.Length - 1;
+            var result = new Complex[length];
+
+            for (var i = 0; i < poly1.Length; i++)
+            {
+                for (var j = 0; j < poly2.Length; j++)
+                {
+                    result[i + j] += poly1[i] * poly2[j];
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Divide polynomials
         /// </summary>
         /// <param name="dividend">Dividend</param>

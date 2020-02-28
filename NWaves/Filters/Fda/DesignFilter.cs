@@ -579,12 +579,12 @@ namespace NWaves.Filters.Fda
             var pre = new double[poles.Length * 2];
             var pim = new double[poles.Length * 2];
             
-            var centerFreq = 2 * Math.PI * (freq1 + freq2) / 2;
-
-            var f0 = Math.Tan(Math.PI * (freq1 + (freq2 - freq1) / 2));
             var f1 = Math.Tan(Math.PI * freq1);
-            var f2 = f0 * f0 / f1;
+            var f2 = Math.Tan(Math.PI * freq2);
+            var f0 = Math.Sqrt(f1 * f2);
             var bw = f2 - f1;
+
+            var centerFreq = 2 * Math.Atan(f0);
 
 
             // 1) poles and zeros of analog filter (scaled)
