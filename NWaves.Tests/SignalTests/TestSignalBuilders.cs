@@ -82,5 +82,16 @@ namespace NWaves.Tests.SignalTests
                 Assert.That(sinusoid.Length, Is.EqualTo(21));
             });
         }
+
+        [Test]
+        public void TestWavetableBuilder()
+        {
+            var wavetable = new[] { 1, 2, 3, 4, 5f };
+            var wt = new WaveTableBuilder(wavetable).OfLength(7);
+
+            var result = wt.Build();
+
+            Assert.That(result.Samples, Is.EqualTo(new[] { 1, 2, 3, 4, 5, 1, 2f }));
+        }
     }
 }

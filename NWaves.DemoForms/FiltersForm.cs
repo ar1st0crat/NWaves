@@ -15,6 +15,7 @@ using NWaves.Utils;
 using HighPassFilter = NWaves.Filters.BiQuad.HighPassFilter;
 using LowPassFilter = NWaves.Filters.BiQuad.LowPassFilter;
 using System.Linq;
+using NWaves.Signals.Builders;
 
 namespace NWaves.DemoForms
 {
@@ -52,6 +53,25 @@ namespace NWaves.DemoForms
 
         private void buttonAnalyzeFilter_Click(object sender, EventArgs e)
         {
+            //var freqs = new[] { 98, 123, 147, 196, 294, 392 };
+
+            //var ks = new DiscreteSignal[freqs.Length];
+            
+            //for (var i = 0; i < ks.Length; i++)
+            //{
+            //    ks[i] = new KarplusStrongBuilder()
+            //                        .SetParameter("freq", freqs[i])
+            //                        .SetParameter("stretch", 2 * freqs[i] / 98)
+            //                        .DelayedBy(i * 8000 / 50)
+            //                        .SampledAt(8000)
+            //                        .OfLength(5 * 8000)
+            //                        .Build()
+            //                        * 0.18f;
+            //}
+            //var total = ks.Aggregate((s1, s2) => s1 + s2);// s1.Concatenate(s2));
+            //_player.PlayAsync(total);
+            //return;
+
             Cursor.Current = Cursors.WaitCursor;
 
             switch (filterTypesComboBox.Text)

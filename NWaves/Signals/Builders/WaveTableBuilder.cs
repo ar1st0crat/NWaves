@@ -1,25 +1,35 @@
-﻿namespace NWaves.Signals.Builders
+﻿using System;
+using System.Collections.Generic;
+
+namespace NWaves.Signals.Builders
 {
     /// <summary>
     /// Wave table builder
     /// </summary>
     public class WaveTableBuilder : SignalBuilder
     {
-        private readonly float[] _samples;
+        protected float[] _samples;
+
+        protected double _stride = 1;
+
 
         public WaveTableBuilder(float[] samples)
         {
             _samples = samples;
+
+            ParameterSetters = new Dictionary<string, Action<double>>
+            {
+                { "stride, step, delta", param => _stride = param }
+            };
         }
 
         public override float NextSample()
         {
-            if (_n == _samples.Length)
-            {
-                _n = 0;
-            }
+            var idx = ((int)_n) % _samples.Length;
 
-            return _samples[_n++];
+            _n += _stride;
+
+            return _samples[idx];
         }
 
         public override void Reset()
@@ -27,6 +37,6 @@
             _n = 0;
         }
 
-        private int _n;
+        protected double _n;
     }
 }
