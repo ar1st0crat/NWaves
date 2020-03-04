@@ -93,5 +93,16 @@ namespace NWaves.Tests.SignalTests
 
             Assert.That(result.Samples, Is.EqualTo(new[] { 1, 2, 3, 4, 5, 1, 2f }));
         }
+
+        [Test]
+        public void TestWavetableBuilderWithFractionalStride()
+        {
+            var wavetable = new[] { 1, 2, 3, 4, 5f };
+            var wt = new WaveTableBuilder(wavetable).SetParameter("stride", 0.25).OfLength(7);
+
+            var result = wt.Build();
+
+            Assert.That(result.Samples, Is.EqualTo(new[] { 1, 1.25f, 1.5f, 1.75f, 2, 2.25f, 2.5f }));
+        }
     }
 }

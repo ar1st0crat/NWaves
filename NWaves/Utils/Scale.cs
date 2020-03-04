@@ -87,6 +87,49 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Array of notes
+        /// </summary>
+        public static string[] Notes = new[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+
+        /// <summary>
+        /// Method converts note (in format ("G", 3), ("E", 5), etc.) to frequency in Hz
+        /// </summary>
+        /// <param name="note">Note (A-G#)</param>
+        /// <param name="octave">Octave (0-8)</param>
+        /// <returns>Frequency in Hz</returns>
+        public static double NoteToFreq(string note, int octave)
+        {
+            var noteIndex = Array.IndexOf(Notes, note);
+
+            if (noteIndex < 0)
+            {
+                throw new ArgumentException("Incorrect note. Valid notes are: " + string.Join(", ", Notes));
+            }
+
+            if (octave < 0 || octave > 8)
+            {
+                throw new ArgumentException("Incorrect octave. Valid octave range is [0, 8]");
+            }
+
+            return PitchToFreq(noteIndex + 12 * (octave + 1));
+        }
+
+        /// <summary>
+        /// Method converts frequency in Hz to note (in format ("G", 3), ("E", 5), etc.)
+        /// </summary>
+        /// <param name="freq">Frequency in Hz</param>
+        /// <returns>Tuple (note, octave)</returns>
+        public static (string, int) FreqToNote(double freq)
+        {
+            var pitch = FreqToPitch(freq);
+
+            var note = Notes[pitch % 12];
+            var octave = pitch / 12 - 1;
+
+            return (note, octave);
+        }
+
+        /// <summary>
         /// Method converts herz frequency to corresponding mel frequency
         /// </summary>
         /// <param name="herz">Herz frequency</param>

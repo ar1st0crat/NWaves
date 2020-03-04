@@ -9,9 +9,20 @@ namespace NWaves.Signals.Builders
     /// </summary>
     public class KarplusStrongBuilder : WaveTableBuilder
     {
+        /// <summary>
+        /// Frequency in Hz
+        /// </summary>
         protected double _frequency;
-
+        
+        /// <summary>
+        /// Stretch factor (0, +INF]
+        /// </summary>
         protected double _stretchFactor = 1;
+
+        /// <summary>
+        /// Feedback coefficient [0, 1]
+        /// </summary>
+        protected float _feedback = 1;
 
         public KarplusStrongBuilder() : base(null)
         {
@@ -25,11 +36,9 @@ namespace NWaves.Signals.Builders
 
         private void Init()
         {
-            ParameterSetters = new Dictionary<string, Action<double>>
-            {
-                { "freq, f, frequency", param => SetFrequency(param) },
-                { "stretch, s", param => _stretchFactor = param }
-            };
+            ParameterSetters.Add("freq, f, frequency", param => SetFrequency(param));
+            ParameterSetters.Add("stretch, s", param => _stretchFactor = param);
+            ParameterSetters.Add("feedback, a", param => _feedback = (float)param);
         }
 
         private void SetFrequency(double param)
@@ -57,7 +66,7 @@ namespace NWaves.Signals.Builders
 
             if (_rand.NextDouble() < 1 / _stretchFactor)
             {
-                _samples[idx] = (_samples[idx] + _prev) / 2;
+                _samples[idx] = 0.5f * (_samples[idx] + _prev) * _feedback;
             }
 
             _prev = _samples[idx];

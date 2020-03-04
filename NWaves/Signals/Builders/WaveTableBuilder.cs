@@ -10,7 +10,9 @@ namespace NWaves.Signals.Builders
     {
         protected float[] _samples;
 
-        protected double _stride = 1;
+        protected float _stride = 1;
+
+        protected bool _interpolate;
 
 
         public WaveTableBuilder(float[] samples)
@@ -19,17 +21,36 @@ namespace NWaves.Signals.Builders
 
             ParameterSetters = new Dictionary<string, Action<double>>
             {
-                { "stride, step, delta", param => _stride = param }
+                { "stride, step, delta", param => SetStride(param) }
             };
+        }
+
+        private void SetStride(double stride)
+        {
+            _stride = (float)stride;
+
+            // if the stride is not integer then we'll be interpolating:
+            _interpolate = Math.Abs(Math.Round(stride) - stride) > 1e-5;
         }
 
         public override float NextSample()
         {
             var idx = ((int)_n) % _samples.Length;
 
-            _n += _stride;
+            if (_interpolate)
+            {
+                var frac = _n - (int)_n;
 
-            return _samples[idx];
+                _n += _stride;
+
+                return _samples[idx] + frac * (_samples[(idx + 1) % _samples.Length] - _samples[idx]);
+            }
+            else
+            {
+                _n += _stride;
+
+                return _samples[idx];
+            }
         }
 
         public override void Reset()
@@ -37,6 +58,6 @@ namespace NWaves.Signals.Builders
             _n = 0;
         }
 
-        protected double _n;
+        protected float _n;
     }
 }

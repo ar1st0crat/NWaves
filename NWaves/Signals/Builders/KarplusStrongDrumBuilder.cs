@@ -27,11 +27,11 @@
             {
                 if (_rand.NextDouble() < _probability)
                 {
-                    _samples[idx] = (_samples[idx] + _prev) / 2;
+                    _samples[idx] = 0.5f * (_samples[idx] + _prev) * _feedback;
                 }
                 else
                 {
-                    _samples[idx] = -(_samples[idx] + _prev) / 2;
+                    _samples[idx] = -0.5f * (_samples[idx] + _prev) * _feedback;
                 }
             }
 
