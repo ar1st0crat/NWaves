@@ -19,17 +19,61 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Numerator of transfer function
         /// </summary>
-        public double[] Numerator { get; private set; }
+        public double[] Numerator { get; protected set; }
 
         /// <summary>
         /// Denominator of transfer function
         /// </summary>
-        public double[] Denominator { get; private set; }
+        public double[] Denominator { get; protected set; }
 
         /// <summary>
         /// Max iterations for calculating zeros/poles (roots of polynomials): 25000 by default
         /// </summary>
         public int CalculateZpIterations { get; set; } = MathUtils.PolyRootsIterations;
+
+        /// <summary>
+        /// Gain ('k' in 'zpk' notation)
+        /// </summary>
+        public double Gain { get; protected set; } = 1;
+
+        /// <summary>
+        /// Zeros of TF
+        /// </summary>
+        private ComplexDiscreteSignal _zeros;
+        public ComplexDiscreteSignal Zeros
+        {
+            get
+            {
+                return _zeros ?? TfToZp(Numerator, CalculateZpIterations);
+            }
+            protected set
+            {
+                _zeros = value;
+                Numerator = _zeros != null ? ZpToTf(_zeros) : new[] { 1.0 };
+
+                for (var i = 0; i < Numerator.Length; i++)
+                {
+                    Numerator[i] *= Gain;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Poles of TF
+        /// </summary>
+        private ComplexDiscreteSignal _poles;
+        public ComplexDiscreteSignal Poles
+        {
+            get
+            {
+                return _poles ?? TfToZp(Denominator, CalculateZpIterations);
+            }
+            protected set
+            {
+                _poles = value;
+                Denominator = _poles != null ? ZpToTf(_poles) : new[] { 1.0 };
+            }
+        }
 
         /// <summary>
         /// TF constructor from numerator/denominator
@@ -54,50 +98,6 @@ namespace NWaves.Filters.Base
             Zeros = zeros;
             Poles = poles;
         }
-
-        /// <summary>
-        /// Zeros of TF
-        /// </summary>
-        private ComplexDiscreteSignal _zeros;
-        public ComplexDiscreteSignal Zeros
-        {
-            get
-            {
-                return _zeros ?? TfToZp(Numerator, CalculateZpIterations);
-            }
-            private set
-            {
-                _zeros = value;
-                Numerator = _zeros != null ? ZpToTf(_zeros) : new[] { 1.0 };
-
-                for (var i = 0; i < Numerator.Length; i++)
-                {
-                    Numerator[i] *= Gain;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Poles of TF
-        /// </summary>
-        private ComplexDiscreteSignal _poles;
-        public ComplexDiscreteSignal Poles
-        {
-            get
-            {
-                return _poles ?? TfToZp(Denominator, CalculateZpIterations);
-            }
-            private set
-            {
-                _poles = value;
-                Denominator = _poles != null ? ZpToTf(_poles) : new[] { 1.0 };
-            }
-        }
-
-        /// <summary>
-        /// Gain ('k' in 'zpk' notation)
-        /// </summary>
-        public double Gain { get; set; } = 1;
 
 
         /// <summary>

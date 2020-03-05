@@ -725,8 +725,8 @@ namespace NWaves.DemoForms
 
         private void AnalyzeCustomLpFilter()
         {
-            var order = 15;
-            var freq = 0.1;
+            var order = 23;
+            var freq = 0.22;
 
             if (filterParamsDataGrid.RowCount > 0)
             {
