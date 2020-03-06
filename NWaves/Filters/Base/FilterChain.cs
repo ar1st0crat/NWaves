@@ -24,10 +24,32 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
+        /// Constructor from collection of transfer functions (e.g., SOS sections).
+        /// This constructor will create IIR (!) filters.
+        /// </summary>
+        /// <param name="tfs"></param>
+        public FilterChain(IEnumerable<TransferFunction> tfs)
+        {
+            _filters = new List<IOnlineFilter>();
+
+            foreach (var tf in tfs)
+            {
+                _filters.Add(new IirFilter(tf));
+            }
+        }
+
+        /// <summary>
         /// Add filter to the chain
         /// </summary>
         /// <param name="filter"></param>
         public void Add(IOnlineFilter filter) => _filters.Add(filter);
+
+        /// <summary>
+        /// Insert filter at specified index into the chain
+        /// </summary>
+        /// <param name="idx"></param>
+        /// <param name="filter"></param>
+        public void Insert(int idx, IOnlineFilter filter) => _filters.Insert(idx, filter);
 
         /// <summary>
         /// Remove filter at specified index from the chain
