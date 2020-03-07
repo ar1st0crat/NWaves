@@ -161,24 +161,38 @@ namespace NWaves.Tests.TransformTests
         public void TestMdct()
         {
             float[] res = new float[4];
+            float[] fres = new float[4];
             float[] resMdct = { -0.38134489f, -0.01107969f, 0.27565625f, 0.09201603f };
 
             var mdct = new Mdct(4);
+            var fmdct = new FastMdct(4);
             mdct.DirectNorm(_test, res);
+            fmdct.DirectNorm(_test, fres);
 
-            Assert.That(res, Is.EqualTo(resMdct).Within(1e-5));
+            Assert.Multiple(() =>
+            {
+                Assert.That(res, Is.EqualTo(resMdct).Within(1e-5));
+                Assert.That(fres, Is.EqualTo(resMdct).Within(1e-5));
+            });
         }
 
         [Test]
         public void TestImdct()
         {
             float[] res = new float[8];
+            float[] fres = new float[8];
             float[] resMdct = { -0.38134489f, -0.01107969f, 0.27565625f, 0.09201603f };
 
             var mdct = new Mdct(4);
+            var fmdct = new FastMdct(4);
             mdct.InverseNorm(resMdct, res);
+            fmdct.InverseNorm(resMdct, fres);
 
-            Assert.That(res, Is.EqualTo(new[] { -0.05f, 0.05f, -0.05f, 0.05f, 0.45f, 0.15f, 0.15f, 0.45f }).Within(1e-5));
+            Assert.Multiple(() =>
+            {
+                Assert.That(res, Is.EqualTo(new[] { -0.05f, 0.05f, -0.05f, 0.05f, 0.45f, 0.15f, 0.15f, 0.45f }).Within(1e-5));
+                Assert.That(fres, Is.EqualTo(res).Within(1e-5));
+            });
         }
     }
 }

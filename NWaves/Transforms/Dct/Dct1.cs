@@ -46,6 +46,8 @@ namespace NWaves.Transforms
         /// <summary>
         /// DCT-I (without normalization)
         /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
         public void Direct(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
@@ -69,6 +71,8 @@ namespace NWaves.Transforms
         /// <summary>
         /// IDCT-I (without normalization)
         /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
         public void Inverse(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
@@ -92,7 +96,46 @@ namespace NWaves.Transforms
         /// <summary>
         /// DCT-I (with normalization)
         /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
         public void DirectNorm(float[] input, float[] output)
+        {
+            var sqrt2 = (float)Math.Sqrt(2);
+            var norm0 = 0.5f * (float)(Math.Sqrt(1.0 / (_dctSize - 1)));
+            var norm = norm0 * sqrt2;
+
+            for (var k = 0; k < output.Length; k++)
+            {
+                if ((k & 1) == 0)
+                {
+                    output[k] = (input[0] + input[input.Length - 1]) * sqrt2;
+                }
+                else
+                {
+                    output[k] = (input[0] - input[input.Length - 1]) * sqrt2;
+                }
+
+                for (var n = 1; n < input.Length - 1; n++)
+                {
+                    output[k] += input[n] * _dctMtx[k][n];
+                }
+
+                if (k > 0 && k < _dctSize - 1)
+                {
+                    output[k] *= norm;
+                }
+            }
+
+            output[0] *= norm0;
+            if (output.Length >= _dctSize) output[_dctSize - 1] *= norm0;
+        }
+
+        /// <summary>
+        /// Inverse DCT-I (with normalization)
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
+        public void InverseNorm(float[] input, float[] output)
         {
             var sqrt2 = (float)Math.Sqrt(2);
             var norm0 = 0.5f * (float)(Math.Sqrt(1.0 / (_dctSize - 1)));

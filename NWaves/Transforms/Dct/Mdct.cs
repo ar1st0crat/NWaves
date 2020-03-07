@@ -10,7 +10,7 @@ namespace NWaves.Transforms
         /// <summary>
         /// Internal DCT-IV transformer
         /// </summary>
-        private readonly Dct4 _dct;
+        private readonly IDct _dct;
         
         /// <summary>
         /// Internal temporary buffer
@@ -23,9 +23,9 @@ namespace NWaves.Transforms
         public int Size => _dct.Size;
 
 
-        public Mdct(int dctSize)
+        public Mdct(int dctSize, IDct dct = null)
         {
-            _dct = new Dct4(dctSize);
+            _dct = dct ?? new Dct4(dctSize);
             _temp = new float[dctSize];
         }
 

@@ -52,7 +52,7 @@ namespace NWaves.Transforms
             {
                 _dctMtxInv[k] = new float[dctSize];
 
-                for (var n = 1; n < dctSize; n++)
+                for (var n = 0; n < dctSize; n++)
                 {
                     _dctMtxInv[k][n] = 2 * (float)Math.Cos(((k << 1) + 1) * n * m);
                 }
@@ -62,6 +62,8 @@ namespace NWaves.Transforms
         /// <summary>
         /// DCT-II (without normalization)
         /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
         public void Direct(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
@@ -78,6 +80,8 @@ namespace NWaves.Transforms
         /// <summary>
         /// DCT-II (with normalization)
         /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
         public void DirectNorm(float[] input, float[] output)
         {
             var norm0 = (float)Math.Sqrt(0.5);
@@ -101,6 +105,8 @@ namespace NWaves.Transforms
         /// <summary>
         /// IDCT-II (without normalization)
         /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
         public void Inverse(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
@@ -111,6 +117,29 @@ namespace NWaves.Transforms
                 {
                     output[k] += input[n] * _dctMtxInv[k][n];
                 }
+            }
+        }
+
+        /// <summary>
+        /// IDCT-II (with normalization)
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
+        public void InverseNorm(float[] input, float[] output)
+        {
+            var norm0 = (float)Math.Sqrt(0.5);
+            var norm = (float)Math.Sqrt(0.5 / _dctSize);
+
+            for (var k = 0; k < output.Length; k++)
+            {
+                output[k] = input[0] * _dctMtxInv[k][0] * norm0;
+
+                for (var n = 1; n < input.Length; n++)
+                {
+                    output[k] += input[n] * _dctMtxInv[k][n];
+                }
+
+                output[k] *= norm;
             }
         }
     }

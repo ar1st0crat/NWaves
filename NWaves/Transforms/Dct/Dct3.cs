@@ -60,6 +60,8 @@ namespace NWaves.Transforms
         /// <summary>
         /// DCT-III (without normalization)
         /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
         public void Direct(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
@@ -76,6 +78,8 @@ namespace NWaves.Transforms
         /// <summary>
         /// DCT-III (with normalization)
         /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
         public void DirectNorm(float[] input, float[] output)
         {
             var norm0 = (float)(1 / Math.Sqrt(_dctSize));
@@ -98,6 +102,8 @@ namespace NWaves.Transforms
         /// <summary>
         /// IDCT-III (without normalization)
         /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
         public void Inverse(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
@@ -109,6 +115,31 @@ namespace NWaves.Transforms
                     output[k] += input[n] * _dctMtxInv[k][n];
                 }
             }
+        }
+
+        /// <summary>
+        /// IDCT-III (with normalization)
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
+        public void InverseNorm(float[] input, float[] output)
+        {
+            var norm0 = (float)Math.Sqrt(0.5);
+            var norm = (float)Math.Sqrt(0.5 / _dctSize);
+
+            for (var k = 0; k < output.Length; k++)
+            {
+                output[k] = 0;
+
+                for (var n = 0; n < input.Length; n++)
+                {
+                    output[k] += input[n] * _dctMtxInv[k][n];
+                }
+
+                output[k] *= norm;
+            }
+
+            output[0] *= norm0;
         }
     }
 }
