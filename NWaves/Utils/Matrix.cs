@@ -36,6 +36,12 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Get 2d array reference
+        /// </summary>
+        /// <returns></returns>
+        public double[][] As2dArray() => _matrix;
+
+        /// <summary>
         /// Transposed matrix
         /// </summary>
         public Matrix T

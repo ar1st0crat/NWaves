@@ -131,7 +131,7 @@ namespace NWaves.Filters.Base64
 
             // forward filtering: ============================================================
 
-            var initialZi = Tf.Zi();
+            var initialZi = Tf.Zi;
             var zi = initialZi.FastCopy();
             var baseSample = 2 * signal[0] - signal[padLength];
 

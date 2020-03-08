@@ -84,6 +84,7 @@ namespace NWaves.Filters.Base
         {
             Numerator = numerator;
             Denominator = denominator ?? new [] { 1.0 };
+            Gain = numerator[0];
         }
 
         /// <summary>
@@ -91,12 +92,178 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="zeros">Zeros</param>
         /// <param name="poles">Poles</param>
-        /// <param name="gain"></param>
+        /// <param name="gain">Gain</param>
         public TransferFunction(ComplexDiscreteSignal zeros, ComplexDiscreteSignal poles, double gain = 1)
         {
             Gain = gain;
             Zeros = zeros;
             Poles = poles;
+        }
+
+        /// <summary>
+        /// TF constructor from state space
+        /// </summary>
+        /// <param name="stateSpace"></param>
+        public TransferFunction(StateSpace stateSpace)
+        {
+            var a = stateSpace.A;
+
+            Denominator = new double[a.Length + 1];
+            Denominator[0] = 1;
+            for (var i = 1; i < Denominator.Length; i++)
+            {
+                Denominator[i] = -a[0][i - 1];
+            }
+
+            var c = stateSpace.C;
+            var d = stateSpace.D;
+
+            var num = new double[a.Length + 1];
+
+            for (var i = 0; i < a.Length; i++)
+            {
+                num[i + 1] = -(a[0][i] - c[i]) + (d[0] - 1) * Denominator[i + 1];
+            }
+
+            const double ZeroTolerance = 1e-8;
+
+            var index = 0;
+            for (var i = 1; i < num.Length; i++)
+            {
+                if (Math.Abs(num[i]) > ZeroTolerance)
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (Math.Abs(d[0]) > ZeroTolerance)
+            {
+                index--;
+            }
+
+            Numerator = num.FastCopyFragment(num.Length - index, index);
+            Gain = Math.Abs(d[0]) < ZeroTolerance ? Numerator[0] : d[0];
+            Numerator[0] = Gain;
+        }
+
+        /// <summary>
+        /// Get state-space representation
+        /// </summary>
+        /// <returns></returns>
+        public StateSpace StateSpace
+        {
+            get
+            {
+                var M = Numerator.Length;
+                var K = Denominator.Length;
+
+                if (M > K)
+                {
+                    throw new ArgumentException("Numerator size must not exceed denominator size");
+                }
+
+                var a0 = Denominator[0];    // normalize: all results will be divided by a0
+
+                if (K == 1)
+                {
+                    return new StateSpace
+                    {
+                        A = new Matrix(1).As2dArray(),
+                        B = new double[M],
+                        C = new double[M],
+                        D = new double[1] { Numerator[0] / a0 }
+                    };
+                }
+
+                var num = Numerator;
+
+                if (M < K)
+                {
+                    num = new double[K];
+                    Numerator.FastCopyTo(num, M, 0, K - M);
+                }
+
+                var a = new Matrix(K - 1);
+                for (var i = 0; i < K - 1; i++)
+                {
+                    a[0][i] = -Denominator[i + 1] / a0;
+                }
+                for (var i = 1; i < K - 1; i++)
+                {
+                    a[i][i - 1] = 1;
+                }
+
+                var b = new double[K - 1];
+                b[0] = 1;
+
+                var c = new double[K - 1];
+                for (var i = 0; i < K - 1; i++)
+                {
+                    c[i] = (num[i + 1] - num[0] * Denominator[i + 1] / a0) / a0;
+                }
+
+                var d = new double[1] { num[0] / a0 };
+
+                return new StateSpace
+                {
+                    A = a.As2dArray(),
+                    B = b,
+                    C = c,
+                    D = d
+                };
+            }
+        }
+
+        /// <summary>
+        /// Initial state 'zi' for filtering that corresponds to the steady state of the step response
+        /// </summary>
+        /// <returns>Initial state</returns>
+        public double[] Zi
+        {
+            get
+            {
+                var size = Math.Max(Numerator.Length, Denominator.Length);
+
+                var a = Denominator.PadZeros(size);
+                var b = Numerator.PadZeros(size);
+
+                var a0 = a[0];
+
+                for (var i = 0; i < a.Length; a[i++] /= a0) ;
+                for (var i = 0; i < b.Length; b[i++] /= a0) ;
+
+                var B = new double[size - 1];
+
+                for (var i = 1; i < size; i++)
+                {
+                    B[i - 1] = b[i] - a[i] * b[0];
+                }
+
+                Matrix m = Matrix.Eye(size - 1) - Matrix.Companion(a).T;
+
+                var sum = 0.0;
+
+                for (var i = 0; i < size - 1; i++)
+                {
+                    sum += m[i][0];
+                }
+
+                var zi = new double[size];
+
+                zi[0] = B.Sum() / sum;
+
+                var asum = 1.0;
+                var csum = 0.0;
+                for (var i = 1; i < size - 1; i++)
+                {
+                    asum += a[i];
+                    csum += b[i] - a[i] * b[0];
+                    zi[i] = asum * zi[0] - csum;
+                }
+
+                return zi;
+            }
         }
 
 
@@ -222,6 +389,8 @@ namespace NWaves.Filters.Base
             {
                 Numerator[i] *= gain;
             }
+
+            Gain = Numerator[0];
         }
 
         /// <summary>
@@ -245,56 +414,9 @@ namespace NWaves.Filters.Base
             {
                 Numerator[i] /= a0;
             }
+
+            Gain = Numerator[0];
         }
-
-        /// <summary>
-        /// Initial state 'zi' for filtering that corresponds to the steady state of the step response
-        /// </summary>
-        /// <returns>Initial state</returns>
-        public double[] Zi()
-        {
-            var size = Math.Max(Numerator.Length, Denominator.Length);
-
-            var a = Denominator.PadZeros(size);
-            var b = Numerator.PadZeros(size);
-
-            var a0 = a[0];
-
-            for (var i = 0; i < a.Length; a[i++] /= a0) ;
-            for (var i = 0; i < b.Length; b[i++] /= a0) ;
-
-            var B = new double[size - 1];
-
-            for (var i = 1; i < size; i++)
-            {
-                B[i - 1] = b[i] - a[i] * b[0];
-            }
-
-            Matrix m = Matrix.Eye(size - 1) - Matrix.Companion(a).T;
-
-            var sum = 0.0;
-
-            for (var i = 0; i < size - 1; i++)
-            {
-                sum += m[i][0];
-            }
-
-            var zi = new double[size];
-
-            zi[0] = B.Sum() / sum;
-
-            var asum = 1.0;
-            var csum = 0.0;
-            for (var i = 1; i < size - 1; i++)
-            {
-                asum += a[i];
-                csum += b[i] - a[i] * b[0];
-                zi[i] = asum * zi[0] - csum;
-            }
-
-            return zi;
-        }
-
 
         /// <summary>
         /// Method for converting zeros(poles) to TF numerator(denominator)

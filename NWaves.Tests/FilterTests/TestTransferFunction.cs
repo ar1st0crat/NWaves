@@ -152,5 +152,37 @@ namespace NWaves.Tests.FilterTests
                 Assert.That(tf.Denominator, Is.EqualTo(new[] { 1, -0.6, -1.42, 0.888, 0.4889, -0.4413, 0.0895, -0.0051, 0}).Within(1e-10));
             });
         }
+
+        [Test]
+        public void TestTfToStateSpace()
+        {
+            var tf = new TransferFunction(new[] { 2, 0.7, -0.2 }, new[] { 1, 0.5, 0.9, 0.6 });
+            var ss = tf.StateSpace;
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(ss.A[0], Is.EqualTo(new[] { -0.5, -0.9, -0.6 }).Within(1e-10));
+                Assert.That(ss.A[1], Is.EqualTo(new[] { 1.0, 0.0, 0.0 }).Within(1e-10));
+                Assert.That(ss.A[2], Is.EqualTo(new[] { 0.0, 1.0, 0.0 }).Within(1e-10));
+                Assert.That(ss.B, Is.EqualTo(new[] { 1.0, 0.0, 0.0 }).Within(1e-10));
+                Assert.That(ss.C, Is.EqualTo(new[] { 2.0, 0.7, -0.2 }).Within(1e-10));
+                Assert.That(ss.D, Is.EqualTo(new[] { 0.0 }).Within(1e-10));
+            });
+        }
+
+        [Test]
+        public void TestStateSpaceToTf()
+        {
+            var tf = new TransferFunction(new[] { 1, 0.7, -0.2, 0.1 }, new[] { 1, 0.5, 0.9, 0.6 });
+            var ss = tf.StateSpace;
+
+            var tfs = new TransferFunction(ss);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(tf.Numerator, Is.EqualTo(tf.Numerator).Within(1e-10));
+                Assert.That(tf.Denominator, Is.EqualTo(tf.Denominator).Within(1e-10));
+            });
+        }
     }
 }
