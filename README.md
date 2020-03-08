@@ -17,23 +17,26 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install 
 
 [Read wiki documentation](https://github.com/ar1st0crat/NWaves/wiki)
 
-New version **0.9.3** is out! Faster, smarter, more features. [Read about changes here](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
+New version **0.9.4** is out! Faster, smarter, more features. [Read about changes here](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
+
+[NWaves for MATLAB/sciPy users](https://github.com/ar1st0crat/NWaves/wiki/NWaves-for-MATLAB-and-sciPy-users)
 
 [Watch survey video](https://www.youtube.com/watch?v=GyRixqQ613A)
 
 
 ## Main features
 
-- [x] major DSP transforms (FFT, DCT, STFT, FWT, Hilbert, Hartley, Mellin, cepstral, Goertzel)
+- [x] major DSP transforms (FFT, DCT, MDCT, STFT, FWT, Hilbert, Hartley, Mellin, cepstral, Goertzel)
 - [x] signal builders (sine, white/pink/red/Perlin noise, awgn, triangle, sawtooth, square, pulse, ramp, ADSR, wavetable)
 - [x] basic LTI digital filters (moving average, comb, Savitzky-Golay, pre/de-emphasis, DC removal, RASTA)
-- [x] FIR/IIR filtering (offline and online)
+- [x] FIR/IIR filtering (offline and online), zero-phase filtering
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
 - [x] IIR filters (Bessel, Butterworth, Chebyshev I & II, Elliptic, Thiran)
 - [x] basic operations (convolution, cross-correlation, rectification, amplification)
 - [x] block convolution (overlap-add / overlap-save offline and online)
 - [x] basic filter design & analysis (group delay, zeros/poles, BP, BR, HP from/to LP, SOS, combining filters)
+- [x] state space representation of LTI filters
 - [x] FIR filter design: frequency sampling, window-sinc, equiripple (Remez / Parks-McClellan)
 - [x] non-linear filters (median filter, overdrive and distortion effects)
 - [x] windowing functions (Hamming, Blackman, Hann, Gaussian, Kaiser, KBD, triangular, Lanczos, flat-top, Bartlett-Hann)
@@ -56,6 +59,8 @@ New version **0.9.3** is out! Faster, smarter, more features. [Read about change
 - [x] sound effects (echo, tremolo, wahwah, phaser, chorus, vibrato, flanger, pitch shift, morphing, robotize, whisperize)
 - [x] harmonic/percussive separation
 - [x] Griffin-Lim algorithm
+- [x] Karplus-Strong synthesis
+- [x] PADSynth synthesis
 - [x] adaptive filtering (LMS, NLMS, LMF, SignLMS, RLS)
 - [x] simple modulation/demodulation (AM, ring, FM, PM)
 - [x] simple audio playback and recording
