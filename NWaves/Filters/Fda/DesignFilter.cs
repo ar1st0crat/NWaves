@@ -703,7 +703,7 @@ namespace NWaves.Filters.Fda
             RemoveConjugated(poles);
 
             var gains = new double[sosCount];
-            gains[0] = tf.Numerator[0];
+            gains[0] = tf.Gain;
             for (var i = 1; i < gains.Length; i++) gains[i] = 1;
 
             var sos = new TransferFunction[sosCount];

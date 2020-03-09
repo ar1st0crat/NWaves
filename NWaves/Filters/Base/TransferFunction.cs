@@ -32,48 +32,21 @@ namespace NWaves.Filters.Base
         public int CalculateZpIterations { get; set; } = MathUtils.PolyRootsIterations;
 
         /// <summary>
-        /// Gain ('k' in 'zpk' notation)
-        /// </summary>
-        public double Gain { get; protected set; } = 1;
-
-        /// <summary>
         /// Zeros of TF
         /// </summary>
-        private ComplexDiscreteSignal _zeros;
-        public ComplexDiscreteSignal Zeros
-        {
-            get
-            {
-                return _zeros ?? TfToZp(Numerator, CalculateZpIterations);
-            }
-            protected set
-            {
-                _zeros = value;
-                Numerator = _zeros != null ? ZpToTf(_zeros) : new[] { 1.0 };
-
-                for (var i = 0; i < Numerator.Length; i++)
-                {
-                    Numerator[i] *= Gain;
-                }
-            }
-        }
+        protected ComplexDiscreteSignal _zeros;
+        public ComplexDiscreteSignal Zeros => _zeros ?? TfToZp(Numerator, CalculateZpIterations);
 
         /// <summary>
         /// Poles of TF
         /// </summary>
-        private ComplexDiscreteSignal _poles;
-        public ComplexDiscreteSignal Poles
-        {
-            get
-            {
-                return _poles ?? TfToZp(Denominator, CalculateZpIterations);
-            }
-            protected set
-            {
-                _poles = value;
-                Denominator = _poles != null ? ZpToTf(_poles) : new[] { 1.0 };
-            }
-        }
+        protected ComplexDiscreteSignal _poles;
+        public ComplexDiscreteSignal Poles => _poles ?? TfToZp(Denominator, CalculateZpIterations);
+
+        /// <summary>
+        /// Gain ('k' in 'zpk' notation)
+        /// </summary>
+        public double Gain => Numerator[0];
 
         /// <summary>
         /// TF constructor from numerator/denominator
@@ -84,7 +57,6 @@ namespace NWaves.Filters.Base
         {
             Numerator = numerator;
             Denominator = denominator ?? new [] { 1.0 };
-            Gain = numerator[0];
         }
 
         /// <summary>
@@ -95,9 +67,16 @@ namespace NWaves.Filters.Base
         /// <param name="gain">Gain</param>
         public TransferFunction(ComplexDiscreteSignal zeros, ComplexDiscreteSignal poles, double gain = 1)
         {
-            Gain = gain;
-            Zeros = zeros;
-            Poles = poles;
+            _zeros = zeros;
+            _poles = poles;
+
+            Denominator = poles != null ? ZpToTf(poles) : new[] { 1.0 };
+            Numerator = zeros != null ? ZpToTf(zeros) : new[] { 1.0 };
+
+            for (var i = 0; i < Numerator.Length; i++)
+            {
+                Numerator[i] *= gain;
+            }
         }
 
         /// <summary>
@@ -143,8 +122,11 @@ namespace NWaves.Filters.Base
             }
 
             Numerator = num.FastCopyFragment(num.Length - index, index);
-            Gain = Math.Abs(d[0]) < ZeroTolerance ? Numerator[0] : d[0];
-            Numerator[0] = Gain;
+
+            if (Math.Abs(d[0]) > ZeroTolerance)
+            {
+                Numerator[0] = d[0];
+            }
         }
 
         /// <summary>
@@ -163,7 +145,7 @@ namespace NWaves.Filters.Base
                     throw new ArgumentException("Numerator size must not exceed denominator size");
                 }
 
-                var a0 = Denominator[0];    // normalize: all results will be divided by a0
+                var a0 = Denominator[0];    // normalize: all further results will be divided by a0
 
                 if (K == 1)
                 {
@@ -389,8 +371,6 @@ namespace NWaves.Filters.Base
             {
                 Numerator[i] *= gain;
             }
-
-            Gain = Numerator[0];
         }
 
         /// <summary>
@@ -400,7 +380,7 @@ namespace NWaves.Filters.Base
         {
             var a0 = Denominator[0];
 
-            if (Math.Abs(a0) < 1e-30)
+            if (Math.Abs(a0) < 1e-10)
             {
                 throw new ArgumentException("The first denominator coefficient can not be zero!");
             }
@@ -414,8 +394,6 @@ namespace NWaves.Filters.Base
             {
                 Numerator[i] /= a0;
             }
-
-            Gain = Numerator[0];
         }
 
         /// <summary>
