@@ -161,14 +161,27 @@ namespace NWaves.Audio
 
                     case 32:
                     {
-                        for (var i = 0; i < length; i++)
-                        {
-                            for (var j = 0; j < waveFmt.ChannelCount; j++)
+                        if (waveFmt.AudioFormat == 1)
                             {
-                                Signals[j][i] = reader.ReadInt32();
-                                if (normalized) Signals[j][i] /= 2147483648;
+                                for (var i = 0; i < length; i++)
+                                {
+                                    for (var j = 0; j < waveFmt.ChannelCount; j++)
+                                    {
+                                        Signals[j][i] = reader.ReadInt32();
+                                        if (normalized) Signals[j][i] /= 2147483648;
+                                    }
+                                }
                             }
-                        }
+                            else if (waveFmt.AudioFormat == 3)/*IeeeFloat*/ 
+                            {
+                                for (var i = 0; i < length; i++)
+                                {
+                                    for (var j = 0; j < waveFmt.ChannelCount; j++)
+                                    {
+                                        Signals[j][i] = reader.ReadSingle();
+                                    }
+                                }
+                            }
                         break;
                     }
 
