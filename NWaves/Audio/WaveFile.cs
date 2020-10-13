@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using NWaves.Audio.Interfaces;
 using NWaves.Signals;
 
@@ -21,12 +22,12 @@ namespace NWaves.Audio
         ///     Signals.Count = 2 (stereo)
         /// 
         /// </summary>
-        public List<DiscreteSignal> Signals { get; }
+        public List<DiscreteSignal> Signals { get; protected set; }
 
         /// <summary>
         /// Wav header struct
         /// </summary>
-        public WaveFormat WaveFmt { get; }
+        public WaveFormat WaveFmt { get; protected set; }
 
         /// <summary>
         /// Supported bit depths
@@ -34,7 +35,34 @@ namespace NWaves.Audio
         public short[] SupportedBitDepths = { 8, 16, 24, 32 };
 
         /// <summary>
-        /// This constructor loads signals from a wave file.
+        /// Constructor loads signals from a byte array (i.e. byte content of WAV file).
+        /// </summary>
+        /// <param name="waveBytes">Input array of bytes</param>
+        /// <param name="normalized">Normalization flag</param>
+        public WaveFile(byte[] waveBytes, bool normalized = true)
+        {
+            using (var stream = new MemoryStream(waveBytes))
+            {
+                ReadWaveStream(stream, normalized);
+            }
+        }
+
+        /// <summary>
+        /// Constructor loads signals from part of a byte array (i.e. byte content of WAV file).
+        /// </summary>
+        /// <param name="waveBytes">Input array of bytes</param>
+        /// <param name="index">Start position in byte array</param>
+        /// <param name="normalized">Normalization flag</param>
+        public WaveFile(byte[] waveBytes, int index, bool normalized = true) 
+        {
+            using (var stream = new MemoryStream(waveBytes, index, waveBytes.Length - index))
+            {
+                ReadWaveStream(stream, normalized);
+            }
+        }
+
+        /// <summary>
+        /// Constructor loads signals from a wave file.
         /// 
         /// Since NWaves is .NET Standard 2.0 library, there's no universal FileStream class.
         /// So it's supposed that the client code will take care 
@@ -43,15 +71,24 @@ namespace NWaves.Audio
         /// </summary>
         /// <param name="waveStream">Input stream</param>
         /// <param name="normalized">Normalization flag</param>
-        /// <returns></returns>
         /// <exception>Possible null exception</exception>
         public WaveFile(Stream waveStream, bool normalized = true)
         {
-            using (var reader = new BinaryReader(waveStream))
+            ReadWaveStream(waveStream, normalized);
+        }
+
+        /// <summary>
+        /// Read PCM WAV binary data and fill signals and WaveFormat structure
+        /// </summary>
+        /// <param name="waveStream"></param>
+        /// <param name="normalized"></param>
+        protected void ReadWaveStream(Stream waveStream, bool normalized = true)
+        {
+            using (var reader = new BinaryReader(waveStream, Encoding.ASCII, true))
             {
                 if (reader.ReadInt32() != 0x46464952)     // "RIFF"
                 {
-                    throw new FormatException("NOT RIFF!");
+                    throw new FormatException("WAV data error: NOT RIFF!");
                 }
 
                 // ignore file size
@@ -59,7 +96,7 @@ namespace NWaves.Audio
 
                 if (reader.ReadInt32() != 0x45564157)     // "WAVE"
                 {
-                    throw new FormatException("NOT WAVE!");
+                    throw new FormatException("WAV data error: NOT WAVE!");
                 }
 
                 // try to find "fmt " header in the file:
@@ -78,7 +115,7 @@ namespace NWaves.Audio
 
                 if (fmtPosition == reader.BaseStream.Length - 1)
                 {
-                    throw new FormatException("NOT fmt !");
+                    throw new FormatException("WAV data error: NOT fmt !");
                 }
 
                 var fmtSize = reader.ReadInt32();
@@ -116,7 +153,7 @@ namespace NWaves.Audio
 
                 if (dataPosition == reader.BaseStream.Length - 1)
                 {
-                    throw new FormatException("NOT data!");
+                    throw new FormatException("WAV data error: NOT data!");
                 }
 
                 var length = reader.ReadInt32();
@@ -134,34 +171,34 @@ namespace NWaves.Audio
                 switch (waveFmt.BitsPerSample)
                 {
                     case 8:
-                    {
-                        for (var i = 0; i < length; i++)
                         {
-                            for (var j = 0; j < waveFmt.ChannelCount; j++)
+                            for (var i = 0; i < length; i++)
                             {
-                                Signals[j][i] = reader.ReadByte() - 128;
-                                if (normalized) Signals[j][i] /= 128;
+                                for (var j = 0; j < waveFmt.ChannelCount; j++)
+                                {
+                                    Signals[j][i] = reader.ReadByte() - 128;
+                                    if (normalized) Signals[j][i] /= 128;
+                                }
                             }
+                            break;
                         }
-                        break;
-                    }
 
                     case 16:
-                    {
-                        for (var i = 0; i < length; i++)
                         {
-                            for (var j = 0; j < waveFmt.ChannelCount; j++)
+                            for (var i = 0; i < length; i++)
                             {
-                                Signals[j][i] = reader.ReadInt16();
-                                if (normalized) Signals[j][i] /= 32768;
+                                for (var j = 0; j < waveFmt.ChannelCount; j++)
+                                {
+                                    Signals[j][i] = reader.ReadInt16();
+                                    if (normalized) Signals[j][i] /= 32768;
+                                }
                             }
+                            break;
                         }
-                        break;
-                    }
 
                     case 32:
-                    {
-                        if (waveFmt.AudioFormat == 1)
+                        {
+                            if (waveFmt.AudioFormat == 1)
                             {
                                 for (var i = 0; i < length; i++)
                                 {
@@ -172,7 +209,7 @@ namespace NWaves.Audio
                                     }
                                 }
                             }
-                            else if (waveFmt.AudioFormat == 3)/*IeeeFloat*/ 
+                            else if (waveFmt.AudioFormat == 3)/*IeeeFloat*/
                             {
                                 for (var i = 0; i < length; i++)
                                 {
@@ -182,25 +219,25 @@ namespace NWaves.Audio
                                     }
                                 }
                             }
-                        break;
-                    }
+                            break;
+                        }
 
                     case 24:
-                    {
-                        for (var i = 0; i < length; i++)
                         {
-                            for (var j = 0; j < waveFmt.ChannelCount; j++)
+                            for (var i = 0; i < length; i++)
                             {
-                                var b1 = reader.ReadByte();
-                                var b2 = reader.ReadByte();
-                                var b3 = reader.ReadByte();
+                                for (var j = 0; j < waveFmt.ChannelCount; j++)
+                                {
+                                    var b1 = reader.ReadByte();
+                                    var b2 = reader.ReadByte();
+                                    var b3 = reader.ReadByte();
 
-                                Signals[j][i] = (b1 << 8 | b2 << 16 | b3 << 24);
-                                if (normalized) Signals[j][i] /= 2147483648;
+                                    Signals[j][i] = (b1 << 8 | b2 << 16 | b3 << 24);
+                                    if (normalized) Signals[j][i] /= 2147483648;
+                                }
                             }
+                            break;
                         }
-                        break;
-                    }
 
                     default:
                         throw new ArgumentException(
@@ -210,7 +247,7 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// This constructor loads signals into container.
+        /// Constructor loads signals into container.
         /// </summary>
         /// <param name="signals">Signals to be loaded into container</param>
         /// <param name="bitsPerSample">Bit depth</param>
@@ -263,13 +300,27 @@ namespace NWaves.Audio
         }
 
         /// <summary>
+        /// Method returns the contents of a wave file as array of bytes.
+        /// </summary>
+        /// <param name="normalized">Normalization flag</param>
+        /// <returns>Array of bytes</returns>
+        public byte[] GetBytes(bool normalized = true)
+        {
+            using (var stream = new MemoryStream())
+            {
+                SaveTo(stream, normalized);
+                return stream.ToArray();
+            }
+        }
+
+        /// <summary>
         /// Method saves the contents of a wave file to stream.
         /// </summary>
         /// <param name="waveStream">Output stream for saving</param>
         /// <param name="normalized">Normalization flag</param>
         public void SaveTo(Stream waveStream, bool normalized = true)
         {
-            using (var writer = new BinaryWriter(waveStream))
+            using (var writer = new BinaryWriter(waveStream, Encoding.ASCII, true))
             {
                 var length = Signals[0].Length;
 
