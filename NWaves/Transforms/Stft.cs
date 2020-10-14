@@ -78,11 +78,11 @@ namespace NWaves.Transforms
         {
             // pre-allocate memory:
 
-            var len = (samples.Length - _windowSize) / _hopSize;
+            var len = (samples.Length - _windowSize) / _hopSize + 1;
 
-            var stft = new List<(float[], float[])>(len + 1);
+            var stft = new List<(float[], float[])>(len);
 
-            for (var i = 0; i <= len; i++)
+            for (int i = 0; i < len; i++)
             {
                 stft.Add((new float[_fftSize], new float[_fftSize]));
             }
@@ -91,7 +91,9 @@ namespace NWaves.Transforms
 
             var windowedBuffer = new float[_fftSize];
 
-            for (int pos = 0, i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
+            int pos = 0;
+
+            for (int i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
             {
                 samples.FastCopyTo(windowedBuffer, _windowSize, pos);
 
@@ -102,49 +104,21 @@ namespace NWaves.Transforms
                 _fft.Direct(windowedBuffer, re, im);
             }
 
+            // last (incomplete) frame:
+
+            if (pos < samples.Length)
+            {
+                Array.Clear(windowedBuffer, 0, _fftSize);
+                samples.FastCopyTo(windowedBuffer, samples.Length - pos, pos);
+                windowedBuffer.ApplyWindow(_windowSamples);
+
+                stft.Add((new float[_fftSize], new float[_fftSize]));
+                var (re, im) = stft.Last();
+
+                _fft.Direct(windowedBuffer, re, im);
+            }
+
             return stft;
-        }
-
-        /// <summary>
-        /// Inverse STFT
-        /// </summary>
-        /// <param name="stft"></param>
-        /// <returns></returns>
-        public float[] Inverse(List<(float[], float[])> stft)
-        {
-            var spectraCount = stft.Count;
-            var output = new float[spectraCount * _hopSize + _fftSize];
-
-            var buf = new float[_fftSize];
-
-            var pos = 0;
-            for (var i = 0; i < spectraCount; i++)
-            {
-                var (re, im) = stft[i];
-
-                _fft.Inverse(re, im, buf);
-
-                // windowing and reconstruction
-
-                for (var j = 0; j < _windowSize; j++)
-                {
-                    output[pos + j] += buf[j] * _windowSamples[j];
-                }
-
-                for (var j = 0; j < _hopSize; j++)
-                {
-                    output[pos + j] *= _gain;
-                }
-
-                pos += _hopSize;
-            }
-
-            for (var j = 0; j < _windowSize; j++)
-            {
-                output[pos + j] *= _gain;
-            }
-
-            return output;
         }
 
         /// <summary>
@@ -158,12 +132,101 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
+        /// Inverse STFT
+        /// </summary>
+        /// <param name="stft">Result of Direct STFT</param>
+        /// <param name="perfectReconstruction"></param>
+        /// <returns>ISTFT</returns>
+        public float[] Inverse(List<(float[], float[])> stft, bool perfectReconstruction = false)
+        {
+            var spectraCount = stft.Count;
+            var output = new float[spectraCount * _hopSize + _fftSize];
+
+            var buf = new float[_fftSize];
+
+            int pos = 0;
+
+            if (perfectReconstruction)
+            {
+                var gain = 1f / _windowSize;
+
+                var windowSum = new float[output.Length];
+
+                for (int i = 0; i < spectraCount; i++)
+                {
+                    var (re, im) = stft[i];
+
+                    _fft.Inverse(re, im, buf);
+
+                    // windowing and reconstruction
+
+                    for (var j = 0; j < _windowSize; j++)
+                    {
+                        output[pos + j] += buf[j] * _windowSamples[j];
+                        windowSum[pos + j] += _windowSamples[j] * _windowSamples[j];
+                    }
+
+                    for (var j = 0; j < _hopSize; j++)
+                    {
+                        output[pos + j] *= gain;
+                    }
+
+                    pos += _hopSize;
+                }
+
+                for (var j = 0; j < _windowSize; j++)
+                {
+                    output[pos + j] *= gain;
+                }
+
+                for (var j = 0; j < output.Length; j++)
+                {
+                    if (Math.Abs(windowSum[j]) > 1e-30)
+                    {
+                        output[j] /= windowSum[j];
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < spectraCount; i++)
+                {
+                    var (re, im) = stft[i];
+
+                    _fft.Inverse(re, im, buf);
+
+                    // windowing and reconstruction
+
+                    for (var j = 0; j < _windowSize; j++)
+                    {
+                        output[pos + j] += buf[j] * _windowSamples[j];
+                    }
+
+                    for (var j = 0; j < _hopSize; j++)
+                    {
+                        output[pos + j] *= _gain;
+                    }
+
+                    pos += _hopSize;
+                }
+
+                for (var j = 0; j < _windowSize; j++)
+                {
+                    output[pos + j] *= _gain;
+                }
+            }
+
+            return output;
+        }
+
+        /// <summary>
         /// Method for computing a spectrogram.
         /// The spectrogram is essentially a list of power spectra in time.
         /// </summary>
         /// <param name="samples">The samples of signal</param>
+        /// <param name="normalize">Normalize each spectrum</param>
         /// <returns>Spectrogram of the signal</returns>
-        public List<float[]> Spectrogram(float[] samples)
+        public List<float[]> Spectrogram(float[] samples, bool normalize = true)
         {
             // pre-allocate memory:
 
@@ -180,7 +243,9 @@ namespace NWaves.Transforms
 
             var windowedBuffer = new float[_fftSize];
             
-            for (int pos = 0, i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
+            int pos = 0;
+
+            for (int i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
             {
                 samples.FastCopyTo(windowedBuffer, _windowSize, pos);
 
@@ -189,7 +254,20 @@ namespace NWaves.Transforms
                     windowedBuffer.ApplyWindow(_windowSamples);
                 }
 
-                _fft.PowerSpectrum(windowedBuffer, spectrogram[i]);
+                _fft.PowerSpectrum(windowedBuffer, spectrogram[i], normalize);
+            }
+
+            // last (incomplete) frame:
+
+            if (pos < samples.Length)
+            {
+                Array.Clear(windowedBuffer, 0, _fftSize);
+                samples.FastCopyTo(windowedBuffer, samples.Length - pos, pos);
+                windowedBuffer.ApplyWindow(_windowSamples);
+
+                spectrogram.Add(new float[_fftSize / 2 + 1]);
+
+                _fft.PowerSpectrum(windowedBuffer, spectrogram.Last(), normalize);
             }
 
             return spectrogram;
@@ -199,10 +277,11 @@ namespace NWaves.Transforms
         /// Overloaded method for DiscreteSignal as an input
         /// </summary>
         /// <param name="signal">Signal</param>
+        /// <param name="normalize">Normalize each spectrum</param>
         /// <returns>Spectrogram of the signal</returns>
-        public List<float[]> Spectrogram(DiscreteSignal signal)
+        public List<float[]> Spectrogram(DiscreteSignal signal, bool normalize = true)
         {
-            return Spectrogram(signal.Samples);
+            return Spectrogram(signal.Samples, normalize);
         }
 
         /// <summary>
@@ -231,7 +310,9 @@ namespace NWaves.Transforms
             var re = new float[_fftSize / 2 + 1];
             var im = new float[_fftSize / 2 + 1];
 
-            for (int pos = 0, i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
+            int pos = 0;
+
+            for (int i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
             {
                 samples.FastCopyTo(windowedBuffer, _windowSize, pos);
 
@@ -243,6 +324,29 @@ namespace NWaves.Transforms
                 {
                     mag[i][j] = (float)Math.Sqrt(re[j] * re[j] + im[j] * im[j]);
                     phase[i][j] = (float)Math.Atan2(im[j], re[j]);
+                }
+            }
+
+            // last (incomplete) frame:
+
+            if (pos < samples.Length)
+            {
+                Array.Clear(windowedBuffer, 0, _fftSize);
+                samples.FastCopyTo(windowedBuffer, samples.Length - pos, pos);
+                windowedBuffer.ApplyWindow(_windowSamples);
+
+                mag.Add(new float[_fftSize / 2 + 1]);
+                phase.Add(new float[_fftSize / 2 + 1]);
+
+                _fft.Direct(windowedBuffer, re, im);
+
+                var m = mag.Last();
+                var p = phase.Last();
+
+                for (var j = 0; j <= _fftSize / 2; j++)
+                {
+                    m[j] = (float)Math.Sqrt(re[j] * re[j] + im[j] * im[j]);
+                    p[j] = (float)Math.Atan2(im[j], re[j]);
                 }
             }
 
@@ -263,8 +367,9 @@ namespace NWaves.Transforms
         /// Reconstruct samples from magnitude-phase spectrogram
         /// </summary>
         /// <param name="spectrogram"></param>
+        /// <param name="perfectReconstruction"></param>
         /// <returns></returns>
-        public float[] ReconstructMagnitudePhase(MagnitudePhaseList spectrogram)
+        public float[] ReconstructMagnitudePhase(MagnitudePhaseList spectrogram, bool perfectReconstruction = false)
         {
             var spectraCount = spectrogram.Magnitudes.Count;
             var output = new float[spectraCount * _hopSize + _windowSize];
@@ -276,35 +381,84 @@ namespace NWaves.Transforms
             var re = new float[_fftSize / 2 + 1];
             var im = new float[_fftSize / 2 + 1];
 
-            var pos = 0;
-            for (var i = 0; i < spectraCount; i++)
+            int pos = 0;
+
+            if (perfectReconstruction)
             {
-                for (var j = 0; j <= _fftSize / 2; j++)
+                var gain = 1f / _windowSize;
+
+                var windowSum = new float[output.Length];
+
+                for (var i = 0; i < spectraCount; i++)
                 {
-                    re[j] = (float)(mag[i][j] * Math.Cos(phase[i][j]));
-                    im[j] = (float)(mag[i][j] * Math.Sin(phase[i][j]));
+                    for (var j = 0; j <= _fftSize / 2; j++)
+                    {
+                        re[j] = (float)(mag[i][j] * Math.Cos(phase[i][j]));
+                        im[j] = (float)(mag[i][j] * Math.Sin(phase[i][j]));
+                    }
+
+                    _fft.Inverse(re, im, buf);
+
+                    // windowing and reconstruction
+
+                    for (var j = 0; j < _windowSize; j++)
+                    {
+                        output[pos + j] += buf[j] * _windowSamples[j];
+                        windowSum[pos + j] += _windowSamples[j] * _windowSamples[j];
+                    }
+
+                    for (var j = 0; j < _hopSize; j++)
+                    {
+                        output[pos + j] *= gain;
+                    }
+
+                    pos += _hopSize;
                 }
-
-                _fft.Inverse(re, im, buf);
-
-                // windowing and reconstruction
 
                 for (var j = 0; j < _windowSize; j++)
                 {
-                    output[pos + j] += buf[j] * _windowSamples[j];
+                    output[pos + j] *= gain;
                 }
 
-                for (var j = 0; j < _hopSize; j++)
+                for (var j = 0; j < output.Length; j++)
+                {
+                    if (Math.Abs(windowSum[j]) > 1e-30)
+                    {
+                        output[j] /= windowSum[j];
+                    }
+                }
+            }
+            else
+            {
+                for (var i = 0; i < spectraCount; i++)
+                {
+                    for (var j = 0; j <= _fftSize / 2; j++)
+                    {
+                        re[j] = (float)(mag[i][j] * Math.Cos(phase[i][j]));
+                        im[j] = (float)(mag[i][j] * Math.Sin(phase[i][j]));
+                    }
+
+                    _fft.Inverse(re, im, buf);
+
+                    // windowing and reconstruction
+
+                    for (var j = 0; j < _windowSize; j++)
+                    {
+                        output[pos + j] += buf[j] * _windowSamples[j];
+                    }
+
+                    for (var j = 0; j < _hopSize; j++)
+                    {
+                        output[pos + j] *= _gain;
+                    }
+
+                    pos += _hopSize;
+                }
+
+                for (var j = 0; j < _windowSize; j++)
                 {
                     output[pos + j] *= _gain;
                 }
-
-                pos += _hopSize;
-            }
-
-            for (var j = 0; j < _windowSize; j++)
-            {
-                output[pos + j] *= _gain;
             }
 
             return output;
