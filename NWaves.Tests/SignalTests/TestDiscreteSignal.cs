@@ -141,6 +141,21 @@ namespace NWaves.Tests.SignalTests
         }
 
         [Test]
+        public void TestReverse()
+        {
+            //Arrange
+            var test = _signal.Copy();
+            var reversed = _signal.Copy().Samples;
+            Array.Reverse(reversed);
+
+            //Act
+            test.Reverse();
+
+            //Assert
+            Assert.That(test.Samples, Is.EqualTo(reversed));
+        }
+
+        [Test]
         public void TestSlice()
         {
             // Act

@@ -1,24 +1,12 @@
 ﻿using NWaves.Signals;
+using NWaves.Transforms;
+using System;
+using System.Linq;
 
 namespace NWaves.Filters.Base
 {
     public static class IFilterExtensions
     {
-        /// <summary>
-        /// Method implements online filtering for discrete signals
-        /// </summary>
-        /// <param name="filter">Some filter</param>
-        /// <param name="input">Input signal</param>
-        /// <param name="method">General filtering strategy</param>
-        /// <returns>Filtered signal</returns>
-        public static DiscreteSignal Process(this IOnlineFilter filter,
-                                                  DiscreteSignal input)
-        {
-            var output = new float [input.Length];
-            filter.Process(input.Samples, output, output.Length);
-            return new DiscreteSignal(input.SamplingRate, output);
-        }
-
         /// <summary>
         /// Method implements online filtering (frame-by-frame)
         /// </summary>
@@ -45,6 +33,57 @@ namespace NWaves.Filters.Base
             {
                 output[m] = filter.Process(input[n]);
             }
+        }
+
+
+        /// <summary>
+        /// Calculate filtering gain so that frequency response is normalized onto [0, 1] range.
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <param name="fftSize"></param>
+        /// <returns>Gain for filtering operations</returns>
+        public static float EstimateGain(this IOnlineFilter filter, int fftSize = 512)
+        {
+            var unit = DiscreteSignal.Unit(fftSize);
+            
+            // get impulse response
+
+            var response = unit.Samples.Select(s => filter.Process(s)).ToArray();
+
+            // get frequency response
+
+            var spectrum = new float[fftSize / 2 + 1];
+            var fft = new RealFft(fftSize);
+            fft.MagnitudeSpectrum(response, spectrum);
+
+            return 1 / spectrum.Max(s => Math.Abs(s));
+        }
+
+        /// <summary>
+        /// Filter signal with additional gain
+        /// </summary>
+        /// <param name="filter">Online filter</param>
+        /// <param name="input">Input signal</param>
+        /// <param name="gain">Gain</param>
+        /// <returns>Filtered signal</returns>
+        public static DiscreteSignal ApplyTo(this IOnlineFilter filter,
+                                             DiscreteSignal input,
+                                             float gain)
+        {
+            var output = input.Samples.Select(s => gain * filter.Process(s));
+            return new DiscreteSignal(input.SamplingRate, output);
+        }
+
+        /// <summary>
+        /// Process one sample of a signal with additional gain
+        /// </summary>
+        /// <param name="filter">Online filter</param>
+        /// <param name="sample">Input sample</param>
+        /// <param name="gain">Gain</param>
+        /// <returns></returns>
+        public static float Process(this IOnlineFilter filter, float sample, float gain)
+        {
+            return gain * filter.Process(sample);
         }
 
         /// <summary>

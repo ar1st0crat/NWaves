@@ -213,6 +213,22 @@ namespace NWaves.Signals
         }
 
         /// <summary>
+        /// Reverse signal in-place
+        /// </summary>
+        /// <param name="signal"></param>
+        public static void Reverse(this DiscreteSignal signal)
+        {
+            var samples = signal.Samples;
+
+            for (int i = 0, j = samples.Length - 1; i < samples.Length / 2; i++, j--)
+            {
+                var tmp = samples[i];
+                samples[i] = samples[j];
+                samples[j] = tmp;
+            }
+        }
+
+        /// <summary>
         /// Return copy of first N samples
         /// </summary>
         /// <param name="signal">Signal</param>

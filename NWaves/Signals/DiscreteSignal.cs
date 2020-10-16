@@ -107,6 +107,32 @@ namespace NWaves.Signals
         }
 
         /// <summary>
+        /// Unit impulse
+        /// </summary>
+        /// <param name="length"></param>
+        /// <param name="samplingRate"></param>
+        /// <returns></returns>
+        public static DiscreteSignal Unit(int length, int samplingRate = 1)
+        {
+            var unit = new float[length];
+            unit[0] = 1;
+
+            return new DiscreteSignal(samplingRate, unit);
+        }
+
+        /// <summary>
+        /// Constant signal
+        /// </summary>
+        /// <param name="constant"></param>
+        /// <param name="length"></param>
+        /// <param name="samplingRate"></param>
+        /// <returns></returns>
+        public static DiscreteSignal Constant(float constant, int length, int samplingRate = 1)
+        {
+            return new DiscreteSignal(samplingRate, length, constant);
+        }
+
+        /// <summary>
         /// Method for creating deep copy of the signal
         /// </summary>
         /// <returns>Copy of the signal</returns>

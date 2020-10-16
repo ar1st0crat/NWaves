@@ -625,12 +625,11 @@ namespace NWaves.Filters.Fda
                 var filter3 = new IirFilter(new[] { a0, a13, a2 }, new[] { b0, b1, b2 });
                 var filter4 = new IirFilter(new[] { a0, a14, a2 }, new[] { b0, b1, b2 });
 
-                var ir = new DiscreteSignal(1, fftSize);
-                ir[0] = 1.0f;
+                var unitImpulse = DiscreteSignal.Unit(fftSize);
 
                 var chain = new FilterChain(new[] { filter1, filter2, filter3, filter4 });
 
-                var kernel = chain.ApplyTo(ir);
+                var kernel = chain.ApplyTo(unitImpulse);
                 kernel.Attenuate(gain);
 
                 erbFilterBank[i] = fft.PowerSpectrum(kernel, false).Samples;
