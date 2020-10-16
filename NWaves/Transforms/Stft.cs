@@ -44,11 +44,6 @@ namespace NWaves.Transforms
         private readonly float[] _windowSamples;
 
         /// <summary>
-        /// ISTFT normalization gain
-        /// </summary>
-        private readonly float _gain;
-
-        /// <summary>
         /// Constructor with necessary parameters
         /// </summary>
         /// <param name="windowSize">Size of window</param>
@@ -64,8 +59,6 @@ namespace NWaves.Transforms
             _windowSize = windowSize;
             _window = window;
             _windowSamples = Window.OfType(_window, _windowSize);
-
-            _gain = 1 / (_fftSize * _windowSamples.Select(w => w * w).Sum() / _hopSize);
         }
 
         /// <summary>
@@ -78,11 +71,11 @@ namespace NWaves.Transforms
         {
             // pre-allocate memory:
 
-            var len = (samples.Length - _windowSize) / _hopSize + 1;
+            var len = (samples.Length - _windowSize) / _hopSize;
 
-            var stft = new List<(float[], float[])>(len);
+            var stft = new List<(float[], float[])>(len + 1);
 
-            for (int i = 0; i < len; i++)
+            for (int i = 0; i <= len; i++)
             {
                 stft.Add((new float[_fftSize], new float[_fftSize]));
             }
@@ -91,7 +84,7 @@ namespace NWaves.Transforms
 
             var windowedBuffer = new float[_fftSize];
 
-            int pos = 0;
+            var pos = 0;
 
             for (int i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
             {
@@ -137,86 +130,106 @@ namespace NWaves.Transforms
         /// <param name="stft">Result of Direct STFT</param>
         /// <param name="perfectReconstruction"></param>
         /// <returns>ISTFT</returns>
-        public float[] Inverse(List<(float[], float[])> stft, bool perfectReconstruction = false)
+        public float[] Inverse(List<(float[], float[])> stft, bool perfectReconstruction = true)
         {
             var spectraCount = stft.Count;
             var output = new float[spectraCount * _hopSize + _fftSize];
 
             var buf = new float[_fftSize];
 
-            int pos = 0;
+            float gain;
+
+            var pos = 0;
 
             if (perfectReconstruction)
             {
-                var gain = 1f / _windowSize;
+                Guard.AgainstExceedance(_hopSize, _windowSize, "Hop size for perfect reconstruction", "window size");
 
-                var windowSum = new float[output.Length];
+                gain = 1f / _windowSize;
+            }
+            // simpler reconstruction of the signal
+            // (with insignificant discrepancies in the beginning and in the end)
+            else
+            {
+                gain = 1 / (_fftSize * _windowSamples.Select(w => w * w).Sum() / _hopSize);
+            }
 
-                for (int i = 0; i < spectraCount; i++)
-                {
-                    var (re, im) = stft[i];
 
-                    _fft.Inverse(re, im, buf);
+            for (var i = 0; i < spectraCount; i++)
+            {
+                var (re, im) = stft[i];
 
-                    // windowing and reconstruction
+                _fft.Inverse(re, im, buf);
 
-                    for (var j = 0; j < _windowSize; j++)
-                    {
-                        output[pos + j] += buf[j] * _windowSamples[j];
-                        windowSum[pos + j] += _windowSamples[j] * _windowSamples[j];
-                    }
-
-                    for (var j = 0; j < _hopSize; j++)
-                    {
-                        output[pos + j] *= gain;
-                    }
-
-                    pos += _hopSize;
-                }
+                // windowing and reconstruction
 
                 for (var j = 0; j < _windowSize; j++)
+                {
+                    output[pos + j] += buf[j] * _windowSamples[j];
+                }
+
+                for (var j = 0; j < _hopSize; j++)
                 {
                     output[pos + j] *= gain;
                 }
 
-                for (var j = 0; j < output.Length; j++)
-                {
-                    if (Math.Abs(windowSum[j]) > 1e-30)
-                    {
-                        output[j] /= windowSum[j];
-                    }
-                }
+                pos += _hopSize;
             }
-            else
+
+            for (var j = 0; j < _windowSize; j++)
             {
-                for (int i = 0; i < spectraCount; i++)
+                output[pos + j] *= gain;
+            }
+
+
+            if (perfectReconstruction)      // additional normalization
+            {
+                float[] windowSummed = ComputeWindowSummed();
+
+                var offset = _windowSize - _hopSize;
+
+                for (int j = 0, k = output.Length - _hopSize - 1; j < offset; j++, k--)
                 {
-                    var (re, im) = stft[i];
-
-                    _fft.Inverse(re, im, buf);
-
-                    // windowing and reconstruction
-
-                    for (var j = 0; j < _windowSize; j++)
+                    if (Math.Abs(windowSummed[j]) > 1e-30)
                     {
-                        output[pos + j] += buf[j] * _windowSamples[j];
+                        output[j] /= windowSummed[j];   // leftmost part of the signal
+                        output[k] /= windowSummed[j];   // rightmost part of the signal
                     }
-
-                    for (var j = 0; j < _hopSize; j++)
-                    {
-                        output[pos + j] *= _gain;
-                    }
-
-                    pos += _hopSize;
                 }
 
-                for (var j = 0; j < _windowSize; j++)
+                // main central part of the signal
+
+                for (int j = offset, k = offset; j < output.Length - _windowSize; j++, k++)
                 {
-                    output[pos + j] *= _gain;
+                    if (k == _windowSize) k = offset;
+
+                    output[j] /= windowSummed[k];
                 }
             }
 
             return output;
+        }
+
+        /// <summary>
+        /// Helper method for ISTFT in 'perfect reconstruction' mode
+        /// </summary>
+        /// <returns>Summed window coefficients</returns>
+        private float[] ComputeWindowSummed()
+        {
+            var windowSummed = new float[_windowSize];
+
+            var pos = 0;
+
+            while (pos < _windowSize)
+            {
+                for (var j = 0; pos + j < _windowSize; j++)
+                {
+                    windowSummed[pos + j] += _windowSamples[j] * _windowSamples[j];
+                }
+                pos += _hopSize;
+            }
+
+            return windowSummed;
         }
 
         /// <summary>
@@ -243,7 +256,7 @@ namespace NWaves.Transforms
 
             var windowedBuffer = new float[_fftSize];
             
-            int pos = 0;
+            var pos = 0;
 
             for (int i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
             {
@@ -310,9 +323,9 @@ namespace NWaves.Transforms
             var re = new float[_fftSize / 2 + 1];
             var im = new float[_fftSize / 2 + 1];
 
-            int pos = 0;
+            var pos = 0;
 
-            for (int i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
+            for (var i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
             {
                 samples.FastCopyTo(windowedBuffer, _windowSize, pos);
 
@@ -369,7 +382,7 @@ namespace NWaves.Transforms
         /// <param name="spectrogram"></param>
         /// <param name="perfectReconstruction"></param>
         /// <returns></returns>
-        public float[] ReconstructMagnitudePhase(MagnitudePhaseList spectrogram, bool perfectReconstruction = false)
+        public float[] ReconstructMagnitudePhase(MagnitudePhaseList spectrogram, bool perfectReconstruction = true)
         {
             var spectraCount = spectrogram.Magnitudes.Count;
             var output = new float[spectraCount * _hopSize + _windowSize];
@@ -381,83 +394,77 @@ namespace NWaves.Transforms
             var re = new float[_fftSize / 2 + 1];
             var im = new float[_fftSize / 2 + 1];
 
-            int pos = 0;
+            float gain;
+
+            var pos = 0;
 
             if (perfectReconstruction)
             {
-                var gain = 1f / _windowSize;
+                Guard.AgainstExceedance(_hopSize, _windowSize, "Hop size for perfect reconstruction", "window size");
 
-                var windowSum = new float[output.Length];
+                gain = 1f / _windowSize;
+            }
+            // simpler reconstruction of the signal
+            // (with insignificant discrepancies in the beginning and in the end)
+            else
+            {
+                gain = 1 / (_fftSize * _windowSamples.Select(w => w * w).Sum() / _hopSize);
+            }
 
-                for (var i = 0; i < spectraCount; i++)
+
+            for (var i = 0; i < spectraCount; i++)
+            {
+                for (var j = 0; j <= _fftSize / 2; j++)
                 {
-                    for (var j = 0; j <= _fftSize / 2; j++)
-                    {
-                        re[j] = (float)(mag[i][j] * Math.Cos(phase[i][j]));
-                        im[j] = (float)(mag[i][j] * Math.Sin(phase[i][j]));
-                    }
-
-                    _fft.Inverse(re, im, buf);
-
-                    // windowing and reconstruction
-
-                    for (var j = 0; j < _windowSize; j++)
-                    {
-                        output[pos + j] += buf[j] * _windowSamples[j];
-                        windowSum[pos + j] += _windowSamples[j] * _windowSamples[j];
-                    }
-
-                    for (var j = 0; j < _hopSize; j++)
-                    {
-                        output[pos + j] *= gain;
-                    }
-
-                    pos += _hopSize;
+                    re[j] = (float)(mag[i][j] * Math.Cos(phase[i][j]));
+                    im[j] = (float)(mag[i][j] * Math.Sin(phase[i][j]));
                 }
 
+                _fft.Inverse(re, im, buf);
+
+                // windowing and reconstruction
+
                 for (var j = 0; j < _windowSize; j++)
+                {
+                    output[pos + j] += buf[j] * _windowSamples[j];
+                }
+
+                for (var j = 0; j < _hopSize; j++)
                 {
                     output[pos + j] *= gain;
                 }
 
-                for (var j = 0; j < output.Length; j++)
-                {
-                    if (Math.Abs(windowSum[j]) > 1e-30)
-                    {
-                        output[j] /= windowSum[j];
-                    }
-                }
+                pos += _hopSize;
             }
-            else
+
+            for (var j = 0; j < _windowSize; j++)
             {
-                for (var i = 0; i < spectraCount; i++)
+                output[pos + j] *= gain;
+            }
+
+
+            if (perfectReconstruction)      // additional normalization
+            {
+                float[] windowSummed = ComputeWindowSummed();
+
+                var offset = _windowSize - _hopSize;
+
+                for (int j = 0, k = output.Length - _hopSize - 1; j < offset; j++, k--)
                 {
-                    for (var j = 0; j <= _fftSize / 2; j++)
+                    if (Math.Abs(windowSummed[j]) > 1e-30)
                     {
-                        re[j] = (float)(mag[i][j] * Math.Cos(phase[i][j]));
-                        im[j] = (float)(mag[i][j] * Math.Sin(phase[i][j]));
+                        output[j] /= windowSummed[j];   // leftmost part of the signal
+                        output[k] /= windowSummed[j];   // rightmost part of the signal
                     }
-
-                    _fft.Inverse(re, im, buf);
-
-                    // windowing and reconstruction
-
-                    for (var j = 0; j < _windowSize; j++)
-                    {
-                        output[pos + j] += buf[j] * _windowSamples[j];
-                    }
-
-                    for (var j = 0; j < _hopSize; j++)
-                    {
-                        output[pos + j] *= _gain;
-                    }
-
-                    pos += _hopSize;
                 }
 
-                for (var j = 0; j < _windowSize; j++)
+                // main central part of the signal
+
+                for (int j = offset, k = offset; j < output.Length - _windowSize; j++, k++)
                 {
-                    output[pos + j] *= _gain;
+                    if (k == _windowSize) k = offset;
+
+                    output[j] /= windowSummed[k];
                 }
             }
 

@@ -19,6 +19,8 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install 
 
 New version **0.9.4** is out! Faster, smarter, more features. [Read about changes here](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
 
+[Notes for non-experts in DSP](https://github.com/ar1st0crat/NWaves/wiki/Notes-for-non~experts-in-DSP)
+
 [NWaves for MATLAB/sciPy users](https://github.com/ar1st0crat/NWaves/wiki/NWaves-for-MATLAB-and-sciPy-users)
 
 [Watch survey video](https://www.youtube.com/watch?v=GyRixqQ613A)
@@ -393,14 +395,14 @@ var pd = transferFunction.PhaseDelay();
 
 // some examples of FIR filter design:
 
-var kernel = DesignFilter.FirWinLp(345, 0.15f);
+var kernel = DesignFilter.FirWinLp(345, 0.15);
 var lpFilter = new FirFilter(kernel);
 
 // HP filter can be obtained from LP with the same cutoff frequency:
 var hpFilter = DesignFilter.FirLpToHp(lpFilter);
 
 // design BP filter
-var bpFilter = DesignFilter.FirWinBp(123, 0.05f, 0.15f);
+var bpFilter = DesignFilter.FirWinBp(123, 0.05, 0.15);
 
 // design equiripple HP filter
 var bpFilter = DesignFilter.FirEquirippleHp(123, 0.34, 0.355, 0.05, 0.95);
