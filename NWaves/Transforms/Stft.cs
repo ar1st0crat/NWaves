@@ -65,17 +65,17 @@ namespace NWaves.Transforms
         /// Method for computing direct STFT of a signal block.
         /// STFT (spectrogram) is essentially the list of spectra in time.
         /// </summary>
-        /// <param name="samples">The samples of signal</param>
+        /// <param name="input">Samples of input signal</param>
         /// <returns>STFT of the signal</returns>
-        public List<(float[], float[])> Direct(float[] samples)
+        public List<(float[], float[])> Direct(float[] input)
         {
             // pre-allocate memory:
 
-            var len = (samples.Length - _windowSize) / _hopSize;
+            var len = (input.Length - _windowSize) / _hopSize + 1;
 
-            var stft = new List<(float[], float[])>(len + 1);
+            var stft = new List<(float[], float[])>(len);
 
-            for (int i = 0; i <= len; i++)
+            for (var i = 0; i < len; i++)
             {
                 stft.Add((new float[_fftSize], new float[_fftSize]));
             }
@@ -83,12 +83,12 @@ namespace NWaves.Transforms
             // stft:
 
             var windowedBuffer = new float[_fftSize];
-
+            
             var pos = 0;
 
-            for (int i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
+            for (var i = 0; i < len; pos += _hopSize, i++)
             {
-                samples.FastCopyTo(windowedBuffer, _windowSize, pos);
+                input.FastCopyTo(windowedBuffer, _windowSize, pos);
 
                 windowedBuffer.ApplyWindow(_windowSamples);
 
@@ -99,17 +99,15 @@ namespace NWaves.Transforms
 
             // last (incomplete) frame:
 
-            if (pos < samples.Length)
-            {
-                Array.Clear(windowedBuffer, 0, _fftSize);
-                samples.FastCopyTo(windowedBuffer, samples.Length - pos, pos);
-                windowedBuffer.ApplyWindow(_windowSamples);
+            stft.Add((new float[_fftSize], new float[_fftSize]));
 
-                stft.Add((new float[_fftSize], new float[_fftSize]));
-                var (re, im) = stft.Last();
+            Array.Clear(windowedBuffer, 0, _fftSize);
+            input.FastCopyTo(windowedBuffer, input.Length - pos, pos);
+            windowedBuffer.ApplyWindow(_windowSamples);
+                        
+            var (lre, lim) = stft.Last();
 
-                _fft.Direct(windowedBuffer, re, im);
-            }
+            _fft.Direct(windowedBuffer, lre, lim);
 
             return stft;
         }
@@ -139,8 +137,6 @@ namespace NWaves.Transforms
 
             float gain;
 
-            var pos = 0;
-
             if (perfectReconstruction)
             {
                 Guard.AgainstExceedance(_hopSize, _windowSize, "Hop size for perfect reconstruction", "window size");
@@ -154,6 +150,8 @@ namespace NWaves.Transforms
                 gain = 1 / (_fftSize * _windowSamples.Select(w => w * w).Sum() / _hopSize);
             }
 
+
+            var pos = 0;
 
             for (var i = 0; i < spectraCount; i++)
             {
@@ -218,15 +216,12 @@ namespace NWaves.Transforms
         {
             var windowSummed = new float[_windowSize];
 
-            var pos = 0;
-
-            while (pos < _windowSize)
+            for (var pos = 0; pos < _windowSize; pos += _hopSize)
             {
                 for (var j = 0; pos + j < _windowSize; j++)
                 {
                     windowSummed[pos + j] += _windowSamples[j] * _windowSamples[j];
                 }
-                pos += _hopSize;
             }
 
             return windowSummed;
@@ -236,18 +231,18 @@ namespace NWaves.Transforms
         /// Method for computing a spectrogram.
         /// The spectrogram is essentially a list of power spectra in time.
         /// </summary>
-        /// <param name="samples">The samples of signal</param>
+        /// <param name="input">Samples of input signal</param>
         /// <param name="normalize">Normalize each spectrum</param>
         /// <returns>Spectrogram of the signal</returns>
-        public List<float[]> Spectrogram(float[] samples, bool normalize = true)
+        public List<float[]> Spectrogram(float[] input, bool normalize = true)
         {
             // pre-allocate memory:
 
-            var len = (samples.Length - _windowSize) / _hopSize;
+            var len = (input.Length - _windowSize) / _hopSize + 1;
 
-            var spectrogram = new List<float[]>(len + 1);
+            var spectrogram = new List<float[]>(len);
 
-            for (var i = 0; i <= len; i++)
+            for (var i = 0; i < len; i++)
             {
                 spectrogram.Add(new float[_fftSize / 2 + 1]);
             }
@@ -258,9 +253,9 @@ namespace NWaves.Transforms
             
             var pos = 0;
 
-            for (int i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
+            for (int i = 0; i < len; pos += _hopSize, i++)
             {
-                samples.FastCopyTo(windowedBuffer, _windowSize, pos);
+                input.FastCopyTo(windowedBuffer, _windowSize, pos);
 
                 if (_window != WindowTypes.Rectangular)
                 {
@@ -272,16 +267,13 @@ namespace NWaves.Transforms
 
             // last (incomplete) frame:
 
-            if (pos < samples.Length)
-            {
-                Array.Clear(windowedBuffer, 0, _fftSize);
-                samples.FastCopyTo(windowedBuffer, samples.Length - pos, pos);
-                windowedBuffer.ApplyWindow(_windowSamples);
+            Array.Clear(windowedBuffer, 0, _fftSize);
+            input.FastCopyTo(windowedBuffer, input.Length - pos, pos);
+            windowedBuffer.ApplyWindow(_windowSamples);
 
-                spectrogram.Add(new float[_fftSize / 2 + 1]);
+            spectrogram.Add(new float[_fftSize / 2 + 1]);
 
-                _fft.PowerSpectrum(windowedBuffer, spectrogram.Last(), normalize);
-            }
+            _fft.PowerSpectrum(windowedBuffer, spectrogram.Last(), normalize);
 
             return spectrogram;
         }
@@ -300,18 +292,18 @@ namespace NWaves.Transforms
         /// <summary>
         /// Method for computing a spectrogram as arrays of Magnitude and Phase.
         /// </summary>
-        /// <param name="samples">The samples of signal</param>
+        /// <param name="input">Samples of input signal</param>
         /// <returns>Magnitude-Phase spectrogram of the signal</returns>
-        public MagnitudePhaseList MagnitudePhaseSpectrogram(float[] samples)
+        public MagnitudePhaseList MagnitudePhaseSpectrogram(float[] input)
         {
             // pre-allocate memory:
 
-            var len = (samples.Length - _windowSize) / _hopSize;
+            var len = (input.Length - _windowSize) / _hopSize + 1;
 
-            var mag = new List<float[]>(len + 1);
-            var phase = new List<float[]>(len + 1);
+            var mag = new List<float[]>(len);
+            var phase = new List<float[]>(len);
 
-            for (var i = 0; i <= len; i++)
+            for (var i = 0; i < len; i++)
             {
                 mag.Add(new float[_fftSize / 2 + 1]);
                 phase.Add(new float[_fftSize / 2 + 1]);
@@ -325,9 +317,9 @@ namespace NWaves.Transforms
 
             var pos = 0;
 
-            for (var i = 0; pos + _windowSize < samples.Length; pos += _hopSize, i++)
+            for (var i = 0; i < len; pos += _hopSize, i++)
             {
-                samples.FastCopyTo(windowedBuffer, _windowSize, pos);
+                input.FastCopyTo(windowedBuffer, _windowSize, pos);
 
                 windowedBuffer.ApplyWindow(_windowSamples);
 
@@ -342,25 +334,22 @@ namespace NWaves.Transforms
 
             // last (incomplete) frame:
 
-            if (pos < samples.Length)
+            Array.Clear(windowedBuffer, 0, _fftSize);
+            input.FastCopyTo(windowedBuffer, input.Length - pos, pos);
+            windowedBuffer.ApplyWindow(_windowSamples);
+
+            mag.Add(new float[_fftSize / 2 + 1]);
+            phase.Add(new float[_fftSize / 2 + 1]);
+
+            _fft.Direct(windowedBuffer, re, im);
+
+            var m = mag.Last();
+            var p = phase.Last();
+
+            for (var j = 0; j <= _fftSize / 2; j++)
             {
-                Array.Clear(windowedBuffer, 0, _fftSize);
-                samples.FastCopyTo(windowedBuffer, samples.Length - pos, pos);
-                windowedBuffer.ApplyWindow(_windowSamples);
-
-                mag.Add(new float[_fftSize / 2 + 1]);
-                phase.Add(new float[_fftSize / 2 + 1]);
-
-                _fft.Direct(windowedBuffer, re, im);
-
-                var m = mag.Last();
-                var p = phase.Last();
-
-                for (var j = 0; j <= _fftSize / 2; j++)
-                {
-                    m[j] = (float)Math.Sqrt(re[j] * re[j] + im[j] * im[j]);
-                    p[j] = (float)Math.Atan2(im[j], re[j]);
-                }
+                m[j] = (float)Math.Sqrt(re[j] * re[j] + im[j] * im[j]);
+                p[j] = (float)Math.Atan2(im[j], re[j]);
             }
 
             return new MagnitudePhaseList { Magnitudes = mag, Phases = phase };
@@ -395,9 +384,7 @@ namespace NWaves.Transforms
             var im = new float[_fftSize / 2 + 1];
 
             float gain;
-
-            var pos = 0;
-
+            
             if (perfectReconstruction)
             {
                 Guard.AgainstExceedance(_hopSize, _windowSize, "Hop size for perfect reconstruction", "window size");
@@ -411,6 +398,7 @@ namespace NWaves.Transforms
                 gain = 1 / (_fftSize * _windowSamples.Select(w => w * w).Sum() / _hopSize);
             }
 
+            var pos = 0;
 
             for (var i = 0; i < spectraCount; i++)
             {

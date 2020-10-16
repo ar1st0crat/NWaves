@@ -56,19 +56,21 @@ namespace NWaves.Filters
             }
 
             var input = signal.Samples;
-            var output = new float[input.Length];
+            var output = new float[input.Length + 1];
 
             var b0 = _b[0];
             var b1 = _b[1];
 
             _prevSample = 0;
-            
-            for (var i = 0; i < input.Length; i++)
+
+            int i = 0;
+            for (; i < input.Length; i++)
             {
                 var sample = input[i];
                 output[i] = b0 * sample + b1 * _prevSample;
                 _prevSample = sample;
             }
+            output[i] = b1 * _prevSample;
 
             return new DiscreteSignal(signal.SamplingRate, output);
         }

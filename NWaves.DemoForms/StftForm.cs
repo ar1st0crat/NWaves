@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using NWaves.Audio;
+using NWaves.Filters;
 using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Transforms;
@@ -52,18 +53,18 @@ namespace NWaves.DemoForms
                 _bitDepth = waveFile.WaveFmt.BitsPerSample;
                 _signal = waveFile[Channels.Average];
             }
-
-            _stft = new Stft(512, 200, _windowType);
+                        
+            _stft = new Stft(512, 128, _windowType);
 
             _spectrogram = _stft.Spectrogram(_signal);
 
             var processed = _stft.Inverse(_stft.Direct(_signal));
             _processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
 
-
+            
             // 1) check also this:
             //var mp = _stft.MagnitudePhaseSpectrogram(_signal);
-            //var processed = _stft.ReconstructMagnitudePhase(mp, true);
+            //var processed = _stft.ReconstructMagnitudePhase(mp, false);
             //_processedSignal = new DiscreteSignal(_signal.SamplingRate, processed);
 
             // 2) or check this:
@@ -73,10 +74,9 @@ namespace NWaves.DemoForms
             signalPanel.Gain = 120;
             signalPanel.Signal = _signal;
             processedSignalPanel.Gain = 120;
-            processedSignalPanel.Signal = (_signal - _processedSignal) * 10;
+            processedSignalPanel.Signal = _processedSignal;
 
             spectrogramPanel.Spectrogram = _spectrogram;
-
 
 
             //// StftC - has complex FFT
