@@ -15,8 +15,16 @@ namespace NWaves.Filters.Fda
     /// </summary>
     public static class DesignFilter
     {
+        ///
+        /// FirWin(Lp|Hp|Bp|Bs) functions:
+        /// 
+        /// as of ver.0.9.5,
+        /// they're coded as the special case of fractional-delay FIR filter design
+        /// with either delay=0 (odd order) or delay=0.5 (even order)
+        /// 
+
         /// <summary>
-        /// Method for ideal lowpass FIR filter design using sinc-window method
+        /// Method for ideal lowpass FIR filter design using sinc-window method.
         /// </summary>
         /// <param name="order">Order</param>
         /// <param name="freq">Cutoff frequency (normalized: fc = f/fs)</param>
@@ -24,23 +32,7 @@ namespace NWaves.Filters.Fda
         /// <returns>LP filter kernel</returns>
         public static double[] FirWinLp(int order, double freq, WindowTypes window = WindowTypes.Blackman)
         {
-            Guard.AgainstEvenNumber(order, "The order of the filter");
-
-            var kernel = new double[order];
-
-            var middle = order / 2;
-            var freq2Pi = 2 * Math.PI * freq;
-
-            kernel[middle] = 2 * freq;
-            for (var i = 1; i <= middle; i++)
-            {
-                kernel[middle - i] = 
-                kernel[middle + i] = Math.Sin(freq2Pi * i) / (Math.PI * i);
-            }
-
-            kernel.ApplyWindow(window);
-
-            return kernel;
+            return FirWinFdLp(order, freq, (order + 1) % 2 / 2.0, window);
         }
 
         /// <summary>
@@ -52,23 +44,7 @@ namespace NWaves.Filters.Fda
         /// <returns></returns>
         public static double[] FirWinHp(int order, double freq, WindowTypes window = WindowTypes.Blackman)
         {
-            Guard.AgainstEvenNumber(order, "The order of the filter");
-
-            var kernel = new double[order];
-
-            var middle = order / 2;
-            var freq2Pi = 2 * Math.PI * freq;
-
-            kernel[middle] = 2 * (0.5 - freq);
-            for (var i = 1; i <= middle; i++)
-            {
-                kernel[middle - i] =
-                kernel[middle + i] = -Math.Sin(freq2Pi * i) / (Math.PI * i);
-            }
-
-            kernel.ApplyWindow(window);
-
-            return kernel;
+            return FirWinFdHp(order, freq, (order + 1) % 2 / 2.0, window);
         }
 
         /// <summary>
@@ -81,25 +57,7 @@ namespace NWaves.Filters.Fda
         /// <returns></returns>
         public static double[] FirWinBp(int order, double freq1, double freq2, WindowTypes window = WindowTypes.Blackman)
         {
-            Guard.AgainstEvenNumber(order, "The order of the filter");
-            Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
-
-            var kernel = new double[order];
-
-            var middle = order / 2;
-            var freq12Pi = 2 * Math.PI * freq1;
-            var freq22Pi = 2 * Math.PI * freq2;
-
-            kernel[middle] = 2 * (freq2 - freq1);
-            for (var i = 1; i <= middle; i++)
-            {
-                kernel[middle - i] =
-                kernel[middle + i] = (Math.Sin(freq22Pi * i) - Math.Sin(freq12Pi * i)) / (Math.PI * i);
-            }
-
-            kernel.ApplyWindow(window);
-
-            return kernel;
+            return FirWinFdBp(order, freq1, freq2, (order + 1) % 2 / 2.0, window);
         }
 
         /// <summary>
@@ -112,25 +70,7 @@ namespace NWaves.Filters.Fda
         /// <returns></returns>
         public static double[] FirWinBs(int order, double freq1, double freq2, WindowTypes window = WindowTypes.Blackman)
         {
-            Guard.AgainstEvenNumber(order, "The order of the filter");
-            Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
-
-            var kernel = new double[order];
-
-            var middle = order / 2;
-            var freq12Pi = 2 * Math.PI * freq1;
-            var freq22Pi = 2 * Math.PI * freq2;
-
-            kernel[middle] = 2 * (0.5 - freq2 + freq1);
-            for (var i = 1; i <= middle; i++)
-            {
-                kernel[middle - i] =
-                kernel[middle + i] = (Math.Sin(freq12Pi * i) - Math.Sin(freq22Pi * i)) / (Math.PI * i);
-            }
-
-            kernel.ApplyWindow(window);
-
-            return kernel;
+            return FirWinFdBs(order, freq1, freq2, (order + 1) % 2 / 2.0, window);
         }
 
         /// <summary>
@@ -294,7 +234,7 @@ namespace NWaves.Filters.Fda
         }
 
 
-        #region fractional delay
+        #region fractional delay FIR filter design
 
         /// <summary>
         /// Method for ideal lowpass fractional-delay FIR filter design using sinc-window method
@@ -315,14 +255,16 @@ namespace NWaves.Filters.Fda
             {
                 var d = i - delay - middle;
 
-                kernel[i] = Math.Sin(freq2Pi * d) / (Math.PI * d);
+                kernel[i] = d == 0 ? 2 * freq : Math.Sin(freq2Pi * d) / (Math.PI * d);
             }
 
             kernel.ApplyWindow(window);
+            
+            NormalizeKernel(kernel);
 
             return kernel;
         }
-
+        
         /// <summary>
         /// Method for ideal highpass fractional-delay FIR filter design using sinc-window method
         /// </summary>
@@ -338,18 +280,20 @@ namespace NWaves.Filters.Fda
             var middle = (order - 1) / 2;
             var freq2Pi = 2 * Math.PI * (0.5 - freq);
 
-            var sign = 1;
+            var sign = -1;
 
             for (var i = 0; i < order; i++)
             {
                 var d = i - delay - middle;
 
-                kernel[i] = sign * Math.Sin(freq2Pi * d) / (Math.PI * d);
+                kernel[i] = d == 0 ? 2 * (0.5 - freq) : sign * Math.Sin(freq2Pi * d) / (Math.PI * d);
                 
                 sign = -sign;
             }
 
             kernel.ApplyWindow(window);
+
+            NormalizeKernel(kernel, Math.PI);
 
             return kernel;
         }
@@ -377,10 +321,12 @@ namespace NWaves.Filters.Fda
             {
                 var d = i - delay - middle;
 
-                kernel[i] = (Math.Sin(freq22Pi * d) - Math.Sin(freq12Pi * d)) / (Math.PI * d);
+                kernel[i] = d == 0 ? 2 * (freq2 - freq1) : (Math.Sin(freq22Pi * d) - Math.Sin(freq12Pi * d)) / (Math.PI * d);
             }
 
             kernel.ApplyWindow(window);
+
+            NormalizeKernel(kernel, 2 * Math.PI * (freq1 + freq2) / 2);
 
             return kernel;
         }
@@ -410,13 +356,15 @@ namespace NWaves.Filters.Fda
             {
                 var d = i - delay - middle;
 
-                kernel[i] = (Math.Sin(freq12Pi * d) + sign * Math.Sin(freq22Pi * d)) / (Math.PI * d);
+                kernel[i] = d == 0 ? 2 * (0.5 - freq2 + freq1) : (Math.Sin(freq12Pi * d) + sign * Math.Sin(freq22Pi * d)) / (Math.PI * d);
 
                 sign = -sign;
             }
 
             kernel.ApplyWindow(window);
 
+            NormalizeKernel(kernel);
+            
             return kernel;
         }
 
@@ -440,7 +388,26 @@ namespace NWaves.Filters.Fda
 
             kernel.ApplyWindow(window);
 
+            NormalizeKernel(kernel);
+
             return kernel;
+        }
+
+        /// <summary>
+        /// Normalize frequency response at given frequency
+        /// (normalize kernel coefficients to map frequency response onto [0, 1])
+        /// </summary>
+        /// <param name="kernel">Kernel</param>
+        public static void NormalizeKernel(double[] kernel, double freq = 0)
+        {
+            var w = Complex.FromPolarCoordinates(1, freq);
+
+            var gain = Complex.Abs(1 / MathUtils.EvaluatePolynomial(kernel, w));
+
+            for (var i = 0; i < kernel.Length; i++)
+            {
+                kernel[i] *= gain;
+            }
         }
 
         #endregion
