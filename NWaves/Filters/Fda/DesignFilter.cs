@@ -18,10 +18,10 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Method for ideal lowpass FIR filter design using sinc-window method
         /// </summary>
-        /// <param name="order"></param>
-        /// <param name="freq"></param>
-        /// <param name="window"></param>
-        /// <returns></returns>
+        /// <param name="order">Order</param>
+        /// <param name="freq">Cutoff frequency (normalized: fc = f/fs)</param>
+        /// <param name="window">Window</param>
+        /// <returns>LP filter kernel</returns>
         public static double[] FirWinLp(int order, double freq, WindowTypes window = WindowTypes.Blackman)
         {
             Guard.AgainstEvenNumber(order, "The order of the filter");
@@ -294,7 +294,159 @@ namespace NWaves.Filters.Fda
         }
 
 
-        #region Convert LowPass FIR filter kernel between band forms
+        #region fractional delay
+
+        /// <summary>
+        /// Method for ideal lowpass fractional-delay FIR filter design using sinc-window method
+        /// </summary>
+        /// <param name="order"></param>
+        /// <param name="freq"></param>
+        /// <param name="delay"></param>
+        /// <param name="window"></param>
+        /// <returns></returns>
+        public static double[] FirWinFdLp(int order, double freq, double delay, WindowTypes window = WindowTypes.Blackman)
+        {
+            var kernel = new double[order];
+
+            var middle = (order - 1) / 2;
+            var freq2Pi = 2 * Math.PI * freq;
+
+            for (var i = 0; i < order; i++)
+            {
+                var d = i - delay - middle;
+
+                kernel[i] = Math.Sin(freq2Pi * d) / (Math.PI * d);
+            }
+
+            kernel.ApplyWindow(window);
+
+            return kernel;
+        }
+
+        /// <summary>
+        /// Method for ideal highpass fractional-delay FIR filter design using sinc-window method
+        /// </summary>
+        /// <param name="order"></param>
+        /// <param name="freq"></param>
+        /// <param name="delay"></param>
+        /// <param name="window"></param>
+        /// <returns></returns>
+        public static double[] FirWinFdHp(int order, double freq, double delay, WindowTypes window = WindowTypes.Blackman)
+        {
+            var kernel = new double[order];
+
+            var middle = (order - 1) / 2;
+            var freq2Pi = 2 * Math.PI * (0.5 - freq);
+
+            var sign = 1;
+
+            for (var i = 0; i < order; i++)
+            {
+                var d = i - delay - middle;
+
+                kernel[i] = sign * Math.Sin(freq2Pi * d) / (Math.PI * d);
+                
+                sign = -sign;
+            }
+
+            kernel.ApplyWindow(window);
+
+            return kernel;
+        }
+
+        /// <summary>
+        /// Method for ideal bandpass fractional-delay FIR filter design using sinc-window method
+        /// </summary>
+        /// <param name="order"></param>
+        /// <param name="freq1"></param>
+        /// <param name="freq2"></param>
+        /// <param name="delay"></param>
+        /// <param name="window"></param>
+        /// <returns></returns>
+        public static double[] FirWinFdBp(int order, double freq1, double freq2, double delay, WindowTypes window = WindowTypes.Blackman)
+        {
+            Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
+
+            var kernel = new double[order];
+
+            var middle = (order - 1) / 2;
+            var freq12Pi = 2 * Math.PI * freq1;
+            var freq22Pi = 2 * Math.PI * freq2;
+
+            for (var i = 0; i < order; i++)
+            {
+                var d = i - delay - middle;
+
+                kernel[i] = (Math.Sin(freq22Pi * d) - Math.Sin(freq12Pi * d)) / (Math.PI * d);
+            }
+
+            kernel.ApplyWindow(window);
+
+            return kernel;
+        }
+
+        /// <summary>
+        /// Method for ideal bandstop fractional-delay FIR filter design using sinc-window method
+        /// </summary>
+        /// <param name="order"></param>
+        /// <param name="freq1"></param>
+        /// <param name="freq2"></param>
+        /// <param name="delay"></param>
+        /// <param name="window"></param>
+        /// <returns></returns>
+        public static double[] FirWinFdBs(int order, double freq1, double freq2, double delay, WindowTypes window = WindowTypes.Blackman)
+        {
+            Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
+
+            var kernel = new double[order];
+
+            var middle = (order - 1) / 2;
+            var freq12Pi = 2 * Math.PI * freq1;
+            var freq22Pi = 2 * Math.PI * (0.5 - freq2);
+
+            var sign = 1;
+
+            for (var i = 0; i < order; i++)
+            {
+                var d = i - delay - middle;
+
+                kernel[i] = (Math.Sin(freq12Pi * d) + sign * Math.Sin(freq22Pi * d)) / (Math.PI * d);
+
+                sign = -sign;
+            }
+
+            kernel.ApplyWindow(window);
+
+            return kernel;
+        }
+
+        /// <summary>
+        /// Method for all-pass fractional-delay FIR filter design using sinc-window method
+        /// </summary>
+        /// <param name="order"></param>
+        /// <param name="delay"></param>
+        /// <param name="window"></param>
+        /// <returns></returns>
+        public static double[] FirWinFdAp(int order, double delay, WindowTypes window = WindowTypes.Blackman)
+        {
+            var kernel = new double[order];
+
+            var middle = (order - 1) / 2;
+            
+            for (var i = 0; i < order; i++)
+            {
+                kernel[i] = MathUtils.Sinc(i - delay - middle);
+            }
+
+            kernel.ApplyWindow(window);
+
+            return kernel;
+        }
+
+        #endregion
+
+
+        #region convert LowPass FIR filter kernel between band forms
 
         /// <summary>
         /// Method for making HP filter from the linear-phase LP filter
