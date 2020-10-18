@@ -796,8 +796,8 @@ namespace NWaves.Filters.Fda
         /// <returns>Array of SOS transfer functions</returns>
         public static TransferFunction[] TfToSos(TransferFunction tf)
         {
-            var zeros = tf.Zeros.ToComplexNumbers().ToList();
-            var poles = tf.Poles.ToComplexNumbers().ToList();
+            var zeros = tf.Zeros.ToList();
+            var poles = tf.Poles.ToList();
 
             if (zeros.Count != poles.Count)
             {
@@ -895,10 +895,7 @@ namespace NWaves.Filters.Fda
                     }
                 }
 
-                var zs = new ComplexDiscreteSignal(1, new[] { z1.Real, z2.Real }, new[] { z1.Imaginary, z2.Imaginary });
-                var ps = new ComplexDiscreteSignal(1, new[] { p1.Real, p2.Real }, new[] { p1.Imaginary, p2.Imaginary });
-
-                sos[i] = new TransferFunction(zs, ps, gains[i]);
+                sos[i] = new TransferFunction(new[] { z1, z2 }, new[] { p1, p2 }, gains[i]);
             }
 
             return sos;

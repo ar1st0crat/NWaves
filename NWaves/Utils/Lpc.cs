@@ -3,6 +3,7 @@ using NWaves.Operations;
 using NWaves.Signals;
 using System;
 using System.Linq;
+using System.Numerics;
 
 namespace NWaves.Utils
 {
@@ -178,31 +179,25 @@ namespace NWaves.Utils
             var n = lsf.Length - 1;
             var halfOrder = n / 2;
 
-            var pPoles = new ComplexDiscreteSignal(1, n);
-            var qPoles = new ComplexDiscreteSignal(1, n + 2 * (n % 2));
+            var pPoles = new Complex[n];
+            var qPoles = new Complex[n + 2 * (n % 2)];
 
             var k = 0;
             for (var i = 0; k < halfOrder; i += 2, k++)
             {
-                qPoles.Real[k] = Math.Cos(lsf[i]);
-                qPoles.Imag[k] = Math.Sin(lsf[i]);
-                pPoles.Real[k] = Math.Cos(lsf[i + 1]);
-                pPoles.Imag[k] = Math.Sin(lsf[i + 1]);
+                qPoles[k] = new Complex(Math.Cos(lsf[i]), Math.Sin(lsf[i]));
+                pPoles[k] = new Complex(Math.Cos(lsf[i + 1]), Math.Sin(lsf[i + 1]));
             }
             for (var i = 0; k < 2 * halfOrder; i += 2, k++)
             {
-                qPoles.Real[k] = Math.Cos( lsf[i]);
-                qPoles.Imag[k] = Math.Sin(-lsf[i]);
-                pPoles.Real[k] = Math.Cos( lsf[i + 1]);
-                pPoles.Imag[k] = Math.Sin(-lsf[i + 1]);
+                qPoles[k] = new Complex(Math.Cos( lsf[i]), Math.Sin(-lsf[i]));
+                pPoles[k] = new Complex(Math.Cos( lsf[i + 1]), Math.Sin(-lsf[i + 1]));
             }
 
             if (n % 2 == 1)
             {
-                qPoles.Real[n] = Math.Cos(lsf[n - 1]);
-                qPoles.Imag[n] = Math.Sin(lsf[n - 1]);
-                qPoles.Real[n + 1] = Math.Cos( lsf[n - 1]);
-                qPoles.Imag[n + 1] = Math.Sin(-lsf[n - 1]);
+                qPoles[n] = new Complex(Math.Cos(lsf[n - 1]), Math.Sin(lsf[n - 1]));
+                qPoles[n + 1] = new Complex(Math.Cos( lsf[n - 1]), Math.Sin(-lsf[n - 1]));
             }
 
             var ps = new ComplexDiscreteSignal(1, TransferFunction.ZpToTf(pPoles));

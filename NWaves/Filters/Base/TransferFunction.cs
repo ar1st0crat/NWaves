@@ -34,14 +34,14 @@ namespace NWaves.Filters.Base
         /// <summary>
         /// Zeros of TF
         /// </summary>
-        protected ComplexDiscreteSignal _zeros;
-        public ComplexDiscreteSignal Zeros => _zeros ?? TfToZp(Numerator, CalculateZpIterations);
+        protected Complex[] _zeros;
+        public Complex[] Zeros => _zeros ?? TfToZp(Numerator, CalculateZpIterations);
 
         /// <summary>
         /// Poles of TF
         /// </summary>
-        protected ComplexDiscreteSignal _poles;
-        public ComplexDiscreteSignal Poles => _poles ?? TfToZp(Denominator, CalculateZpIterations);
+        protected Complex[] _poles;
+        public Complex[] Poles => _poles ?? TfToZp(Denominator, CalculateZpIterations);
 
         /// <summary>
         /// Gain ('k' in 'zpk' notation)
@@ -65,7 +65,7 @@ namespace NWaves.Filters.Base
         /// <param name="zeros">Zeros</param>
         /// <param name="poles">Poles</param>
         /// <param name="gain">Gain</param>
-        public TransferFunction(ComplexDiscreteSignal zeros, ComplexDiscreteSignal poles, double gain = 1)
+        public TransferFunction(Complex[] zeros, Complex[] poles, double gain = 1)
         {
             _zeros = zeros;
             _poles = poles;
@@ -77,6 +77,17 @@ namespace NWaves.Filters.Base
             {
                 Numerator[i] *= gain;
             }
+        }
+
+        /// <summary>
+        /// TF constructor from zeros/poles
+        /// </summary>
+        /// <param name="zeros">Zeros</param>
+        /// <param name="poles">Poles</param>
+        /// <param name="gain">Gain</param>
+        public TransferFunction(ComplexDiscreteSignal zeros, ComplexDiscreteSignal poles, double gain = 1)
+            : this(zeros.ToComplexNumbers().ToArray(), poles.ToComplexNumbers().ToArray(), gain)
+        {
         }
 
         /// <summary>
@@ -401,17 +412,27 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="zp"></param>
         /// <returns></returns>
-        public static double[] ZpToTf(ComplexDiscreteSignal zp)
+        public static double[] ZpToTf(Complex[] zp)
         {
-            var poly = new Complex[] { 1, new Complex(-zp.Real[0], -zp.Imag[0]) };
+            var poly = new Complex[] { 1, -zp[0] };
 
             for (var k = 1; k < zp.Length; k++)
             {
-                var poly1 = new Complex[] { 1, new Complex(-zp.Real[k], -zp.Imag[k]) };
+                var poly1 = new Complex[] { 1, -zp[k] };
                 poly = MathUtils.MultiplyPolynomials(poly, poly1);
             }
 
             return poly.Select(p => p.Real).ToArray();
+        }
+
+        /// <summary>
+        /// Method for converting zeros(poles) to TF numerator(denominator)
+        /// </summary>
+        /// <param name="zp"></param>
+        /// <returns></returns>
+        public static double[] ZpToTf(ComplexDiscreteSignal zp)
+        {
+            return ZpToTf(zp.ToComplexNumbers().ToArray());
         }
 
         /// <summary>
@@ -421,24 +442,29 @@ namespace NWaves.Filters.Base
         /// <param name="re"></param>
         /// <param name="im"></param>
         /// <returns></returns>
-        public static double[] ZpToTf(double[] re, double[] im = null) => ZpToTf(new ComplexDiscreteSignal(1, re, im));
+        public static double[] ZpToTf(double[] re, double[] im = null)
+        {
+            if (im == null)
+            {
+                im = new double[re.Length];
+            }
+
+            return ZpToTf(re.Zip(im, (r, i) => new Complex(r, i)).ToArray());
+        }
 
         /// <summary>
         /// Method for converting TF numerator(denominator) to zeros(poles)
         /// </summary>
         /// <param name="tf"></param>
         /// <returns></returns>
-        public static ComplexDiscreteSignal TfToZp(double[] tf, int maxIterations = MathUtils.PolyRootsIterations)
+        public static Complex[] TfToZp(double[] tf, int maxIterations = MathUtils.PolyRootsIterations)
         {
             if (tf.Length <= 1)
             {
                 return null;
             }
 
-            var roots = MathUtils.PolynomialRoots(tf, maxIterations);
-
-            return new ComplexDiscreteSignal(1, roots.Select(r => r.Real),
-                                                roots.Select(r => r.Imaginary));
+            return MathUtils.PolynomialRoots(tf, maxIterations);
         }
 
         /// <summary>

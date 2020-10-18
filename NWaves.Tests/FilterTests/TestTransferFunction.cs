@@ -2,7 +2,7 @@
 using NWaves.Filters;
 using NWaves.Filters.Base;
 using NWaves.Filters.Fda;
-using NWaves.Signals;
+using System.Numerics;
 
 namespace NWaves.Tests.FilterTests
 {
@@ -114,10 +114,27 @@ namespace NWaves.Tests.FilterTests
         [Test]
         public void TestTfToSos()
         {
-            var zs = new ComplexDiscreteSignal(1, new[] { 1, 0.5, -0.3, 0.2, 0.5, 0.2 }, new[] { 0, 0.2, 0, -0.9, -0.2, 0.9 });
-            var ps = new ComplexDiscreteSignal(1, new[] { 1, 0.2, 0.5, -0.9, 0.6, 0.1, -0.9 }, new[] { 0, 0, 0, 0.2, 0, 0, -0.2 });
+            var zeros = new Complex[6]
+            {
+                new Complex(1,    0),
+                new Complex(0.5,  0.2),
+                new Complex(-0.3, 0),
+                new Complex(0.2, -0.9),
+                new Complex(0.5, -0.2),
+                new Complex(0.2,  0.9)
+            };
+            var poles = new Complex[7]
+            {
+                new Complex(1,    0),
+                new Complex(0.2,  0),
+                new Complex(0.5,  0),
+                new Complex(-0.9, 0.2),
+                new Complex(0.6,  0),
+                new Complex(0.1,  0),
+                new Complex(-0.9, -0.2)
+            };
 
-            var sos = DesignFilter.TfToSos(new TransferFunction(zs, ps));
+            var sos = DesignFilter.TfToSos(new TransferFunction(zeros, poles));
 
             Assert.Multiple(() =>
             {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using NWaves.Utils;
 
 namespace NWaves.Signals
@@ -75,13 +76,23 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Constructor for initializing complex signals with any float enumerables
+        /// Constructor for initializing complex signals with any double enumerables
         /// </summary>
         /// <param name="samplingRate"></param>
         /// <param name="real"></param>
         /// <param name="imag"></param>
         public ComplexDiscreteSignal(int samplingRate, IEnumerable<double> real, IEnumerable<double> imag = null)
             : this(samplingRate, real.ToArray(), imag?.ToArray())
+        {
+        }
+
+        /// <summary>
+        /// Constructor for initializing complex signals with complex numbers
+        /// </summary>
+        /// <param name="samplingRate"></param>
+        /// <param name="samples"></param>
+        public ComplexDiscreteSignal(int samplingRate, IEnumerable<Complex> samples)
+            : this(samplingRate, samples.Select(s => s.Real), samples.Select(s => s.Imaginary))
         {
         }
 
