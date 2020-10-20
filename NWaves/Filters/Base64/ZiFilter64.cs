@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace NWaves.Filters.Base64
 {
-    public class ZiFilter64 : IFilter64, IOnlineFilter64
+    public class ZiFilter64 : LtiFilter64
     {
         /// <summary>
         /// Numerator part coefficients in filter's transfer function 
@@ -30,7 +30,7 @@ namespace NWaves.Filters.Base64
         /// Transfer function
         /// </summary>
         protected TransferFunction _tf;
-        public TransferFunction Tf
+        public override TransferFunction Tf
         {
             get => _tf ?? new TransferFunction(_b, _a);
             protected set => _tf = value;
@@ -87,7 +87,7 @@ namespace NWaves.Filters.Base64
         /// <param name="signal"></param>
         /// <param name="method"></param>
         /// <returns></returns>
-        public double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto)
+        public override double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto)
         {
             return signal.Select(s => Process(s)).ToArray();
         }
@@ -97,7 +97,7 @@ namespace NWaves.Filters.Base64
         /// </summary>
         /// <param name="input">Input sample</param>
         /// <returns>Output sample</returns>
-        public double Process(double input)
+        public override double Process(double input)
         {
             var output = _b[0] * input + _zi[0];
 
@@ -185,7 +185,7 @@ namespace NWaves.Filters.Base64
         /// <summary>
         /// Reset filter
         /// </summary>
-        public void Reset()
+        public override void Reset()
         {
             Array.Clear(_zi, 0, _zi.Length);
         }

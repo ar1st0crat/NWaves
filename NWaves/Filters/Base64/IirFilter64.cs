@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace NWaves.Filters.Base64
 {
-    public class IirFilter64 : IFilter64, IOnlineFilter64
+    public class IirFilter64 : LtiFilter64
     {
         /// <summary>
         /// Numerator part coefficients in filter's transfer function 
@@ -51,7 +51,7 @@ namespace NWaves.Filters.Base64
         /// Transfer function (created lazily or set specifically if needed)
         /// </summary>
         protected TransferFunction _tf;
-        public TransferFunction Tf
+        public override TransferFunction Tf
         {
             get => _tf ?? new TransferFunction(_b.Take(_numeratorSize).ToArray(), _a.Take(_denominatorSize).ToArray());
             protected set => _tf = value;
@@ -123,7 +123,7 @@ namespace NWaves.Filters.Base64
         /// <param name="signal"></param>
         /// <param name="method"></param>
         /// <returns></returns>
-        public double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto)
+        public override double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto)
         {
             switch (method)
             {
@@ -147,7 +147,7 @@ namespace NWaves.Filters.Base64
         /// </summary>
         /// <param name="sample"></param>
         /// <returns></returns>
-        public double Process(double sample)
+        public override double Process(double sample)
         {
             var output = 0.0;
 
@@ -212,7 +212,7 @@ namespace NWaves.Filters.Base64
         /// <summary>
         /// Reset filter
         /// </summary>
-        public void Reset()
+        public override void Reset()
         {
             _delayLineOffsetB = _numeratorSize - 1;
             _delayLineOffsetA = _denominatorSize - 1;

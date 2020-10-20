@@ -10,7 +10,7 @@ namespace NWaves.Filters.Base64
     /// <summary>
     /// Class representing Finite Impulse Response filters
     /// </summary>
-    public class FirFilter64 : IFilter64, IOnlineFilter64
+    public class FirFilter64 : LtiFilter64
     {
         /// <summary>
         /// Filter kernel (impulse response)
@@ -42,7 +42,7 @@ namespace NWaves.Filters.Base64
         /// Transfer function (created lazily or set specifically if needed)
         /// </summary>
         protected TransferFunction _tf;
-        public TransferFunction Tf
+        public override TransferFunction Tf
         {
             get => _tf ?? new TransferFunction(_b.Take(_kernelSize).ToArray());
             protected set => _tf = value;
@@ -102,7 +102,7 @@ namespace NWaves.Filters.Base64
         /// <param name="signal"></param>
         /// <param name="method"></param>
         /// <returns></returns>
-        public double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto)
+        public override double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto)
         {
             if (_kernelSize >= KernelSizeForBlockConvolution && method == FilteringMethod.Auto)
             {
@@ -135,7 +135,7 @@ namespace NWaves.Filters.Base64
         /// </summary>
         /// <param name="sample"></param>
         /// <returns></returns>
-        public double Process(double sample)
+        public override double Process(double sample)
         {
             _delayLine[_delayLineOffset] = sample;
 
@@ -211,7 +211,7 @@ namespace NWaves.Filters.Base64
         /// <summary>
         /// Reset filter
         /// </summary>
-        public void Reset()
+        public override void Reset()
         {
             _delayLineOffset = _kernelSize - 1;
             Array.Clear(_delayLine, 0, _kernelSize);
