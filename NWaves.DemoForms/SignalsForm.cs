@@ -86,14 +86,17 @@ namespace NWaves.DemoForms
                     break;
 
                 case "Sawtooth":
-                    signalBuilder = new SawtoothBuilder();
-                    _signal2 = signalBuilder
+                    signalBuilder = new SawtoothBuilder()
                                     .SetParameter("low", -0.3f)
                                     .SetParameter("high", 0.3f)
                                     .SetParameter("freq", 233/*Hz*/)
-                                    .OfLength(sampleCount)
-                                    .SampledAt(samplingRate)
-                                    .Build();
+                                    .OfDuration(0.3)
+                                    .SampledAt(samplingRate);
+
+                    var fadeInOut = new FadeInOutBuilder(signalBuilder).In(0.05).Out(0.12);
+                    
+                    _signal2 = fadeInOut.Build();
+                    
                     break;
 
                 case "Triangle Wave":

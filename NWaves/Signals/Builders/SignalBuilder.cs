@@ -30,20 +30,25 @@ namespace NWaves.Signals.Builders
         protected DiscreteSignal Signal { get; set; }
 
         /// <summary>
-        /// The length of the signal
-        /// </summary>
-        protected int Length { get; set; } = 1;
-
-        /// <summary>
-        /// Sampling rate of the signal
-        /// </summary>
-        protected int SamplingRate { get; set; } = 1;
-
-        /// <summary>
         /// Dictionary of setters for each parameter
         /// </summary>
         protected Dictionary<string, Action<double>> ParameterSetters { get; set; }
 
+        /// <summary>
+        /// Sampling rate of the signal
+        /// </summary>
+        public int SamplingRate { get; protected set; } = 1;
+
+        /// <summary>
+        /// The length of the signal
+        /// </summary>
+        public int Length { get; protected set; }
+
+        /// <summary>
+        /// Duration of signal
+        /// </summary>
+        public double Duration { get; protected set; }
+                
         /// <summary>
         /// Brief descriptions of parameters (list of their names)
         /// </summary>
@@ -139,6 +144,19 @@ namespace NWaves.Signals.Builders
         public virtual SignalBuilder OfLength(int sampleCount)
         {
             Length = sampleCount;
+            Duration = (double)sampleCount / SamplingRate;
+            return this;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="seconds"></param>
+        /// <returns></returns>
+        public virtual SignalBuilder OfDuration(double seconds)
+        {
+            Duration = seconds;
+            Length = (int)(seconds * SamplingRate);
             return this;
         }
 
@@ -155,6 +173,15 @@ namespace NWaves.Signals.Builders
             }
 
             SamplingRate = samplingRate;
+
+            if (Length <= 0)
+            {
+                OfDuration(Duration);
+            }
+            else
+            {
+                OfLength(Length);
+            }
 
             return this;
         }
