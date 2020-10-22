@@ -1,16 +1,13 @@
 ﻿using NWaves.Filters.Base;
 using NWaves.Signals;
 using NWaves.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace NWaves.Filters
 {
     /// <summary>
     /// Nonlinear median filter
     /// </summary>
-    public class MedianFilter : IFilter, IOnlineFilter
+    public class MedianFilter2 : IFilter, IOnlineFilter
     {
         /// <summary>
         /// The size of median filter
@@ -18,32 +15,21 @@ namespace NWaves.Filters
         public int Size { get; }
 
         /// <summary>
-        /// Delay line (circular buffer)
-        /// </summary>
-        private float[] _delayLine;
-
-        /// <summary>
-        /// Buffer filled with sorted values from delay line
-        /// </summary>
-        private List<float> _sortedSamples;
-
-        /// <summary>
-        /// Index of the current sample
-        /// </summary>
-        private int _n;
-
-        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="size"></param>
-        public MedianFilter(int size = 9)
+        public MedianFilter2(int size = 9)
         {
             Guard.AgainstEvenNumber(size, "The size of the filter");
 
             Size = size;
 
-            _sortedSamples = Enumerable.Repeat(0f, Size).ToList();
-            _delayLine = new float[Size];
+            _buf = new float[Size];
+            _tmp = new float[Size];
+
+            // to mimic scipy.signal.medfilt() 
+            // feed Size / 2 zeros first
+            _n = Size / 2;
         }
 
         /// <summary>
@@ -59,8 +45,6 @@ namespace NWaves.Filters
             var output = new float[input.Length];
 
             int i = 0, j = 0;
-
-            // to mimic scipy.signal.medfilt() feed Size/2 zeros first
 
             for (i = 0; i < Size / 2; i++)    // feed first samples
             {
@@ -81,35 +65,22 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Online filtering
+        /// Online filtering (sample-by-sample)
         /// </summary>
         /// <param name="sample"></param>
         /// <returns></returns>
         public float Process(float sample)
         {
-            if (_n == Size)
+            if (_n == _buf.Length)      // some kind of a circular buffer
             {
                 _n = 0;
             }
 
-            var sampleToRemove = _delayLine[_n];
-            _delayLine[_n++] = sample;
-                       
-            var removeIndex = _sortedSamples.BinarySearch(sampleToRemove);
-            _sortedSamples.RemoveAt(removeIndex);
+            _buf[_n++] = sample;
 
-            // insertion like in insertion sort
+            _buf.FastCopyTo(_tmp, _buf.Length);
 
-            int i = _sortedSamples.Count - 1; 
-
-            while (i >= 0 && sample < _sortedSamples[i])
-            {
-                i--;
-            }
-
-            _sortedSamples.Insert(i + 1, sample);
-
-            return _sortedSamples[Size / 2];
+            return MathUtils.FindNth(_tmp, Size / 2, 0, Size - 1);
         }
 
         /// <summary>
@@ -117,11 +88,17 @@ namespace NWaves.Filters
         /// </summary>
         public void Reset()
         {
-            _n = 0;
+            _n = Size / 2;
 
-            for (var i = 0; i < _sortedSamples.Count; _sortedSamples[i++] = 0) ;
-
-            Array.Clear(_delayLine, 0, Size);
+            for (var i = 0; i < _buf.Length; i++)
+            {
+                _buf[i] = 0;
+            }
         }
+
+        private int _n;
+
+        private float[] _buf;
+        private float[] _tmp;
     }
 }

@@ -27,12 +27,12 @@ namespace NWaves.Operations
         /// <summary>
         /// Median filter for time axis
         /// </summary>
-        private readonly MedianFilter _medianHarmonic;
+        private readonly MedianFilter2 _medianHarmonic;
 
         /// <summary>
         /// Median filter for frequency axis
         /// </summary>
-        private readonly MedianFilter _medianPercussive;
+        private readonly MedianFilter2 _medianPercussive;
 
         /// <summary>
         /// Constructor
@@ -50,8 +50,8 @@ namespace NWaves.Operations
         {
             _stft = new Stft(fftSize, hopSize);
 
-            _medianHarmonic = new MedianFilter(harmonicWinSize);
-            _medianPercussive = new MedianFilter(percussiveWinSize);
+            _medianHarmonic = new MedianFilter2(harmonicWinSize);
+            _medianPercussive = new MedianFilter2(percussiveWinSize);
 
             switch (masking)
             {
