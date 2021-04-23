@@ -12,7 +12,7 @@ namespace NWaves.Transforms.Wavelets
         /// <summary>
         /// Size of the transform
         /// </summary>
-        public int Size { get; set; }
+        public int Size { get; protected set; }
 
         /// <summary>
         /// The length of the mother wavelet

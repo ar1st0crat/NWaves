@@ -1,4 +1,6 @@
-﻿using System;
+﻿using NWaves.Utils;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace NWaves.Transforms.Wavelets
@@ -11,32 +13,32 @@ namespace NWaves.Transforms.Wavelets
         /// <summary>
         /// Name
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; protected set; }
 
         /// <summary>
         /// The length of the mother wavelet
         /// </summary>
-        public int Length { get; set; }
+        public int Length { get; protected set; }
 
         /// <summary>
         /// LP coefficients for decomposition
         /// </summary>
-        public float[] LoD { get; set; }
+        public float[] LoD { get; protected set; }
 
         /// <summary>
         /// HP coefficients for decomposition
         /// </summary>
-        public float[] HiD { get; set; }
+        public float[] HiD { get; protected set; }
 
         /// <summary>
         /// LP coefficients for reconstruction
         /// </summary>
-        public float[] LoR { get; set; }
+        public float[] LoR { get; protected set; }
 
         /// <summary>
         /// HP coefficients for reconstruction
         /// </summary>
-        public float[] HiR { get; set; }
+        public float[] HiR { get; protected set; }
 
         /// <summary>
         /// Constructor from wavelet family and number of taps
@@ -104,6 +106,28 @@ namespace NWaves.Transforms.Wavelets
             }
 
             MakeWavelet(waveletFamily, taps);
+        }
+
+        /// <summary>
+        /// Constructor from wavelet coefficients (perhaps, calculated in external software)
+        /// </summary>
+        /// <param name="loD">LP coefficients for decomposition</param>
+        /// <param name="hiD">HP coefficients for decomposition</param>
+        /// <param name="loR">LP coefficients for reconstruction</param>
+        /// <param name="hiR">HP coefficients for reconstruction</param>
+        public Wavelet(IEnumerable<float> loD, IEnumerable<float> hiD, IEnumerable<float> loR, IEnumerable<float> hiR)
+        {
+            LoD = loD.ToArray();
+            HiD = hiD.ToArray();
+            LoR = loR.ToArray();
+            HiR = hiR.ToArray();
+
+            Guard.AgainstInequality(LoD.Length, HiD.Length, "LP coeffs for decomposition", "HP coeffs for decomposition");
+            Guard.AgainstInequality(LoD.Length, LoR.Length, "LP coeffs for decomposition", "LP coeffs for reconstruction");
+            Guard.AgainstInequality(LoD.Length, HiR.Length, "LP coeffs for decomposition", "HP coeffs for reconstruction");
+
+            Name = "custom";
+            Length = LoD.Length;
         }
 
         /// <summary>
