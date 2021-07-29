@@ -31,7 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Effects\Stereo\" />
     <Folder Include="Properties\" />
   </ItemGroup>
 
