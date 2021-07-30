@@ -223,7 +223,7 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="signal"></param>
         /// <returns></returns>
-        public DiscreteSignal ApplyFilterDirectly(DiscreteSignal signal)
+        protected DiscreteSignal ApplyFilterDirectly(DiscreteSignal signal)
         {
             var input = signal.Samples;
 
@@ -249,12 +249,11 @@ namespace NWaves.Filters.Base
         /// <param name="kernel">New kernel</param>
         public void ChangeKernel(float[] kernel)
         {
-            if (kernel.Length == _kernelSize)
+            if (kernel.Length != _kernelSize) return;
+            
+            for (var i = 0; i < _kernelSize; i++)
             {
-                for (var i = 0; i < _kernelSize; i++)
-                {
-                    _b[i] = _b[_kernelSize + i] = kernel[i];
-                }
+                _b[i] = _b[_kernelSize + i] = kernel[i];
             }
         }
 

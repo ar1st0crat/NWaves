@@ -1,9 +1,24 @@
-﻿using System;
+﻿using NWaves.Filters.Base;
+using NWaves.Signals;
+using System;
 
 namespace NWaves.Effects.Stereo
 {
-    public abstract class StereoEffect
+    /// <summary>
+    /// Base class for stereo effects
+    /// </summary>
+    public abstract class StereoEffect : IMixable
     {
+        /// <summary>
+        /// Wet mix
+        /// </summary>
+        public virtual float Wet { get; set; } = 1f;
+
+        /// <summary>
+        /// Dry mix
+        /// </summary>
+        public virtual float Dry { get; set; } = 0f;
+
         /// <summary>
         /// Process two channels : [ input left , input right ] -> [ output left , output right ]
         /// </summary>
@@ -88,5 +103,46 @@ namespace NWaves.Effects.Stereo
                 Process(ref outputLeft[m], ref outputRight[m]);
             }
         }
+
+        /// <summary>
+        /// Offline processing
+        /// </summary>
+        /// <param name="signal">Input signal</param>
+        /// <returns>Tuple [left signal, right signal]</returns>
+        public virtual (DiscreteSignal, DiscreteSignal) ApplyTo(DiscreteSignal signal)
+        {
+            var sr = signal.SamplingRate;
+
+            var left = new float[signal.Length];
+            var right = new float[signal.Length];
+            
+            Process(signal.Samples, left, right);
+
+            return (new DiscreteSignal(sr, left), new DiscreteSignal(sr, right));
+        }
+
+        /// <summary>
+        /// Offline processing
+        /// </summary>
+        /// <param name="leftSignal">Input signal (left)</param>
+        /// <param name="rightSignal">Input signal (right)</param>
+        /// <returns>Tuple [left signal, right signal]</returns>
+        public virtual (DiscreteSignal, DiscreteSignal) ApplyTo(DiscreteSignal leftSignal, DiscreteSignal rightSignal)
+        {
+            var srl = leftSignal.SamplingRate;
+            var srr = rightSignal.SamplingRate;
+
+            var left = new float[leftSignal.Length];
+            var right = new float[rightSignal.Length];
+
+            Process(leftSignal.Samples, rightSignal.Samples, left, right);
+
+            return (new DiscreteSignal(srl, left), new DiscreteSignal(srr, right));
+        }
+
+        /// <summary>
+        /// Reset effect
+        /// </summary>
+        public abstract void Reset();
     }
 }

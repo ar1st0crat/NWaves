@@ -105,6 +105,21 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
+        /// Change kernel coefficients online
+        /// </summary>
+        /// <param name="kernel"></param>
+        public void ChangeKernel(float[] kernel)
+        {
+            if (kernel.Length != _kernel.Length) return;
+            
+            Array.Clear(_kernelSpectrumRe, 0, _fftSize);
+            kernel.FastCopyTo(_kernel, kernel.Length);
+            kernel.FastCopyTo(_kernelSpectrumRe, kernel.Length);
+
+            _fft.Direct(_kernelSpectrumRe, _kernelSpectrumRe, _kernelSpectrumIm);
+        }
+
+        /// <summary>
         /// OLS online filtering (sample-by-sample)
         /// </summary>
         /// <param name="sample"></param>

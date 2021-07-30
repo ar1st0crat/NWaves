@@ -127,5 +127,12 @@ namespace NWaves.Effects.Stereo
                     }
             }
         }
+
+        /// <summary>
+        /// Reset panning effect
+        /// </summary>
+        public override void Reset()
+        {
+        }
     }
 }
