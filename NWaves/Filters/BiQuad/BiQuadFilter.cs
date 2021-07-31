@@ -61,5 +61,24 @@ namespace NWaves.Filters.BiQuad
         {
             _in1 = _in2 = _out1 = _out2 = 0;
         }
+
+        /// <summary>
+        /// Change filter coefficients (preserving its state)
+        /// </summary>
+        /// <param name="b0"></param>
+        /// <param name="b1"></param>
+        /// <param name="b2"></param>
+        /// <param name="a0"></param>
+        /// <param name="a1"></param>
+        /// <param name="a2"></param>
+        public void Change(float b0, float b1, float b2, float a0, float a1, float a2)
+        {
+            _b[0] = b0;
+            _b[1] = b1;
+            _b[2] = b2;
+            _a[0] = a0;
+            _a[1] = a1;
+            _a[2] = a2;
+        }
     }
 }

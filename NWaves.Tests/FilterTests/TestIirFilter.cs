@@ -18,7 +18,7 @@ namespace NWaves.Tests.FilterTests
         [Test]
         public void TestFilterAppliedDirectly()
         {
-            AssertFilterOutput(_filter.ApplyFilterDirectly(_signal));
+            AssertFilterOutput(_filter.ApplyTo(_signal, FilteringMethod.DifferenceEquation));
         }
 
         [Test]

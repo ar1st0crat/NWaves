@@ -213,7 +213,7 @@ namespace NWaves.Filters.Base
         /// </summary>
         /// <param name="signal"></param>
         /// <returns></returns>
-        public DiscreteSignal ApplyFilterDirectly(DiscreteSignal signal)
+        protected DiscreteSignal ApplyFilterDirectly(DiscreteSignal signal)
         {
             var input = signal.Samples;
 
