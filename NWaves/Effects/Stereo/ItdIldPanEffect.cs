@@ -10,11 +10,6 @@ namespace NWaves.Effects.Stereo
     public class ItdIldPanEffect : StereoEffect
     {
         /// <summary>
-        /// Head radius
-        /// </summary>
-        const float HeadRadius = 8.5e-2f;
-
-        /// <summary>
         /// Speed of sound
         /// </summary>
         const float SpeedOfSound = 340;
@@ -23,6 +18,12 @@ namespace NWaves.Effects.Stereo
         /// Constant pi/2
         /// </summary>
         const double Pi2 = Math.PI / 2;
+
+        /// <summary>
+        /// Head radius
+        /// </summary>
+        private readonly float _headRadius;
+        public float HeadRadius => _headRadius;
 
         /// <summary>
         /// Sampling rate
@@ -99,13 +100,15 @@ namespace NWaves.Effects.Stereo
         /// </summary>
         /// <param name="samplingRate"></param>
         /// <param name="pan"></param>
-        public ItdIldPanEffect(int samplingRate, float pan)
+        /// <param name="headRadius"></param>
+        public ItdIldPanEffect(int samplingRate, float pan, float headRadius = 8.5e-2f)
         {
             _samplingRate = samplingRate;
-            _headFactor = HeadRadius / SpeedOfSound;
+            _headRadius = headRadius;
+            _headFactor = _headRadius / SpeedOfSound;
 
-            _itdDelayLeft = new FractionalDelayLine(samplingRate, 0.001f);
-            _itdDelayRight = new FractionalDelayLine(samplingRate, 0.001f);
+            _itdDelayLeft = new FractionalDelayLine(samplingRate, 0.001f, InterpolationMode.Linear);
+            _itdDelayRight = new FractionalDelayLine(samplingRate, 0.001f, InterpolationMode.Linear);
 
             _ildFilterLeft = new BiQuadFilter(1, 0, 0, 0, 0, 0);
             _ildFilterRight = new BiQuadFilter(1, 0, 0, 0, 0, 0);
@@ -139,6 +142,10 @@ namespace NWaves.Effects.Stereo
         /// </summary>
         public override void Reset()
         {
+            _itdDelayLeft.Reset();
+            _itdDelayRight.Reset();
+            _ildFilterLeft.Reset();
+            _ildFilterRight.Reset();
         }
     }
 }

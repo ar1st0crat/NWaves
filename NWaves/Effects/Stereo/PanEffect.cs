@@ -42,7 +42,7 @@ namespace NWaves.Effects.Stereo
         /// <summary>
         /// Pan rule (pan law)
         /// </summary>
-        public PanRule PanRule;
+        public PanRule PanRule { get; set; }
 
         /// <summary>
         /// Stereo pan constructor

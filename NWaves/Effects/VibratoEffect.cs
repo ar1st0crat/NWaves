@@ -1,4 +1,5 @@
 ﻿using NWaves.Signals.Builders;
+using NWaves.Utils;
 using System;
 
 namespace NWaves.Effects
@@ -132,6 +133,119 @@ namespace NWaves.Effects
             Array.Clear(_delayLine, 0, _delayLine.Length);
             _lfo.Reset();
             _n = 1;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class NewVibratoEffect : AudioEffect
+    {
+        /// <summary>
+        /// Fractional delay line
+        /// </summary>
+        private FractionalDelayLine _delayLine;
+
+        /// <summary>
+        /// Width (max delay in seconds)
+        /// </summary>
+        private float _width;
+        public float Width
+        {
+            get => _width;
+            set
+            {
+                _width = value;
+                _delayLine = new FractionalDelayLine(_fs, _width);
+            }
+        }
+
+        /// <summary>
+        /// LFO frequency
+        /// </summary>
+        private float _lfoFrequency = 1;
+        public float LfoFrequency
+        {
+            get => _lfoFrequency;
+            set
+            {
+                _lfoFrequency = value;
+                _lfo.SetParameter("freq", value);
+            }
+        }
+
+        /// <summary>
+        /// LFO
+        /// </summary>
+        private SignalBuilder _lfo;
+        public SignalBuilder Lfo
+        {
+            get => _lfo;
+            set
+            {
+                _lfo = value;
+                _lfo.SetParameter("min", 0.0).SetParameter("max", 1.0);
+            }
+        }
+
+        /// <summary>
+        /// Sampling rate
+        /// </summary>
+        private readonly int _fs;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="samplingRate"></param>
+        /// <param name="lfoFrequency"></param>
+        /// <param name="width"></param>
+        public NewVibratoEffect(int samplingRate, float lfoFrequency = 1/*Hz*/, float width = 0.003f/*sec*/)
+        {
+            _fs = samplingRate;
+
+            Width = width;
+
+            Lfo = new SineBuilder().SampledAt(samplingRate);
+            LfoFrequency = lfoFrequency;
+        }
+
+        /// <summary>
+        /// Constructor with LFO
+        /// </summary>
+        /// <param name="samplingRate"></param>
+        /// <param name="lfo"></param>
+        /// <param name="width"></param>
+        public NewVibratoEffect(int samplingRate, SignalBuilder lfo, float width = 0.003f/*sec*/)
+        {
+            _fs = samplingRate;
+
+            Width = width;
+            Lfo = lfo;
+        }
+
+        /// <summary>
+        /// Simple flanger effect
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        public override float Process(float sample)
+        {
+            var delay = _lfo.NextSample() * _width * _fs;// _maxDelayPos;
+
+            var delayedSample = _delayLine.Read(delay);
+
+            _delayLine.Write(sample);
+
+            return Dry * sample + Wet * delayedSample;
+        }
+
+        /// <summary>
+        /// Reset effect
+        /// </summary>
+        public override void Reset()
+        {
+            _delayLine.Reset();
+            _lfo.Reset();
         }
     }
 }

@@ -7,19 +7,19 @@ using System.Linq;
 namespace NWaves.Effects.Stereo
 {
     /// <summary>
-    /// Binaural panning (HRTF/HRIR + BRIR (optional) + high-pass crossover filter (optional))
+    /// Binaural panning (HRIR/BRIR + crossover filter (optional))
     /// </summary>
     public class BinauralPanEffect : StereoEffect
     {
         /// <summary>
         /// Left ear HRIR
         /// </summary>
-        private float[] _leftEarHrir;
+        private readonly float[] _leftEarHrir;
 
         /// <summary>
         /// Right ear HRIR
         /// </summary>
-        private float[] _rightEarHrir;
+        private readonly float[] _rightEarHrir;
 
         /// <summary>
         /// HRIRs table (left ear)
@@ -42,11 +42,6 @@ namespace NWaves.Effects.Stereo
         private readonly float[] _elevations;
 
         /// <summary>
-        /// Room impulse reponse (BRIR (binaural) / SRIR (spatial) / DRIR (directional))
-        /// </summary>
-        private readonly float[] _rir;
-
-        /// <summary>
         /// Left ear HRIR convolver
         /// </summary>
         private readonly OlsBlockConvolver _leftEarConvolver;
@@ -57,14 +52,47 @@ namespace NWaves.Effects.Stereo
         private readonly OlsBlockConvolver _rightEarConvolver;
 
         /// <summary>
-        /// Room impulse response convolver
+        /// Turn on/off crossover filtering
         /// </summary>
-        private readonly OlsBlockConvolver _rirConvolver;
+        private bool _useCrossover;
 
         /// <summary>
-        /// Crossover (lowpass) filter
+        /// Crossover filters (low-pass part)
         /// </summary>
-        private IOnlineFilter _crossoverFilter;
+        private IOnlineFilter _crossoverLpFilterLeft, _crossoverLpFilterRight;
+        
+        /// <summary>
+        /// Crossover filters (high-pass part)
+        /// </summary>
+        private IOnlineFilter _crossoverHpFilterLeft, _crossoverHpFilterRight;
+
+        /// <summary>
+        /// Azimuth
+        /// </summary>
+        private float _azimuth;
+        public float Azimuth
+        {
+            get => _azimuth;
+            set
+            {
+                _azimuth = value;
+                UpdateHrir(_azimuth, _elevation);
+            }
+        }
+
+        /// <summary>
+        /// Elevation
+        /// </summary>
+        private float _elevation;
+        public float Elevation
+        {
+            get => _elevation;
+            set
+            {
+                _elevation = value;
+                UpdateHrir(_azimuth, _elevation);
+            }
+        }
 
 
         /// <summary>
@@ -84,14 +112,12 @@ namespace NWaves.Effects.Stereo
         /// <param name="elevations">Elevations (phis) - must be sorted in ascending order</param>
         /// <param name="leftHrirs">HRIR collection (left ear)</param>
         /// <param name="rightHrirs">HRIR collection (right ear)</param>
-        /// <param name="rir">Room impulse response</param>
-        /// <param name="crossoverFilter">Crossover filter</param>
+        /// <param name="crossoverLpFilter">Crossover filter (low-pass part)</param>
+        /// <param name="crossoverHpFilter">Crossover filter (high-pass part)</param>
         public BinauralPanEffect(float[] azimuths,
                                  float[] elevations,
                                  float[][][] leftHrirs,
-                                 float[][][] rightHrirs,
-                                 float[] rir = null,
-                                 IOnlineFilter crossoverFilter = null)
+                                 float[][][] rightHrirs)
         {
             _azimuths = azimuths ?? throw new ArgumentNullException(nameof(azimuths));
             _elevations = elevations ?? throw new ArgumentNullException(nameof(elevations));
@@ -124,32 +150,72 @@ namespace NWaves.Effects.Stereo
             _leftEarConvolver = new OlsBlockConvolver(_leftEarHrir, MathUtils.NextPowerOfTwo(4 * hrirLength));
             _rightEarConvolver = new OlsBlockConvolver(_rightEarHrir, MathUtils.NextPowerOfTwo(4 * hrirLength));
 
-            _crossoverFilter = crossoverFilter;
+            // crossover freq = 0.01 by default: e.g. 160 Hz with 16kHz sampling rate
+            // (by default, crossover filtering is turned off)
 
-            if (rir != null)
-            {
-                _rir = rir;
-                _rirConvolver = new OlsBlockConvolver(rir, MathUtils.NextPowerOfTwo(4 * _rir.Length));
-            }
+            _crossoverLpFilterLeft = new Filters.BiQuad.LowPassFilter(0.01); 
+            _crossoverHpFilterLeft = new Filters.BiQuad.HighPassFilter(0.01);
+            _crossoverLpFilterRight = new Filters.BiQuad.LowPassFilter(0.01);
+            _crossoverHpFilterRight = new Filters.BiQuad.HighPassFilter(0.01);
+
+            // set initial azimuth = 0 and elevation = 0
 
             UpdateHrir(0, 0);
         }
 
         /// <summary>
-        /// Set frequency of the crossover filter
+        /// Turn on/off crossover filtering
+        /// </summary>
+        public void UseCrossover(bool useCrossover)
+        {
+            _useCrossover = useCrossover;
+        }
+
+        /// <summary>
+        /// Update frequency of the crossover filter (only for BiQuadFilters).
+        /// Filters of other types / parameters can be passed to constructor.
         /// </summary>
         /// <param name="freq">Frequency</param>
         /// <param name="samplingRate">Sampling rate</param>
         public void SetCrossoverParameters(double freq, int samplingRate)
         {
-            if (_crossoverFilter is Filters.BiQuad.HighPassFilter filter)
+            if (_crossoverLpFilterLeft is Filters.BiQuad.LowPassFilter lpFilterLeft)
             {
-                filter.Change(freq / samplingRate);
+                lpFilterLeft.Change(freq / samplingRate);
             }
-            else
+
+            if (_crossoverLpFilterRight is Filters.BiQuad.LowPassFilter lpFilterRight)
             {
-                _crossoverFilter = new Filters.BiQuad.HighPassFilter(freq / samplingRate);
+                lpFilterRight.Change(freq / samplingRate);
             }
+
+            if (_crossoverHpFilterLeft is Filters.BiQuad.HighPassFilter hpFilterLeft)
+            {
+                hpFilterLeft.Change(freq / samplingRate);
+            }
+
+            if (_crossoverHpFilterRight is Filters.BiQuad.HighPassFilter hpFilterRight)
+            {
+                hpFilterRight.Change(freq / samplingRate);
+            }
+        }
+
+        /// <summary>
+        /// Set custom crossover filters
+        /// </summary>
+        /// <param name="lowpassLeft"></param>
+        /// <param name="highpassLeft"></param>
+        /// <param name="lowpassRight"></param>
+        /// <param name="highpassRight"></param>
+        public void SetCrossoverFilters(IOnlineFilter lowpassLeft,
+                                        IOnlineFilter highpassLeft,
+                                        IOnlineFilter lowpassRight,
+                                        IOnlineFilter highpassRight)
+        {
+            _crossoverLpFilterLeft = lowpassLeft;
+            _crossoverHpFilterLeft = highpassLeft;
+            _crossoverLpFilterRight = lowpassRight;
+            _crossoverHpFilterRight = highpassRight;
         }
 
         /// <summary>
@@ -159,15 +225,7 @@ namespace NWaves.Effects.Stereo
         /// <param name="elevation">Elevation (phi)</param>
         protected void UpdateHrir(float azimuth, float elevation)
         {
-            //float HaversineDistance(float az1, float el1, float az2, float el2)
-            //{
-            //    var elSin = Math.Sin((el2 - el1) / 2) * Math.Sin((el2 - el1) / 2);
-            //    var azSin = Math.Sin((az2 - az1) / 2) * Math.Sin((az2 - az1) / 2);
-
-            //    return (float)Math.Acos(Math.Sqrt(elSin + azSin * Math.Cos(el1) * Math.Cos(el2)));
-            //}
-
-            // find 3 closest points:
+            // find 3 nearest points:
 
             var bestAzimuthPos = 0;
             var bestElevationPos = 0;
@@ -265,24 +323,37 @@ namespace NWaves.Effects.Stereo
         /// <summary>
         /// Process current sample in each channel
         /// </summary>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
+        /// <param name="left">Sample from left channel</param>
+        /// <param name="right">Sample from right channel</param>
         public override void Process(ref float left, ref float right)
         {
-            if (_crossoverFilter != null)
-            {
-                left = _crossoverFilter.Process(left);      // crossover highpass filtering
-                right = _crossoverFilter.Process(right);
-            }
+            // 1) optional crossover filtering:
 
-            left = _leftEarConvolver.Process(left);         // HRIR filtering
-            right = _leftEarConvolver.Process(right);
+            var lowFreqSignalLeft = 0f;
+            var lowFreqSignalRight = 0f;
 
-            if (_rirConvolver != null)                      // room reverb
+            if (_useCrossover)
             {
-                left = _rirConvolver.Process(left);
-                right = _rirConvolver.Process(right);
+                // extract low-frequency signal from source signal:
+
+                lowFreqSignalLeft = _crossoverLpFilterLeft.Process(left);
+                lowFreqSignalRight = _crossoverLpFilterRight.Process(right);
+
+                // crossover highpass filtering
+                // extract components that will be convolved with HRIRs: 
+
+                left = _crossoverHpFilterLeft.Process(left);
+                right = _crossoverHpFilterRight.Process(right);
             }
+            
+            
+            // 2) HRIR filtering
+
+            left = _leftEarConvolver.Process(left);
+            right = _rightEarConvolver.Process(right);
+
+            left += lowFreqSignalLeft;      // if there was no crossover filtering,
+            right += lowFreqSignalRight;    // here we'll simply add zeros
         }
 
         /// <summary>
@@ -292,8 +363,10 @@ namespace NWaves.Effects.Stereo
         {
             _leftEarConvolver.Reset();
             _rightEarConvolver.Reset();
-            _rirConvolver.Reset();
-            _crossoverFilter.Reset();
+            _crossoverLpFilterLeft?.Reset();
+            _crossoverLpFilterRight?.Reset();
+            _crossoverHpFilterLeft?.Reset();
+            _crossoverHpFilterRight?.Reset();
         }
     }
 }

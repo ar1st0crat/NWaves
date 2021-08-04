@@ -5,15 +5,8 @@ namespace NWaves.Utils
     /// <summary>
     /// Fractional delay line
     /// </summary>
-    public class FractionalDelayLine
+    public partial class FractionalDelayLine
     {
-        public enum InterpolationMode
-        {
-            Linear,
-            Lagrange,
-            Nearest
-        }
-
         /// <summary>
         /// Sampling rate
         /// </summary>
@@ -23,7 +16,7 @@ namespace NWaves.Utils
         /// Delay line
         /// </summary>
         private float[] _delayLine;
-        private int _maxDelayPos;
+        private int _delayLineSize;
         private int _n;
 
         /// <summary>
@@ -35,10 +28,10 @@ namespace NWaves.Utils
         public FractionalDelayLine(int samplingRate, double maxDelay, InterpolationMode interpolationMode = InterpolationMode.Linear)
         {
             _fs = samplingRate;
-            //_maxDelayPos = (int)Math.Ceiling(_fs * maxDelay);
-            //_delayLine = new float[_maxDelayPos + 1];
-            _maxDelayPos = (int)(_fs * maxDelay);
-            _delayLine = new float[_maxDelayPos + 2];
+
+            _delayLine = new float[(int)(_fs * maxDelay) + 1]; // +2];
+            _delayLineSize = _delayLine.Length;
+            
             _n = 0;
         }
 
@@ -50,7 +43,7 @@ namespace NWaves.Utils
         {
             _delayLine[_n] = sample;
 
-            if (++_n >= _delayLine.Length)
+            if (++_n >= _delayLineSize)
             {
                 _n = 0;
             }
@@ -63,13 +56,14 @@ namespace NWaves.Utils
         /// <returns></returns>
         public float Read(double delay)
         {
-            var readPosition = (float) (_n - 1 - delay + _delayLine.Length) % _delayLine.Length;
-            
-            var localReadPosition = (int)Math.Floor(readPosition);
+            //var precisePosition = (float)(_n - 1 - delay + _delayLineSize) % _delayLineSize;
+            var precisePosition = (float) (_n - delay + _delayLineSize) % _delayLineSize;
 
-            var fraction = readPosition - localReadPosition;
-            var delayed1 = _delayLine[localReadPosition];
-            var delayed2 = _delayLine[(localReadPosition + 1) % _delayLine.Length];
+            var intPosition = (int)precisePosition;  // (int)Math.Floor(precisePosition);
+
+            var fraction = precisePosition - intPosition;
+            var delayed1 = _delayLine[intPosition];
+            var delayed2 = _delayLine[(intPosition + 1) % _delayLineSize];
 
             return delayed1 + fraction * (delayed2 - delayed1);
         }
@@ -80,5 +74,14 @@ namespace NWaves.Utils
         /// <param name="pos"></param>
         /// <returns></returns>
         public float Read(int pos) => _delayLine[pos];
+
+        /// <summary>
+        /// Reset delay line
+        /// </summary>
+        public void Reset()
+        {
+            Array.Clear(_delayLine, 0, _delayLineSize);
+            _n = 0;
+        }
     }
 }
