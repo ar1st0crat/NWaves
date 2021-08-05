@@ -100,15 +100,21 @@ namespace NWaves.Effects.Stereo
         /// </summary>
         /// <param name="samplingRate"></param>
         /// <param name="pan"></param>
+        /// <param name="interpolationMode"></param>
+        /// <param name="maxDelaySeconds"></param>
         /// <param name="headRadius"></param>
-        public ItdIldPanEffect(int samplingRate, float pan, float headRadius = 8.5e-2f)
+        public ItdIldPanEffect(int samplingRate,
+                               float pan,
+                               InterpolationMode interpolationMode = InterpolationMode.Linear,
+                               double maxDelaySeconds = 0.001,
+                               float headRadius = 8.5e-2f)
         {
             _samplingRate = samplingRate;
             _headRadius = headRadius;
             _headFactor = _headRadius / SpeedOfSound;
 
-            _itdDelayLeft = new FractionalDelayLine(samplingRate, 0.001f, InterpolationMode.Linear);
-            _itdDelayRight = new FractionalDelayLine(samplingRate, 0.001f, InterpolationMode.Linear);
+            _itdDelayLeft = new FractionalDelayLine(samplingRate, maxDelaySeconds, interpolationMode);
+            _itdDelayRight = new FractionalDelayLine(samplingRate, maxDelaySeconds, interpolationMode);
 
             _ildFilterLeft = new BiQuadFilter(1, 0, 0, 0, 0, 0);
             _ildFilterRight = new BiQuadFilter(1, 0, 0, 0, 0, 0);

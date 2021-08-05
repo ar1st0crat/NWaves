@@ -3,7 +3,7 @@
     public enum InterpolationMode
     {
         Linear,
-        Lagrange,
+        Cubic,
         Nearest
     }
 }

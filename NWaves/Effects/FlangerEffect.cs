@@ -1,5 +1,5 @@
 ﻿using NWaves.Signals.Builders;
-using System;
+using NWaves.Utils;
 
 namespace NWaves.Effects
 {
@@ -8,6 +8,30 @@ namespace NWaves.Effects
     /// </summary>
     public class FlangerEffect : AudioEffect
     {
+        /// <summary>
+        /// Fractional delay line
+        /// </summary>
+        private readonly FractionalDelayLine _delayLine;
+
+        /// <summary>
+        /// Sampling rate
+        /// </summary>
+        private readonly int _fs;
+
+        /// <summary>
+        /// Width (in seconds)
+        /// </summary>
+        private float _width;
+        public float Width
+        {
+            get => _width;
+            set
+            {
+                _width = value;
+                _delayLine.Ensure(_fs, _width);
+            }
+        }
+
         /// <summary>
         /// LFO frequency
         /// </summary>
@@ -37,21 +61,6 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Width (max delay in seconds)
-        /// </summary>
-        private float _width;
-        public float Width
-        {
-            get => _width;
-            set
-            {
-                _width = value;
-                _maxDelayPos = (int)Math.Ceiling(_fs * value);
-                _delayLine = new float[_maxDelayPos + 1];
-            }
-        }
-
-        /// <summary>
         /// Depth
         /// </summary>
         public float Depth { get; set; }
@@ -67,43 +76,12 @@ namespace NWaves.Effects
         public bool Inverted { get; set; }
 
         /// <summary>
-        /// Sampling rate
+        /// Interpolation mode
         /// </summary>
-        private readonly int _fs;
-
-        /// <summary>
-        /// Delay line
-        /// </summary>
-        private float[] _delayLine;
-        private int _maxDelayPos;
-        private int _n = 1;
-
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="lfoFrequency"></param>
-        /// <param name="width"></param>
-        /// <param name="depth"></param>
-        /// <param name="feedback"></param>
-        /// <param name="inverted"></param>
-        public FlangerEffect(int samplingRate,
-                             float lfoFrequency = 1/*Hz*/,
-                             float width = 0.003f/*sec*/,
-                             float depth = 0.5f,
-                             float feedback = 0,
-                             bool inverted = false)
+        public InterpolationMode InterpolationMode
         {
-            _fs = samplingRate;
-
-            Width = width;
-            Depth = depth;
-            Feedback = feedback;
-            Inverted = inverted;
-            
-            Lfo = new SineBuilder().SampledAt(samplingRate);
-            LfoFrequency = lfoFrequency;
+            get => _delayLine.InterpolationMode;
+            set => _delayLine.InterpolationMode = value;
         }
 
         /// <summary>
@@ -121,15 +99,49 @@ namespace NWaves.Effects
                              float width = 0.003f/*sec*/,
                              float depth = 0.5f,
                              float feedback = 0,
-                             bool inverted = false)
+                             bool inverted = false,
+                             InterpolationMode interpolationMode = InterpolationMode.Linear,
+                             float reserveWidth = 0/*sec*/)
         {
             _fs = samplingRate;
-
-            Width = width;
+            _width = width;
             Depth = depth;
             Feedback = feedback;
             Inverted = inverted;
+            
             Lfo = lfo;
+
+            if (reserveWidth < width)
+            {
+                _delayLine = new FractionalDelayLine(samplingRate, width, interpolationMode);
+            }
+            else
+            {
+                _delayLine = new FractionalDelayLine(samplingRate, reserveWidth, interpolationMode);
+            }
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="samplingRate"></param>
+        /// <param name="lfoFrequency"></param>
+        /// <param name="width"></param>
+        /// <param name="depth"></param>
+        /// <param name="feedback"></param>
+        /// <param name="inverted"></param>
+        public FlangerEffect(int samplingRate,
+                             float lfoFrequency = 1/*Hz*/,
+                             float width = 0.003f/*sec*/,
+                             float depth = 0.5f,
+                             float feedback = 0,
+                             bool inverted = false,
+                             InterpolationMode interpolationMode = InterpolationMode.Linear,
+                             float reserveWidth = 0/*sec*/)
+
+            : this(samplingRate, new SineBuilder().SampledAt(samplingRate), width, depth, feedback, inverted, interpolationMode, reserveWidth)
+        {
+            LfoFrequency = lfoFrequency;
         }
 
         /// <summary>
@@ -139,25 +151,11 @@ namespace NWaves.Effects
         /// <returns></returns>
         public override float Process(float sample)
         {
-            if (_n == _delayLine.Length)
-            {
-                _n = 1;
-            }
+            var delay = _lfo.NextSample() * _width * _fs;
 
-            var preciseDelay = _lfo.NextSample() * _maxDelayPos;
+            var delayedSample = _delayLine.Read(delay);
 
-            var delay = (int)preciseDelay;
-            var fracDelay = preciseDelay - delay;
-
-            // linear interpolation:
-
-            var offset1 = _n > delay ? _n - delay : _n + _maxDelayPos - delay;
-            var offset2 = offset1 == 1 ? _maxDelayPos : offset1 - 1;
-
-            var delayedSample = _delayLine[offset2] + (1 - fracDelay) * (_delayLine[offset1] - _delayLine[offset2]);
-
-
-            _delayLine[_n++] = sample + Feedback * delayedSample;
+            _delayLine.Write(sample + Feedback * delayedSample);
 
             return Inverted ? Dry * sample - Wet * Depth * delayedSample
                             : Dry * sample + Wet * Depth * delayedSample;
@@ -168,9 +166,8 @@ namespace NWaves.Effects
         /// </summary>
         public override void Reset()
         {
-            Array.Clear(_delayLine, 0, _delayLine.Length);
+            _delayLine.Reset();
             _lfo.Reset();
-            _n = 1;
         }
     }
 }

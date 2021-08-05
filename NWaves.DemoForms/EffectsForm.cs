@@ -131,8 +131,8 @@ namespace NWaves.DemoForms
             {
                 var lfoFrequency = float.Parse(lfoFreqTextBox.Text);
                 var width = float.Parse(widthTextBox.Text);
-                //effect = new FlangerEffect(fs, lfoFrequency, width);//, 0.7f, 0.5f);
-                effect = new NewVibratoEffect(fs, lfoFrequency, width);
+                effect = new FlangerEffect(fs, lfoFrequency, width);//, 0.7f, 0.5f);
+                //effect = new VibratoEffect(fs, lfoFrequency, width);
                 //effect = new ChorusEffect(fs, new[] { 1f, 1f, 1f, 1f }, new[] { 0.004f, 0.0042f, 0.0045f, 0.0038f });
             }
             else if (pitchShiftRadioButton.Checked)
@@ -164,26 +164,6 @@ namespace NWaves.DemoForms
                 effect.Dry = float.Parse(dryTextBox.Text);
 
                 _filteredSignal = effect.ApplyTo(_signal, FilteringMethod.Auto);
-
-               
-                
-                //var ef1 = new VibratoEffect(_signal.SamplingRate);
-                //var ef2 = new NewVibratoEffect(_signal.SamplingRate);
-
-                //var res1 = ef1.ApplyTo(_signal, FilteringMethod.Auto);
-                //var res2 = ef2.ApplyTo(_signal, FilteringMethod.Auto);
-
-                //var sum = (res1 - res2).Samples.Sum();
-
-                //MessageBox.Show(sum + "");
-
-                //signalBeforeFilteringPanel.Signal = res1;
-                //spectrogramBeforeFilteringPanel.Spectrogram = _stft.Spectrogram(res1.Samples);
-
-                //signalAfterFilteringPanel.Signal = res2;
-                //spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(res2.Samples);
-
-
 
 
                 //DiscreteSignal morph;
