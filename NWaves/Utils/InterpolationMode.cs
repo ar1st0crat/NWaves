@@ -4,6 +4,7 @@
     {
         Linear,
         Cubic,
+        Thiran,
         Nearest
     }
 }

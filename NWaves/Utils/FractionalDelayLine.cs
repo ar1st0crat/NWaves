@@ -29,6 +29,11 @@ namespace NWaves.Utils
         private int _n;
 
         /// <summary>
+        /// Used in InterpolationMode.Thiran
+        /// </summary>
+        private float _prevInterpolated;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="maxDelayInSamples">Max delay in samples</param>
@@ -76,8 +81,7 @@ namespace NWaves.Utils
         /// <returns></returns>
         public float Read(double delay)
         {
-            //var precisePosition = (float)(_n - 1 - delay + _delayLineSize) % _delayLineSize;
-            var precisePosition = (float)(_n - delay + _delayLineSize) % _delayLineSize;
+            var precisePosition = (float)(_n - 1 - delay + _delayLineSize) % _delayLineSize;
 
             var intPosition = (int)precisePosition;
 
@@ -107,6 +111,35 @@ namespace NWaves.Utils
 
                         return a0 * f3 + a1 * f2 + a2 * fraction + a3;
                     }
+                
+                case InterpolationMode.Thiran:
+                    {
+                        var sample1 = _delayLine[intPosition];
+                        var sample2 = _delayLine[(intPosition + 1) % _delayLineSize];
+
+                        // from DAFX book:
+                        // var alpha = 1 - fraction;
+
+                        // however, according to paper
+                        // "A Lossless, Click-free, Pitchbend-able Delay Line Loop Interpolation Scheme"
+                        // by Scott A. Van Duyne et al.:
+
+                        if (fraction < 0.618)       // keep fraction in range [0.618, 1.618] (golden ratio)
+                        {
+                            fraction++;
+                        }
+
+                        var alpha = (1 - fraction) / (1 + fraction);
+
+                        var interpolated = sample2 + alpha * (sample1 - _prevInterpolated);
+
+                        _prevInterpolated = interpolated;
+
+                        // the processing scheme above is rather simple,
+                        // so there may be audible artifacts in the output signal, anyway
+
+                        return interpolated;
+                    }
 
                 case InterpolationMode.Linear:
                 default:
@@ -120,19 +153,13 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Read (get) sample from the delay line by index
-        /// </summary>
-        /// <param name="pos"></param>
-        /// <returns></returns>
-        public float Read(int pos) => _delayLine[pos];
-
-        /// <summary>
         /// Reset delay line
         /// </summary>
         public void Reset()
         {
             Array.Clear(_delayLine, 0, _delayLineSize);
             _n = 0;
+            _prevInterpolated = 0;
         }
 
         /// <summary>
