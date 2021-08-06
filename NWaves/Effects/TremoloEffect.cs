@@ -1,4 +1,5 @@
-﻿using NWaves.Signals.Builders;
+﻿using NWaves.Effects.Base;
+using NWaves.Signals.Builders;
 
 namespace NWaves.Effects
 {

@@ -1,4 +1,5 @@
-﻿using NWaves.Signals.Builders;
+﻿using NWaves.Effects.Base;
+using NWaves.Signals.Builders;
 using NWaves.Utils;
 using System.Linq;
 
@@ -13,32 +14,6 @@ namespace NWaves.Effects
     /// </summary>
     public class ChorusEffect : AudioEffect
     {
-        /// <summary>
-        /// Wet mix
-        /// </summary>
-        public override float Wet
-        {
-            get => base.Wet;
-            set
-            {
-                base.Wet = value;
-                foreach (var voice in _voices) { voice.Wet = value; }
-            }
-        }
-
-        /// <summary>
-        /// Dry mix
-        /// </summary>
-        public override float Dry
-        {
-            get => base.Dry;
-            set
-            {
-                base.Dry = value;
-                foreach (var voice in _voices) { voice.Dry = value; }
-            }
-        }
-
         /// <summary>
         /// Widths for each voice (max delays in seconds)
         /// </summary>
@@ -94,11 +69,7 @@ namespace NWaves.Effects
 
             for (var i = 0; i < _voices.Length; i++)
             {
-                _voices[i] = new VibratoEffect(samplingRate, lfoFrequencies[i], widths[i])
-                {
-                    Wet = Wet,
-                    Dry = Dry
-                };
+                _voices[i] = new VibratoEffect(samplingRate, lfoFrequencies[i], widths[i]);
             }
         }
 
@@ -116,11 +87,7 @@ namespace NWaves.Effects
 
             for (var i = 0; i < _voices.Length; i++)
             {
-                _voices[i] = new VibratoEffect(samplingRate, lfos[i], widths[i])
-                {
-                    Wet = Wet,
-                    Dry = Dry
-                };
+                _voices[i] = new VibratoEffect(samplingRate, lfos[i], widths[i]);
             }
         }
 
@@ -131,7 +98,9 @@ namespace NWaves.Effects
         /// <returns></returns>
         public override float Process(float sample)
         {
-            return _voices.Sum(v => v.Process(sample)) / _voices.Length;
+            var chorus = _voices.Sum(v => v.Process(sample)) / _voices.Length;
+
+            return sample * Dry + chorus * Wet;
         }
 
         /// <summary>

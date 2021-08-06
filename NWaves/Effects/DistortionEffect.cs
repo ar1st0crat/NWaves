@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NWaves.Effects.Base;
+using System;
 
 namespace NWaves.Effects
 {

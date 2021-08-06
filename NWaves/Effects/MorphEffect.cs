@@ -1,4 +1,5 @@
-﻿using NWaves.Signals;
+﻿using NWaves.Effects.Base;
+using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
 using NWaves.Windows;

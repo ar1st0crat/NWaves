@@ -129,6 +129,9 @@ namespace NWaves.Effects.Stereo
         /// <param name="right"></param>
         public override void Process(ref float left, ref float right)
         {
+            var leftIn = left;
+            var rightIn = right;
+
             // ITD (Interaural Time Difference)
 
             _itdDelayLeft.Write(left);
@@ -141,6 +144,11 @@ namespace NWaves.Effects.Stereo
 
             left = _ildFilterLeft.Process(left);
             right = _ildFilterRight.Process(right);
+
+            // Wet/dry mixing (if necessary)
+
+            left = leftIn * Dry + left * Wet;
+            right = rightIn * Dry + right * Wet;
         }
 
         /// <summary>

@@ -1,14 +1,14 @@
-﻿namespace NWaves.Filters.Base
+﻿namespace NWaves.Effects.Base
 {
     public interface IMixable
     {
         /// <summary>
-        /// Wet mix
+        /// Wet gain
         /// </summary>
         float Wet { get; set; }
 
         /// <summary>
-        /// Dry mix
+        /// Dry gain
         /// </summary>
         float Dry { get; set; }
     }

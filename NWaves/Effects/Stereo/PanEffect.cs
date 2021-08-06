@@ -62,20 +62,23 @@ namespace NWaves.Effects.Stereo
         /// <param name="right"></param>
         public override void Process(ref float left, ref float right)
         {
+            var leftIn = left;
+            var rightIn = right;
+
             switch (PanRule)
             {
                 case PanRule.Balanced:
                     {
                         left *= 2 * Math.Min(0.5f, 1 - _mappedPan);
                         right *= 2 * Math.Min(0.5f, _mappedPan);
-                        return;
+                        break;
                     }
 
                 case PanRule.ConstantPower:
                     {
                         left *= (float)Math.Cos(_constantPowerPan);
                         right *= (float)Math.Sin(_constantPowerPan);
-                        return;
+                        break;
                     }
 
                 case PanRule.Sin3Db:
@@ -83,7 +86,7 @@ namespace NWaves.Effects.Stereo
                         var gain = Math.Sqrt(2.0);
                         left *= (float)(gain * Math.Cos(0.5 * Math.PI * _mappedPan));
                         right *= (float)(gain * Math.Sin(0.5 * Math.PI * _mappedPan));
-                        return;
+                        break;
                     }
 
                 case PanRule.Sin4_5Db:
@@ -91,7 +94,7 @@ namespace NWaves.Effects.Stereo
                         var gain = Math.Pow(2, 3 / 4.0);
                         left *= (float)(gain * Math.Pow(Math.Cos(0.5 * Math.PI * _mappedPan), 1.5));
                         right *= (float)(gain * Math.Pow(Math.Sin(0.5 * Math.PI * _mappedPan), 1.5));
-                        return;
+                        break;
                     }
 
                 case PanRule.Sin6Db:
@@ -99,7 +102,7 @@ namespace NWaves.Effects.Stereo
                         var gain = 2.0;
                         left *= (float)(gain * Math.Pow(Math.Cos(0.5 * Math.PI * _mappedPan), 2.0));
                         right *= (float)(gain * Math.Pow(Math.Sin(0.5 * Math.PI * _mappedPan), 2.0));
-                        return;
+                        break;
                     }
 
                 case PanRule.SqRoot3Db:
@@ -107,7 +110,7 @@ namespace NWaves.Effects.Stereo
                         var gain = Math.Sqrt(2.0);
                         left *= (float)(gain * Math.Sqrt(1 - _mappedPan));
                         right *= (float)(gain * Math.Sqrt(_mappedPan));
-                        return;
+                        break;
                     }
 
                 case PanRule.SqRoot4_5Db:
@@ -115,7 +118,7 @@ namespace NWaves.Effects.Stereo
                         var gain = Math.Pow(2, 3 / 4.0);
                         left *= (float)(gain * Math.Pow(1 - _mappedPan, 1.5));
                         right *= (float)(gain * Math.Pow(_mappedPan, 1.5));
-                        return;
+                        break;
                     }
 
                 case PanRule.Linear:
@@ -123,9 +126,12 @@ namespace NWaves.Effects.Stereo
                     {
                         left *= 2 * (1 - _mappedPan);
                         right *= 2 * _mappedPan;
-                        return;
+                        break;
                     }
             }
+
+            left = leftIn * Dry + left * Wet;
+            right = rightIn * Dry + right * Wet;
         }
 
         /// <summary>

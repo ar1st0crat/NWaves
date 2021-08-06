@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using NWaves.Effects.Base;
 using NWaves.Filters.Base;
 using NWaves.Operations;
 using NWaves.Operations.Tsm;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using NWaves.Effects.Base;
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Utils;
@@ -21,18 +22,8 @@ namespace NWaves.Filters.Base
     /// since audio effects can be built based on this class.
     /// 
     /// </summary>
-    public abstract class OverlapAddFilter : IFilter, IOnlineFilter, IMixable
+    public abstract class OverlapAddFilter : WetDryMixer, IFilter, IOnlineFilter
     {
-        /// <summary>
-        /// Wet mix
-        /// </summary>
-        public float Wet { get; set; } = 1f;
-
-        /// <summary>
-        /// Dry mix
-        /// </summary>
-        public float Dry { get; set; } = 0f;
-
         /// <summary>
         /// Hop size
         /// </summary>

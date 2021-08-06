@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 using NWaves.Audio;
 using NWaves.Effects;
+using NWaves.Effects.Base;
 using NWaves.Filters.Base;
 using NWaves.Operations;
 using NWaves.Operations.Tsm;

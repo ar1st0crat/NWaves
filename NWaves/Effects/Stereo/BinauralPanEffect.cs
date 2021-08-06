@@ -327,6 +327,10 @@ namespace NWaves.Effects.Stereo
         /// <param name="right">Sample from right channel</param>
         public override void Process(ref float left, ref float right)
         {
+            var leftIn = left;
+            var rightIn = right;
+
+
             // 1) optional crossover filtering:
 
             var lowFreqSignalLeft = 0f;
@@ -354,6 +358,12 @@ namespace NWaves.Effects.Stereo
 
             left += lowFreqSignalLeft;      // if there was no crossover filtering,
             right += lowFreqSignalRight;    // here we'll simply add zeros
+
+            
+            // 3) Wet/dry mixing (if necessary)
+
+            left = leftIn * Dry + left * Wet;
+            right = rightIn * Dry + right * Wet;
         }
 
         /// <summary>

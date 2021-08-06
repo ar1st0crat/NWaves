@@ -1,4 +1,4 @@
-﻿using NWaves.Filters.Base;
+﻿using NWaves.Effects.Base;
 using NWaves.Signals;
 using System;
 
@@ -7,18 +7,8 @@ namespace NWaves.Effects.Stereo
     /// <summary>
     /// Base class for stereo effects
     /// </summary>
-    public abstract class StereoEffect : IMixable
+    public abstract class StereoEffect : WetDryMixer
     {
-        /// <summary>
-        /// Wet mix
-        /// </summary>
-        public virtual float Wet { get; set; } = 1f;
-
-        /// <summary>
-        /// Dry mix
-        /// </summary>
-        public virtual float Dry { get; set; } = 0f;
-
         /// <summary>
         /// Process two channels : [ input left , input right ] -> [ output left , output right ]
         /// </summary>

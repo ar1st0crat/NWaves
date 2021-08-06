@@ -2,23 +2,13 @@
 using NWaves.Signals;
 using System.Linq;
 
-namespace NWaves.Effects
+namespace NWaves.Effects.Base
 {
     /// <summary>
     /// Audio effect
     /// </summary>
-    public abstract class AudioEffect : IFilter, IOnlineFilter, IMixable
+    public abstract class AudioEffect : WetDryMixer, IFilter, IOnlineFilter
     {
-        /// <summary>
-        /// Wet mix
-        /// </summary>
-        public virtual float Wet { get; set; } = 1f;
-
-        /// <summary>
-        /// Dry mix
-        /// </summary>
-        public virtual float Dry { get; set; } = 0f;
-
         /// <summary>
         /// Online processing
         /// </summary>
