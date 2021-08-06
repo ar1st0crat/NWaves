@@ -22,6 +22,14 @@ namespace NWaves.Utils
             }
         }
 
+        public static void AgainstInvalidRange(double value, double low, double high, string valueName = "value")
+        {
+            if (value < low || value > high)
+            {
+                throw new ArgumentException($"{valueName} must be in range [{low}, {high}]!");
+            }
+        }
+
         public static void AgainstInvalidRange(double low, double high, string lowName = "low", string highName = "high")
         {
             if (high - low < 1e-30)
