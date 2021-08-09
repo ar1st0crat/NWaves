@@ -16,6 +16,10 @@ namespace NWaves.FeatureExtractors.Options
         [DataMember]
         public double HopDuration { get; set; } = 0.01;
         [DataMember]
+        public int FrameSize { get; set; } = 0;
+        [DataMember]
+        public int HopSize { get; set; } = 0;
+        [DataMember]
         public double PreEmphasis { get; set; } = 0;
         [DataMember]
         public WindowTypes Window { get; set; } = WindowTypes.Rectangular;
@@ -26,9 +30,20 @@ namespace NWaves.FeatureExtractors.Options
             {
                 var errors = new List<string>();
 
-                if (SamplingRate <= 0) errors.Add("Positive sampling rate must be specified");
-                if (FrameDuration <= 0) errors.Add("Positive frame duration must be specified");
-                if (HopDuration <= 0) errors.Add("Positive hop duration must be specified");
+                if (SamplingRate <= 0)
+                {
+                    errors.Add("Positive sampling rate must be specified");
+                }
+
+                if (FrameDuration <= 0 && FrameSize <= 0)
+                {
+                    errors.Add("Positive frame duration (in seconds) or frame size (in samples) must be specified");
+                }
+
+                if (HopDuration <= 0 && HopSize <= 0)
+                {
+                    errors.Add("Positive hop duration (in seconds) or hop size (in samples) must be specified");
+                }
 
                 return errors;
             }

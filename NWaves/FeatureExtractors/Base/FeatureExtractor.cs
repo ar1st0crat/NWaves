@@ -105,10 +105,29 @@ namespace NWaves.FeatureExtractors.Base
             }
 
             SamplingRate = options.SamplingRate;
-            FrameDuration = options.FrameDuration;
-            HopDuration = options.HopDuration;
-            FrameSize = (int)(SamplingRate * FrameDuration);
-            HopSize = (int)(SamplingRate * HopDuration);
+
+            if (options.FrameSize > 0)  // frame size has priority over frame duration 
+            {
+                FrameSize = options.FrameSize;
+                FrameDuration = (double)FrameSize / SamplingRate;
+            }
+            else
+            {
+                FrameDuration = options.FrameDuration;
+                FrameSize = (int)(SamplingRate * FrameDuration);
+            }
+
+            if (options.HopSize > 0)  // hop size has priority over hop duration 
+            {
+                HopSize = options.HopSize;
+                HopDuration = (double)HopSize / SamplingRate;
+            }
+            else
+            {
+                HopDuration = options.HopDuration;
+                HopSize = (int)(SamplingRate * HopDuration);
+            }
+
             _blockSize = FrameSize;
             _preEmphasis = (float)options.PreEmphasis;
             _window = options.Window;
@@ -126,7 +145,7 @@ namespace NWaves.FeatureExtractors.Base
         /// <param name="startSample">The offset (position) of the first sample for processing</param>
         /// <param name="endSample">The offset (position) of last sample for processing</param>
         /// <param name="vectors">Pre-allocated sequence of feature vectors</param>
-        public virtual void ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
+        public virtual int ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
             Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
 
@@ -148,7 +167,9 @@ namespace NWaves.FeatureExtractors.Base
             // Since usually the frame size is chosen to be close to block (FFT) size 
             // we don't need to pad very big number of zeros, so we use for-loop here.
 
-            for (int sample = startSample, i = 0; sample <= lastSample; sample += hopSize, i++)
+            var i = 0;
+
+            for (int sample = startSample; sample <= lastSample; sample += hopSize, i++)
             {
                 // prepare new block for processing ======================================================
 
@@ -182,6 +203,8 @@ namespace NWaves.FeatureExtractors.Base
 
                 ProcessFrame(block, vectors[i]);
             }
+
+            return i;
         }
 
         /// <summary>
@@ -190,9 +213,16 @@ namespace NWaves.FeatureExtractors.Base
         /// <param name="samples">Array of real-valued samples</param>
         /// <param name="startSample">The offset (position) of the first sample for processing</param>
         /// <param name="endSample">The offset (position) of last sample for processing</param>
-        /// <returns>Sequence of feature vectors</returns>
+        /// <returns>Sequence of feature vectors or null, if the number of samples is less than the size of analysis frame</returns>
         public virtual List<float[]> ComputeFrom(float[] samples, int startSample, int endSample)
         {
+            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
+
+            if (endSample - startSample < FrameSize)
+            {
+                return null;
+            }
+
             // pre-allocate memory for data:
 
             var totalCount = (endSample - FrameSize - startSample) / HopSize + 1;

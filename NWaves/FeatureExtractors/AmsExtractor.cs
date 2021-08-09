@@ -376,7 +376,7 @@ namespace NWaves.FeatureExtractors
             throw new NotImplementedException("AmsExtractor does not provide this function. Please call ComputeFrom() method");
         }
 
-        public override void ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
+        public override int ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
             throw new NotImplementedException("AmsExtractor does not provide this function. Please call overloaded ComputeFrom() method");
         }

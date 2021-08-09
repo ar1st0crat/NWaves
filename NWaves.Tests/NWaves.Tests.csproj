@@ -39,6 +39,7 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FeaturesTest\TestFeatureExtractors.cs" />
     <Compile Include="FilterTests\TestIirFilter.cs" />
     <Compile Include="FilterTests\TestMedianFilter.cs" />
     <Compile Include="FilterTests\TestTransferFunction.cs" />

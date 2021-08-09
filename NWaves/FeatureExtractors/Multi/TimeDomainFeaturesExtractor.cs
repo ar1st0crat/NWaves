@@ -95,11 +95,13 @@ namespace NWaves.FeatureExtractors.Multi
         /// <param name="startSample">The number (position) of the first sample for processing</param>
         /// <param name="endSample">The number (position) of last sample for processing</param>
         /// <param name="vectors">Pre-allocated sequence of feature vectors</param>
-        public override void ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
+        public override int ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
             var ds = new DiscreteSignal(SamplingRate, samples);
 
-            for (int sample = startSample, fv = 0; sample + FrameSize < endSample; sample += HopSize, fv++)
+            var fv = 0;
+
+            for (var sample = startSample; sample + FrameSize < endSample; sample += HopSize, fv++)
             {
                 var featureVector = vectors[fv];
 
@@ -108,6 +110,8 @@ namespace NWaves.FeatureExtractors.Multi
                     featureVector[j] = _extractors[j](ds, sample, sample + FrameSize);
                 }
             }
+
+            return fv;
         }
 
         /// <summary>

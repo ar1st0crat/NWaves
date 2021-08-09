@@ -337,11 +337,11 @@ namespace NWaves.FeatureExtractors.Multi
         /// <param name="startSample">The number (position) of the first sample for processing</param>
         /// <param name="endSample">The number (position) of last sample for processing</param>
         /// <param name="vectors">Output sequence of feature vectors</param>
-        public override void ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
+        public override int ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
             _pitchPos = 0;
 
-            base.ComputeFrom(samples, startSample, endSample, vectors);
+            return base.ComputeFrom(samples, startSample, endSample, vectors);
         }
 
         /// <summary>
