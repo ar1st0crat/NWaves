@@ -34,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NWaves, Version=0.9.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NWaves.0.9.5\lib\netstandard2.0\NWaves.dll</HintPath>
+    </Reference>
     <Reference Include="SciColorMaps, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ar1st0crat.SciColorMaps.1.0.2\lib\portable40-net40+sl5+win8+wpa81\SciColorMaps.dll</HintPath>
       <Private>True</Private>
@@ -258,12 +261,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\NWaves\NWaves.csproj">
-      <Project>{3fbf1b3a-3bed-4f2f-8008-871acf83e352}</Project>
-      <Name>NWaves</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
