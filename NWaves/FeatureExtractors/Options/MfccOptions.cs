@@ -20,7 +20,7 @@ namespace NWaves.FeatureExtractors.Options
         {
             FilterBankSize = 24;
             NonLinearity = NonLinearityType.Log10;
-            Window = WindowTypes.Hamming;
+            Window = WindowType.Hamming;
         }
 
         public override List<string> Errors

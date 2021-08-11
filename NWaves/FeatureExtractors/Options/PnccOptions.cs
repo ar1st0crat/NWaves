@@ -19,7 +19,7 @@ namespace NWaves.FeatureExtractors.Options
             LowFrequency = 100;
             HighFrequency = 6800;
             FilterBankSize = 40;
-            Window = WindowTypes.Hamming;
+            Window = WindowType.Hamming;
         }
 
         public override List<string> Errors

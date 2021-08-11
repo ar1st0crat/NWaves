@@ -335,7 +335,7 @@ namespace NWaves.Features
                 signal = signal[startPos, endPos];
             }
 
-            signal.ApplyWindow(WindowTypes.Hann);
+            signal.ApplyWindow(WindowType.Hann);
 
             var size = fftSize > 0 ? fftSize : MathUtils.NextPowerOfTwo(signal.Length);
             var fft = new RealFft(size);
@@ -415,7 +415,7 @@ namespace NWaves.Features
                 signal = signal[startPos, endPos];
             }
 
-            signal.ApplyWindow(WindowTypes.Hann);
+            signal.ApplyWindow(WindowType.Hann);
 
             var size = fftSize > 0 ? fftSize : MathUtils.NextPowerOfTwo(signal.Length);
             var fft = new RealFft(size);
@@ -493,7 +493,7 @@ namespace NWaves.Features
                 signal = signal[startPos, endPos];
             }
 
-            signal.ApplyWindow(WindowTypes.Hann);
+            signal.ApplyWindow(WindowType.Hann);
 
             var size = fftSize > 0 ? fftSize : MathUtils.NextPowerOfTwo(signal.Length);
             var fft = new RealFft(size);

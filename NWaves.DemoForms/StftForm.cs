@@ -19,7 +19,7 @@ namespace NWaves.DemoForms
 
         private Stft _stft;
         private List<float[]> _spectrogram;
-        private WindowTypes _windowType = WindowTypes.Hann;
+        private WindowType _windowType = WindowType.Hann;
 
         private string _waveFileName;
         private short _bitDepth;
@@ -34,7 +34,7 @@ namespace NWaves.DemoForms
 
         private void StftForm_Load(object sender, EventArgs e)
         {
-            windowsComboBox.Items.AddRange(Enum.GetNames(typeof(WindowTypes)));
+            windowsComboBox.Items.AddRange(Enum.GetNames(typeof(WindowType)));
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -129,7 +129,7 @@ namespace NWaves.DemoForms
 
         private void windowsComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _windowType = (WindowTypes)windowsComboBox.SelectedIndex;
+            _windowType = (WindowType)windowsComboBox.SelectedIndex;
             windowPlot.Line = Window.OfType(_windowType, 256);
         }
     }

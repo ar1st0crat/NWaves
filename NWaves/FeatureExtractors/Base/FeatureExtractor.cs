@@ -86,7 +86,7 @@ namespace NWaves.FeatureExtractors.Base
         /// <summary>
         /// Type of the window function
         /// </summary>
-        protected readonly WindowTypes _window;
+        protected readonly WindowType _window;
 
         /// <summary>
         /// Window samples
@@ -132,7 +132,7 @@ namespace NWaves.FeatureExtractors.Base
             _preEmphasis = (float)options.PreEmphasis;
             _window = options.Window;
 
-            if (_window != WindowTypes.Rectangular)
+            if (_window != WindowType.Rectangular)
             {
                 _windowSamples = Window.OfType(_window, FrameSize);
             }

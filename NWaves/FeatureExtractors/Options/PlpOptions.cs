@@ -23,7 +23,7 @@ namespace NWaves.FeatureExtractors.Options
         public PlpOptions()
         {
             FilterBankSize = 24;
-            Window = WindowTypes.Hamming;
+            Window = WindowType.Hamming;
         }
 
         public override List<string> Errors

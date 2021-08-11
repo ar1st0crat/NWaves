@@ -82,7 +82,7 @@ namespace NWaves.DemoForms
 
             // obtain spectrogram
 
-            _stft = new Stft(_fftSize, _hopSize, WindowTypes.Rectangular);
+            _stft = new Stft(_fftSize, _hopSize, WindowType.Rectangular);
             var spectrogram = _stft.Spectrogram(_signal);
 
             spectrogramPanel.ColorMapName = "viridis";

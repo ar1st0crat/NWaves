@@ -3,7 +3,7 @@ namespace NWaves.Windows
     /// <summary>
     /// Most commonly used window functions
     /// </summary>
-    public enum WindowTypes
+    public enum WindowType
     {
         /// <summary>
         /// Reactangular window

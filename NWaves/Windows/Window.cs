@@ -15,44 +15,44 @@ namespace NWaves.Windows
         /// <param name="type">Window type</param>
         /// <param name="length">Window length</param>
         /// <returns></returns>
-        public static float[] OfType(WindowTypes type, int length, params object[] parameters)
+        public static float[] OfType(WindowType type, int length, params object[] parameters)
         {
             switch (type)
             {
-                case WindowTypes.Triangular:
+                case WindowType.Triangular:
                     return Triangular(length);
 
-                case WindowTypes.Hamming:
+                case WindowType.Hamming:
                     return Hamming(length);
 
-                case WindowTypes.Blackman:
+                case WindowType.Blackman:
                     return Blackman(length);
 
-                case WindowTypes.Hann:
+                case WindowType.Hann:
                     return Hann(length);
 
-                case WindowTypes.Gaussian:
+                case WindowType.Gaussian:
                     return Gaussian(length);
 
-                case WindowTypes.Kaiser:
+                case WindowType.Kaiser:
                     return parameters.Length > 0 ? Kaiser(length, (double)parameters[0]) : Kaiser(length);
 
-                case WindowTypes.Kbd:
+                case WindowType.Kbd:
                     return parameters.Length > 0 ? Kbd(length, (double)parameters[0]) : Kbd(length);
 
-                case WindowTypes.BartlettHann:
+                case WindowType.BartlettHann:
                     return BartlettHann(length);
 
-                case WindowTypes.Lanczos:
+                case WindowType.Lanczos:
                     return Lanczos(length);
 
-                case WindowTypes.PowerOfSine:
+                case WindowType.PowerOfSine:
                     return parameters.Length > 0 ? PowerOfSine(length, (double)parameters[0]) : PowerOfSine(length);
 
-                case WindowTypes.Flattop:
+                case WindowType.Flattop:
                     return Flattop(length);
 
-                case WindowTypes.Liftering:
+                case WindowType.Liftering:
                     return parameters.Length > 0 ? Liftering(length, (int)parameters[0]) : Liftering(length);
 
                 default:

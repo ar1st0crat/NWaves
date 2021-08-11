@@ -224,7 +224,7 @@ namespace NWaves.FeatureExtractors
                     
                     // 1) apply window
 
-                    if (_window != WindowTypes.Rectangular)
+                    if (_window != WindowType.Rectangular)
                     {
                         _block.ApplyWindow(_windowSamples);
                     }

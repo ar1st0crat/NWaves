@@ -24,7 +24,7 @@ namespace NWaves.FeatureExtractors.Options
         [DataMember]
         public float LogFloor { get; set; } = float.Epsilon;
 
-        public FilterbankOptions() => Window = WindowTypes.Hamming;
+        public FilterbankOptions() => Window = WindowType.Hamming;
 
         public override List<string> Errors
         {

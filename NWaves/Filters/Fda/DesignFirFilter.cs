@@ -30,7 +30,7 @@ namespace NWaves.Filters.Fda
         /// <param name="freq">Cutoff frequency (normalized: fc = f/fs)</param>
         /// <param name="window">Window</param>
         /// <returns>LP filter kernel</returns>
-        public static double[] FirWinLp(int order, double freq, WindowTypes window = WindowTypes.Blackman)
+        public static double[] FirWinLp(int order, double freq, WindowType window = WindowType.Blackman)
         {
             return FirWinFdLp(order, freq, (order + 1) % 2 * 0.5, window);
         }
@@ -42,7 +42,7 @@ namespace NWaves.Filters.Fda
         /// <param name="freq"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static double[] FirWinHp(int order, double freq, WindowTypes window = WindowTypes.Blackman)
+        public static double[] FirWinHp(int order, double freq, WindowType window = WindowType.Blackman)
         {
             return FirWinFdHp(order, freq, (order + 1) % 2 * 0.5, window);
         }
@@ -55,7 +55,7 @@ namespace NWaves.Filters.Fda
         /// <param name="freq2"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static double[] FirWinBp(int order, double freq1, double freq2, WindowTypes window = WindowTypes.Blackman)
+        public static double[] FirWinBp(int order, double freq1, double freq2, WindowType window = WindowType.Blackman)
         {
             return FirWinFdBp(order, freq1, freq2, (order + 1) % 2 * 0.5, window);
         }
@@ -68,7 +68,7 @@ namespace NWaves.Filters.Fda
         /// <param name="freq2"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static double[] FirWinBs(int order, double freq1, double freq2, WindowTypes window = WindowTypes.Blackman)
+        public static double[] FirWinBs(int order, double freq1, double freq2, WindowType window = WindowType.Blackman)
         {
             return FirWinFdBs(order, freq1, freq2, (order + 1) % 2 * 0.5, window);
         }
@@ -86,7 +86,7 @@ namespace NWaves.Filters.Fda
         /// <param name="delay"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static double[] FirWinFdLp(int order, double freq, double delay, WindowTypes window = WindowTypes.Blackman)
+        public static double[] FirWinFdLp(int order, double freq, double delay, WindowType window = WindowType.Blackman)
         {
             Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
 
@@ -117,7 +117,7 @@ namespace NWaves.Filters.Fda
         /// <param name="delay"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static double[] FirWinFdHp(int order, double freq, double delay, WindowTypes window = WindowTypes.Blackman)
+        public static double[] FirWinFdHp(int order, double freq, double delay, WindowType window = WindowType.Blackman)
         {
             Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
 
@@ -153,7 +153,7 @@ namespace NWaves.Filters.Fda
         /// <param name="delay"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static double[] FirWinFdBp(int order, double freq1, double freq2, double delay, WindowTypes window = WindowTypes.Blackman)
+        public static double[] FirWinFdBp(int order, double freq1, double freq2, double delay, WindowType window = WindowType.Blackman)
         {
             Guard.AgainstInvalidRange(freq1, 0, 0.5, "lower frequency");
             Guard.AgainstInvalidRange(freq2, 0, 0.5, "upper frequency");
@@ -188,7 +188,7 @@ namespace NWaves.Filters.Fda
         /// <param name="delay"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static double[] FirWinFdBs(int order, double freq1, double freq2, double delay, WindowTypes window = WindowTypes.Blackman)
+        public static double[] FirWinFdBs(int order, double freq1, double freq2, double delay, WindowType window = WindowType.Blackman)
         {
             Guard.AgainstInvalidRange(freq1, 0, 0.5, "lower frequency");
             Guard.AgainstInvalidRange(freq2, 0, 0.5, "upper frequency");
@@ -225,7 +225,7 @@ namespace NWaves.Filters.Fda
         /// <param name="delay"></param>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static double[] FirWinFdAp(int order, double delay, WindowTypes window = WindowTypes.Blackman)
+        public static double[] FirWinFdAp(int order, double delay, WindowType window = WindowType.Blackman)
         {
             var kernel = new double[order];
 
@@ -357,7 +357,7 @@ namespace NWaves.Filters.Fda
         /// <returns>FIR filter kernel</returns>
         public static double[] Fir(int order,
                                    double[] magnitudeResponse,
-                                   WindowTypes window = WindowTypes.Blackman)
+                                   WindowType window = WindowType.Blackman)
         {
             // 2x because we reserve space for symmetric part
 
@@ -391,7 +391,7 @@ namespace NWaves.Filters.Fda
         /// <param name="frequencyResponse">Complex frequency response</param>
         /// <param name="window">Window</param>
         /// <returns>FIR filter kernel</returns>
-        public static double[] Fir(int order, ComplexDiscreteSignal frequencyResponse, WindowTypes window = WindowTypes.Blackman)
+        public static double[] Fir(int order, ComplexDiscreteSignal frequencyResponse, WindowType window = WindowType.Blackman)
         {
             return Fir(order, frequencyResponse.Real, window);
         }
@@ -405,7 +405,7 @@ namespace NWaves.Filters.Fda
         /// <returns>FIR filter kernel</returns>
         public static double[] Fir(int order,
                                    float[] magnitudeResponse,
-                                   WindowTypes window = WindowTypes.Blackman)
+                                   WindowType window = WindowType.Blackman)
         {
             return Fir(order, magnitudeResponse.ToDoubles(), window);
         }

@@ -75,7 +75,7 @@ namespace NWaves.Effects
             Guard.AgainstInvalidRange(_hopSize, _fftSize, "Hop size", "FFT size");
 
             _fft = new RealFft(_fftSize);
-            _window = Window.OfType(WindowTypes.Hann, _fftSize);
+            _window = Window.OfType(WindowType.Hann, _fftSize);
 
             _dl1 = new float[_fftSize];
             _re1 = new float[_fftSize];

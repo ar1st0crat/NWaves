@@ -147,7 +147,7 @@ namespace NWaves.Operations.Tsm
                 PrepareConvolver();
             }
 
-            var window = Window.OfType(WindowTypes.Hann, _windowSize);
+            var window = Window.OfType(WindowType.Hann, _windowSize);
             var gain = _hopSynthesis / window.Select(w => w * w).Sum() * 0.75f;
 
             // and now WSOLA:

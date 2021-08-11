@@ -22,7 +22,7 @@ namespace NWaves.FeatureExtractors.Options
         [DataMember]
         public double PreEmphasis { get; set; } = 0;
         [DataMember]
-        public WindowTypes Window { get; set; } = WindowTypes.Rectangular;
+        public WindowType Window { get; set; } = WindowType.Rectangular;
 
         public virtual List<string> Errors
         {

@@ -36,7 +36,7 @@ namespace NWaves.Transforms
         /// <summary>
         /// Window type
         /// </summary>
-        private readonly WindowTypes _window;
+        private readonly WindowType _window;
 
         /// <summary>
         /// Pre-computed samples of the window function
@@ -50,7 +50,7 @@ namespace NWaves.Transforms
         /// <param name="hopSize">Hop (overlap) size</param>
         /// <param name="window">Type of the window function to apply</param>
         /// <param name="fftSize">Size of FFT</param>
-        public Stft(int windowSize = 1024, int hopSize = 256, WindowTypes window = WindowTypes.Hann, int fftSize = 0)
+        public Stft(int windowSize = 1024, int hopSize = 256, WindowType window = WindowType.Hann, int fftSize = 0)
         {
             _fftSize = fftSize >= windowSize ? fftSize : MathUtils.NextPowerOfTwo(windowSize);
             _fft = new RealFft(_fftSize);
@@ -257,7 +257,7 @@ namespace NWaves.Transforms
             {
                 input.FastCopyTo(windowedBuffer, _windowSize, pos);
 
-                if (_window != WindowTypes.Rectangular)
+                if (_window != WindowType.Rectangular)
                 {
                     windowedBuffer.ApplyWindow(_windowSamples);
                 }

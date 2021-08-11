@@ -165,7 +165,7 @@ namespace NWaves.DemoForms
                 SpectrumType = spectrumType,
                 NonLinearity = nonLinearity,
                 DctType = comboBoxDct.Text,
-                Window = WindowTypes.Hamming,
+                Window = WindowType.Hamming,
                 LogFloor = logFloor,
                 //FilterBankSize = 26,
                 //HighFrequency = 6000,
@@ -225,7 +225,7 @@ namespace NWaves.DemoForms
 
         public MfccExtractorTestHtk(MfccOptions options) : base(options)
         {
-            _hammingWin = Window.OfType(WindowTypes.Hamming, FrameSize);
+            _hammingWin = Window.OfType(WindowType.Hamming, FrameSize);
         }
 
         /// <summary>

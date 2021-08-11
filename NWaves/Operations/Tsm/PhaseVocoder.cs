@@ -88,7 +88,7 @@ namespace NWaves.Operations.Tsm
             
             _fft = new RealFft(_fftSize);
 
-            _window = Window.OfType(WindowTypes.Hann, _fftSize);
+            _window = Window.OfType(WindowType.Hann, _fftSize);
 
             _gain = 1 / (_fftSize * _window.Select(w => w * w).Sum() / _hopSynthesis);
 

@@ -176,7 +176,7 @@ namespace NWaves.DemoForms
                 ModulationFftSize = modulationFftSize,
                 ModulationHopSize = modulationHopSize,
                 FilterBank = _filterbank,
-                Window = WindowTypes.Hamming
+                Window = WindowType.Hamming
             };
 
             _extractor = new AmsExtractor(options);
