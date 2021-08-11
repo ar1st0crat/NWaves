@@ -114,7 +114,7 @@ namespace NWaves.FeatureExtractors.Base
             else
             {
                 FrameDuration = options.FrameDuration;
-                FrameSize = (int)(SamplingRate * FrameDuration);
+                FrameSize = (int)Math.Round(SamplingRate * FrameDuration, MidpointRounding.AwayFromZero);
             }
 
             if (options.HopSize > 0)  // hop size has priority over hop duration 
@@ -125,7 +125,7 @@ namespace NWaves.FeatureExtractors.Base
             else
             {
                 HopDuration = options.HopDuration;
-                HopSize = (int)(SamplingRate * HopDuration);
+                HopSize = (int)Math.Round(SamplingRate * HopDuration, MidpointRounding.AwayFromZero);
             }
 
             _blockSize = FrameSize;
