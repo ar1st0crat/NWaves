@@ -294,6 +294,22 @@ namespace NWaves.Signals
         }
 
         /// <summary>
+        /// Normalization by max abs value (to range [-1, 1])
+        /// </summary>
+        /// <param name="signal"></param>
+        public static void NormalizeMax(this DiscreteSignal signal, int bitsPerSample = 0)
+        {
+            var norm = 1 / signal.Samples.Max(s => Math.Abs(s));
+
+            if (bitsPerSample > 0)
+            {
+                norm *= (float)(1 - 1 / Math.Pow(2, bitsPerSample));
+            }
+
+            signal.Amplify(norm);
+        }
+
+        /// <summary>
         /// Method copies discrete signal samples into complex signal
         /// </summary>
         /// <param name="signal">Real-valued signal</param>

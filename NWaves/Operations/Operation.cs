@@ -20,6 +20,7 @@ namespace NWaves.Operations
     ///     - rectification
     ///     - envelope detection
     ///     - spectral subtraction
+    ///     - normalization (peak / RMS)
     /// 
     /// </summary>
     public static partial class Operation
@@ -304,6 +305,108 @@ namespace NWaves.Operations
             return new SpectralSubtractor(noise, fftSize, hopSize).ApplyTo(signal);
         }
 
+        /// <summary>
+        /// Peak normalization
+        /// </summary>
+        /// <param name="samples">Samples</param>
+        /// <param name="peakLevel">Peak level in decibels (dbFS), e.g. -1dB, -3dB, etc.</param>
+        public static void NormalizePeak(float[] samples, double peakDb)
+        {
+            var norm = (float)Math.Pow(10, peakDb / 20);
+
+            for (var i = 0; i < samples.Length; i++)
+            {
+                samples[i] *= norm;
+            }
+        }
+
+        /// <summary>
+        /// Peak normalization
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="rmsDb">Peak level in decibels (dBFS), e.g. -1dB, -3dB, etc.</param>
+        public static DiscreteSignal NormalizePeak(DiscreteSignal signal, double peakDb)
+        {
+            var normalized = signal.Copy();
+            NormalizePeak(normalized.Samples, peakDb);
+            return normalized;
+        }
+
+        /// <summary>
+        /// RMS normalization
+        /// </summary>
+        /// <param name="samples">Samples</param>
+        /// <param name="rmsDb">RMS in decibels (dBFS), e.g. -6dB, -18dB, -26dB, etc.</param>
+        public static void NormalizeRms(float[] samples, double rmsDb)
+        {
+            var sum = 0f;
+
+            for (var i = 0; i < samples.Length; i++)
+            {
+                sum += samples[i] * samples[i];
+            }
+
+            var norm = (float)Math.Sqrt(samples.Length * Math.Pow(10, rmsDb / 10) / sum);
+
+            for (var i = 0; i < samples.Length; i++)
+            {
+                samples[i] *= norm;
+            }
+        }
+
+        /// <summary>
+        /// RMS normalization
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="rmsDb">RMS in decibels (dBFS), e.g. -6dB, -18dB, -26dB, etc.</param>
+        public static DiscreteSignal NormalizeRms(DiscreteSignal signal, double rmsDb)
+        {
+            var normalized = signal.Copy();
+            NormalizeRms(normalized.Samples, rmsDb);
+            return normalized;
+        }
+
+        /// <summary>
+        /// Change RMS relatively to input samples
+        /// </summary>
+        /// <param name="samples">Samples</param>
+        /// <param name="rmsDb">RMS change in decibels (dBFS), e.g. -6dB - decrease RMS twice</param>
+        public static void ChangeRms(float[] samples, double rmsDb)
+        {
+            var sum = 0f;
+
+            for (var i = 0; i < samples.Length; i++)
+            {
+                sum += samples[i] * samples[i];
+            }
+
+            var rmsDbActual = -20 * Math.Log10(Math.Sqrt(sum / samples.Length));
+
+            rmsDb -= rmsDbActual;
+
+            var norm = (float)Math.Sqrt(samples.Length * Math.Pow(10, rmsDb / 10) / sum);
+            
+            for (var i = 0; i < samples.Length; i++)
+            {
+                samples[i] *= norm;
+            }
+        }
+
+        /// <summary>
+        /// Change RMS relatively to input signal
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="rmsDb">RMS change in decibels (dBFS), e.g. -6dB - decrease RMS twice</param>
+        public static DiscreteSignal ChangeRms(DiscreteSignal signal, double rmsDb)
+        {
+            var normalized = signal.Copy();
+            ChangeRms(normalized.Samples, rmsDb);
+            return normalized;
+        }
+
+
+#if DEBUG
+
         /****************************************************************************
          * 
          *    The following methods are included mainly for educational purposes
@@ -367,5 +470,6 @@ namespace NWaves.Operations
 
             return new DiscreteSignal(signal1.SamplingRate, corr);
         }
+#endif
     }
 }
