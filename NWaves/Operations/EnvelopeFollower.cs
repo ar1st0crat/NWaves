@@ -1,12 +1,14 @@
 ﻿using NWaves.Filters.Base;
+using NWaves.Signals;
 using System;
+using System.Linq;
 
 namespace NWaves.Operations
 {
     /// <summary>
     /// Envelope follower (detector)
     /// </summary>
-    public class EnvelopeFollower : IOnlineFilter
+    public class EnvelopeFollower : IFilter, IOnlineFilter
     {
         /// <summary>
         /// Attack time
@@ -18,7 +20,7 @@ namespace NWaves.Operations
             set
             {
                 _attackTime = value;
-                _ga = (float)Math.Exp(-1.0 / (value * _fs));
+                _ga = value < 1e-20 ? 0 : (float)Math.Exp(-1.0 / (value * _fs));
             }
         }
 
@@ -32,9 +34,14 @@ namespace NWaves.Operations
             set
             {
                 _releaseTime = value;
-                _gr = (float)Math.Exp(-1.0 / (value * _fs));
+                _gr = value < 1e-20 ? 0 : (float)Math.Exp(-1.0 / (value * _fs));
             }
         }
+
+        /// <summary>
+        /// Sampling rate
+        /// </summary>
+        private readonly int _fs;
 
         /// <summary>
         /// Current envelope sample
@@ -50,11 +57,6 @@ namespace NWaves.Operations
         /// Release coefficient
         /// </summary>
         private float _gr;
-
-        /// <summary>
-        /// Sampling rate
-        /// </summary>
-        private int _fs;
 
         /// <summary>
         /// Constructor
@@ -78,7 +80,7 @@ namespace NWaves.Operations
         {
             var sample = Math.Abs(input);
 
-            _env = _env < sample ? _ga * _env + (1 - _ga) * sample : _gr * _env + (1 - _ga) * sample;
+            _env = _env < sample ? _ga * _env + (1 - _ga) * sample : _gr * _env + (1 - _gr) * sample;
 
             return _env;
         }
@@ -86,6 +88,11 @@ namespace NWaves.Operations
         public void Reset()
         {
             _env = 0;
+        }
+
+        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
+        {
+            return new DiscreteSignal(signal.SamplingRate, signal.Samples.Select(s => Process(s)));
         }
     }
 }

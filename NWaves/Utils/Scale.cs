@@ -28,9 +28,19 @@ namespace NWaves.Utils
         /// <param name="value">Magnitude</param>
         /// <param name="valueReference">Reference magnitude</param>
         /// <returns>Decibel level</returns>
-        public static double ToDecibel(double value, double valueReference = 1.0)
+        public static double ToDecibel(double value, double valueReference)
         {
             return 20 * Math.Log10(value / valueReference + double.Epsilon);
+        }
+
+        /// <summary>
+        /// Method converts magnitude value to dB level (simplified version for intermediate calculations)
+        /// </summary>
+        /// <param name="value">Magnitude</param>
+        /// <returns>Decibel level</returns>
+        public static double ToDecibel(double value)
+        {
+            return 20 * Math.Log10(value);
         }
 
         /// <summary>
@@ -50,9 +60,19 @@ namespace NWaves.Utils
         /// <param name="level">dB level</param>
         /// <param name="valueReference">Reference magnitude</param>
         /// <returns>Magnitude value</returns>
-        public static double FromDecibel(double level, double valueReference = 1.0)
+        public static double FromDecibel(double level, double valueReference)
         {
             return valueReference * Math.Pow(10, level / 20);
+        }
+
+        /// <summary>
+        /// Method converts dB level to magnitude value (simplified version for intermediate calculations)
+        /// </summary>
+        /// <param name="level">dB level</param>
+        /// <returns>Magnitude value</returns>
+        public static double FromDecibel(double level)
+        {
+            return Math.Pow(10, level / 20);
         }
 
         /// <summary>
