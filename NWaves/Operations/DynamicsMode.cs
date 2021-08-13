@@ -1,4 +1,4 @@
-﻿namespace NWaves.Effects
+﻿namespace NWaves.Operations
 {
     public enum DynamicsMode
     {

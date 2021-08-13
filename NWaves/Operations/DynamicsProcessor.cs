@@ -1,11 +1,10 @@
 ﻿using NWaves.Filters.Base;
-using NWaves.Operations;
 using NWaves.Signals;
 using NWaves.Utils;
 using System;
 using System.Linq;
 
-namespace NWaves.Effects
+namespace NWaves.Operations
 {
     /// <summary>
     /// Dynamics processor: limiter / compressor / expander / noise gate
