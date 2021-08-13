@@ -1,6 +1,7 @@
 using System;
 using NWaves.Effects.Base;
 using NWaves.Filters.Base;
+using NWaves.Utils;
 
 namespace NWaves.Effects
 {
@@ -11,14 +12,24 @@ namespace NWaves.Effects
     public class TubeDistortionEffect : AudioEffect
     {
         /// <summary>
-        /// Input gain (amount of distortion)
+        /// Input gain
         /// </summary>
-        public float InputGain { get; set; }
+        private float _inputGain;
+        public float InputGain
+        {
+            get => (float)Scale.ToDecibel(_inputGain);
+            set => _inputGain = (float)Scale.FromDecibel(value);
+        }
 
         /// <summary>
         /// Output gain
         /// </summary>
-        public float OutputGain { get; set; }
+        private float _outputGain;
+        public float OutputGain
+        {
+            get => (float)Scale.ToDecibel(_outputGain);
+            set => _outputGain = (float)Scale.FromDecibel(value);
+        }
 
         /// <summary>
         /// Work point.
@@ -54,14 +65,14 @@ namespace NWaves.Effects
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="gain"></param>
-        /// <param name="mix"></param>
+        /// <param name="inputGain"></param>
+        /// <param name="outputGain"></param>
         /// <param name="q"></param>
         /// <param name="dist"></param>
         /// <param name="rh"></param>
         /// <param name="rl"></param>
-        public TubeDistortionEffect(float inputGain = 20.0f,
-                                    float outputGain = 0.2f,
+        public TubeDistortionEffect(float inputGain = 20/*dB*/,
+                                    float outputGain = -12/*dB*/,
                                     float q = -0.2f,
                                     float dist = 5,
                                     float rh = 0.995f,
@@ -90,7 +101,7 @@ namespace NWaves.Effects
         {
             float output;
 
-            var q = InputGain * sample;
+            var q = sample * _inputGain;
 
             if (Math.Abs(Q) < 1e-10)
             {
@@ -103,13 +114,14 @@ namespace NWaves.Effects
                            (float)((q - Q) / (1 - Math.Exp(-Dist * (q - Q))) + Q / (1 - Math.Exp(Dist * Q)));
             }
 
-            output = _outputFilter.Process(output) * OutputGain;
-
+            output = _outputFilter.Process(output) * _outputGain;
+            
             return output * Wet + sample * Dry;
         }
 
         public override void Reset()
         {
+            _outputFilter.Reset();
         }
     }
 }

@@ -91,20 +91,19 @@ namespace NWaves.DemoForms
             else if (overdriveRadioButton.Checked)
             {
                 var gain = float.Parse(distortionGainTextBox.Text);
-                effect = new OverdriveEffect(gain);
+                effect = new DistortionEffect(DistortionMode.SoftClipping, gain, -12);
             }
             else if (distortionRadioButton.Checked)
             {
                 var gain = float.Parse(distortionGainTextBox.Text);
-                effect = new DistortionEffect(gain);
+                effect = new DistortionEffect(DistortionMode.Exponential, gain, -12);
             }
             else if (tubeDistortionRadioButton.Checked)
             {
                 var gain = float.Parse(distortionGainTextBox.Text);
-                var mix = float.Parse(wetTextBox.Text);
                 var dist = float.Parse(distTextBox.Text);
                 var q = float.Parse(qTextBox.Text);
-                effect = new TubeDistortionEffect(gain, mix, q, dist);
+                effect = new TubeDistortionEffect(gain, -12, q, dist);
             }
             else if (echoRadioButton.Checked)
             {
