@@ -81,7 +81,7 @@ namespace NWaves.Utils
         /// <returns></returns>
         public float Read(double delay)
         {
-            var precisePosition = (float)(_n - 1 - delay + _delayLineSize) % _delayLineSize;
+            var precisePosition = (float)(_n - delay + _delayLineSize) % _delayLineSize;
 
             var intPosition = (int)precisePosition;
 

@@ -68,7 +68,7 @@ namespace NWaves.DemoForms
             this.phaserRadioButton = new System.Windows.Forms.RadioButton();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
-            this.tremoloIndexTextBox = new System.Windows.Forms.TextBox();
+            this.tremoloDepthTextBox = new System.Windows.Forms.TextBox();
             this.tremoloFrequencyTextBox = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
@@ -220,7 +220,7 @@ namespace NWaves.DemoForms
             this.groupBox1.Controls.Add(this.phaserRadioButton);
             this.groupBox1.Controls.Add(this.label9);
             this.groupBox1.Controls.Add(this.label10);
-            this.groupBox1.Controls.Add(this.tremoloIndexTextBox);
+            this.groupBox1.Controls.Add(this.tremoloDepthTextBox);
             this.groupBox1.Controls.Add(this.tremoloFrequencyTextBox);
             this.groupBox1.Controls.Add(this.label7);
             this.groupBox1.Controls.Add(this.label8);
@@ -503,13 +503,13 @@ namespace NWaves.DemoForms
             this.label10.TabIndex = 20;
             this.label10.Text = "Freq";
             // 
-            // tremoloIndexTextBox
+            // tremoloDepthTextBox
             // 
-            this.tremoloIndexTextBox.Location = new System.Drawing.Point(306, 37);
-            this.tremoloIndexTextBox.Name = "tremoloIndexTextBox";
-            this.tremoloIndexTextBox.Size = new System.Drawing.Size(41, 22);
-            this.tremoloIndexTextBox.TabIndex = 19;
-            this.tremoloIndexTextBox.Text = "0,5";
+            this.tremoloDepthTextBox.Location = new System.Drawing.Point(306, 37);
+            this.tremoloDepthTextBox.Name = "tremoloDepthTextBox";
+            this.tremoloDepthTextBox.Size = new System.Drawing.Size(41, 22);
+            this.tremoloDepthTextBox.TabIndex = 19;
+            this.tremoloDepthTextBox.Text = "0,5";
             // 
             // tremoloFrequencyTextBox
             // 
@@ -789,7 +789,7 @@ namespace NWaves.DemoForms
         private System.Windows.Forms.TextBox qTextBox;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.TextBox tremoloIndexTextBox;
+        private System.Windows.Forms.TextBox tremoloDepthTextBox;
         private System.Windows.Forms.TextBox tremoloFrequencyTextBox;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;

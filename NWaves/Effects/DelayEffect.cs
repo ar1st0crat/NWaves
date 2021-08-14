@@ -1,74 +1,83 @@
 ﻿using NWaves.Effects.Base;
-using NWaves.Filters;
+using NWaves.Utils;
 
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class for delay effect.
-    /// Essentially it's a feedforward comb filter.
+    /// Delay effect
     /// </summary>
     public class DelayEffect : AudioEffect
     {
         /// <summary>
-        /// Delay length (in seconds)
+        /// Delay line
         /// </summary>
-        private float _length;
-        public float Length
-        {
-            get => _length;
-            set
-            {
-                _length = value;
-                _filter = new CombFeedforwardFilter((int)(value * _fs), bm: _decay);
-            }
-        }
-
-        /// <summary>
-        /// Decay
-        /// </summary>
-        private float _decay;
-        public float Decay
-        {
-            get => _decay;
-            set
-            {
-                _decay = value;
-                _filter.Change(1, _decay);
-            }
-        }
-
-        /// <summary>
-        /// Feedforward comb filter
-        /// </summary>
-        private CombFeedforwardFilter _filter;
+        private readonly FractionalDelayLine _delayLine;
 
         /// <summary>
         /// Sampling rate
         /// </summary>
         private readonly int _fs;
 
+        /// <summary>
+        /// Delay (in seconds)
+        /// </summary>
+        private float _delay;
+        public float Delay
+        {
+            get => _delay / _fs;
+            set
+            {
+                _delay = _fs * value;
+                _delayLine.Ensure(_fs, value);
+            }
+        }
+
+        /// <summary>
+        /// Feedback coefficient
+        /// </summary>
+        public float Feedback { get; set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="samplingRate"></param>
-        /// <param name="length"></param>
-        /// <param name="decay"></param>
-        public DelayEffect(int samplingRate, float length, float decay)
+        /// <param name="delay"></param>
+        /// <param name="feedback"></param>
+        public DelayEffect(int samplingRate,
+                           float delay,
+                           float feedback = 0.5f,
+                           InterpolationMode interpolationMode = InterpolationMode.Nearest,
+                           float reserveDelay = 0f)
         {
             _fs = samplingRate;
-            Length = length;
-            Decay = decay;
+
+            if (reserveDelay < delay)
+            {
+                _delayLine = new FractionalDelayLine(samplingRate, delay, interpolationMode);
+            }
+            else
+            {
+                _delayLine = new FractionalDelayLine(samplingRate, reserveDelay, interpolationMode);
+            }
+
+            Delay = delay;
+            Feedback = feedback;
         }
 
         public override float Process(float sample)
         {
-            return _filter.Process(sample) * Wet + sample * Dry;
+            var delayed = _delayLine.Read(_delay);
+
+            var output = sample + delayed * Feedback;
+
+            _delayLine.Write(sample);
+
+            return sample * Dry + output * Wet;
         }
 
         public override void Reset()
         {
-            _filter.Reset();
+            _delayLine.Reset();
         }
     }
 }

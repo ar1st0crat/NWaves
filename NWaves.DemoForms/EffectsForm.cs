@@ -85,8 +85,8 @@ namespace NWaves.DemoForms
             if (tremoloRadioButton.Checked)
             {
                 var freq = float.Parse(tremoloFrequencyTextBox.Text);
-                var index = float.Parse(tremoloIndexTextBox.Text);
-                effect = new TremoloEffect(fs, freq, index);
+                var depth = float.Parse(tremoloDepthTextBox.Text);
+                effect = new TremoloEffect(fs, depth, freq);
             }
             else if (overdriveRadioButton.Checked)
             {

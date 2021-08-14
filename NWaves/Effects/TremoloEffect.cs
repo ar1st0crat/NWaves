@@ -9,6 +9,11 @@ namespace NWaves.Effects
     public class TremoloEffect : AudioEffect
     {
         /// <summary>
+        /// Depth
+        /// </summary>
+        public float Depth { get; set; }
+        
+        /// <summary>
         /// Modulation frequency
         /// </summary>
         private float _frequency;
@@ -25,13 +30,13 @@ namespace NWaves.Effects
         /// <summary>
         /// Tremolo index (modulation index)
         /// </summary>
-        private float _tremoloIndex;
-        public float TremoloIndex
+        private float _index;
+        public float Index
         {
-            get => _tremoloIndex;
+            get => _index;
             set
             {
-                _tremoloIndex = value;
+                _index = value;
                 Lfo.SetParameter("min", 0).SetParameter("max", value * 2);
             }
         }
@@ -46,23 +51,27 @@ namespace NWaves.Effects
         /// Constructor
         /// </summary>
         /// <param name="samplingRate"></param>
+        /// <param name="depth"></param>
         /// <param name="frequency"></param>
         /// <param name="tremoloIndex"></param>
-        public TremoloEffect(int samplingRate, float frequency = 10/*Hz*/, float tremoloIndex = 0.5f)
+        public TremoloEffect(int samplingRate, float depth = 0.5f, float frequency = 10/*Hz*/, float tremoloIndex = 0.5f)
         {
             Lfo = new CosineBuilder().SampledAt(samplingRate);
 
+            Depth = depth;
             Frequency = frequency;
-            TremoloIndex = tremoloIndex;
+            Index = tremoloIndex;
         }
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="lfo"></param>
-        public TremoloEffect(SignalBuilder lfo)
+        /// <param name="depth"></param>
+        public TremoloEffect(SignalBuilder lfo, float depth = 0.5f)
         {
             Lfo = lfo;
+            Depth = depth;
         }
 
         /// <summary>
@@ -73,7 +82,8 @@ namespace NWaves.Effects
         /// <returns></returns>
         public override float Process(float sample)
         {
-            var output = sample * Lfo.NextSample();
+            var output = sample * (1 - Depth + Depth * Lfo.NextSample());
+
             return output * Wet + sample * Dry;
         }
 
