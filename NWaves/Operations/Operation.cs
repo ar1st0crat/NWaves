@@ -4,7 +4,9 @@ using NWaves.Filters.Base;
 using NWaves.Operations.Convolution;
 using NWaves.Operations.Tsm;
 using NWaves.Signals;
+using NWaves.Transforms;
 using NWaves.Utils;
+using NWaves.Windows;
 
 namespace NWaves.Operations
 {
@@ -303,6 +305,50 @@ namespace NWaves.Operations
                                                       int hopSize = 410)
         {
             return new SpectralSubtractor(noise, fftSize, hopSize).ApplyTo(signal);
+        }
+
+        /// <summary>
+        /// Welch periodogram
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="windowSize"></param>
+        /// <param name="hopSize"></param>
+        /// <param name="window"></param>
+        /// <param name="fftSize"></param>
+        /// <param name="samplingRate">if sampling rate > 0  ->  'density' = true</param>
+        /// <returns></returns>
+        public static float[] Welch(DiscreteSignal signal,
+                                    int windowSize = 1024,
+                                    int hopSize = 256,
+                                    WindowType window = WindowType.Hann,
+                                    int fftSize = 0,
+                                    int samplingRate = 0)
+        {
+            var stft = new Stft(windowSize, hopSize, window, fftSize);
+
+            var periodogram = stft.AveragePeriodogram(signal.Samples);
+
+            // scaling is compliant with sciPy function welch():
+
+            float scale;
+
+            if (samplingRate > 0)       // a.k.a. 'density'
+            {
+                var ws = Window.OfType(window, windowSize).Select(w => w * w).Sum();
+                scale = 2 / (ws * samplingRate);
+            }
+            else                        // a.k.a. 'spectrum'
+            {
+                var ws = Window.OfType(window, windowSize).Sum();
+                scale = 2 / (ws * ws);
+            }
+
+            for (var j = 0; j < periodogram.Length; j++)
+            {
+                periodogram[j] *= scale;
+            }
+
+            return periodogram;
         }
 
         /// <summary>

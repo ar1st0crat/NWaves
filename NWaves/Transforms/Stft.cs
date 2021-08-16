@@ -71,9 +71,9 @@ namespace NWaves.Transforms
         {
             // pre-allocate memory:
 
-            var len = (input.Length - _windowSize) / _hopSize + 1;
+            var len = input.Length >= _windowSize ? (input.Length - _windowSize) / _hopSize + 1 : 0;
 
-            var stft = new List<(float[], float[])>(len);
+            var stft = new List<(float[], float[])>(len + 1);
 
             for (var i = 0; i < len; i++)
             {
@@ -238,9 +238,9 @@ namespace NWaves.Transforms
         {
             // pre-allocate memory:
 
-            var len = (input.Length - _windowSize) / _hopSize + 1;
+            var len = input.Length >= _windowSize ? (input.Length - _windowSize) / _hopSize + 1 : 0;
 
-            var spectrogram = new List<float[]>(len);
+            var spectrogram = new List<float[]>(len + 1);
 
             for (var i = 0; i < len; i++)
             {
@@ -290,6 +290,56 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
+        /// Method for computing averaged periodogram (used in Welch method).
+        /// It differs from Spectrogram() method because it doesn't store all spectra in memory.
+        /// </summary>
+        /// <param name="input">Samples of input signal</param>
+        /// <returns>Averaged periodogram</returns>
+        public float[] AveragePeriodogram(float[] input)
+        {
+            var len = input.Length >= _windowSize ? (input.Length - _windowSize) / _hopSize + 1 : 0;
+
+            var spectrum = new float[_fftSize / 2 + 1];
+            var periodogram = new float[_fftSize / 2 + 1];
+            var windowedBuffer = new float[_fftSize];
+
+            var pos = 0;
+
+            for (var i = 0; i < len; pos += _hopSize, i++)
+            {
+                input.FastCopyTo(windowedBuffer, _windowSize, pos);
+
+                if (_window != WindowType.Rectangular)
+                {
+                    windowedBuffer.ApplyWindow(_windowSamples);
+                }
+
+                _fft.PowerSpectrum(windowedBuffer, spectrum, false);
+
+                for (var j = 0; j < periodogram.Length; j++)
+                {
+                    periodogram[j] += spectrum[j];
+                }
+            }
+
+            // last (incomplete) frame:
+
+            Array.Clear(windowedBuffer, 0, _fftSize);
+            input.FastCopyTo(windowedBuffer, input.Length - pos, pos);
+            windowedBuffer.ApplyWindow(_windowSamples);
+
+            _fft.PowerSpectrum(windowedBuffer, spectrum, false);
+
+            for (var j = 0; j < periodogram.Length; j++)
+            {
+                periodogram[j] += spectrum[j];    // add last spectrum
+                periodogram[j] /= len + 1;        // and compute average right away
+            }
+
+            return periodogram;
+        }
+
+        /// <summary>
         /// Method for computing a spectrogram as arrays of Magnitude and Phase.
         /// </summary>
         /// <param name="input">Samples of input signal</param>
@@ -298,10 +348,10 @@ namespace NWaves.Transforms
         {
             // pre-allocate memory:
 
-            var len = (input.Length - _windowSize) / _hopSize + 1;
+            var len = input.Length >= _windowSize ? (input.Length - _windowSize) / _hopSize + 1 : 0;
 
-            var mag = new List<float[]>(len);
-            var phase = new List<float[]>(len);
+            var mag = new List<float[]>(len + 1);
+            var phase = new List<float[]>(len + 1);
 
             for (var i = 0; i < len; i++)
             {
