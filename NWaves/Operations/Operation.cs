@@ -23,6 +23,7 @@ namespace NWaves.Operations
     ///     - envelope detection
     ///     - spectral subtraction
     ///     - normalization (peak / RMS)
+    ///     - periodogram (Welch / Lomb-Scargle)
     /// 
     /// </summary>
     public static partial class Operation
@@ -308,50 +309,6 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Welch periodogram
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="windowSize"></param>
-        /// <param name="hopSize"></param>
-        /// <param name="window"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="samplingRate">if sampling rate > 0  ->  'density' = true</param>
-        /// <returns></returns>
-        public static float[] Welch(DiscreteSignal signal,
-                                    int windowSize = 1024,
-                                    int hopSize = 256,
-                                    WindowType window = WindowType.Hann,
-                                    int fftSize = 0,
-                                    int samplingRate = 0)
-        {
-            var stft = new Stft(windowSize, hopSize, window, fftSize);
-
-            var periodogram = stft.AveragePeriodogram(signal.Samples);
-
-            // scaling is compliant with sciPy function welch():
-
-            float scale;
-
-            if (samplingRate > 0)       // a.k.a. 'density'
-            {
-                var ws = Window.OfType(window, windowSize).Select(w => w * w).Sum();
-                scale = 2 / (ws * samplingRate);
-            }
-            else                        // a.k.a. 'spectrum'
-            {
-                var ws = Window.OfType(window, windowSize).Sum();
-                scale = 2 / (ws * ws);
-            }
-
-            for (var j = 0; j < periodogram.Length; j++)
-            {
-                periodogram[j] *= scale;
-            }
-
-            return periodogram;
-        }
-
-        /// <summary>
         /// Peak normalization
         /// </summary>
         /// <param name="samples">Samples</param>
@@ -448,6 +405,124 @@ namespace NWaves.Operations
             var normalized = signal.Copy();
             ChangeRms(normalized.Samples, rmsDb);
             return normalized;
+        }
+
+        /// <summary>
+        /// Welch periodogram
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="windowSize"></param>
+        /// <param name="hopSize"></param>
+        /// <param name="window"></param>
+        /// <param name="fftSize"></param>
+        /// <param name="samplingRate">if sampling rate > 0  ->  'density' = true</param>
+        /// <returns></returns>
+        public static float[] Welch(DiscreteSignal signal,
+                                    int windowSize = 1024,
+                                    int hopSize = 256,
+                                    WindowType window = WindowType.Hann,
+                                    int fftSize = 0,
+                                    int samplingRate = 0)
+        {
+            var stft = new Stft(windowSize, hopSize, window, fftSize);
+
+            var periodogram = stft.AveragePeriodogram(signal.Samples);
+
+            // scaling is compliant with sciPy function welch():
+
+            float scale;
+
+            if (samplingRate > 0)       // a.k.a. 'density'
+            {
+                var ws = Window.OfType(window, windowSize).Select(w => w * w).Sum();
+                scale = 2 / (ws * samplingRate);
+            }
+            else                        // a.k.a. 'spectrum'
+            {
+                var ws = Window.OfType(window, windowSize).Sum();
+                scale = 2 / (ws * ws);
+            }
+
+            for (var j = 0; j < periodogram.Length; j++)
+            {
+                periodogram[j] *= scale;
+            }
+
+            return periodogram;
+        }
+
+        /// <summary>
+        /// Lomb-Scargle periodogram
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="freqs"></param>
+        /// <param name="subtractMean"></param>
+        /// <param name="normalize"></param>
+        /// <returns></returns>
+        public static float[] LombScargle(float[] x,
+                                          float[] y,
+                                          float[] freqs,
+                                          bool subtractMean = false,
+                                          bool normalize = false)
+        {
+            Guard.AgainstInequality(x.Length, y.Length, "X array size", "Y array size");
+
+            var periodogram = new float[freqs.Length];
+
+            if (subtractMean)
+            {
+                var mean = y.Average();
+
+                for (var i = 0; i < y.Length; i++)
+                {
+                    y[i] -= mean;
+                }
+            }
+
+            var c = new float[x.Length];
+            var s = new float[x.Length];
+
+            for (var i = 0; i < freqs.Length; i++)
+            {
+                float xc = 0, xs = 0, cc = 0, ss = 0, cs = 0;
+
+                for (var j = 0; j < x.Length; j++)
+                {
+                    c[j] = (float)Math.Cos(freqs[i] * x[j]);
+                    s[j] = (float)Math.Sin(freqs[i] * x[j]);
+
+                    xc += y[j] * c[j];
+                    xs += y[j] * s[j];
+                    cc += c[j] * c[j];
+                    ss += s[j] * s[j];
+                    cs += c[j] * s[j];
+
+                    var tau = (float)Math.Atan2(2 * cs, cc - ss) / (2 * freqs[i]);
+                    var cTau = (float)Math.Cos(freqs[i] * tau);
+                    var sTau = (float)Math.Sin(freqs[i] * tau);
+                    var cTau2 = cTau * cTau;
+                    var sTau2 = sTau * sTau;
+                    var csTau = 2 * cTau * sTau;
+
+                    periodogram[i] = 0.5f * (((cTau * xc + sTau * xs) * (cTau * xc + sTau * xs) /
+                                              (cTau2 * cc + csTau * cs + sTau2 * ss)) +
+                                             ((cTau * xs - sTau * xc) * (cTau * xs - sTau * xc) /
+                                              (cTau2 * ss - csTau * cs + sTau2 * cc)));
+                }
+            }
+
+            if (normalize)
+            {
+                var norm = 2 / y.Sum(v => v * v);
+
+                for (var i = 0; i < periodogram.Length; i++)
+                {
+                    periodogram[i] *= norm;
+                }
+            }
+
+            return periodogram;
         }
 
 
