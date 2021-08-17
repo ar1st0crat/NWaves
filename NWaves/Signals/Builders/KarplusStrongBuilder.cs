@@ -77,7 +77,14 @@ namespace NWaves.Signals.Builders
 
         public override void Reset()
         {
-            _n = 0;
+            var values = new[] { -1f, 1f };
+
+            for (var i = 0; i < _samples.Length; i++)
+            {
+                _samples[i] = values[_rand.Next(2)];
+            }
+
+            base.Reset();
         }
 
         public override SignalBuilder SampledAt(int samplingRate)
