@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace NWaves.Filters.Base64
 {
+    /// <summary>
+    /// LTI filter based on state space representation (64 bit)
+    /// </summary>
     public class ZiFilter64 : LtiFilter64
     {
         /// <summary>
@@ -37,7 +40,7 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Parameterized constructor (from arrays of 64-bit coefficients)
+        /// Parameterized constructor (from arrays of 32-bit coefficients)
         /// </summary>
         /// <param name="b">TF numerator coefficients</param>
         /// <param name="a">TF denominator coefficients</param>
@@ -180,6 +183,51 @@ namespace NWaves.Filters.Base64
             }
 
             return output;
+        }
+
+        /// <summary>
+        /// Change filter coefficients online (numerator / non-recursive part)
+        /// </summary>
+        /// <param name="b">New coefficients</param>
+        public void ChangeNumeratorCoeffs(double[] b)
+        {
+            if (b.Length == _b.Length)
+            {
+                for (var i = 0; i < _b.Length; _b[i] = b[i], i++) { }
+            }
+        }
+
+        /// <summary>
+        /// Change filter coefficients online (denominator / recursive part)
+        /// </summary>
+        /// <param name="a">New coefficients</param>
+        public void ChangeDenominatorCoeffs(double[] a)
+        {
+            if (a.Length == _a.Length)
+            {
+                for (var i = 0; i < _a.Length; _a[i] = a[i], i++) { }
+            }
+        }
+
+        /// <summary>
+        /// Change filter coefficients online (transfer function)
+        /// </summary>
+        /// <param name="tf"></param>
+        public void Change(TransferFunction tf)
+        {
+            var b = tf.Numerator;
+
+            if (b.Length == _b.Length)
+            {
+                for (var i = 0; i < _b.Length; _b[i] = b[i], i++) { }
+            }
+
+            var a = tf.Denominator;
+
+            if (a.Length == _a.Length)
+            {
+                for (var i = 0; i < _a.Length; _a[i] = a[i], i++) { }
+            }
         }
 
         /// <summary>

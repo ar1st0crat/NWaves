@@ -7,7 +7,7 @@ namespace NWaves.Filters.Bessel
     /// <summary>
     /// Band-stop Bessel filter
     /// </summary>
-    public class BandStopFilter : IirFilter
+    public class BandStopFilter : ZiFilter
     {
         /// <summary>
         /// Constructor
@@ -30,5 +30,12 @@ namespace NWaves.Filters.Bessel
         {
             return DesignFilter.IirBsTf(f1, f2, PrototypeBessel.Poles(order));
         }
+
+        /// <summary>
+        /// Change filter coeffs online
+        /// </summary>
+        ///<param name="f1"></param>
+        ///<param name="f2"></param>
+        public void Change(double f1, double f2) => Change(MakeTf(f1, f2, _b.Length / 2));
     }
 }

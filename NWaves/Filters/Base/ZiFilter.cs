@@ -120,29 +120,6 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Offline filtering with initial conditions (for tests)
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public DiscreteSignal FilterIc(DiscreteSignal signal)
-        {
-            var input = signal.Samples;
-            var output = new float[signal.Length];
-
-            for (var i = 0; i < output.Length; i++)
-            {
-                output[i] = _b[0] * input[i] + _zi[0];
-
-                for (var j = 1; j < _zi.Length; j++)
-                {
-                    _zi[j - 1] = _b[j] * input[i] - _a[j] * output[i] + _zi[j];
-                }
-            }
-
-            return new DiscreteSignal(signal.SamplingRate, output);
-        }
-
-        /// <summary>
         /// Online filtering with initial conditions
         /// </summary>
         /// <param name="input">Input sample</param>
@@ -234,11 +211,81 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
+        /// Change filter coefficients online (numerator / non-recursive part)
+        /// </summary>
+        /// <param name="b">New coefficients</param>
+        public void ChangeNumeratorCoeffs(float[] b)
+        {
+            if (b.Length == _b.Length)
+            {
+                for (var i = 0; i < _b.Length; _b[i] = b[i], i++) { }
+            }
+        }
+
+        /// <summary>
+        /// Change filter coefficients online (denominator / recursive part)
+        /// </summary>
+        /// <param name="a">New coefficients</param>
+        public void ChangeDenominatorCoeffs(float[] a)
+        {
+            if (a.Length == _a.Length)
+            {
+                for (var i = 0; i < _a.Length; _a[i] = a[i], i++) { }
+            }
+        }
+
+        /// <summary>
+        /// Change filter coefficients online (transfer function)
+        /// </summary>
+        /// <param name="tf"></param>
+        public void Change(TransferFunction tf)
+        {
+            var b = tf.Numerator;
+
+            if (b.Length == _b.Length)
+            {
+                for (var i = 0; i < _b.Length; _b[i] = (float)b[i], i++) { }
+            }
+
+            var a = tf.Denominator;
+
+            if (a.Length == _a.Length)
+            {
+                for (var i = 0; i < _a.Length; _a[i] = (float)a[i], i++) { }
+            }
+        }
+
+        /// <summary>
         /// Reset filter
         /// </summary>
         public override void Reset()
         {
             Array.Clear(_zi, 0, _zi.Length);
         }
+
+#if DEBUG
+        /// <summary>
+        /// Offline filtering with initial conditions (for tests)
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public DiscreteSignal FilterIc(DiscreteSignal signal)
+        {
+            var input = signal.Samples;
+            var output = new float[signal.Length];
+
+            for (var i = 0; i < output.Length; i++)
+            {
+                output[i] = _b[0] * input[i] + _zi[0];
+
+                for (var j = 1; j < _zi.Length; j++)
+                {
+                    _zi[j - 1] = _b[j] * input[i] - _a[j] * output[i] + _zi[j];
+                }
+            }
+
+            return new DiscreteSignal(signal.SamplingRate, output);
+        }
+#endif
     }
 }

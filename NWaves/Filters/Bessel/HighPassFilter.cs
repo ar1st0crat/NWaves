@@ -7,7 +7,7 @@ namespace NWaves.Filters.Bessel
     /// <summary>
     /// High-pass Bessel filter
     /// </summary>
-    public class HighPassFilter : IirFilter
+    public class HighPassFilter : ZiFilter
     {
         /// <summary>
         /// Constructor
@@ -29,5 +29,11 @@ namespace NWaves.Filters.Bessel
         {
             return DesignFilter.IirHpTf(freq, PrototypeBessel.Poles(order));
         }
+
+        /// <summary>
+        /// Change filter coeffs online
+        /// </summary>
+        /// <param name="freq"></param>
+        public void Change(double freq) => Change(MakeTf(freq, _b.Length));
     }
 }

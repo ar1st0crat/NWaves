@@ -249,10 +249,31 @@ namespace NWaves.Filters.Base
         {
             if (a.Length == _denominatorSize)
             {
-                for (var i = 0; i < _denominatorSize; i++)
+                for (var i = 0; i < _denominatorSize; _a[i] = a[i], i++) { }
+            }
+        }
+
+        /// <summary>
+        /// Change filter coefficients online (transfer function)
+        /// </summary>
+        /// <param name="tf"></param>
+        public void Change(TransferFunction tf)
+        {
+            var b = tf.Numerator;
+
+            if (b.Length == _numeratorSize)
+            {
+                for (var i = 0; i < _numeratorSize; i++)
                 {
-                    _a[i] = a[i];// _a[_denominatorSize + i] = a[i];
+                    _b[i] = _b[_numeratorSize + i] = (float)b[i];
                 }
+            }
+
+            var a = tf.Denominator;
+
+            if (a.Length == _denominatorSize)
+            {
+                for (var i = 0; i < _a.Length; _a[i] = (float)a[i], i++) { }
             }
         }
 

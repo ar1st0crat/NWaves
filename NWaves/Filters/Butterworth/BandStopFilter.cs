@@ -6,7 +6,7 @@ namespace NWaves.Filters.Butterworth
     /// <summary>
     /// Class for Butterworth IIR BS filter.
     /// </summary>
-    public class BandStopFilter : IirFilter
+    public class BandStopFilter : ZiFilter
     {
         /// <summary>
         /// Constructor
@@ -29,5 +29,12 @@ namespace NWaves.Filters.Butterworth
         {
             return DesignFilter.IirBsTf(f1, f2, PrototypeButterworth.Poles(order));
         }
+
+        /// <summary>
+        /// Change filter coeffs online
+        /// </summary>
+        ///<param name="f1"></param>
+        ///<param name="f2"></param>
+        public void Change(double f1, double f2) => Change(MakeTf(f1, f2, _b.Length / 2));
     }
 }

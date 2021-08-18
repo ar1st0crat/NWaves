@@ -30,5 +30,12 @@ namespace NWaves.Filters.ChebyshevII
                                         PrototypeChebyshevII.Poles(order, ripple),
                                         PrototypeChebyshevII.Zeros(order));
         }
+
+        /// <summary>
+        /// Change filter coeffs online
+        /// </summary>
+        /// <param name="freq"></param>
+        /// <param name="ripple"></param>
+        public void Change(double freq, double ripple = 0.1) => Change(MakeTf(freq, _b.Length, ripple));
     }
 }

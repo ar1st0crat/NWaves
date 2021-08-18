@@ -7,6 +7,9 @@ using System.Linq;
 
 namespace NWaves.Filters.Base64
 {
+    /// <summary>
+    /// Class representing Infinite Impulse Response filters (64 bit)
+    /// </summary>
     public class IirFilter64 : LtiFilter64
     {
         /// <summary>
@@ -26,14 +29,6 @@ namespace NWaves.Filters.Base64
         /// <summary>
         /// Denominator part coefficients in filter's transfer function 
         /// (recursive part in difference equations).
-        /// 
-        /// Note.
-        /// This array is created from duplicated coefficients:
-        /// 
-        ///  denominator             _a
-        ///  [1 2 3 4 5] -> [1 2 3 4 5 1 2 3 4 5]
-        /// 
-        /// Such memory layout leads to speed-up of online filtering.
         /// </summary>
         protected readonly double[] _a;
 
@@ -53,7 +48,7 @@ namespace NWaves.Filters.Base64
         protected TransferFunction _tf;
         public override TransferFunction Tf
         {
-            get => _tf ?? new TransferFunction(_b.Take(_numeratorSize).ToArray(), _a.Take(_denominatorSize).ToArray());
+            get => _tf ?? new TransferFunction(_b.Take(_numeratorSize).ToArray(), _a.ToArray());
             protected set => _tf = value;
         }
 
@@ -91,12 +86,7 @@ namespace NWaves.Filters.Base64
                 _b[i] = _b[_numeratorSize + i] = b.ElementAt(i);
             }
 
-            _a = new double[_denominatorSize * 2];
-
-            for (var i = 0; i < _denominatorSize; i++)
-            {
-                _a[i] = _a[_denominatorSize + i] = a.ElementAt(i);
-            }
+            _a = a.ToArray();
 
             _delayLineB = new double[_numeratorSize];
             _delayLineA = new double[_denominatorSize];
@@ -106,10 +96,6 @@ namespace NWaves.Filters.Base64
 
         /// <summary>
         /// Parameterized constructor (from transfer function).
-        /// 
-        /// Coefficients (used for filtering) will be cast to doubles anyway,
-        /// but filter will store the reference to TransferFunction object for FDA.
-        /// 
         /// </summary>
         /// <param name="tf">Transfer function</param>
         public IirFilter64(TransferFunction tf) : this(tf.Numerator, tf.Denominator)
@@ -152,16 +138,20 @@ namespace NWaves.Filters.Base64
             var output = 0.0;
 
             _delayLineB[_delayLineOffsetB] = sample;
-            _delayLineA[_delayLineOffsetA] = 0;
 
             for (int i = 0, j = _numeratorSize - _delayLineOffsetB; i < _numeratorSize; i++, j++)
             {
                 output += _delayLineB[i] * _b[j];
             }
 
-            for (int i = 0, j = _denominatorSize - _delayLineOffsetA; i < _denominatorSize; i++, j++)
+            var pos = 1;
+            for (var p = _delayLineOffsetA + 1; p < _a.Length; p++)
             {
-                output -= _delayLineA[i] * _a[j];
+                output -= _a[pos++] * _delayLineA[p];
+            }
+            for (var p = 0; p < _delayLineOffsetA; p++)
+            {
+                output -= _a[pos++] * _delayLineA[p];
             }
 
             _delayLineA[_delayLineOffsetA] = output;
@@ -202,10 +192,7 @@ namespace NWaves.Filters.Base64
         {
             if (a.Length == _denominatorSize)
             {
-                for (var i = 0; i < _denominatorSize; i++)
-                {
-                    _a[i] = _a[_denominatorSize + i] = a[i];
-                }
+                for (var i = 0; i < _denominatorSize; _a[i] = a[i], i++) { }
             }
         }
 

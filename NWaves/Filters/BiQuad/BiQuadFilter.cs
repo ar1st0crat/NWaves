@@ -1,4 +1,5 @@
 ﻿using NWaves.Filters.Base;
+using System;
 
 namespace NWaves.Filters.BiQuad
 {
@@ -73,12 +74,16 @@ namespace NWaves.Filters.BiQuad
         /// <param name="a2"></param>
         public void Change(float b0, float b1, float b2, float a0, float a1, float a2)
         {
-            _b[0] = b0;
-            _b[1] = b1;
-            _b[2] = b2;
-            _a[0] = a0;
-            _a[1] = a1;
-            _a[2] = a2;
+            if (Math.Abs(a0) < 1e-30f)
+            {
+                throw new ArgumentException("The coefficient a0 can not be zero!");
+            }
+
+            _b[0] = b0 / a0;
+            _b[1] = b1 / a0;
+            _b[2] = b2 / a0;
+            _a[1] = a1 / a0;
+            _a[2] = a2 / a0;
         }
     }
 }

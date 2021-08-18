@@ -6,7 +6,7 @@ namespace NWaves.Filters.Butterworth
     /// <summary>
     /// Class for Butterworth IIR HP filter.
     /// </summary>
-    public class HighPassFilter : IirFilter
+    public class HighPassFilter : ZiFilter
     {
         /// <summary>
         /// Constructor
@@ -27,5 +27,11 @@ namespace NWaves.Filters.Butterworth
         {
             return DesignFilter.IirHpTf(freq, PrototypeButterworth.Poles(order));
         }
+
+        /// <summary>
+        /// Change filter coeffs online
+        /// </summary>
+        /// <param name="freq"></param>
+        public void Change(double freq) => Change(MakeTf(freq, _b.Length));
     }
 }

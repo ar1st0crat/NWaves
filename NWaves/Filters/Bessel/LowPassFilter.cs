@@ -6,7 +6,7 @@ namespace NWaves.Filters.Bessel
     /// <summary>
     /// Low-pass Bessel filter
     /// </summary>
-    public class LowPassFilter : IirFilter
+    public class LowPassFilter : ZiFilter
     {
         /// <summary>
         /// Constructor
@@ -28,5 +28,11 @@ namespace NWaves.Filters.Bessel
         {
             return DesignFilter.IirLpTf(freq, PrototypeBessel.Poles(order));
         }
+
+        /// <summary>
+        /// Change filter coeffs online
+        /// </summary>
+        /// <param name="freq"></param>
+        public void Change(double freq) => Change(MakeTf(freq, _b.Length));
     }
 }
