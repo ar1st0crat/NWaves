@@ -153,7 +153,7 @@ namespace NWaves.Filters.Base
                 }
                 default:
                 {
-                    return new DiscreteSignal(signal.SamplingRate, signal.Samples.Select(s => Process(s)));
+                    return this.FilterOnline(signal);
                 }
             }
         }

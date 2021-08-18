@@ -166,9 +166,9 @@ namespace NWaves.Filters.Base64
             var filtered = new double[samples.Length + _kernelSize - 1];
 
             var k = 0;
-            foreach (var sample in samples)
+            while (k < samples.Length)
             {
-                _delayLine[_delayLineOffset] = sample;
+                _delayLine[_delayLineOffset] = samples[k];
 
                 var output = 0.0;
 

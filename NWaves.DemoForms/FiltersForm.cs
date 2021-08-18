@@ -825,6 +825,7 @@ namespace NWaves.DemoForms
 
         private void framebyFrameToolStripMenuItem_Click(object sender, EventArgs e)
         {
+#if DEBUG
             if (_signal == null) return;
 
             _filter.Reset();
@@ -833,11 +834,12 @@ namespace NWaves.DemoForms
             //_filteredSignal = _filter.ProcessChunks(_signal, method: FilteringMethod.OverlapAdd);
             signalAfterFilteringPanel.Signal = _filteredSignal;
             spectrogramAfterFilteringPanel.Spectrogram = _stft.Spectrogram(_filteredSignal);
+#endif
         }
         
-        #endregion
+#endregion
 
-        #region resampling
+#region resampling
 
         private void interpolateToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -876,9 +878,9 @@ namespace NWaves.DemoForms
             Cursor.Current = Cursors.Default;
         }
 
-        #endregion
+#endregion
 
-        #region File menu
+#region File menu
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -921,9 +923,9 @@ namespace NWaves.DemoForms
             Close();
         }
 
-        #endregion
+#endregion
 
-        #region playback
+#region playback
 
         private async void playSignalButton_Click(object sender, EventArgs e)
         {
@@ -935,6 +937,6 @@ namespace NWaves.DemoForms
             await _player.PlayAsync(_filteredSignal, _bitDepth);
         }
 
-        #endregion
+#endregion
     }
 }

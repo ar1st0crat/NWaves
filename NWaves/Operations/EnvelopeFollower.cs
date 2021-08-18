@@ -1,7 +1,6 @@
 ﻿using NWaves.Filters.Base;
 using NWaves.Signals;
 using System;
-using System.Linq;
 
 namespace NWaves.Operations
 {
@@ -90,9 +89,6 @@ namespace NWaves.Operations
             _env = 0;
         }
 
-        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
-        {
-            return new DiscreteSignal(signal.SamplingRate, signal.Samples.Select(s => Process(s)));
-        }
+        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
     }
 }

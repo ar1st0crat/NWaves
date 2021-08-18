@@ -108,18 +108,6 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Apply filter to entire signal (offline)
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public override DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                               FilteringMethod method = FilteringMethod.Auto)
-        {
-            return new DiscreteSignal(signal.SamplingRate, signal.Samples.Select(s => Process(s)));
-        }
-
-        /// <summary>
         /// Online filtering with initial conditions
         /// </summary>
         /// <param name="input">Input sample</param>
@@ -262,6 +250,15 @@ namespace NWaves.Filters.Base
         {
             Array.Clear(_zi, 0, _zi.Length);
         }
+
+        /// <summary>
+        /// Apply filter to entire signal (offline)
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public override DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
+
 
 #if DEBUG
         /// <summary>

@@ -171,8 +171,10 @@ namespace NWaves.Filters.Base
         /// <param name="im">Imaginary parts of input spectrum</param>
         /// <param name="filteredRe">Real parts of output spectrum</param>
         /// <param name="filteredIm">Imaginary parts of output spectrum</param>
-        public abstract void ProcessSpectrum(float[] re, float[] im,
-                                             float[] filteredRe, float[] filteredIm);
+        public abstract void ProcessSpectrum(float[] re,
+                                             float[] im,
+                                             float[] filteredRe,
+                                             float[] filteredIm);
 
         /// <summary>
         /// Reset filter internals
@@ -196,10 +198,6 @@ namespace NWaves.Filters.Base
         /// <param name="signal"></param>
         /// <param name="method"></param>
         /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringMethod method = FilteringMethod.Auto)
-        {
-            return new DiscreteSignal(signal.SamplingRate, signal.Samples.Select(s => Process(s)));
-        }
+        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
     }
 }

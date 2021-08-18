@@ -1,4 +1,5 @@
-﻿using NWaves.Signals;
+﻿using NWaves.Filters.Base64;
+using NWaves.Signals;
 using NWaves.Transforms;
 using System;
 using System.Linq;
@@ -35,6 +36,42 @@ namespace NWaves.Filters.Base
             }
         }
 
+        /// <summary>
+        /// Offline filtering of the entire signal based on online filtering of each sample
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public static DiscreteSignal FilterOnline(this IOnlineFilter filter, DiscreteSignal signal)
+        {
+            var output = new float[signal.Length];
+            var samples = signal.Samples;
+
+            for (var i = 0; i < samples.Length; i++)
+            {
+                output[i] = filter.Process(samples[i]);
+            }
+
+            return new DiscreteSignal(signal.SamplingRate, output);
+        }
+
+        /// <summary>
+        /// Offline filtering of the entire signal based on online filtering of each sample
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public static double[] FilterOnline(this IOnlineFilter64 filter, double[] signal)
+        {
+            var output = new double[signal.Length];
+
+            for (var i = 0; i < signal.Length; i++)
+            {
+                output[i] = filter.Process(signal[i]);
+            }
+
+            return output;
+        }
 
         /// <summary>
         /// Calculate filtering gain so that frequency response is normalized onto [0, 1] range.
@@ -86,6 +123,7 @@ namespace NWaves.Filters.Base
             return gain * filter.Process(sample);
         }
 
+#if DEBUG
         /// <summary>
         /// NOTE. For educational purposes and for testing online filtering.
         /// 
@@ -114,5 +152,6 @@ namespace NWaves.Filters.Base
 
             return new DiscreteSignal(signal.SamplingRate, output);
         }
+#endif
     }
 }

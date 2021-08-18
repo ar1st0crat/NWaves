@@ -10,7 +10,7 @@ namespace NWaves.Benchmarks
     [MemoryDiagnoser]
     public class OfflineFilterArrayVsLinq
     {
-        private const int N = 1000000;
+        private const int N = 16000 * 300;
 
         private readonly DiscreteSignal _signal;
         private readonly FirFilter _filter;

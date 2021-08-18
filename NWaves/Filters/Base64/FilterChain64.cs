@@ -91,9 +91,6 @@ namespace NWaves.Filters.Base64
         /// <param name="signal"></param>
         /// <param name="method"></param>
         /// <returns></returns>
-        public double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto)
-        {
-            return signal.Select(s => Process(s)).ToArray();
-        }
+        public double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
     }
 }

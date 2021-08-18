@@ -123,7 +123,7 @@ namespace NWaves.Filters.Base64
                     }
                 default:
                     {
-                        return signal.Select(s => Process(s)).ToArray();
+                        return this.FilterOnline(signal);
                     }
             }
         }

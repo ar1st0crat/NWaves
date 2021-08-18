@@ -85,17 +85,6 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Apply filter to entire signal (offline)
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public override double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto)
-        {
-            return signal.Select(s => Process(s)).ToArray();
-        }
-
-        /// <summary>
         /// Online filtering with initial conditions
         /// </summary>
         /// <param name="input">Input sample</param>
@@ -237,5 +226,13 @@ namespace NWaves.Filters.Base64
         {
             Array.Clear(_zi, 0, _zi.Length);
         }
+
+        /// <summary>
+        /// Apply filter to entire signal (offline)
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public override double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
     }
 }

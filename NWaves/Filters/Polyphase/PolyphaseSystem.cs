@@ -1,6 +1,5 @@
 ﻿using NWaves.Filters.Base;
 using NWaves.Signals;
-using System.Linq;
 
 namespace NWaves.Filters.Polyphase
 {
@@ -188,10 +187,7 @@ namespace NWaves.Filters.Polyphase
         /// </summary>
         /// <param name="signal"></param>
         /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
-        {
-            return new DiscreteSignal(signal.SamplingRate, signal.Samples.Select(s => Process(s)));
-        }
+        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
 
         #endregion
     }
