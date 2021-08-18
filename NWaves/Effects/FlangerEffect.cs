@@ -28,8 +28,8 @@ namespace NWaves.Effects
             get => _width;
             set
             {
+                _delayLine.Ensure(_fs, value);
                 _width = value;
-                _delayLine.Ensure(_fs, _width);
             }
         }
 

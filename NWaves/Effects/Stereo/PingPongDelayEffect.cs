@@ -31,9 +31,9 @@ namespace NWaves.Effects.Stereo
             get => _delay / _fs;
             set
             {
-                _delay = _fs * value;
                 _delayLineLeft.Ensure(_fs, value);
                 _delayLineRight.Ensure(_fs, value);
+                _delay = _fs * value;
             }
         }
 

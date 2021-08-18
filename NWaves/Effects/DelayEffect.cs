@@ -27,8 +27,8 @@ namespace NWaves.Effects
             get => _delay / _fs;
             set
             {
-                _delay = _fs * value;
                 _delayLine.Ensure(_fs, value);
+                _delay = _fs * value;
             }
         }
 
