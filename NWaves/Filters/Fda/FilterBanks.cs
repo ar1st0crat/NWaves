@@ -26,6 +26,7 @@ namespace NWaves.Filters.Fda
     ///     - Critical bands
     ///     - ERB filterbank
     ///     - Octaves (from MPEG-7)
+    ///     - Chroma
     /// 
     /// </summary>
     public static class FilterBanks
@@ -446,6 +447,123 @@ namespace NWaves.Filters.Fda
             }
 
             return frequencyTuples.ToArray();
+        }
+
+        /// <summary>
+        /// Chroma filterbank (slightly over-complicated to match librosa analog)
+        /// </summary>
+        /// <param name="fftSize"></param>
+        /// <param name="samplingRate"></param>
+        /// <param name="chromaCount"></param>
+        /// <param name="tuning"></param>
+        /// <param name="centerOctave"></param>
+        /// <param name="octaveWidth"></param>
+        /// <param name="norm"></param>
+        /// <param name="baseC"></param>
+        /// <returns></returns>
+        public static double[][] Chroma(int fftSize,
+                                        int samplingRate,
+                                        int chromaCount = 12,
+                                        double tuning = 0,
+                                        double centerOctave = 5.0,
+                                        double octaveWidth = 2,
+                                        int norm = 2,
+                                        bool baseC = true)
+        {
+            var step = (double)samplingRate / fftSize;
+
+            fftSize = (fftSize / 2) + 1;
+
+            var freqs = Enumerable.Range(1, fftSize - 1)
+                                  .Select(i => i * step)
+                                  .ToArray();
+
+            var freqBins = new[] { 0.0 }.Concat(
+                freqs.Select(
+                    f => chromaCount * Scale.HerzToOctave(f, tuning, chromaCount)))
+                .ToArray();
+
+            freqBins[0] = freqBins[1] - chromaCount * 1.5;
+
+            var binWidthBins = Enumerable.Range(1, fftSize - 1)
+                                         .Select(i => Math.Max(freqBins[i] - freqBins[i - 1], 1))
+                                         .Concat(new[] { 1.0 })
+                                         .ToArray();
+
+            var filterbank = new double[chromaCount][];
+
+            for (var i = 0; i < chromaCount; i++)
+            {
+                filterbank[i] = freqBins.Select(f => f - i).ToArray();
+            }
+
+            var chromaCount2 = Math.Round((double)chromaCount / 2, MidpointRounding.AwayFromZero);
+
+            for (var i = 0; i < chromaCount; i++)
+            {
+                for (var j = 0; j < filterbank[i].Length; j++)
+                {
+                    var f = (filterbank[i][j] + chromaCount2 + 10 * chromaCount) % chromaCount - chromaCount2;
+
+                    f = Math.Exp(-0.5 * Math.Pow(2 * f / binWidthBins[j], 2));
+
+                    filterbank[i][j] = f;
+                }
+            }
+
+            // normalize if necessary 
+
+            if (norm > 0)
+            {
+                for (var j = 0; j < fftSize; j++)
+                {
+                    var fnorm = 0.0;
+
+                    for (var i = 0; i < chromaCount; i++)
+                    {
+                        fnorm += Math.Pow(Math.Abs(filterbank[i][j]), norm);
+                    }
+
+                    fnorm = 1.0 / Math.Pow(fnorm, 1.0 / norm);
+
+                    for (var i = 0; i < chromaCount; i++)
+                    {
+                        filterbank[i][j] *= fnorm;
+                    }
+                }
+            }
+
+            // Make Gaussian shape if necessary
+
+            if (octaveWidth > 0)
+            {
+                for (var i = 0; i < chromaCount; i++)
+                {
+                    for (var j = 0; j < filterbank[i].Length; j++)
+                    {
+                        filterbank[i][j] *= Math.Exp(-0.5 * Math.Pow((freqBins[j] / chromaCount - centerOctave) / octaveWidth, 2));
+                    }
+                }
+            }
+
+            if (baseC)
+            {
+                const int CShiftA = 3;  // C shift relative to A
+
+                for (var k = 0; k < CShiftA; k++)
+                {
+                    var temp = filterbank[0];
+
+                    for (var i = 0; i < filterbank.Length - 1; i++)
+                    {
+                        filterbank[i] = filterbank[i + 1];
+                    }
+
+                    filterbank[filterbank.Length - 1] = temp;
+                }
+            }
+
+            return filterbank;
         }
 
         /// <summary>

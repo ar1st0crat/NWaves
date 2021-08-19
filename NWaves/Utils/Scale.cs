@@ -268,6 +268,20 @@ namespace NWaves.Utils
         }
 
         /// <summary>
+        /// Method converts Hz frequency to octave (used for constructing librosa-like Chroma filterbanks)
+        /// </summary>
+        /// <param name="herz"></param>
+        /// <param name="tuning"></param>
+        /// <param name="binsPerOctave"></param>
+        /// <returns></returns>
+        public static double HerzToOctave(double herz, double tuning = 0, int binsPerOctave = 12)
+        {
+            var a440 = 440.0 * Math.Pow(2.0, tuning / binsPerOctave);
+
+            return Math.Log(16 * herz / a440, 2);
+        }
+
+        /// <summary>
         /// Method for obtaining a perceptual loudness weight
         /// </summary>
         /// <param name="freq">Frequency</param>
