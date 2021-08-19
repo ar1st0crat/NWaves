@@ -461,16 +461,16 @@ namespace NWaves.Filters.Fda
         /// <param name="norm"></param>
         /// <param name="baseC"></param>
         /// <returns></returns>
-        public static double[][] Chroma(int fftSize,
-                                        int samplingRate,
-                                        int chromaCount = 12,
-                                        double tuning = 0,
-                                        double centerOctave = 5.0,
-                                        double octaveWidth = 2,
-                                        int norm = 2,
-                                        bool baseC = true)
+        public static float[][] Chroma(int fftSize,
+                                       int samplingRate,
+                                       int chromaCount = 12,
+                                       double tuning = 0,
+                                       double centerOctave = 5.0,
+                                       double octaveWidth = 2,
+                                       int norm = 2,
+                                       bool baseC = true)
         {
-            var step = (double)samplingRate / fftSize;
+            var step = (float)samplingRate / fftSize;
 
             fftSize = (fftSize / 2) + 1;
 
@@ -478,19 +478,19 @@ namespace NWaves.Filters.Fda
                                   .Select(i => i * step)
                                   .ToArray();
 
-            var freqBins = new[] { 0.0 }.Concat(
+            var freqBins = new[] { 0.0f }.Concat(
                 freqs.Select(
-                    f => chromaCount * Scale.HerzToOctave(f, tuning, chromaCount)))
+                    f => chromaCount * (float) Scale.HerzToOctave(f, tuning, chromaCount)))
                 .ToArray();
 
-            freqBins[0] = freqBins[1] - chromaCount * 1.5;
+            freqBins[0] = freqBins[1] - chromaCount * 1.5f;
 
             var binWidthBins = Enumerable.Range(1, fftSize - 1)
                                          .Select(i => Math.Max(freqBins[i] - freqBins[i - 1], 1))
-                                         .Concat(new[] { 1.0 })
+                                         .Concat(new[] { 1.0f })
                                          .ToArray();
 
-            var filterbank = new double[chromaCount][];
+            var filterbank = new float[chromaCount][];
 
             for (var i = 0; i < chromaCount; i++)
             {
@@ -505,9 +505,7 @@ namespace NWaves.Filters.Fda
                 {
                     var f = (filterbank[i][j] + chromaCount2 + 10 * chromaCount) % chromaCount - chromaCount2;
 
-                    f = Math.Exp(-0.5 * Math.Pow(2 * f / binWidthBins[j], 2));
-
-                    filterbank[i][j] = f;
+                    filterbank[i][j] = (float) Math.Exp(-0.5 * Math.Pow(2 * f / binWidthBins[j], 2));
                 }
             }
 
@@ -517,14 +515,14 @@ namespace NWaves.Filters.Fda
             {
                 for (var j = 0; j < fftSize; j++)
                 {
-                    var fnorm = 0.0;
+                    var fnorm = 0.0f;
 
                     for (var i = 0; i < chromaCount; i++)
                     {
-                        fnorm += Math.Pow(Math.Abs(filterbank[i][j]), norm);
+                        fnorm += (float) Math.Pow(Math.Abs(filterbank[i][j]), norm);
                     }
 
-                    fnorm = 1.0 / Math.Pow(fnorm, 1.0 / norm);
+                    fnorm = (float)(1.0 / Math.Pow(fnorm, 1.0 / norm));
 
                     for (var i = 0; i < chromaCount; i++)
                     {
@@ -541,7 +539,7 @@ namespace NWaves.Filters.Fda
                 {
                     for (var j = 0; j < filterbank[i].Length; j++)
                     {
-                        filterbank[i][j] *= Math.Exp(-0.5 * Math.Pow((freqBins[j] / chromaCount - centerOctave) / octaveWidth, 2));
+                        filterbank[i][j] *= (float) Math.Exp(-0.5 * Math.Pow((freqBins[j] / chromaCount - centerOctave) / octaveWidth, 2));
                     }
                 }
             }

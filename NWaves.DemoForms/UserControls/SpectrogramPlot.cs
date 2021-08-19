@@ -112,7 +112,7 @@ namespace NWaves.DemoForms.UserControls
                 var pen = new Pen(Color.DeepPink, _marklineThickness);
 
                 realPos = 1;
-                for (var i = startPos + 1; i < startPos + spectrogramBitmap.Width; i++, realPos++)
+                for (var i = startPos + 1; i < Math.Min(startPos + spectrogramBitmap.Width, _markline.Length); i++, realPos++)
                 {
                     g.DrawLine(pen, realPos - 1, _spectrogram[i].Length - 1 - (int) (_markline[i - 1]),
                         realPos, _spectrogram[i].Length - 1 - (int) (_markline[i]));
