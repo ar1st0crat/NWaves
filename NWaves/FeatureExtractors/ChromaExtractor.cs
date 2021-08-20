@@ -30,6 +30,7 @@ namespace NWaves.FeatureExtractors
         /// Filterbank matrix of dimension [ChromaCount * (_blockSize/2 + 1)].
         /// </summary>
         protected readonly float[][] _filterBank;
+        public float[][] FilterBank => _filterBank;
 
         /// <summary>
         /// FFT transformer
@@ -55,7 +56,16 @@ namespace NWaves.FeatureExtractors
             _options = options;
             _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
-            _filterBank = FilterBanks.Chroma(_blockSize, SamplingRate, FeatureCount, options.Tuning, options.CenterOctave, options.OctaveWidth, options.Norm, options.BaseC);
+            FeatureCount = options.FeatureCount;
+
+            _filterBank = FilterBanks.Chroma(_blockSize,
+                                             SamplingRate,
+                                             FeatureCount,
+                                             options.Tuning,
+                                             options.CenterOctave,
+                                             options.OctaveWidth,
+                                             options.Norm,
+                                             options.BaseC);
 
             _fft = new RealFft(_blockSize);
             _spectrum = new float[_blockSize / 2 + 1];
