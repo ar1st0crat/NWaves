@@ -6,7 +6,7 @@ namespace NWaves.Filters.ChebyshevII
     /// <summary>
     /// Band-stop Chebyshev-II filter
     /// </summary>
-    public class BandStopFilter : IirFilter
+    public class BandStopFilter : ZiFilter
     {
         /// <summary>
         /// Constructor
@@ -38,6 +38,6 @@ namespace NWaves.Filters.ChebyshevII
         /// <param name="f1"></param>
         /// <param name="f2"></param>
         /// <param name="ripple"></param>
-        public void Change(double f1, double f2, double ripple = 0.1) => Change(MakeTf(f1, f2, _b.Length / 2, ripple));
+        public void Change(double f1, double f2, double ripple = 0.1) => Change(MakeTf(f1, f2, (_a.Length - 1) / 2, ripple));
     }
 }

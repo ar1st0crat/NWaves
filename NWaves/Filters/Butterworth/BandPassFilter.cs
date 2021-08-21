@@ -35,6 +35,6 @@ namespace NWaves.Filters.Butterworth
         /// </summary>
         ///<param name="f1"></param>
         ///<param name="f2"></param>
-        public void Change(double f1, double f2) => Change(MakeTf(f1, f2, _b.Length / 2));
+        public void Change(double f1, double f2) => Change(MakeTf(f1, f2, (_a.Length - 1) / 2));
     }
 }

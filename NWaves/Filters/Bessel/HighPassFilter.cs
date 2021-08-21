@@ -1,6 +1,5 @@
 ﻿using NWaves.Filters.Base;
 using NWaves.Filters.Fda;
-using System;
 
 namespace NWaves.Filters.Bessel
 {
@@ -34,6 +33,6 @@ namespace NWaves.Filters.Bessel
         /// Change filter coeffs online
         /// </summary>
         /// <param name="freq"></param>
-        public void Change(double freq) => Change(MakeTf(freq, _b.Length));
+        public void Change(double freq) => Change(MakeTf(freq, _a.Length - 1));
     }
 }

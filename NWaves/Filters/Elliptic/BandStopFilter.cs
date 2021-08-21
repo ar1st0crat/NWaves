@@ -3,7 +3,7 @@ using NWaves.Filters.Fda;
 
 namespace NWaves.Filters.Elliptic
 {
-    public class BandStopFilter : IirFilter
+    public class BandStopFilter : ZiFilter
     {
         /// <summary>
         /// Constructor
@@ -43,7 +43,7 @@ namespace NWaves.Filters.Elliptic
         /// <param name="rippleStop"></param>
         public void Change(double freq1, double freq2, double ripplePass = 1, double rippleStop = 20)
         {
-            Change(MakeTf(freq1, freq2, _b.Length / 2, ripplePass, rippleStop));
+            Change(MakeTf(freq1, freq2, (_a.Length - 1) / 2, ripplePass, rippleStop));
         }
     }
 }

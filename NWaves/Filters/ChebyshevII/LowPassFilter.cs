@@ -6,7 +6,7 @@ namespace NWaves.Filters.ChebyshevII
     /// <summary>
     /// Low-pass Chebyshev-II filter
     /// </summary>
-    public class LowPassFilter : IirFilter
+    public class LowPassFilter : ZiFilter
     {
         /// <summary>
         /// Constructor
@@ -36,6 +36,6 @@ namespace NWaves.Filters.ChebyshevII
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="ripple"></param>
-        public void Change(double freq, double ripple = 0.1) => Change(MakeTf(freq, _b.Length, ripple));
+        public void Change(double freq, double ripple = 0.1) => Change(MakeTf(freq, _a.Length - 1, ripple));
     }
 }
