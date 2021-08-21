@@ -1,6 +1,10 @@
-﻿using NWaves.Filters.Base;
+﻿using NWaves.Filters;
+using NWaves.Filters.Base;
+using NWaves.Filters.Base64;
+using NWaves.Filters.Fda;
 using NWaves.Signals;
 using NWaves.Signals.Builders;
+using NWaves.Utils;
 using System;
 using System.Linq;
 
@@ -51,8 +55,8 @@ namespace NWaves.Benchmarks
                 outputZi[i] = _filterZiBiQuad.Process(samples[i]);
             }
 
-            var diffAverageV4 = output5.Zip(output4, (o5, o4) => o5 - o4).Sum() / N;
-            var diffAverageZi = output5.Zip(outputZi, (o5, zi) => o5 - zi).Sum() / N;
+            var diffAverageV4 = output5.Zip(output4, (o5, o4) => Math.Abs(o5 - o4)).Average();
+            var diffAverageZi = output5.Zip(outputZi, (o5, zi) => Math.Abs(o5 - zi)).Average();
 
             Console.WriteLine($"Average difference Ver.0.9.5 vs. Ver.0.9.4 : {diffAverageV4}");
             Console.WriteLine($"Average difference IirFilter vs. ZiFilter : {diffAverageZi}");
@@ -64,11 +68,71 @@ namespace NWaves.Benchmarks
                 outputZi[i] = _filterZiButterworth6.Process(samples[i]);
             }
 
-            diffAverageV4 = output5.Zip(output4, (o5, o4) => o5 - o4).Sum() / N;
-            diffAverageZi = output5.Zip(outputZi, (o5, zi) => o5 - zi).Sum() / N;
+            diffAverageV4 = output5.Zip(output4, (o5, o4) => Math.Abs(o5 - o4)).Average();
+            diffAverageZi = output5.Zip(outputZi, (o5, zi) => Math.Abs(o5 - zi)).Average();
 
             Console.WriteLine($"Average difference Ver.0.9.5 vs. Ver.0.9.4 : {diffAverageV4}");
             Console.WriteLine($"Average difference IirFilter vs. ZiFilter : {diffAverageZi}");
+
+
+            // === MISC ====
+
+            var med = new MedianFilter();
+            var med2 = new MedianFilter2();
+
+            var medOut = med.ApplyTo(_signal).Samples;
+            var medOut2 = med2.ApplyTo(_signal).Samples;
+
+            var diffAverageMed = medOut.Zip(medOut, (m1, m2) => Math.Abs(m1 - m2)).Average();
+            Console.WriteLine($"Average difference MedianFilter vs. MedianFilter2 : {diffAverageMed}");
+
+
+            var ma = new MovingAverageFilter();
+            var maRec = new MovingAverageRecursiveFilter();
+
+            var maOut = ma.ApplyTo(_signal).Samples;
+            var maRecOut = maRec.ApplyTo(_signal).Samples;
+
+            var diffAverageMa = maOut.Zip(maRecOut, (m1, m2) => Math.Abs(m1 - m2)).Average();
+            Console.WriteLine($"Average difference MovingAverageFilter vs. MovingAverageRecursiveFilter : {diffAverageMa}");
+
+
+            // 32bit vs. 64bit
+
+            var fir32 = new FirFilter(DesignFilter.FirWinLp(7, 0.1));
+            var fir64 = new FirFilter64(DesignFilter.FirWinLp(7, 0.1));
+
+            var fir32Out = fir32.ApplyTo(_signal).Samples;
+            var fir64Out = fir64.ApplyTo(_signal.Samples.ToDoubles());
+
+            var diffAverageFir = fir64Out.Zip(fir32Out, (m1, m2) => Math.Abs(m1 - m2)).Average();
+            Console.WriteLine($"Average difference FirFilter vs. FirFilter64 : {diffAverageFir}");
+
+
+            var iir32 = new IirFilter(_filterV5Butterworth6.Tf);
+            var iir64 = new IirFilter64(_filterV5Butterworth6.Tf);
+
+            var iir32Out = iir32.ApplyTo(_signal).Samples;
+            var iir64Out = iir64.ApplyTo(_signal.Samples.ToDoubles());
+
+            var diffAverageIir = iir64Out.Zip(iir32Out, (m1, m2) => Math.Abs(m1 - m2)).Average();
+            Console.WriteLine($"Average difference IirFilter vs. IirFilter64 : {diffAverageIir}");
+
+
+            var zi32 = new ZiFilter(_filterV5Butterworth6.Tf);
+            var zi64 = new ZiFilter64(_filterV5Butterworth6.Tf);
+
+            var zi32Out = zi32.ApplyTo(_signal).Samples;
+            var zi64Out = zi64.ApplyTo(_signal.Samples.ToDoubles());
+
+            var diffAverageZis = zi64Out.Zip(zi32Out, (m1, m2) => Math.Abs(m1 - m2)).Average();
+            Console.WriteLine($"Average difference ZiFilter vs. ZiFilter64 : {diffAverageZis}");
+
+            zi32Out = zi32.ZeroPhase(_signal).Samples;
+            zi64Out = zi64.ZeroPhase(_signal.Samples.ToDoubles());
+
+            var diffAverageZiZeroPhase = zi64Out.Zip(zi32Out, (m1, m2) => Math.Abs(m1 - m2)).Average();
+            Console.WriteLine($"Average difference ZiFilter vs. ZiFilter64 (zero-phase): {diffAverageZiZeroPhase}");
         }
     }
 }

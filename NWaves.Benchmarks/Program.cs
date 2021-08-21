@@ -14,7 +14,11 @@ namespace NWaves.Benchmarks
 
             //var summary = BenchmarkRunner.Run<MedianFilters>();
 
-            //var summary = BenchmarkRunner.Run<OfflineFilterArrayVsLinq>();
+            //var summary = BenchmarkRunner.Run<OfflineFilterForLoopVsLinq>();
+
+            //var summary = BenchmarkRunner.Run<FirFiltersVsBlockConvolvers>();
+
+            //var summary = BenchmarkRunner.Run<MovingAverageFilters>();
 
             new TestOutputConsistency().Run();
         }
