@@ -7,7 +7,7 @@
 
 ![logo](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/logo_draft.bmp)
 
-NWaves is a .NET library for 1D signal processing focused specifically on audio processing.
+NWaves is a .NET library for 1D signal processing focused on audio processing.
 
 ## Releases
 
@@ -17,13 +17,13 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install 
 
 [Read wiki documentation](https://github.com/ar1st0crat/NWaves/wiki)
 
-New version **0.9.4** is out! Faster, smarter, more features. [Read about changes here](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
+New version **0.9.5** is out! Faster, smarter, more features. [Read about changes here](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
 
 [Notes for non-experts in DSP](https://github.com/ar1st0crat/NWaves/wiki/Notes-for-non~experts-in-DSP)
 
 [NWaves for MATLAB/sciPy users](https://github.com/ar1st0crat/NWaves/wiki/NWaves-for-MATLAB-and-sciPy-users)
 
-[Watch survey video](https://www.youtube.com/watch?v=GyRixqQ613A)
+[Watch survey video](https://www.youtube.com/watch?v=GyRixqQ613A) | [Samples](https://github.com/ar1st0crat/NWaves.Samples)  |  [Benchmarks](https://github.com/ar1st0crat/NWaves/tree/master/NWaves.Benchmarks)
 
 
 ## Main features
@@ -40,8 +40,10 @@ New version **0.9.4** is out! Faster, smarter, more features. [Read about change
 - [x] basic filter design & analysis (group delay, zeros/poles, BP, BR, HP from/to LP, SOS, combining filters)
 - [x] state space representation of LTI filters
 - [x] FIR filter design: frequency sampling, window-sinc, equiripple (Remez / Parks-McClellan)
-- [x] non-linear filters (median filter, overdrive and distortion effects)
-- [x] windowing functions (Hamming, Blackman, Hann, Gaussian, Kaiser, KBD, triangular, Lanczos, flat-top, Bartlett-Hann)
+- [x] IIR filter design: IirNotch / IirPeak / IirCombNotch / IirCombPeak
+- [x] non-linear filters (median filter, distortion effects, bit crusher)
+- [x] windowing functions (Hamming, Blackman, Hann, Gaussian, Kaiser, KBD, triangular, Lanczos, flat-top, Bartlett)
+- [x] periodograms (Welch / Lomb-Scargle)
 - [x] psychoacoustic filter banks (Mel, Bark, Critical Bands, ERB, octaves) and VTLN warping
 - [x] customizable feature extraction (time-domain, spectral, MFCC, PNCC/SPNCC, LPC, LPCC, PLP, AMS)
 - [x] preconfigured MFCC extractors: HTK (MFCC-FB24), Slaney (MFCC-FB40)
@@ -51,14 +53,17 @@ New version **0.9.4** is out! Faster, smarter, more features. [Read about change
 - [x] harmonic features (harmonic centroid and spread, inharmonicity, tristimulus, odd-to-even ratio)
 - [x] time-domain characteristics (rms, energy, zero-crossing rate, entropy)
 - [x] pitch tracking (autocorrelation, YIN, ZCR + Schmitt trigger, HSS/HPS, cepstrum)
+- [x] chromagram (chroma feature extractor)
 - [x] time scale modification (phase vocoder, PV with identity phase locking, WSOLA, PaulStretch)
 - [x] simple resampling, interpolation, decimation
 - [x] bandlimited resampling
 - [x] wavelets: haar, db, symlet, coiflet
 - [x] polyphase filters
 - [x] noise reduction (spectral subtraction, sciPy-style Wiener filtering)
-- [x] envelope following
 - [x] sound effects (echo, tremolo, wahwah, phaser, chorus, vibrato, flanger, pitch shift, morphing, robotize, whisperize)
+- [x] 3D/Stereo audio (stereo panning, stereo and ping-pong delay, ITD-ILD, binaural panning)
+- [x] envelope following
+- [x] dynamics processing (limiter / compressor / expander / noise gate)
 - [x] harmonic/percussive separation
 - [x] Griffin-Lim algorithm
 - [x] Karplus-Strong synthesis
