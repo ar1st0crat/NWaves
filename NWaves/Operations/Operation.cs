@@ -11,6 +11,8 @@ using NWaves.Windows;
 namespace NWaves.Operations
 {
     /// <summary>
+    /// Static class for DSP/audio operations.
+    /// 
     /// Main operations implemented:
     /// 
     ///     - convolution
@@ -26,14 +28,14 @@ namespace NWaves.Operations
     ///     - periodogram (Welch / Lomb-Scargle)
     /// 
     /// </summary>
-    public static partial class Operation
+    public static class Operation
     {
         /// <summary>
         /// Fast convolution via FFT of real-valued signals.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="kernel"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="kernel">Convolution kernel</param>
+        /// <returns>Convolution of signal with kernel</returns>
         public static DiscreteSignal Convolve(DiscreteSignal signal, DiscreteSignal kernel)
         {
             return new Convolver().Convolve(signal, kernel);
@@ -42,9 +44,9 @@ namespace NWaves.Operations
         /// <summary>
         /// Fast convolution via FFT for general complex-valued case
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="kernel"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="kernel">Convolution kernel</param>
+        /// <returns>Convolution of signal with kernel</returns>
         public static ComplexDiscreteSignal Convolve(ComplexDiscreteSignal signal, ComplexDiscreteSignal kernel)
         {
             return new ComplexConvolver().Convolve(signal, kernel);
@@ -53,9 +55,9 @@ namespace NWaves.Operations
         /// <summary>
         /// Fast convolution for double arrays (used mainly in filter design)
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="kernel"></param>
-        /// <returns></returns>
+        /// <param name="input">Array of samples</param>
+        /// <param name="kernel">Convolution kernel</param>
+        /// <returns>Convolution of signal with kernel</returns>
         public static double[] Convolve(double[] input, double[] kernel)
         {
             return Convolve(new ComplexDiscreteSignal(1, input), 
@@ -65,9 +67,9 @@ namespace NWaves.Operations
         /// <summary>
         /// Fast cross-correlation via FFT
         /// </summary>
-        /// <param name="signal1"></param>
-        /// <param name="signal2"></param>
-        /// <returns></returns>
+        /// <param name="signal1">First signal</param>
+        /// <param name="signal2">Second signal</param>
+        /// <returns>Cross-correlation between the first and the second signal</returns>
         public static DiscreteSignal CrossCorrelate(DiscreteSignal signal1, DiscreteSignal signal2)
         {
             return new Convolver().CrossCorrelate(signal1, signal2);
@@ -76,9 +78,9 @@ namespace NWaves.Operations
         /// <summary>
         /// Fast complex cross-correlation via FFT
         /// </summary>
-        /// <param name="signal1"></param>
-        /// <param name="signal2"></param>
-        /// <returns></returns>
+        /// <param name="signal1">First signal</param>
+        /// <param name="signal2">Second signal</param>
+        /// <returns>Cross-correlation between the first and the second signal</returns>
         public static ComplexDiscreteSignal CrossCorrelate(ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
         {
             return new ComplexConvolver().CrossCorrelate(signal1, signal2);
@@ -87,11 +89,11 @@ namespace NWaves.Operations
         /// <summary>
         /// Method implements block convolution of signals (using either OLA or OLS algorithm)
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="kernel"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="kernel">Convolution kernel</param>
+        /// <param name="fftSize">FFT size</param>
+        /// <param name="method">Block convolution method (OverlapAdd / OverlapSave)</param>
+        /// <returns>Result of block convolution of signal with kernel</returns>
         public static DiscreteSignal BlockConvolve(DiscreteSignal signal,
                                                    DiscreteSignal kernel,
                                                    int fftSize,
@@ -131,10 +133,10 @@ namespace NWaves.Operations
         /// <summary>
         /// Interpolation followed by low-pass filtering
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="factor"></param>
-        /// <param name="filter"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="factor">Interpolation factor (e.g. factor=2 if 8000 Hz -> 16000 Hz)</param>
+        /// <param name="filter">Low-pass anti-aliasing filter</param>
+        /// <returns>Interpolated signal</returns>
         public static DiscreteSignal Interpolate(DiscreteSignal signal, int factor, FirFilter filter = null)
         {
             return new Resampler().Interpolate(signal, factor, filter);
@@ -143,10 +145,10 @@ namespace NWaves.Operations
         /// <summary>
         /// Decimation preceded by low-pass filtering
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="factor"></param>
-        /// <param name="filter"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="factor">Decimation factor (e.g. factor=2 if 16000 Hz -> 8000 Hz)</param>
+        /// <param name="filter">Low-pass anti-aliasing filter</param>
+        /// <returns>Decimated signal</returns>
         public static DiscreteSignal Decimate(DiscreteSignal signal, int factor, FirFilter filter = null)
         {
             return new Resampler().Decimate(signal, factor, filter);
@@ -155,10 +157,10 @@ namespace NWaves.Operations
         /// <summary>
         /// Band-limited resampling
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="newSamplingRate"></param>
-        /// <param name="filter"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="newSamplingRate">Desired sampling rate</param>
+        /// <param name="filter">Low-pass anti-aliasing filter</param>
+        /// <returns>Resampled signal</returns>
         public static DiscreteSignal Resample(DiscreteSignal signal, int newSamplingRate, FirFilter filter = null)
         {
             return new Resampler().Resample(signal, newSamplingRate, filter);
@@ -167,10 +169,10 @@ namespace NWaves.Operations
         /// <summary>
         /// Simple resampling (as the combination of interpolation and decimation)
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="up"></param>
-        /// <param name="down"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="up">Interpolation factor</param>
+        /// <param name="down">Decimation factor</param>
+        /// <returns>Resampled signal</returns>
         public static DiscreteSignal ResampleUpDown(DiscreteSignal signal, int up, int down)
         {
             return new Resampler().ResampleUpDown(signal, up, down);
@@ -260,9 +262,9 @@ namespace NWaves.Operations
         /// Method for extracting the envelope of a signal
         /// </summary>
         /// <param name="signal">Signal</param>
-        /// <param name="attackTime"></param>
-        /// <param name="releaseTime"></param>
-        /// <returns></returns>
+        /// <param name="attackTime">Attack time (in seconds)</param>
+        /// <param name="releaseTime">Release time (in seconds)</param>
+        /// <returns>Signal envelope</returns>
         public static DiscreteSignal Envelope(DiscreteSignal signal, float attackTime = 0.01f, float releaseTime = 0.05f)
         {
             var envelopeFollower = new EnvelopeFollower(signal.SamplingRate, attackTime, releaseTime);
@@ -295,11 +297,11 @@ namespace NWaves.Operations
         /// <summary>
         /// Spectral subtraction
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="noise"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="hopSize"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="noise">Noise signal</param>
+        /// <param name="fftSize">FFT size</param>
+        /// <param name="hopSize">Hop size (number of samples)</param>
+        /// <returns>De-noised signal</returns>
         public static DiscreteSignal SpectralSubtract(DiscreteSignal signal,
                                                       DiscreteSignal noise,
                                                       int fftSize = 1024,
@@ -312,10 +314,10 @@ namespace NWaves.Operations
         /// Peak normalization
         /// </summary>
         /// <param name="samples">Samples</param>
-        /// <param name="peakLevel">Peak level in decibels (dbFS), e.g. -1dB, -3dB, etc.</param>
+        /// <param name="peakDb">Peak level in decibels (dbFS), e.g. -1dB, -3dB, etc.</param>
         public static void NormalizePeak(float[] samples, double peakDb)
         {
-            var norm = (float)Math.Pow(10, peakDb / 20);
+            var norm = (float)Scale.FromDecibel(peakDb) / samples.Max(x => Math.Abs(x));
 
             for (var i = 0; i < samples.Length; i++)
             {
@@ -327,12 +329,39 @@ namespace NWaves.Operations
         /// Peak normalization
         /// </summary>
         /// <param name="signal">Signal</param>
-        /// <param name="rmsDb">Peak level in decibels (dBFS), e.g. -1dB, -3dB, etc.</param>
+        /// <param name="peakDb">Peak level in decibels (dBFS), e.g. -1dB, -3dB, etc.</param>
         public static DiscreteSignal NormalizePeak(DiscreteSignal signal, double peakDb)
         {
             var normalized = signal.Copy();
             NormalizePeak(normalized.Samples, peakDb);
             return normalized;
+        }
+
+        /// <summary>
+        /// Change peak level relatively to input samples (in-place)
+        /// </summary>
+        /// <param name="samples">Samples</param>
+        /// <param name="peakDb">Peak change in decibels, e.g. -6dB - decrease peak level twice</param>
+        public static void ChangePeak(float[] samples, double peakDb)
+        {
+            var norm = (float)Scale.FromDecibel(peakDb);
+
+            for (var i = 0; i < samples.Length; i++)
+            {
+                samples[i] *= norm;
+            }
+        }
+
+        /// <summary>
+        /// Change peak level relatively to input signal
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="peakDb">Peak change in decibels, e.g. -6dB - decrease peak level twice</param>
+        public static DiscreteSignal ChangePeak(DiscreteSignal signal, double peakDb)
+        {
+            var modified = signal.Copy();
+            ChangeRms(modified.Samples, peakDb);
+            return modified;
         }
 
         /// <summary>
@@ -373,7 +402,7 @@ namespace NWaves.Operations
         /// Change RMS relatively to input samples
         /// </summary>
         /// <param name="samples">Samples</param>
-        /// <param name="rmsDb">RMS change in decibels (dBFS), e.g. -6dB - decrease RMS twice</param>
+        /// <param name="rmsDb">RMS change in decibels, e.g. -6dB - decrease RMS twice</param>
         public static void ChangeRms(float[] samples, double rmsDb)
         {
             var sum = 0f;
@@ -399,24 +428,24 @@ namespace NWaves.Operations
         /// Change RMS relatively to input signal
         /// </summary>
         /// <param name="signal">Signal</param>
-        /// <param name="rmsDb">RMS change in decibels (dBFS), e.g. -6dB - decrease RMS twice</param>
+        /// <param name="rmsDb">RMS change in decibels, e.g. -6dB - decrease RMS twice</param>
         public static DiscreteSignal ChangeRms(DiscreteSignal signal, double rmsDb)
         {
-            var normalized = signal.Copy();
-            ChangeRms(normalized.Samples, rmsDb);
-            return normalized;
+            var modified = signal.Copy();
+            ChangeRms(modified.Samples, rmsDb);
+            return modified;
         }
 
         /// <summary>
         /// Welch periodogram
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="windowSize"></param>
-        /// <param name="hopSize"></param>
-        /// <param name="window"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="samplingRate">if sampling rate > 0  ->  'density' = true</param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="windowSize">Window size (number of samples)</param>
+        /// <param name="hopSize">Hop size (number of samples)</param>
+        /// <param name="window">Windowing function</param>
+        /// <param name="fftSize">FFT size</param>
+        /// <param name="samplingRate">If sampling rate=0 then power spectrum is evaluated, otherwise power spectral density is evaluated</param>
+        /// <returns>Welch periodogram</returns>
         public static float[] Welch(DiscreteSignal signal,
                                     int windowSize = 1024,
                                     int hopSize = 256,
@@ -454,12 +483,12 @@ namespace NWaves.Operations
         /// <summary>
         /// Lomb-Scargle periodogram
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="freqs"></param>
-        /// <param name="subtractMean"></param>
-        /// <param name="normalize"></param>
-        /// <returns></returns>
+        /// <param name="x">Sample times</param>
+        /// <param name="y">Signal values at sample times</param>
+        /// <param name="freqs">Angular frequencies for output periodogram</param>
+        /// <param name="subtractMean">Subtract mean from values before periodogram evaluation</param>
+        /// <param name="normalize">Normalize periodogram by the residuals of the data around a constant reference model(at zero)</param>
+        /// <returns>Lomb-Scargle periodogram</returns>
         public static float[] LombScargle(float[] x,
                                           float[] y,
                                           float[] freqs,
