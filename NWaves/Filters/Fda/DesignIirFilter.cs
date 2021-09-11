@@ -9,7 +9,7 @@ using System.Numerics;
 namespace NWaves.Filters.Fda
 {
     /// <summary>
-    /// Static class providing basic methods for filter design & analysis
+    /// Static class providing basic methods for filter design and analysis
     /// </summary>
     public static partial class DesignFilter
     {
@@ -19,8 +19,8 @@ namespace NWaves.Filters.Fda
         /// Design IIR notch filter
         /// </summary>
         /// <param name="freq">Normalized frequency (must be in range [0, 0.5])</param>
-        /// <param name="q"></param>
-        /// <returns></returns>
+        /// <param name="q">Quality factor (characterizes notch filter -3dB bandwidth relative to its center frequency)</param>
+        /// <returns>Transfer function</returns>
         public static TransferFunction IirNotch(double freq, double q = 20.0)
         {
             Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
@@ -43,8 +43,8 @@ namespace NWaves.Filters.Fda
         /// Design IIR peak filter
         /// </summary>
         /// <param name="freq">Normalized frequency (must be in range [0, 0.5])</param>
-        /// <param name="q"></param>
-        /// <returns></returns>
+        /// <param name="q">Quality factor (characterizes peak filter -3dB bandwidth relative to its center frequency)</param>
+        /// <returns>Transfer function</returns>
         public static TransferFunction IirPeak(double freq, double q = 20.0)
         {
             Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
@@ -67,8 +67,8 @@ namespace NWaves.Filters.Fda
         /// Design IIR comb notch filter
         /// </summary>
         /// <param name="freq">Normalized frequency (must be in range [0, 0.5])</param>
-        /// <param name="q"></param>
-        /// <returns></returns>
+        /// <param name="q">Quality factor (characterizes notch filter -3dB bandwidth relative to its center frequency)</param>
+        /// <returns>Transfer function</returns>
         public static TransferFunction IirCombNotch(double freq, double q = 20.0)
         {
             Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
@@ -97,8 +97,8 @@ namespace NWaves.Filters.Fda
         /// Design IIR comb peak filter
         /// </summary>
         /// <param name="freq">Normalized frequency (must be in range [0, 0.5])</param>
-        /// <param name="q"></param>
-        /// <returns></returns>
+        /// <param name="q">Quality factor (characterizes peak filter -3dB bandwidth relative to its center frequency)</param>
+        /// <returns>Transfer function</returns>
         public static TransferFunction IirCombPeak(double freq, double q = 20.0)
         {
             Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
@@ -465,17 +465,17 @@ namespace NWaves.Filters.Fda
         private static readonly Func<Complex, bool> IsComplex = c => Math.Abs(c.Imaginary) > 1e-10;
 
         /// <summary>
-        /// Second-order sections to zpk.
+        /// Convert second-order sections to zpk (TF zeros-poles-gain).
         /// </summary>
-        /// <param name="sos"></param>
-        /// <returns></returns>
+        /// <param name="sos">Array of SOS transfer functions</param>
+        /// <returns>Transfer function</returns>
         public static TransferFunction SosToTf(TransferFunction[] sos)
         {
             return sos.Aggregate((tf, s) => tf * s);
         }
 
         /// <summary>
-        /// Zpk to second-order sections.
+        /// Convert zpk (TF zeros-poles-gain) to second-order sections.
         /// </summary>
         /// <param name="tf">Transfer function</param>
         /// <returns>Array of SOS transfer functions</returns>
@@ -631,7 +631,7 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Leave only one of two conjugated numbers in the list of complex numbers
         /// </summary>
-        /// <param name="arr"></param>
+        /// <param name="c">List of complex numbers</param>
         private static void RemoveConjugated(List<Complex> c)
         {
             for (var i = 0; i < c.Count; i++)

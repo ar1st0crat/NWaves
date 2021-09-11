@@ -107,11 +107,11 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="order"></param>
-        /// <param name="freqs"></param>
-        /// <param name="desired"></param>
-        /// <param name="weights"></param>
-        /// <param name="gridDensity"></param>
+        /// <param name="order">Order of filter</param>
+        /// <param name="freqs">Array of normalized frequencies</param>
+        /// <param name="desired">Array of desired response values at given frequencies</param>
+        /// <param name="weights">Array of weights at given frequencies</param>
+        /// <param name="gridDensity">Grid density</param>
         public Remez(int order, double[] freqs, double[] desired, double[] weights, int gridDensity = 16)
         {
             Guard.AgainstEvenNumber(order, "The order of the filter");
@@ -137,7 +137,9 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Make grid (uniform in each band)
         /// </summary>
-        /// <param name="gridDensity"></param>
+        /// <param name="desired">Array of desired response values</param>
+        /// <param name="weights">Array of weights</param>
+        /// <param name="gridDensity">Grid density</param>
         private void MakeGrid(double[] desired, double[] weights, int gridDensity = 16)
         {
             var gridSize = 0;
@@ -190,7 +192,7 @@ namespace NWaves.Filters.Fda
         /// Design optimal equiripple filter
         /// </summary>
         /// <param name="maxIterations">Max number of iterations</param>
-        /// <returns>Filter kernel</returns>
+        /// <returns>Designed filter kernel</returns>
         public double[] Design(int maxIterations = 100)
         {
             InitExtrema();
@@ -340,7 +342,7 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Reconstruct impulse response from interpolated frequency response
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Reconstructed impulse response</returns>
         private double[] ImpulseResponse()
         {
             UpdateCoefficients();
@@ -374,8 +376,8 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Compute gamma coefficient
         /// </summary>
-        /// <param name="k"></param>
-        /// <returns></returns>
+        /// <param name="k">Input value</param>
+        /// <returns>Gamma coefficient</returns>
         private double Gamma(int k)
         {
             var jet = (K - 1) / 15 + 1;     // as in original Rabiner's code; without it there'll be numerical issues 
@@ -397,8 +399,8 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Barycentric Lagrange interpolation
         /// </summary>
-        /// <param name="freq"></param>
-        /// <returns></returns>
+        /// <param name="freq">Frequency</param>
+        /// <returns>Interpolated value</returns>
         private double Lagrange(double freq)
         {
             var num = 0.0;
@@ -423,26 +425,26 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Convert ripple decibel value to passband weight
         /// </summary>
-        /// <param name="db"></param>
-        /// <returns></returns>
+        /// <param name="db">Ripple dB</param>
+        /// <returns>Passband weight</returns>
         public static double DbToPassbandWeight(double db) => (Math.Pow(10, db / 20) - 1) / (Math.Pow(10, db / 20) + 1);
 
         /// <summary>
         /// Convert ripple decibel value to stopband weight
         /// </summary>
-        /// <param name="db"></param>
-        /// <returns></returns>
+        /// <param name="db">Ripple dB</param>
+        /// <returns>Stopband weight</returns>
         public static double DbToStopbandWeight(double db) => Math.Pow(10, -db / 20);
 
         /// <summary>
         /// Estimate LP filter order according to [Herrman et al., 1973].
-        /// Section 8.2.7 in Proakis & Manolakis book.
+        /// Section 8.2.7 in Proakis and Manolakis book.
         /// </summary>
-        /// <param name="fp"></param>
-        /// <param name="fa"></param>
-        /// <param name="dp"></param>
-        /// <param name="da"></param>
-        /// <returns></returns>
+        /// <param name="fp">Passband edge frequency</param>
+        /// <param name="fa">Stopband edge frequency</param>
+        /// <param name="dp">Passband weight</param>
+        /// <param name="da">Stopband weight</param>
+        /// <returns>Estimated order of filter</returns>
         public static int EstimateOrder(double fp, double fa, double dp, double da)
         {
             if (dp < da)
@@ -473,8 +475,8 @@ namespace NWaves.Filters.Fda
         /// deltas: { 0.01, 0.1, 0.06 }
         /// 
         /// </summary>
-        /// <param name="freqs"></param>
-        /// <param name="deltas"></param>
+        /// <param name="freqs">Array of edge frequencies</param>
+        /// <param name="deltas">Array of weights</param>
         /// <returns></returns>
         public static int EstimateOrder(double[] freqs, double[] deltas)
         {

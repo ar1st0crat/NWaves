@@ -150,7 +150,10 @@ namespace NWaves.Filters.Fda
 
             for (var i = 0; i < filterBank.Length; i++)
             {
-                var filterTf = new TransferFunction(DesignFilter.Fir(fftSize / 4 + 1, filterBank[i]));
+                var order = fftSize / 4 + 1;
+                var kernel = DesignFilter.Fir(order, null, filterBank[i].ToDoubles(), fftSize);
+
+                var filterTf = new TransferFunction(kernel);
 
                 filterBank[i] = filterTf.FrequencyResponse(fftSize).Magnitude.ToFloats();
 
@@ -450,17 +453,17 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Chroma filterbank (slightly over-complicated to match librosa analog)
+        /// Chroma feature filter bank (slightly over-complicated to match librosa analog)
         /// </summary>
-        /// <param name="fftSize"></param>
-        /// <param name="samplingRate"></param>
-        /// <param name="chromaCount"></param>
-        /// <param name="tuning"></param>
-        /// <param name="centerOctave"></param>
-        /// <param name="octaveWidth"></param>
-        /// <param name="norm"></param>
-        /// <param name="baseC"></param>
-        /// <returns></returns>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate</param>
+        /// <param name="chromaCount">Number of chroma features (12 pitch classes by default)</param>
+        /// <param name="tuning">Tuning deviation from A440 in fractions of a chroma bin</param>
+        /// <param name="centerOctave">If octaveWidth=0, centerOctave is ignored. Otherwise, it's the center of Gaussian window</param>
+        /// <param name="octaveWidth">If octaveWidth=0, the shape is rectangular. Otherwise, it's the width of Gaussian window</param>
+        /// <param name="norm">Norm: 0 - no normalization, 1 - apply L1-norm, 2 - apply L2-norm</param>
+        /// <param name="baseC">If baseC=true, the filter bank will start at 'C'. Otherwise, the filter bank will start at 'A'.</param>
+        /// <returns>Chroma feature filterbank</returns>
         public static float[][] Chroma(int fftSize,
                                        int samplingRate,
                                        int chromaCount = 12,
@@ -567,7 +570,7 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Method creates overlapping triangular mel filters (as suggested by Malcolm Slaney).
         /// </summary>
-        /// <param name="erbFilterCount">Number of mel filters</param>
+        /// <param name="filterCount">Number of mel filters</param>
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate</param>
         /// <param name="lowFreq">Lower bound of the frequency range</param>
@@ -602,11 +605,11 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Method creates overlapping trapezoidal bark filters (as suggested by Malcolm Slaney).
         /// </summary>
-        /// <param name="filterCount"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="samplingRate"></param>
-        /// <param name="lowFreq"></param>
-        /// <param name="highFreq"></param>
+        /// <param name="filterCount">Number of bark filters</param>
+        /// <param name="fftSize">Assumed size of FFT</param>
+        /// <param name="samplingRate">Assumed sampling rate</param>
+        /// <param name="lowFreq">Lower bound of the frequency range</param>
+        /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="width">Constant width of each band in Bark</param>
         /// <returns></returns>
         public static float[][] BarkBankSlaney(
@@ -780,9 +783,9 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Normalize weights (so that energies in each band are approx. equal)
         /// </summary>
-        /// <param name="filterCount"></param>
-        /// <param name="frequencies"></param>
-        /// <param name="filterBank"></param>
+        /// <param name="filterCount">Number of filters</param>
+        /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
+        /// <param name="filterBank">Filter bank</param>
         public static void Normalize(int filterCount, (double, double, double)[] frequencies, float[][] filterBank)
         {
             for (var i = 0; i < filterCount; i++)
@@ -799,9 +802,9 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Method applies filters to spectrum and fills resulting filtered spectrum.
         /// </summary>
-        /// <param name="filterbank"></param>
-        /// <param name="spectrum"></param>
-        /// <param name="filtered"></param>
+        /// <param name="filterbank">Filter bank</param>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="filtered">Spectrum of filtered signal</param>
         public static void Apply(float[][] filterbank, float[] spectrum, float[] filtered)
         {
             for (var i = 0; i < filterbank.Length; i++)
@@ -818,10 +821,10 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method applies filters to sequence of spectra
+        /// Method applies filters to all spectra in given sequence
         /// </summary>
-        /// <param name="filterbank"></param>
-        /// <param name="spectrogram"></param>
+        /// <param name="filterbank">Filter bank</param>
+        /// <param name="spectrogram">Output spectra of filtered signal</param>
         public static float[][] Apply(float[][] filterbank, IList<float[]> spectrogram)
         {
             var filtered = new float[spectrogram.Count][];
@@ -852,10 +855,10 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Method applies filters to spectrum and then does Ln() on resulting spectrum.
         /// </summary>
-        /// <param name="filterbank"></param>
-        /// <param name="spectrum"></param>
-        /// <param name="filtered"></param>
-        /// <param name="floor">log floor</param>
+        /// <param name="filterbank">Filter bank</param>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="filtered">Spectrum of filtered signal</param>
+        /// <param name="floor">Log-floor (Threshold for log-operation)</param>
         public static void ApplyAndLog(float[][] filterbank, float[] spectrum, float[] filtered, float floor = float.Epsilon)
         {
             for (var i = 0; i < filterbank.Length; i++)
@@ -874,10 +877,10 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Method applies filters to spectrum and then does Log10() on resulting spectrum.
         /// </summary>
-        /// <param name="filterbank"></param>
-        /// <param name="spectrum"></param>
-        /// <param name="filtered"></param>
-        /// <param name="floor">log floor</param>
+        /// <param name="filterbank">Filter bank</param>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="filtered">Spectrum of filtered signal</param>
+        /// <param name="floor">Log-floor (Threshold for log-operation)</param>
         public static void ApplyAndLog10(float[][] filterbank, float[] spectrum, float[] filtered, float floor = float.Epsilon)
         {
             for (var i = 0; i < filterbank.Length; i++)
@@ -897,10 +900,10 @@ namespace NWaves.Filters.Fda
         /// Method applies filters to spectrum and then does 10*Log10() on resulting spectrum
         /// (added to compare MFCC coefficients with librosa results)
         /// </summary>
-        /// <param name="filterbank"></param>
-        /// <param name="spectrum"></param>
-        /// <param name="filtered"></param>
-        /// <param name="minLevel"></param>
+        /// <param name="filterbank">Filter bank</param>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="filtered">Spectrum of filtered signal</param>
+        /// <param name="minLevel">Threshold for log-operation</param>
         public static void ApplyAndToDecibel(float[][] filterbank, float[] spectrum, float[] filtered, float minLevel = 1e-10f)
         {
             for (var i = 0; i < filterbank.Length; i++)
@@ -918,12 +921,12 @@ namespace NWaves.Filters.Fda
 
         /// <summary>
         /// Method applies filters to spectrum and then does Pow(x, power) on resulting spectrum.
-        /// In PLP: power=1/3 (cubic root).
+        /// For example, in PLP: power=1/3 (cubic root).
         /// </summary>
-        /// <param name="filterbank"></param>
-        /// <param name="spectrum"></param>
-        /// <param name="filtered"></param>
-        /// <param name="power"></param>
+        /// <param name="filterbank">Filter bank</param>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="filtered">Spectrum of filtered signal</param>
+        /// <param name="power">Power</param>
         public static void ApplyAndPow(float[][] filterbank, float[] spectrum, float[] filtered, double power = 1.0 / 3)
         {
             for (var i = 0; i < filterbank.Length; i++)
