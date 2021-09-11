@@ -5,13 +5,13 @@
 ![NuGet](https://img.shields.io/nuget/dt/NWaves.svg?style=flat)
 [![Gitter](https://badges.gitter.im/NWaves/community.svg)](https://gitter.im/NWaves/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-![logo](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/logo_draft.bmp)
+![logo](https://github.com/ar1st0crat/NWaves/blob/master/assets/logo/logo_draft.bmp)
 
 NWaves is a .NET library for 1D signal processing focused on audio processing.
 
 ## Releases
 
-NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/). Install it via
+NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/):
 
 ```PM> Install-Package NWaves```
 
@@ -23,7 +23,7 @@ New version **0.9.5** is out! Faster, smarter, more features. [Read about change
 
 [NWaves for MATLAB/sciPy users](https://github.com/ar1st0crat/NWaves/wiki/NWaves-for-MATLAB-and-sciPy-users)
 
-[Watch survey video](https://www.youtube.com/watch?v=GyRixqQ613A) | [Samples](https://github.com/ar1st0crat/NWaves.Samples)  |  [Benchmarks](https://github.com/ar1st0crat/NWaves/tree/master/NWaves.Benchmarks)
+[Watch survey video](https://www.youtube.com/watch?v=GyRixqQ613A) | [Samples](https://github.com/ar1st0crat/NWaves.Samples)  |  [Benchmarks](https://github.com/ar1st0crat/NWaves/tree/master/NWaves.Benchmarks) | [Playground](https://ar1st0crat.github.io/NWaves.Playground/) ([code](https://github.com/ar1st0crat/NWaves.Playground))
 
 
 ## Main features
@@ -163,29 +163,33 @@ SignalBuilder lfo =
 
 ```C#
 
-DiscreteSignal left, right;
+WaveFile waveFile;
 
 // load
 
 using (var stream = new FileStream("sample.wav", FileMode.Open))
 {
-    var waveFile = new WaveFile(stream);
-    left = waveFile[Channels.Left];
-    right = waveFile[Channels.Right];
+    waveFile = new WaveFile(stream);
 }
+
+DiscreteSignal left = waveFile[Channels.Left];
+DiscreteSignal right = waveFile[Channels.Right];
+
 
 // save
 
+var waveFileOut = new WaveFile(left);
+
 using (var stream = new FileStream("saved_mono.wav", FileMode.Create))
 {
-    var waveFile = new WaveFile(left);
-    waveFile.SaveTo(stream);
+    waveFileOut.SaveTo(stream);
 }
+
+var waveFileStereo = new WaveFile(new [] { left, right });
 
 using (var stream = new FileStream("saved_stereo.wav", FileMode.Create))
 {
-    var waveFile = new WaveFile(new [] { left, right });
-    waveFile.SaveTo(stream);
+    waveFileStereo.SaveTo(stream);
 }
 
 ```
@@ -212,12 +216,12 @@ var rfft = new RealFft(1024);
 float[] real = signal.First(1024).Samples;
 float[] imag = new float [1024];
 
-// in-place FFT
+// in-place complex FFT
 fft.Direct(real, imag);
 
 // ...do something with real and imaginary parts of the spectrum...
 
-// in-place IFFT
+// in-place complex IFFT
 fft.Inverse(real, imag);
 
 // post-processed FFT:
@@ -235,9 +239,7 @@ var logPowerSpectrum =
        .ToArray();
 
 
-// rfft will run faster;
-// real FFT transforms real-valued signal to complex-valued spectrum,
-// hence prototypes of methods are same, except Direct/Inverse:
+// real FFT transforms real-valued signal to complex-valued spectrum:
 
 rfft.Direct(real, real, imag);   // real -> (real, imag)
 rfft.Inverse(real, imag, real);  // (real, imag) -> real
@@ -330,6 +332,11 @@ var xcorr = Operation.CrossCorrelate(signal1, signal2);
 
 var filtered = Operation.BlockConvolve(signal, kernel, 4096, FilteringMethod.OverlapAdd);
 
+// periodogram evaluation
+
+var periodogram = Operation.Welch(signal, 2048, 1024);
+var pgram = Operation.LombScargle(x, y, freqs);
+
 // resampling
 
 var resampled = Operation.Resample(signal, 22050);
@@ -345,6 +352,12 @@ var cool = Operation.TimeStretch(signal, 16, TsmAlgorithm.PaulStretch);
 // envelope following
 
 var envelope = Operation.Envelope(signal);
+
+// peak / rms normalization
+
+var peakNorm = Operation.NormalizePeak(signal, -3/*dB*/);
+var rmsNorm = Operation.NormalizeRms(signal, -3/*dB*/);
+var rmsChanged = Operation.ChangeRms(signal, -6/*dB*/);
 
 // rectification
 
@@ -418,18 +431,26 @@ var bpFilter = DesignFilter.FirEquirippleHp(123, 0.34, 0.355, 0.05, 0.95);
 var cascade = filter * firFilter * notchFilter;
 var filtered = cascade.ApplyTo(signal);
 
-// equivalent to:
+// filtering is conceptually equivalent to:
 
 var filtered = filter.ApplyTo(signal);
 filtered = firFilter.ApplyTo(filtered);
 filtered = notchFilter.ApplyTo(filtered);
 
+// same but with double precision:
+var cascadeTf = filter.Tf * firFilter.Tf * notchFilter.Tf;
+var cascadeFilter = new IirFilter(cascadeTf);
+var filtered = cascadeFilter.ApplyTo(signal);
 
 // parallel combination of filters:
 
 var parallel = filter1 + filter2;
 filtered = parallel.ApplyTo(signal);
 
+// same but with double precision:
+var parallelTf = filter1.Tf + filter2.Tf;
+var parallelFilter = new IirFilter(parallelTf);
+var filtered = parallelFilter.ApplyTo(signal);
 
 // audio effects:
 
@@ -447,6 +468,21 @@ filters.Add(flanger);
 filters.Add(wahwah);
 
 processed = filters.ApplyTo(signal);
+
+
+// Second-Order Sections:
+
+var tf = new Butterworth.BandPassFilter(0.1, 0.16, 7).Tf;
+
+// get array of SOS from TF:
+TransferFunction[] sos = DesignFilter.TfToSos(tf);
+
+var sosFilter = new FilterChain(sos);
+
+var y = sosFilter.ApplyTo(x);
+
+// or process samples online:
+//    ... outSample = sosFilter.Process(sample);
 
 ```
 
@@ -514,7 +550,7 @@ var blockConvolver = OlaBlockConvolver.FromFilter(filter, 4096);
 
 See also OnlineDemoForm code.
 
-![onlinedemo](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/onlinedemo.gif)
+![onlinedemo](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/onlinedemo.gif)
 
 
 ### Feature extractors
@@ -601,17 +637,15 @@ using (var csvFile = new FileStream("mfccs.csv", FileMode.Create))
 
 Pre-processing
 
-In speech processing, pre-emphasis filters are often applied to signal before main processing.
-
-There are 3 options to perform pre-emphasis filtering:
-
-1) Set pre-emphasis coefficient in constructor of a feature extractor
-2) Apply filter before processing and process filtered signal
-3) Filter signal in-place and process it
-
-The first option is slightly slower, however it won't allocate extra memory and it won't mutate input signal (so, perhaps, it should be the choice by default). If preserving of the input signal is not required, then the third option is the best. If the input signal must be preserved and extra memory is not an issue, then the second approach is preferred (it'll be faster).
-
 ```C#
+
+// There are 3 options to perform pre-emphasis filtering:
+
+// 1) Set pre-emphasis coefficient in constructor of a feature extractor
+// 2) Apply filter before processing and process filtered signal
+// 3) Filter signal in-place and process it
+
+// (...read more in docs...)
 
 // option 1:
 
@@ -684,22 +718,20 @@ recorder.StopRecording("temp.wav");
 
 ```
 
-### Demos
+### Samples
 
-![filters](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/Filters.png)
+![filters](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/Filters.png)
 
-![pitch](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/pitch.png)
+![pitch](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/pitch.png)
 
-![winforms](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/WinForms.png)
+![lpc](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/lpc.png)
 
-![lpc](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/lpc.png)
+![mfcc](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/mfcc.png)
 
-![mfcc](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/mfcc.png)
+![spectral](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/spectral.png)
 
-![spectral](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/spectral.png)
+![effects](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/effects.png)
 
-![effects](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/effects.png)
+![wavelets](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/wavelets.png)
 
-![wavelets](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/wavelets.png)
-
-![adaptive](https://github.com/ar1st0crat/NWaves/blob/master/screenshots/adaptive.png)
+![adaptive](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/adaptive.png)

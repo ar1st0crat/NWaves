@@ -7,7 +7,7 @@
     <Version>0.9.5.1</Version>
     <Company>Tim Sharii</Company>
     <Authors>Tim Sharii</Authors>
-    <Description>.NET library for 1d signal processing focused specifically on audio processing</Description>
+    <Description>.NET DSP library with a lot of audio processing functions</Description>
     <Copyright>ar1st0crat</Copyright>
     <PackageProjectUrl>https://github.com/ar1st0crat/NWaves</PackageProjectUrl>
     <PackageLicenseUrl></PackageLicenseUrl>
@@ -26,7 +26,7 @@
     <Compile Remove="Properties\PublishProfiles\**" />
     <EmbeddedResource Remove="Properties\PublishProfiles\**" />
     <None Remove="Properties\PublishProfiles\**" />
-    <None Include="..\screenshots\logo.png">
+    <None Include="..\assets\logo\logo.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
