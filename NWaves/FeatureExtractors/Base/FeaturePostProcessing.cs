@@ -11,7 +11,7 @@ namespace NWaves.FeatureExtractors.Base
     public static class FeaturePostProcessing
     {
         /// <summary>
-        /// Method for mean subtraction (in particular, CMN).
+        /// Mean subtraction (in particular, CMN).
         /// </summary>
         /// <param name="vectors">Sequence of feature vectors</param>
         public static void NormalizeMean(IList<float[]> vectors)
@@ -35,9 +35,10 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Variance normalization (divide by unbiased estimate of stdev)
+        /// Variance normalization (division by estimate of std.deviation (biased or not biased))
         /// </summary>
         /// <param name="vectors">Sequence of feature vectors</param>
+        /// <param name="bias">Bias in estimate of variance (1 = not biased, 0 = biased)</param>
         public static void NormalizeVariance(IList<float[]> vectors, int bias = 1)
         {
             var n = vectors.Count;
@@ -67,25 +68,33 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Method for complementing feature vectors with 1st and (by default) 2nd order derivatives.
+        /// Extend feature vectors with delta-features (1st and optionally 2nd order derivatives).
+        /// 
+        /// <para>According to formula:</para>
+        /// 
+        ///   <para>d_t = \frac{\sum_{n=1}^N n (c_{t+n} - c_{t-n})}{2 \sum_{n=1}^N n^2}</para>
+        ///   
+        /// <paramref name="N"/> vectors should be introduced before and after input vectors for computations.<br/>
+        /// By default, these vectors will be created automatically and copied from the first and the last input vector.<br/>
+        /// They can also be specified explicitly in <paramref name="previous"/> and <paramref name="next"/> parameters.
         /// </summary>
-        /// <param name="vectors"></param>
-        /// <param name="previous"></param>
-        /// <param name="next"></param>
-        /// <param name="includeDeltaDelta"></param>
-        /// <param name="N"></param>
+        /// <param name="vectors">Sequence of feature vectors that will be extended</param>
+        /// <param name="previous">Sequence of <paramref name="N"/> feature vectors that will be prepended to <paramref name="vectors"/> for computations</param>
+        /// <param name="next">Sequence of <paramref name="N"/> feature vectors that will be appended to <paramref name="vectors"/> for computations</param>
+        /// <param name="includeDeltaDelta">Should delta-delta features be computed</param>
+        /// <param name="N">Number of feature vectors before and after input <paramref name="vectors"/> for computations</param>
         public static void AddDeltas(IList<float[]> vectors, 
                                      IList<float[]> previous = null,
                                      IList<float[]> next = null,
                                      bool includeDeltaDelta = true,
                                      int N = 2)
         {
-            if (previous == null)
+            if (previous is null)
             {
                 previous = new List<float[]>(N);
                 for (var n = 0; n < N; n++) previous.Add(vectors[0]);
             }
-            if (next == null)
+            if (next is null)
             {
                 next = new List<float[]>(N);
                 for (var n = 0; n < N; n++) next.Add(vectors.Last());
@@ -147,11 +156,11 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Join different collections of feature vectors.
-        /// Time positions must coincide.
+        /// Join (merge) feature vectors from different collections into one combined feature vector.
+        /// For example, join 12 MFCC and 10 PLP coeffs into one 22-dimensional vector.
+        /// Collections of feature vectors must have the same size and contain at least one vector.
         /// </summary>
-        /// <param name="vectors"></param>
-        /// <returns></returns>
+        /// <param name="vectors">Sequences of feature vectors</param>
         public static float[][] Join(params IList<float[]>[] vectors)
         {
             var vectorCount = vectors.Length;

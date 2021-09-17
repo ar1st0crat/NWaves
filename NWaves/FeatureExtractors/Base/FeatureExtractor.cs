@@ -9,30 +9,29 @@ using NWaves.Windows;
 
 namespace NWaves.FeatureExtractors.Base
 {
+    // NOTE.
+    // All fields of FeatureExtractor class and its subclasses are made protected.
+    // Conceptually they should be private, especially internal buffers,
+    // but making them protected allows developers to extend extractors
+    // more efficiently by reusing memory already allocated in base classes.
+
     /// <summary>
     /// Abstract class for all feature extractors.
-    /// 
-    /// NOTE.
-    /// All fields of FeatureExtractor class and its subclasses are made protected.
-    /// Conceptually they should be private, especially internal buffers,
-    /// but making them protected allows developers to extend extractors
-    /// more efficiently by reusing memory already allocated in base classes.
-    /// 
     /// </summary>
     public abstract class FeatureExtractor
     {
         /// <summary>
-        /// Number of features to extract
+        /// Number of features to extract (feature vector size).
         /// </summary>
         public int FeatureCount { get; protected set; }
 
         /// <summary>
-        /// String annotations (or simply names) of features
+        /// String annotations (or simply names) of features.
         /// </summary>
         public abstract List<string> FeatureDescriptions { get; }
 
         /// <summary>
-        /// String annotations (or simply names) of delta features (1st order derivatives)
+        /// String annotations (or simply names) of delta features (1st order derivatives).
         /// </summary>
         public virtual List<string> DeltaFeatureDescriptions
         {
@@ -40,7 +39,7 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// String annotations (or simply names) of delta-delta features (2nd order derivatives)
+        /// String annotations (or simply names) of delta-delta features (2nd order derivatives).
         /// </summary>
         public virtual List<string> DeltaDeltaFeatureDescriptions
         {
@@ -48,55 +47,55 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Length of analysis frame (in seconds)
+        /// Length of analysis frame (duration in seconds).
         /// </summary>
         public double FrameDuration { get; protected set; }
 
         /// <summary>
-        /// Hop length (in seconds)
+        /// Hop length (duration in seconds).
         /// </summary>
         public double HopDuration { get; protected set; }
 
         /// <summary>
-        /// Size of analysis frame (in samples)
+        /// Size of analysis frame (in samples).
         /// </summary>
         public int FrameSize { get; protected set; }
 
         /// <summary>
-        /// Hop size (in samples)
+        /// Hop size (in samples).
         /// </summary>
         public int HopSize { get; protected set; }
 
         /// <summary>
-        /// Sampling rate that the processed signals are expected to have
+        /// Sampling rate that the processed signals are expected to have.
         /// </summary>
         public int SamplingRate { get; protected set; }
 
         /// <summary>
-        /// Size of the block for processing at each step.
+        /// Size of the block for processing at each step. 
         /// This field is usually set in subclass methods.
         /// </summary>
         protected int _blockSize;
 
         /// <summary>
-        /// Pre-emphasis coefficient
+        /// Pre-emphasis coefficient.
         /// </summary>
         protected float _preEmphasis;
 
         /// <summary>
-        /// Type of the window function
+        /// Type of the window function.
         /// </summary>
         protected readonly WindowType _window;
 
         /// <summary>
-        /// Window samples
+        /// Window samples.
         /// </summary>
         protected readonly float[] _windowSamples;
 
         /// <summary>
-        /// Construct extractor from sampling rate, frame duration and hop duration (in seconds)
+        /// Construct extractor from configuration options.
         /// </summary>
-        /// <param name="samplingRate"></param>
+        /// <param name="options">Extractor configuration options</param>
         protected FeatureExtractor(FeatureExtractorOptions options)
         {
             if (options.Errors.Count > 0)
@@ -139,12 +138,13 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Compute the sequence of feature vectors from some part of array of samples.
+        /// <para>Compute feature vectors from <paramref name="samples"/> and store them in <paramref name="vectors"/>.</para>
+        /// <para>Returns the number of actually computed feature vectors</para>
         /// </summary>
-        /// <param name="samples">Array of real-valued samples</param>
-        /// <param name="startSample">The offset (position) of the first sample for processing</param>
-        /// <param name="endSample">The offset (position) of last sample for processing</param>
-        /// <param name="vectors">Pre-allocated sequence of feature vectors</param>
+        /// <param name="samples">Array of samples</param>
+        /// <param name="startSample">Index of the first sample in array for processing</param>
+        /// <param name="endSample">Index of the last sample in array for processing</param>
+        /// <param name="vectors">Pre-allocated sequence for storing the resulting feature vectors</param>
         public virtual int ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
             Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
@@ -208,12 +208,12 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Compute the sequence of feature vectors from some part of array of samples.
+        /// <para>Compute feature vectors from <paramref name="samples"/>.</para>
+        /// <para>Returns the list of computed feature vectors or null, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
-        /// <param name="samples">Array of real-valued samples</param>
-        /// <param name="startSample">The offset (position) of the first sample for processing</param>
-        /// <param name="endSample">The offset (position) of last sample for processing</param>
-        /// <returns>Sequence of feature vectors or null, if the number of samples is less than the size of analysis frame</returns>
+        /// <param name="samples">Array of samples</param>
+        /// <param name="startSample">Index of the first sample in array for processing</param>
+        /// <param name="endSample">Index of the last sample in array for processing</param>
         public virtual List<float[]> ComputeFrom(float[] samples, int startSample, int endSample)
         {
             Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
@@ -239,11 +239,10 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Time markers
+        /// Return time markers (in seconds).
         /// </summary>
         /// <param name="vectorCount">Number of feature vectors</param>
-        /// <param name="startFrom">Starting time position</param>
-        /// <returns>List of time markers</returns>
+        /// <param name="startFrom">Starting time position (in seconds)</param>
         public virtual List<double> TimeMarkers(int vectorCount, double startFrom = 0)
         {
             return Enumerable.Range(0, vectorCount)
@@ -252,74 +251,68 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Process one frame in block of data at each step
-        /// (in general block can be longer than frame, e.g. zero-padded block for FFT)
+        /// Process one frame in block of data at each step 
+        /// (in general block can be longer than frame, e.g. zero-padded block for FFT).
         /// </summary>
         /// <param name="block">Block of data</param>
-        /// <param name="features">Features computed in the block</param>
+        /// <param name="features">Features (one feature vector) computed in the block</param>
         public abstract void ProcessFrame(float[] block, float[] features);
 
         /// <summary>
-        /// Compute the sequence of feature vectors from the entire array of samples
+        /// Compute feature vectors from <paramref name="samples"/>.
         /// </summary>
-        /// <param name="samples">Array of real-valued samples</param>
-        /// <returns>Sequence of feature vectors</returns>
+        /// <param name="samples">Array of samples</param>
         public List<float[]> ComputeFrom(float[] samples)
         {
             return ComputeFrom(samples, 0, samples.Length);
         }
 
         /// <summary>
-        /// Compute the sequence of feature vectors from some fragment of a signal
+        /// Compute feature vectors from <paramref name="signal"/>.
         /// </summary>
-        /// <param name="signal">Discrete real-valued signal</param>
-        /// <param name="startSample">The offset (position) of the first sample for processing</param>
-        /// <param name="endSample">The offset (position) of the last sample for processing</param>
-        /// <returns>Sequence of feature vectors</returns>
+        /// <param name="signal">Discrete signal</param>
+        /// <param name="startSample">Index of the first sample in signal for processing</param>
+        /// <param name="endSample">Index of the last sample in signal for processing</param>
         public List<float[]> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
             return ComputeFrom(signal.Samples, startSample, endSample);
         }
 
         /// <summary>
-        /// Compute the sequence of feature vectors from the entire DiscreteSignal
+        /// Compute feature vectors from <paramref name="signal"/>.
         /// </summary>
-        /// <param name="signal">Discrete real-valued signal</param>
-        /// <returns>Sequence of feature vectors</returns>
+        /// <param name="signal">Discrete signal</param>
         public List<float[]> ComputeFrom(DiscreteSignal signal)
         {
             return ComputeFrom(signal, 0, signal.Length);
         }
 
         /// <summary>
-        /// Reset feature extractor's state
+        /// Reset feature extractor.
         /// </summary>
         public virtual void Reset()
         {
         }
-        
+
         #region parallelization
 
         /// <summary>
-        /// True if computations can be done in parallel
+        /// Does the extractor support parallelization (True if computations can be parallelized).
         /// </summary>
-        /// <returns></returns>
         public virtual bool IsParallelizable() => false;
 
         /// <summary>
-        /// Copy of current extractor that can work in parallel
+        /// Thread-safe copy of the extractor for parallel computations.
         /// </summary>
-        /// <returns></returns>
         public virtual FeatureExtractor ParallelCopy() => null;
 
         /// <summary>
-        /// Parallel computation (returns chunks of fecture vector lists)
+        /// Compute parallelly the feature vectors (return chunks of fecture vector lists computed in each separate thread).
         /// </summary>
-        /// <param name="samples"></param>
-        /// <param name="startSample"></param>
-        /// <param name="endSample"></param>
-        /// <param name="parallelThreads"></param>
-        /// <returns></returns>
+        /// <param name="samples">Array of samples</param>
+        /// <param name="startSample">Index of the first sample in array for processing</param>
+        /// <param name="endSample">Index of the last sample in array for processing</param>
+        /// <param name="parallelThreads">Number of threads (all available processors, by default)</param>
         public virtual List<float[]>[] ParallelChunksComputeFrom(float[] samples, int startSample, int endSample, int parallelThreads = 0)
         {
             if (!IsParallelizable())
@@ -372,13 +365,12 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Parallel computation (joins chunks of feature vector lists into one list)
+        /// Compute parallelly the feature vectors from <paramref name="samples"/>.
         /// </summary>
-        /// <param name="samples"></param>
-        /// <param name="startSample"></param>
-        /// <param name="endSample"></param>
-        /// <param name="parallelThreads"></param>
-        /// <returns></returns>
+        /// <param name="samples">Array of samples</param>
+        /// <param name="startSample">Index of the first sample in array for processing</param>
+        /// <param name="endSample">Index of the last sample in array for processing</param>
+        /// <param name="parallelThreads">Number of threads (all available processors, by default)</param>
         public virtual List<float[]> ParallelComputeFrom(float[] samples, int startSample, int endSample, int parallelThreads = 0)
         {
             var chunks = ParallelChunksComputeFrom(samples, startSample, endSample, parallelThreads);
@@ -394,35 +386,32 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Parallel computation (joins chunks of feature vector lists into one list)
+        /// Compute parallelly the feature vectors from <paramref name="samples"/>.
         /// </summary>
-        /// <param name="samples"></param>
-        /// <param name="parallelThreads"></param>
-        /// <returns></returns>
+        /// <param name="samples">Array of samples</param>
+        /// <param name="parallelThreads">Number of threads (all available processors, by default)</param>
         public virtual List<float[]> ParallelComputeFrom(float[] samples, int parallelThreads = 0)
         {
             return ParallelComputeFrom(samples, 0, samples.Length, parallelThreads);
         }
 
         /// <summary>
-        /// Compute the sequence of feature vectors from some fragment of a signal
+        /// Compute parallelly the feature vectors from <paramref name="signal"/>.
         /// </summary>
-        /// <param name="signal">Discrete real-valued signal</param>
-        /// <param name="startSample">The offset (position) of the first sample for processing</param>
-        /// <param name="endSample">The offset (position) of the last sample for processing</param>
-        /// <param name="parallelThreads">Number of threads</param>
-        /// <returns>Sequence of feature vectors</returns>
+        /// <param name="signal">Discrete signal</param>
+        /// <param name="startSample">Index of the first sample in signal for processing</param>
+        /// <param name="endSample">Index of the last sample in signal for processing</param>
+        /// <param name="parallelThreads">Number of threads (all available processors, by default)</param>
         public List<float[]> ParallelComputeFrom(DiscreteSignal signal, int startSample, int endSample, int parallelThreads = 0)
         {
             return ParallelComputeFrom(signal.Samples, startSample, endSample, parallelThreads);
         }
 
         /// <summary>
-        /// Compute the sequence of feature vectors from the entire DiscreteSignal
+        /// Compute parallelly the feature vectors from <paramref name="signal"/>.
         /// </summary>
-        /// <param name="signal">Discrete real-valued signal</param>
-        /// <param name="parallelThreads">Number of threads</param>
-        /// <returns>Sequence of feature vectors</returns>
+        /// <param name="signal">Discrete signal</param>
+        /// <param name="parallelThreads">Number of threads (all available processors, by default)</param>
         public List<float[]> ParallelComputeFrom(DiscreteSignal signal, int parallelThreads = 0)
         {
             return ParallelComputeFrom(signal.Samples, 0, signal.Length, parallelThreads);

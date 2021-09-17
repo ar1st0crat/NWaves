@@ -12,6 +12,9 @@ namespace NWaves.FeatureExtractors.Multi
     /// </summary>
     public class TimeDomainFeaturesExtractor : FeatureExtractor
     {
+        /// <summary>
+        /// Full set of features
+        /// </summary>
         public const string FeatureSet = "energy, rms, zcr, entropy";
 
         /// <summary>
@@ -30,9 +33,9 @@ namespace NWaves.FeatureExtractors.Multi
         protected readonly Dictionary<string, object> _parameters;
 
         /// <summary>
-        /// Constructor
+        /// Construct the extractor from configuration options.
         /// </summary>
-        /// <param name="options">Options</param>
+        /// <param name="options">Extractor configuration options</param>
         public TimeDomainFeaturesExtractor(MultiFeatureOptions options) : base(options)
         {
             var featureList = options.FeatureList;
@@ -77,10 +80,10 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Add one more feature with routine for its calculation
+        /// Add user-defined feature to extractor's list (and the routine for its calculation).
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="algorithm"></param>
+        /// <param name="name">Feature name/annotation</param>
+        /// <param name="algorithm">Routine for calculation of the feature</param>
         public void AddFeature(string name, Func<DiscreteSignal, int, int, float> algorithm)
         {
             FeatureCount++;
@@ -89,12 +92,13 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Compute the sequence of feature vectors from some fragment of a signal
+        /// <para>Compute feature vectors from <paramref name="samples"/> and store them in <paramref name="vectors"/>.</para>
+        /// <para>Returns the number of actually computed feature vectors</para>
         /// </summary>
-        /// <param name="samples">Signal</param>
-        /// <param name="startSample">The number (position) of the first sample for processing</param>
-        /// <param name="endSample">The number (position) of last sample for processing</param>
-        /// <param name="vectors">Pre-allocated sequence of feature vectors</param>
+        /// <param name="samples">Array of samples</param>
+        /// <param name="startSample">Index of the first sample in array for processing</param>
+        /// <param name="endSample">Index of the last sample in array for processing</param>
+        /// <param name="vectors">Pre-allocated sequence for storing the resulting feature vectors</param>
         public override int ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
             var ds = new DiscreteSignal(SamplingRate, samples);
@@ -115,25 +119,24 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// All logic is implemented in ComputeFrom() method
+        /// <para><see cref="TimeDomainFeaturesExtractor"/> does not provide this function.</para>
+        /// <para>Call <see cref="ComputeFrom(float[], int, int, IList{float[]})"/> method instead.</para>
         /// </summary>
-        /// <param name="block"></param>
-        /// <param name="features"></param>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Features (one feature vector) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
-            throw new NotImplementedException("TimeDomainExtractor does not provide this function. Please call ComputeFrom() method");
+            throw new NotImplementedException("TimeDomainFeaturesExtractor does not provide this function. Please call ComputeFrom() method");
         }
 
         /// <summary>
-        /// True if computations can be done in parallel
+        /// Does the extractor support parallelization (True if computations can be parallelized).
         /// </summary>
-        /// <returns></returns>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Copy of current extractor that can work in parallel
+        /// Thread-safe copy of the extractor for parallel computations.
         /// </summary>
-        /// <returns></returns>
         public override FeatureExtractor ParallelCopy()
         {
             var options = new MultiFeatureOptions

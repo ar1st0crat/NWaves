@@ -3,11 +3,15 @@ using System.Linq;
 
 namespace NWaves.FeatureExtractors.Base
 {
+    /// <summary>
+    /// Class with extension methods for feature vectors.
+    /// </summary>
     public static class FeatureVectorExtensions
     {
         /// <summary>
-        /// Dictionary with statistics
+        /// Create dictionary with feature vector statistics (keys: min, max, mean, var).
         /// </summary>
+        /// <param name="vector">Feature vector</param>
         public static Dictionary<string, float> Statistics(this float[] vector)
         {
             var mean = vector.Average();
@@ -17,7 +21,7 @@ namespace NWaves.FeatureExtractors.Base
                 { "min",  vector.Min() },
                 { "max",  vector.Max() },
                 { "mean", mean },
-                { "var",  vector.Average(v => (v - mean) * (v - mean)) },
+                { "var",  vector.Average(v => (v - mean) * (v - mean)) }
             };
         }
     }

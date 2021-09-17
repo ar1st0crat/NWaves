@@ -7,36 +7,36 @@ using System.Threading.Tasks;
 namespace NWaves.FeatureExtractors.Serializers
 {
     /// <summary>
-    /// Class for simple CSV serialization of feature vectors
+    /// Class for simple CSV serialization of feature vectors.
     /// </summary>
     public class CsvFeatureSerializer
     {
         /// <summary>
-        /// List of feature vectors for serialization
+        /// Sequence of feature vectors for serialization.
         /// </summary>
         private readonly IList<float[]> _vectors;
 
         /// <summary>
-        /// List of time markers for serialization
+        /// Sequence of time markers for serialization.
         /// </summary>
         private readonly IList<double> _timeMarkers;
 
         /// <summary>
-        /// List of feature names for serialization
+        /// Sequence of feature names/annotations for serialization.
         /// </summary>
         private readonly IList<string> _names;
 
         /// <summary>
-        /// Delimiter
+        /// Delimiter symbol.
         /// </summary>
         private readonly char _delimiter;
 
         /// <summary>
-        /// Constructor accepting the list of feature vectors
+        /// Constructs <see cref="CsvFeatureSerializer"/> from the list of feature vectors for serialization.
         /// </summary>
-        /// <param name="featureVectors">List of feature vectors for serialization</param>
-        /// <param name="timeMarkers">List of time markers for serialization</param>
-        /// <param name="featureNames">List of feature names for serialization</param>
+        /// <param name="featureVectors">Sequence of feature vectors for serialization</param>
+        /// <param name="timeMarkers">Sequence of time markers for serialization</param>
+        /// <param name="featureNames">Sequence of feature names/annotations for serialization</param>
         /// <param name="delimiter">Delimiter char</param>
         public CsvFeatureSerializer(IList<float[]> featureVectors,
                                     IList<double> timeMarkers = null,
@@ -50,12 +50,11 @@ namespace NWaves.FeatureExtractors.Serializers
         }
 
         /// <summary>
-        /// Asynchronous method for feature vectors serialization
+        /// Serialize feature vectors into <paramref name="stream"/> using <paramref name="format"/> for values.
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="format"></param>
-        /// <param name="timeFormat"></param>
-        /// <returns></returns>
+        /// <param name="stream">Output stream</param>
+        /// <param name="format">Format/precision of values</param>
+        /// <param name="timeFormat">Format/precision of time markers</param>
         public async Task SerializeAsync(Stream stream, string format = "0.00000", string timeFormat = "0.000")
         {
             var comma = _delimiter.ToString();
@@ -69,7 +68,7 @@ namespace NWaves.FeatureExtractors.Serializers
                     await writer.WriteLineAsync(header).ConfigureAwait(false);
                 }
 
-                if (_timeMarkers == null)
+                if (_timeMarkers is null)
                 {
                     foreach (var vector in _vectors)
                     {

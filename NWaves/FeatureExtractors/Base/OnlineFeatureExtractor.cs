@@ -5,36 +5,36 @@ using System.Collections.Generic;
 namespace NWaves.FeatureExtractors.Base
 {
     /// <summary>
-    /// FeatureExtractor adapter for online processing
+    /// FeatureExtractor adapter for online feature extraction.
     /// </summary>
     public class OnlineFeatureExtractor
     {
         /// <summary>
-        /// Underlying feature extractor (can be set & replaced anytime)
+        /// Underlying feature extractor (can be set and replaced anytime).
         /// </summary>
         public FeatureExtractor Extractor { get; set; }
 
         /// <summary>
-        /// Should the last non-processed samples in the current block be ignored in the next block
+        /// Should the last non-processed samples in the current block be ignored in the next block.
         /// </summary>
         private readonly bool _ignoreLastSamples;
 
         /// <summary>
-        /// The number of last non-processed samples in the current block that will be processed in the next block
+        /// The number of last non-processed samples in the current block that will be processed in the next block.
         /// </summary>
         private int _skippedCount = 0;
 
         /// <summary>
-        /// Temporary buffer for accumulated samples
+        /// Internal buffer for accumulated samples.
         /// </summary>
         private float[] _tempBuffer;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="OnlineFeatureExtractor"/> as a wrapper around <paramref name="extractor"/>.
         /// </summary>
-        /// <param name="extractor"></param>
-        /// <param name="ignoreLastSamples"></param>
-        /// <param name="maxDataSize"></param>
+        /// <param name="extractor">Underlying feature extractor</param>
+        /// <param name="ignoreLastSamples">Should the last non-processed samples in the current block be ignored in the next block</param>
+        /// <param name="maxDataSize">Reserved max size of the internal buffer for accumulated samples</param>
         public OnlineFeatureExtractor(FeatureExtractor extractor, bool ignoreLastSamples = false, int maxDataSize = 0)
         {
             Extractor = extractor;
@@ -44,25 +44,27 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Get the number of feature vectors that will be computed in the block of given size
+        /// <para>Maximally possible number of output feature vectors (based on maximally possible online data portion size).</para>
+        /// <para>This number is intended to be used for pre-allocation of feature vector lists.</para>
         /// </summary>
-        /// <param name="length"></param>
-        /// <returns></returns>
+        /// <param name="dataSize">Maximally possible online data portion size (number of samples)</param>
         public int VectorCount(int dataSize)
         {
-            return dataSize < Extractor.FrameSize ? 0 : (dataSize - Extractor.FrameSize) / Extractor.HopSize + 1;
+            return dataSize < Extractor.FrameSize ? 1 : dataSize / Extractor.HopSize + 1;
         }
 
         /// <summary>
-        /// Get the number of feature vectors that will be computed in the block of given duration
+        /// <para>Maximally possible number of output feature vectors (based on maximally possible duration of online data portion).</para>
+        /// <para>This number is intended to be used for pre-allocation of feature vector lists.</para>
         /// </summary>
-        /// <param name="seconds"></param>
+        /// <param name="seconds">Maximally possible duration of online data portion (in seconds)</param>
         public int VectorCountFromSeconds(double seconds) => VectorCount((int)(Extractor.SamplingRate * seconds));
 
         /// <summary>
-        /// Ensure internal buffer size
+        /// <para>Ensure the size of internal buffer for accumulated samples.</para>
+        /// <para>If the new size exceeds the buffer size, it will be auto-resized.</para>
         /// </summary>
-        /// <param name="dataSize"></param>
+        /// <param name="dataSize">Required size (measured in sample count)</param>
         public void EnsureSize(int dataSize)
         {
             if (_tempBuffer.Length < dataSize)
@@ -72,9 +74,10 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Ensure internal buffer size from seconds
+        /// <para>Ensure the size of internal buffer for accumulated samples based on required duration.</para>
+        /// <para>If the new size (computed from duration) exceeds the buffer size, it will be auto-resized.</para>
         /// </summary>
-        /// <param name="seconds"></param>
+        /// <param name="seconds">Required duration in seconds</param>
         public void EnsureSizeFromSeconds(double seconds)
         {
             var dataSize = (int)(seconds * Extractor.SamplingRate) + 1;
@@ -86,11 +89,11 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Process current block of data and fill the list of resulting feature vectors
+        /// <para>Process block of data and fill the list of resulting feature vectors.</para>
+        /// <para>Method returns the number of actually computed feature vectors.</para>
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="featureVectors"></param>
-        /// <returns>Number of feature vectors</returns>
+        /// <param name="data">Block of data</param>
+        /// <param name="featureVectors">Pre-allocated list for storing the resulting feature vectors</param>
         public int ComputeFrom(float[] data, List<float[]> featureVectors)
         {
             if (_ignoreLastSamples)
@@ -116,13 +119,13 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Process current block of data and return new list of resulting feature vectors
+        /// Process block of data and return the list of resulting feature vectors.
         /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
+        /// <param name="data">Block of data</param>
         public List<float[]> ComputeFrom(float[] data)
         {
-            var vectorCount = VectorCount(data.Length + _skippedCount);
+            var totalSize = data.Length + _skippedCount;
+            var vectorCount = totalSize < Extractor.FrameSize ? 0 : (totalSize - Extractor.FrameSize) / Extractor.HopSize + 1;
 
             // if there's not enough data for copmuting even one feature vector
             // just copy data to temp buffer:
