@@ -8,38 +8,37 @@ using System;
 namespace NWaves.Features
 {
     /// <summary>
-    /// Class for pitch estimation and tracking
+    /// Class providing methods for pitch estimation and tracking.
     /// </summary>
     public static class Pitch
     {
         #region time-domain methods
 
         /// <summary>
-        /// Pitch estimation by autocorrelation method
+        /// Estimate pitch from <paramref name="samples"/> using autocorrelation method.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="samplingRate"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        /// <returns></returns>
-        public static float FromAutoCorrelation(float[] signal,
+        /// <param name="samples">Array of samples</param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="startPos">Index of the first sample in array for processing</param>
+        /// <param name="endPos">Index of the last sample in array for processing</param>
+        /// <param name="low">Lower frequency of expected pitch range</param>
+        /// <param name="high">Upper frequency of expected pitch range</param>
+        public static float FromAutoCorrelation(float[] samples,
                                                 int samplingRate,
                                                 int startPos = 0,
                                                 int endPos = -1,
-                                                float low = 80,
-                                                float high = 400)
+                                                float low = 80/*Hz*/,
+                                                float high = 400/*Hz*/)
         {
             if (endPos == -1)
             {
-                endPos = signal.Length;
+                endPos = samples.Length;
             }
 
             var pitch1 = (int)(1.0 * samplingRate / high);    // 2,5 ms = 400Hz
             var pitch2 = (int)(1.0 * samplingRate / low);     // 12,5 ms = 80Hz
 
-            var block = new DiscreteSignal(samplingRate, signal)[startPos, endPos].Samples;
+            var block = new DiscreteSignal(samplingRate, samples)[startPos, endPos].Samples;
 
             var fftSize = MathUtils.NextPowerOfTwo(2 * block.Length - 1);
 
@@ -66,14 +65,13 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Pitch estimation by autocorrelation method (overloaded for DiscreteSignal)
+        /// Estimate pitch from <paramref name="signal"/> using autocorrelation method.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="startPos">Index of the first sample in signal for processing</param>
+        /// <param name="endPos">Index of the last sample in signal for processing</param>
+        /// <param name="low">Lower frequency of expected pitch range</param>
+        /// <param name="high">Upper frequency of expected pitch range</param>
         public static float FromAutoCorrelation(DiscreteSignal signal,
                                                 int startPos = 0,
                                                 int endPos = -1,
@@ -84,16 +82,15 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Pitch estimation from zero crossing rate (based on Schmitt trigger)
+        /// Estimate pitch from <paramref name="samples"/> based on zero crossing rate and Schmitt trigger.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="samplingRate"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <param name="lowSchmittThreshold"></param>
-        /// <param name="highSchmittThreshold"></param>
-        /// <returns></returns>
-        public static float FromZeroCrossingsSchmitt(float[] signal,
+        /// <param name="samples">Array of samples</param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="startPos">Index of the first sample in array for processing</param>
+        /// <param name="endPos">Index of the last sample in array for processing</param>
+        /// <param name="lowSchmittThreshold">Lower threshold in Schmitt trigger</param>
+        /// <param name="highSchmittThreshold">Upper threshold in Schmitt trigger</param>
+        public static float FromZeroCrossingsSchmitt(float[] samples,
                                                      int samplingRate,
                                                      int startPos = 0,
                                                      int endPos = -1,
@@ -102,7 +99,7 @@ namespace NWaves.Features
         {
             if (endPos == -1)
             {
-                endPos = signal.Length;
+                endPos = samples.Length;
             }
 
             var maxPositive = 0.0f;
@@ -110,8 +107,8 @@ namespace NWaves.Features
 
             for (var i = startPos; i < endPos; i++)
             {
-                if (signal[i] > 0 && signal[i] > maxPositive) maxPositive = signal[i];
-                if (signal[i] < 0 && signal[i] < minNegative) minNegative = signal[i];
+                if (samples[i] > 0 && samples[i] > maxPositive) maxPositive = samples[i];
+                if (samples[i] < 0 && samples[i] < minNegative) minNegative = samples[i];
             }
 
             var highThreshold = highSchmittThreshold < 1e9f ? highSchmittThreshold : 0.75f * maxPositive;
@@ -128,13 +125,13 @@ namespace NWaves.Features
             var j = startPos;
             for (; j < endPos - 1; j++)
             {
-                if (signal[j] < highThreshold && signal[j + 1] >= highThreshold && !isCurrentHigh)
+                if (samples[j] < highThreshold && samples[j + 1] >= highThreshold && !isCurrentHigh)
                 {
                     isCurrentHigh = true;
                     firstCrossed = j;
                     break;
                 }
-                if (signal[j] > lowThreshold && signal[j + 1] <= lowThreshold && isCurrentHigh)
+                if (samples[j] > lowThreshold && samples[j + 1] <= lowThreshold && isCurrentHigh)
                 {
                     isCurrentHigh = false;
                     firstCrossed = j;
@@ -144,13 +141,13 @@ namespace NWaves.Features
 
             for (; j < endPos - 1; j++)
             {
-                if (signal[j] < highThreshold && signal[j + 1] >= highThreshold && !isCurrentHigh)
+                if (samples[j] < highThreshold && samples[j + 1] >= highThreshold && !isCurrentHigh)
                 {
                     zcr++;
                     isCurrentHigh = true;
                     lastCrossed = j;
                 }
-                if (signal[j] > lowThreshold && signal[j + 1] <= lowThreshold && isCurrentHigh)
+                if (samples[j] > lowThreshold && samples[j + 1] <= lowThreshold && isCurrentHigh)
                 {
                     zcr++;
                     isCurrentHigh = false;
@@ -162,14 +159,13 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Pitch estimation from zero crossing rate (overloaded for DiscreteSignal)
+        /// Estimate pitch from <paramref name="signal"/> based on zero crossing rate and Schmitt trigger.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <param name="lowSchmittThreshold"></param>
-        /// <param name="highSchmittThreshold"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="startPos">Index of the first sample in array for processing</param>
+        /// <param name="endPos">Index of the last sample in array for processing</param>
+        /// <param name="lowSchmittThreshold">Lower threshold in Schmitt trigger</param>
+        /// <param name="highSchmittThreshold">Upper threshold in Schmitt trigger</param>
         public static float FromZeroCrossingsSchmitt(DiscreteSignal signal,
                                                      int startPos = 0,
                                                      int endPos = -1,
@@ -185,29 +181,30 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// YIN algorithm for pitch estimation
-        /// De Cheveigné, A., Kawahara, H. YIN, a fundamental frequency estimator for speech and music.
+        /// <para>Estimate pitch from <paramref name="samples"/> using YIN algorithm:</para>
+        /// <para>
+        /// De Cheveigne, A., Kawahara, H. YIN, a fundamental frequency estimator for speech and music. 
         /// The Journal of the Acoustical Society of America, 111(4). - 2002.
+        /// </para>
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="samplingRate"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        /// <param name="cmdfThreshold"></param>
-        /// <returns></returns>
-        public static float FromYin(float[] signal,
+        /// <param name="samples">Array of samples</param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="startPos">Index of the first sample in array for processing</param>
+        /// <param name="endPos">Index of the last sample in array for processing</param>
+        /// <param name="low">Lower frequency of expected pitch range</param>
+        /// <param name="high">Upper frequency of expected pitch range</param>
+        /// <param name="cmdfThreshold">CMDF threshold</param>
+        public static float FromYin(float[] samples,
                                     int samplingRate,
                                     int startPos = 0,
                                     int endPos = -1,
-                                    float low = 80,
-                                    float high = 400,
-                                    float cmdfThreshold = 0.25f)
+                                    float low = 80/*Hz*/,
+                                    float high = 400/*Hz*/,
+                                    float cmdfThreshold = 0.2f)
         {
             if (endPos == -1)
             {
-                endPos = signal.Length;
+                endPos = samples.Length;
             }
 
             var pitch1 = (int)(1.0 * samplingRate / high);    // 2,5 ms = 400Hz
@@ -223,7 +220,7 @@ namespace NWaves.Features
             {
                 for (var j = 0; j < length; j++)
                 {
-                    var diff = signal[j + startPos] - signal[i + j + startPos];
+                    var diff = samples[j + startPos] - samples[i + j + startPos];
                     cmdf[i] += diff * diff;
                 }
             }
@@ -285,20 +282,19 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// YIN algorithm for pitch estimation (overloaded for DiscreteSignal)
+        /// Estimate pitch from <paramref name="signal"/> using YIN algorithm.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        /// <param name="cmdfThreshold"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="startPos">Index of the first sample in signal for processing</param>
+        /// <param name="endPos">Index of the last sample in signal for processing</param>>
+        /// <param name="low">Lower frequency of expected pitch range</param>
+        /// <param name="high">Upper frequency of expected pitch range</param>
+        /// <param name="cmdfThreshold">CMDF threshold</param>
         public static float FromYin(DiscreteSignal signal,
                                     int startPos = 0,
                                     int endPos = -1,
-                                    float low = 80,
-                                    float high = 400,
+                                    float low = 80/*Hz*/,
+                                    float high = 400/*Hz*/,
                                     float cmdfThreshold = 0.2f)
         {
             return FromYin(signal.Samples, signal.SamplingRate, startPos, endPos, low, high, cmdfThreshold);
@@ -309,20 +305,19 @@ namespace NWaves.Features
         #region frequency-domain methods
 
         /// <summary>
-        /// Pitch estimation: Harmonic Sum Spectrum
+        /// Estimate pitch from <paramref name="signal"/> using Harmonic Sum Spectrum (HSS) method.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        /// <param name="fftSize"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="startPos">Index of the first sample in signal for processing</param>
+        /// <param name="endPos">Index of the last sample in signal for processing</param>
+        /// <param name="low">Lower frequency of expected pitch range</param>
+        /// <param name="high">Upper frequency of expected pitch range</param>
+        /// <param name="fftSize">FFT size</param>
         public static float FromHss(DiscreteSignal signal,
                                     int startPos = 0,
                                     int endPos = -1,
-                                    float low = 80,
-                                    float high = 400,
+                                    float low = 80/*Hz*/,
+                                    float high = 400/*Hz*/,
                                     int fftSize = 0)
         {
             if (endPos == -1)
@@ -346,17 +341,16 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Pitch estimation: Harmonic Sum Spectrum (given pre-computed spectrum)
+        /// Estimate pitch from <paramref name="spectrum"/> using Harmonic Sum Spectrum (HSS) method.
         /// </summary>
-        /// <param name="spectrum"></param>
-        /// <param name="samplingRate"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        /// <returns></returns>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="low">Lower frequency of expected pitch range</param>
+        /// <param name="high">Upper frequency of expected pitch range</param>
         public static float FromHss(float[] spectrum,
                                     int samplingRate,
-                                    float low = 80,
-                                    float high = 400)
+                                    float low = 80/*Hz*/,
+                                    float high = 400/*Hz*/)
         {
             var sumSpectrum = spectrum.FastCopy();
 
@@ -389,20 +383,19 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Pitch estimation: Harmonic Product Spectrum
+        /// Estimate pitch from <paramref name="signal"/> using Harmonic Product Spectrum (HPS) method.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        /// <param name="fftSize"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="startPos">Index of the first sample in signal for processing</param>
+        /// <param name="endPos">Index of the last sample in signal for processing</param>
+        /// <param name="low">Lower frequency of expected pitch range</param>
+        /// <param name="high">Upper frequency of expected pitch range</param>
+        /// <param name="fftSize">FFT size</param>
         public static float FromHps(DiscreteSignal signal,
                                     int startPos = 0,
                                     int endPos = -1,
-                                    float low = 80,
-                                    float high = 400,
+                                    float low = 80/*Hz*/,
+                                    float high = 400/*Hz*/,
                                     int fftSize = 0)
         {
             if (endPos == -1)
@@ -426,17 +419,16 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Pitch estimation: Harmonic Product Spectrum (given pre-computed spectrum)
+        /// Estimate pitch from <paramref name="spectrum"/> using Harmonic Product Spectrum (HPS) method.
         /// </summary>
-        /// <param name="spectrum"></param>
-        /// <param name="samplingRate"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        /// <returns></returns>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="low">Lower frequency of expected pitch range</param>
+        /// <param name="high">Upper frequency of expected pitch range</param>
         public static float FromHps(float[] spectrum,
                                     int samplingRate,
-                                    float low = 80,
-                                    float high = 400)
+                                    float low = 80/*Hz*/,
+                                    float high = 400/*Hz*/)
         {
             var sumSpectrum = spectrum.FastCopy();
 
@@ -467,20 +459,19 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Pitch estimation: from spectral peaks
+        /// Estimate pitch from <paramref name="signal"/> based on spectral peaks.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        /// <param name="fftSize"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="startPos">Index of the first sample in signal for processing</param>
+        /// <param name="endPos">Index of the last sample in signal for processing</param>
+        /// <param name="low">Lower frequency of expected pitch range</param>
+        /// <param name="high">Upper frequency of expected pitch range</param>
+        /// <param name="fftSize">FFT size</param>
         public static float FromSpectralPeaks(DiscreteSignal signal,
                                               int startPos = 0,
                                               int endPos = -1,
-                                              float low = 80,
-                                              float high = 400,
+                                              float low = 80/*Hz*/,
+                                              float high = 400/*Hz*/,
                                               int fftSize = 0)
         {
             if (endPos == -1)
@@ -504,17 +495,16 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Pitch estimation: from spectral peaks (given pre-computed spectrum)
+        /// Estimate pitch from <paramref name="spectrum"/> based on spectral peaks.
         /// </summary>
-        /// <param name="spectrum"></param>
-        /// <param name="samplingRate"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        /// <returns></returns>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="low">Lower frequency of expected pitch range</param>
+        /// <param name="high">Upper frequency of expected pitch range</param>
         public static float FromSpectralPeaks(float[] spectrum,
                                               int samplingRate,
-                                              float low = 80,
-                                              float high = 400)
+                                              float low = 80/*Hz*/,
+                                              float high = 400/*Hz*/)
         {
             var fftSize = (spectrum.Length - 1) * 2;
 
@@ -534,21 +524,20 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Pitch estimation from signal cepstrum
+        /// Estimate pitch from <paramref name="signal"/> based on its cepstrum.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <param name="low"></param>
-        /// <param name="high"></param>
-        /// <param name="cepstrumSize"></param>
-        /// <param name="fftSize"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="startPos">Index of the first sample in signal for processing</param>
+        /// <param name="endPos">Index of the last sample in signal for processing</param>
+        /// <param name="low">Lower frequency of expected pitch range</param>
+        /// <param name="high">Upper frequency of expected pitch range</param>
+        /// <param name="cepstrumSize">Size of cepstrum</param>
+        /// <param name="fftSize">FFT size</param>
         public static float FromCepstrum(DiscreteSignal signal,
                                          int startPos = 0,
                                          int endPos = -1,
-                                         float low = 80,
-                                         float high = 400,
+                                         float low = 80/*Hz*/,
+                                         float high = 400/*Hz*/,
                                          int cepstrumSize = 256,
                                          int fftSize = 1024)
         {

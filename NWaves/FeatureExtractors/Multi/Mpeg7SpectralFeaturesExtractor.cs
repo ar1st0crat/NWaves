@@ -11,113 +11,115 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors.Multi
 {
     /// <summary>
-    /// Extractor of spectral features according to methodology described in MPEG7 standard.
-    /// 
-    /// It's a flexible extractor that allows varying almost everything.
-    /// 
-    /// The difference between Mpeg7SpectralExtractor and SpectralExtractor is that 
-    /// former calculates spectral features from total energy in frequency BANDS
+    /// <para><see cref="Mpeg7SpectralFeaturesExtractor"/> follows MPEG-7 recommendations to evaluate the following features:</para>
+    /// <list type="bullet">
+    ///     <item>Spectral features (MPEG-7)</item>
+    ///     <item>Harmonic features</item>
+    ///     <item>Perceptual features</item>
+    /// </list>
+    /// <para>It's a flexible extractor that allows varying almost everything.</para>
+    /// <para>
+    /// The difference between <see cref="Mpeg7SpectralFeaturesExtractor"/> and <see cref="SpectralFeaturesExtractor"/> 
+    /// is that former calculates spectral features from total energy in frequency BANDS 
     /// while latter analyzes signal energy at particular frequencies (spectral bins).
-    /// 
-    /// Also, optionally it allows computing harmonic features along with spectral features.
-    /// 
+    /// </para>
     /// </summary>
     public class Mpeg7SpectralFeaturesExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Names of supported spectral features
+        /// Full set of supported spectral features.
         /// </summary>
         public const string FeatureSet = "centroid, spread, flatness, noiseness, rolloff, crest, entropy, decrease, loudness, sharpness";
 
         /// <summary>
-        /// Names of supported harmonic features
+        /// Full set of supported harmonic features.
         /// </summary>
         public const string HarmonicSet = "hcentroid, hspread, inharmonicity, oer, t1+t2+t3";
 
         /// <summary>
-        /// String annotations (or simply names) of features
+        /// String annotations (or simply names) of features.
         /// </summary>
         public override List<string> FeatureDescriptions { get; }
 
         /// <summary>
-        /// Filterbank from frequency bands
+        /// Filterbank from frequency bands.
         /// </summary>
         protected readonly float[][] _filterbank;
 
         /// <summary>
-        /// Internal buffer for frequency bands
+        /// Internal buffer for frequency bands.
         /// </summary>
         protected readonly (double, double, double)[] _frequencyBands;
 
         /// <summary>
-        /// Internal buffer for central frequencies
+        /// Internal buffer for central frequencies.
         /// </summary>
         protected readonly float[] _frequencies;
 
         /// <summary>
-        /// Internal buffer for harmonic peak frequencies (optional)
+        /// Internal buffer for harmonic peak frequencies (optional).
         /// </summary>
         protected float[] _peakFrequencies;
 
         /// <summary>
-        /// Internal buffer for spectral positions of harmonic peaks (optional)
+        /// Internal buffer for spectral positions of harmonic peaks (optional).
         /// </summary>
         protected int[] _peaks;
 
         /// <summary>
-        /// Extractor functions
+        /// Extractor functions.
         /// </summary>
         protected List<Func<float[], float[], float>> _extractors;
 
         /// <summary>
-        /// Extractor parameters
+        /// Extractor parameters.
         /// </summary>
         protected readonly Dictionary<string, object> _parameters;
 
         /// <summary>
-        /// Harmonic extractor functions (optional)
+        /// Harmonic extractor functions (optional).
         /// </summary>
         protected List<Func<float[], int[], float[], float>> _harmonicExtractors;
 
         /// <summary>
-        /// FFT transformer
+        /// FFT transformer.
         /// </summary>
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// Internal buffer for magnitude spectrum
+        /// Internal buffer for magnitude spectrum.
         /// </summary>
         protected readonly float[] _spectrum;
 
         /// <summary>
-        /// Internal buffer for total energies in frequency bands
+        /// Internal buffer for total energies in frequency bands.
         /// </summary>
         protected readonly float[] _mappedSpectrum;
 
         /// <summary>
-        /// Pitch estimator function (optional)
+        /// Pitch estimator function (optional).
         /// </summary>
         protected Func<float[], float> _pitchEstimator;
 
         /// <summary>
-        /// Array of precomputed pitches (optional)
+        /// Array of precomputed pitches (optional).
         /// </summary>
         protected float[] _pitchTrack;
 
         /// <summary>
-        /// Current position in pitch track
+        /// Current position in pitch track.
         /// </summary>
         protected int _pitchPos;
 
         /// <summary>
-        /// Harmonic peaks detector function (optional)
+        /// Harmonic peaks detector function (optional).
         /// </summary>
         protected Action<float[], int[], float[], int, float> _peaksDetector;
 
         /// <summary>
-        /// Constructor
+        /// Construct extractor from configuration options.
         /// </summary>
-        /// <param name="options">Options</param>
+        /// <param name="options">Extractor configuration options</param>
         public Mpeg7SpectralFeaturesExtractor(MultiFeatureOptions options) : base(options)
         {
             var featureList = options.FeatureList;
@@ -226,19 +228,28 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Add set of harmonic features to calculation list
+        /// <para>Add set of harmonic features to extractor's list.</para>
+        /// <para>
+        /// <paramref name="pitchEstimator"/> is the function that should be used for pitch estimation. 
+        /// By default, method <see cref="Pitch.FromSpectralPeaks(float[], int, float, float)"/> is called.
+        /// </para>
+        /// <para>
+        /// <paramref name="peaksDetector"/> is the function that should be used for peak detection. 
+        /// By default, method <see cref="Harmonic.Peaks(float[], int[], float[], int, float)"/> is called.
+        /// </para>
         /// </summary>
-        /// <param name="featureList"></param>
-        /// <param name="peakCount"></param>
-        /// <param name="pitchEstimator"></param>
-        /// <param name="lowPitch"></param>
-        /// <param name="highPitch"></param>
+        /// <param name="featureList">String names/annotations of newly added harmonic features</param>
+        /// <param name="peakCount">Max number of harmonic peaks</param>
+        /// <param name="pitchEstimator">Function that should be used for pitch estimation</param>
+        /// <param name="peaksDetector">Function that should be used for peak detection</param>
+        /// <param name="lowPitch">Lower frequency of expected pitch range</param>
+        /// <param name="highPitch">Upper frequency of expected pitch range</param>
         public void IncludeHarmonicFeatures(string featureList,
                                             int peakCount = 10,
                                             Func<float[], float> pitchEstimator = null,
                                             Action<float[], int[], float[], int, float> peaksDetector = null,
-                                            float lowPitch = 80,
-                                            float highPitch = 400)
+                                            float lowPitch = 80/*Hz*/,
+                                            float highPitch = 400/*Hz*/)
         {
             if (featureList == "all" || featureList == "full")
             {
@@ -282,7 +293,7 @@ namespace NWaves.FeatureExtractors.Multi
             FeatureCount += features.Count;
             FeatureDescriptions.AddRange(features);
 
-            if (pitchEstimator == null)
+            if (pitchEstimator is null)
             {
                 _pitchEstimator = spectrum => Pitch.FromSpectralPeaks(spectrum, SamplingRate, lowPitch, highPitch);
             }
@@ -291,7 +302,7 @@ namespace NWaves.FeatureExtractors.Multi
                 _pitchEstimator = pitchEstimator;
             }
 
-            if (peaksDetector == null)
+            if (peaksDetector is null)
             {
                 _peaksDetector = Harmonic.Peaks;
             }
@@ -305,13 +316,13 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Add one more harmonic feature with routine for its calculation
+        /// Add user-defined harmonic feature to extractor's list (and the routine for its calculation).
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="algorithm"></param>
+        /// <param name="name">Feature name/annotation</param>
+        /// <param name="algorithm">Routine for calculation of the feature</param>
         public void AddHarmonicFeature(string name, Func<float[], int[], float[], float> algorithm)
         {
-            if (_harmonicExtractors == null)
+            if (_harmonicExtractors is null)
             {
                 return;
             }
@@ -324,19 +335,20 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Set array of precomputed pitches
         /// </summary>
-        /// <param name="pitchTrack"></param>
+        /// <param name="pitchTrack">Array of pitches computed elsewhere</param>
         public void SetPitchTrack(float[] pitchTrack)
         {
             _pitchTrack = pitchTrack;
         }
 
         /// <summary>
-        /// Compute the sequence of feature vectors from some fragment of a signal
+        /// <para>Compute MPEG-7 feature vectors from <paramref name="samples"/> and store them in <paramref name="vectors"/>.</para>
+        /// <para>Returns the number of actually computed feature vectors</para>
         /// </summary>
-        /// <param name="samples">Signal</param>
-        /// <param name="startSample">The number (position) of the first sample for processing</param>
-        /// <param name="endSample">The number (position) of last sample for processing</param>
-        /// <param name="vectors">Output sequence of feature vectors</param>
+        /// <param name="samples">Array of samples</param>
+        /// <param name="startSample">Index of the first sample in array for processing</param>
+        /// <param name="endSample">Index of the last sample in array for processing</param>
+        /// <param name="vectors">Pre-allocated sequence for storing the resulting feature vectors</param>
         public override int ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
             _pitchPos = 0;
@@ -345,10 +357,10 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Compute MPEG7 spectral features in one frame
+        /// Compute MPEG-7 features in one frame
         /// </summary>
-        /// <param name="block"></param>
-        /// <param name="features"></param>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Features (one feature vector) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
             // compute and prepare spectrum
@@ -378,7 +390,7 @@ namespace NWaves.FeatureExtractors.Multi
 
             if (_harmonicExtractors != null)
             {
-                var pitch = _pitchTrack == null ? _pitchEstimator(_spectrum) : _pitchTrack[_pitchPos++];
+                var pitch = _pitchTrack is null ? _pitchEstimator(_spectrum) : _pitchTrack[_pitchPos++];
 
                 _peaksDetector(_spectrum, _peaks, _peakFrequencies, SamplingRate, pitch);
 
@@ -391,15 +403,17 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// True if computations can be done in parallel
+        /// <para>Does the extractor support parallelization.</para>
+        /// <para>
+        /// Returns false if array of pitches was set manually. 
+        /// Returns true in all other cases.
+        /// </para>
         /// </summary>
-        /// <returns></returns>
-        public override bool IsParallelizable() => _pitchTrack == null;
+        public override bool IsParallelizable() => _pitchTrack is null;
 
         /// <summary>
-        /// Copy of current extractor that can work in parallel
+        /// Thread-safe copy of the extractor for parallel computations.
         /// </summary>
-        /// <returns></returns>
         public override FeatureExtractor ParallelCopy()
         {
             var spectralFeatureSet = string.Join(",", FeatureDescriptions.Take(_extractors.Count));

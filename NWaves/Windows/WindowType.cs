@@ -1,72 +1,72 @@
 namespace NWaves.Windows
 {
     /// <summary>
-    /// Most commonly used window functions
+    /// Most commonly used window functions.
     /// </summary>
     public enum WindowType
     {
         /// <summary>
-        /// Reactangular window
+        /// Rectangular window.
         /// </summary>
         Rectangular,
 
         /// <summary>
-        /// Triangular window
+        /// Triangular window.
         /// </summary>
         Triangular,
 
         /// <summary>
-        /// Hamming window
+        /// Hamming window.
         /// </summary>
         Hamming,
 
         /// <summary>
-        /// Blackman window
+        /// Blackman window.
         /// </summary>
         Blackman,
 
         /// <summary>
-        /// Hann window
+        /// Hann window.
         /// </summary>
         Hann,
 
         /// <summary>
-        /// Gaussian window
+        /// Gaussian window.
         /// </summary>
         Gaussian,
 
         /// <summary>
-        /// Kaiser window
+        /// Kaiser window.
         /// </summary>
         Kaiser,
 
         /// <summary>
-        /// Kaiser-Bessel Derived window
+        /// Kaiser-Bessel Derived window.
         /// </summary>
         Kbd,
 
         /// <summary>
-        /// Bartlett-Hann window
+        /// Bartlett-Hann window.
         /// </summary>
         BartlettHann,
 
         /// <summary>
-        /// Lanczos window
+        /// Lanczos window.
         /// </summary>
         Lanczos,
 
         /// <summary>
-        /// Power-of-sine window
+        /// Power-of-sine window.
         /// </summary>
         PowerOfSine,
 
         /// <summary>
-        /// Flat-top window
+        /// Flat-top window.
         /// </summary>
         Flattop,
         
         /// <summary>
-        /// Window for cepstral liftering
+        /// Window for cepstral liftering.
         /// </summary>
         Liftering
     }

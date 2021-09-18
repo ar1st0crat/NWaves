@@ -1,7 +1,7 @@
 ﻿namespace NWaves.FeatureExtractors.Options
 {
     /// <summary>
-    /// Spectrum calculations
+    /// Spectrum calculation modes
     /// </summary>
     public enum SpectrumType
     {

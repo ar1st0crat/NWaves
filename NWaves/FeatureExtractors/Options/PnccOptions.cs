@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-#pragma warning disable 1591
-
 namespace NWaves.FeatureExtractors.Options
 {
     [DataContract]
@@ -35,5 +33,3 @@ namespace NWaves.FeatureExtractors.Options
         }
     }
 }
-
-#pragma warning restore 1591

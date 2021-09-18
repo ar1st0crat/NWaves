@@ -8,40 +8,40 @@ using System.Linq;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Wavelet extractor
+    /// Wavelet extractor.
     /// </summary>
     public class WaveletExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Descriptions (simply "w0", "w1", etc.)
+        /// Feature names (simply "w0", "w1", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions =>
             Enumerable.Range(0, FeatureCount).Select(i => "w" + i).ToList();
 
         /// <summary>
-        /// Fast Wavelet Transformer
+        /// Fast Wavelet Transformer.
         /// </summary>
         protected readonly Fwt _fwt;
 
         /// <summary>
-        /// Wavelet name
+        /// Wavelet name.
         /// </summary>
         protected readonly string _waveletName;
 
         /// <summary>
-        /// FWT level (0 = auto)
+        /// FWT level (0 = auto).
         /// </summary>
         protected readonly int _level;
 
         /// <summary>
-        /// Internal buffer for FWT coefficients
+        /// Internal buffer for FWT coefficients.
         /// </summary>
         protected readonly float[] _coeffs;
 
         /// <summary>
-        /// Constructor
+        /// Construct extractor from configuration options.
         /// </summary>
-        /// <param name="options">Wavelet options</param>
+        /// <param name="options">Extractor configuration options</param>
         public WaveletExtractor(WaveletOptions options) : base(options)
         {
             _blockSize = options.FwtSize > FrameSize ? options.FwtSize : MathUtils.NextPowerOfTwo(FrameSize);
@@ -56,11 +56,10 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Compute FWT coeffs in each frame
+        /// Compute vector of FWT coefficients in one frame.
         /// </summary>
-        /// <param name="block"></param>
-        /// <param name="features"></param>
-        /// <returns></returns>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Features (one FWT feature vector) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
             _fwt.Direct(block, _coeffs, _level);
@@ -69,15 +68,13 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// True if computations can be done in parallel
+        /// Does the extractor support parallelization. Returns true always.
         /// </summary>
-        /// <returns></returns>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Copy of current extractor that can work in parallel
+        /// Thread-safe copy of the extractor for parallel computations.
         /// </summary>
-        /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
             new WaveletExtractor(
                 new WaveletOptions

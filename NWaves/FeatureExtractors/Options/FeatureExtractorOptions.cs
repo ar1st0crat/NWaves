@@ -4,26 +4,66 @@ using System.Runtime.Serialization;
 
 namespace NWaves.FeatureExtractors.Options
 {
+    /// <summary>
+    /// Class containing basic properties for configuring feature extractors.
+    /// </summary>
     [DataContract]
     public class FeatureExtractorOptions
     {
+        /// <summary>
+        /// Number of features to extract (feature vector size).
+        /// </summary>
         [DataMember]
         public int FeatureCount { get; set; }
+
+        /// <summary>
+        /// Expected sampling rate of signals for analysis.
+        /// </summary>
         [DataMember]
         public int SamplingRate { get; set; }
+
+        /// <summary>
+        /// Length of analysis frame (duration in seconds). By default, 0.025 (25ms).
+        /// </summary>
         [DataMember]
-        public double FrameDuration { get; set; } = 0.025;
+        public double FrameDuration { get; set; } = 0.025;/*seconds*/
+
+        /// <summary>
+        /// Hop length (duration in seconds). By default, 0.01 (10ms).
+        /// </summary>
         [DataMember]
-        public double HopDuration { get; set; } = 0.01;
+        public double HopDuration { get; set; } = 0.01;/*seconds*/
+
+        /// <summary>
+        /// Size of analysis frame (number of samples). Has priority over <see cref="FrameDuration"/>. 
+        /// If it is not specified explicitly, then it is auto-computed from <see cref="FrameDuration"/>.
+        /// </summary>
         [DataMember]
         public int FrameSize { get; set; } = 0;
+
+        /// <summary>
+        /// Hop size (number of samples). Has priority over <see cref="HopDuration"/>. 
+        /// If it is not specified explicitly, then it is auto-computed from <see cref="HopDuration"/>.
+        /// </summary>
         [DataMember]
         public int HopSize { get; set; } = 0;
+        
+        /// <summary>
+        /// Pre-emphasis filter coefficient.
+        /// </summary>
         [DataMember]
         public double PreEmphasis { get; set; } = 0;
+        
+        /// <summary>
+        /// Window function (by default, rectangular window, i.e. no windowing). 
+        /// In <see cref="FilterbankOptions"/> and its subclasses (MFCC, PLP, etc.) default window is Hamming.
+        /// </summary>
         [DataMember]
         public WindowType Window { get; set; } = WindowType.Rectangular;
 
+        /// <summary>
+        /// Generates the list of error messages describing particular configuration validation problem.
+        /// </summary>
         public virtual List<string> Errors
         {
             get

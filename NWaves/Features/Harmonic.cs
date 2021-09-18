@@ -3,16 +3,20 @@
 namespace NWaves.Features
 {
     /// <summary>
-    /// Harmonic features
+    /// Class providing methods for computing harmonic spectral features.
     /// </summary>
     public static class Harmonic
     {
         /// <summary>
-        /// Simple algorithm for detecting harmonic peaks in spectrum
+        /// <para>Evaluate harmonic peaks (peak indices and frequencies) in spectrum.</para>
+        /// <para>
+        /// If <paramref name="pitch"/> is not specified explicitly, 
+        /// it will be auto-estimated using method <see cref="Pitch.FromSpectralPeaks(float[], int, float, float)"/>.
+        /// </para>
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
-        /// <param name="peaks">Array for peak positions</param>
-        /// <param name="peakFrequencies">Array for peak frequencies</param>
+        /// <param name="peaks">Array for storing computed peak positions</param>
+        /// <param name="peakFrequencies">Array for storing computed peak frequencies</param>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="pitch">Pitch is given if it is known</param>
         public static void Peaks(float[] spectrum, int[] peaks, float[] peakFrequencies, int samplingRate, float pitch = -1)
@@ -59,12 +63,11 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Harmonic centroid
+        /// Compute harmonic centroid.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
-        /// <param name="peaks">Peak positions</param>
+        /// <param name="peaks">Peak positions (indices in spectrum)</param>
         /// <param name="peakFrequencies">Peak frequencies</param>
-        /// <returns>Harmonic centroid</returns>
         public static float Centroid(float[] spectrum, int[] peaks, float[] peakFrequencies)
         {
             if (peaks[0] == 0)
@@ -86,12 +89,11 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Harmonic spread
+        /// Compute harmonic spread.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
-        /// <param name="peaks">Peak positions</param>
+        /// <param name="peaks">Peak positions (indices in spectrum)</param>
         /// <param name="peakFrequencies">Peak frequencies</param>
-        /// <returns>Harmonic spread</returns>
         public static float Spread(float[] spectrum, int[] peaks, float[] peakFrequencies)
         {
             if (peaks[0] == 0)
@@ -115,12 +117,11 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Inharmonicity
+        /// Compute inharmonicity.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
-        /// <param name="peaks">Peak positions</param>
+        /// <param name="peaks">Peak positions (indices in spectrum)</param>
         /// <param name="peakFrequencies">Peak frequencies</param>
-        /// <returns>Inharmonicity</returns>
         public static float Inharmonicity(float[] spectrum, int[] peaks, float[] peakFrequencies)
         {
             if (peaks[0] == 0)
@@ -146,11 +147,10 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Harmonic Odd-to-Even Ratio
+        /// Compute harmonic odd-to-even ratio.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
-        /// <param name="peaks">Peak positions</param>
-        /// <returns>Odd-to-Even Ratio</returns>
+        /// <param name="peaks">Peak positions (indices in spectrum)</param>
         public static float OddToEvenRatio(float[] spectrum, int[] peaks)
         {
             if (peaks[0] == 0)
@@ -175,12 +175,11 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Tristimulus (nth component)
+        /// Compute tristimulus (<paramref name="n"/>th component).
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
-        /// <param name="peaks">Peak positions</param>
-        /// <param name="n">Tristimulus component: 1, 2 or 3</param>
-        /// <returns>Tristimulus</returns>
+        /// <param name="peaks">Peak positions (indices in spectrum)</param>
+        /// <param name="n">Tristimulus component index: 1, 2 or 3</param>
         public static float Tristimulus(float[] spectrum, int[] peaks, int n)
         {
             if (peaks[0] == 0)

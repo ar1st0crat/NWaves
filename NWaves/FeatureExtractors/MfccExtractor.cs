@@ -11,26 +11,23 @@ using NWaves.Windows;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Mel Frequency Cepstral Coefficients extractor.
-    /// 
-    /// Since so many variations of MFCC have been developed since 1980,
-    /// this class is very general and allows customizing pretty everything:
-    /// 
-    ///  - filterbank (by default it's MFCC-FB24 HTK/Kaldi-style)
-    ///  
-    ///  - non-linearity type (logE, log10, decibel (librosa power_to_db analog), cubic root)
-    ///  
-    ///  - spectrum calculation type (power/magnitude normalized/not normalized)
-    ///  
-    ///  - DCT type (1,2,3,4 normalized or not): "1", "1N", "2", "2N", etc.
-    ///  
-    ///  - floor value for LOG-calculations (usually it's float.Epsilon; HTK default seems to be 1.0 and in librosa 1e-10 is used)
-    /// 
+    /// <para>Mel Frequency Cepstral Coefficients (MFCC) extractor.</para>
+    /// <para>
+    /// Since so many variations of MFCC have been developed since 1980, 
+    /// this class is very general and allows customizing a lot of parameters:
+    /// <list type="bullet">
+    ///    <item>filterbank (by default it's MFCC-FB24 HTK/Kaldi-style)</item>
+    ///    <item>non-linearity type (logE, log10, decibel (librosa power_to_db analog), cubic root)</item>
+    ///    <item>spectrum calculation type (power/magnitude normalized/not normalized)</item>
+    ///    <item>DCT type (1,2,3,4 normalized or not): "1", "1N", "2", "2N", etc.</item>
+    ///    <item>floor value for LOG-calculations (usually it's float.Epsilon; HTK default seems to be 1.0 and in librosa 1e-10 is used)</item>
+    /// </list>
+    /// </para>
     /// </summary>
     public class MfccExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Descriptions (simply "mfcc0", "mfcc1", "mfcc2", etc.)
+        /// Feature names (simply "mfcc0", "mfcc1", "mfcc2", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions
         {
@@ -43,78 +40,78 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)].
+        /// Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)]. 
         /// By default it's mel filterbank.
         /// </summary>
         public float[][] FilterBank { get; }
 
         /// <summary>
-        /// Size of liftering window
+        /// Size of liftering window.
         /// </summary>
         protected readonly int _lifterSize;
 
         /// <summary>
-        /// Liftering window coefficients
+        /// Liftering window coefficients.
         /// </summary>
         protected readonly float[] _lifterCoeffs;
 
         /// <summary>
-        /// FFT transformer
+        /// FFT transformer.
         /// </summary>
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// DCT-II transformer
+        /// DCT-II transformer.
         /// </summary>
         protected readonly IDct _dct;
 
         /// <summary>
-        /// DCT type ("1", "1N", "2", "2N", "3", "3N", "4", "4N")
+        /// DCT type ("1", "1N", "2", "2N", "3", "3N", "4", "4N").
         /// </summary>
         protected readonly string _dctType;
 
         /// <summary>
-        /// Non-linearity type (logE, log10, decibel, cubic root)
+        /// Non-linearity type (logE, log10, decibel, cubic root).
         /// </summary>
         protected readonly NonLinearityType _nonLinearityType;
 
         /// <summary>
-        /// Spectrum calculation scheme (power/magnitude normalized/not normalized)
+        /// Spectrum calculation scheme (power/magnitude normalized/not normalized).
         /// </summary>
         protected readonly SpectrumType _spectrumType;
 
         /// <summary>
-        /// Floor value for LOG calculations
+        /// Floor value for LOG calculations.
         /// </summary>
         protected readonly float _logFloor;
 
         /// <summary>
-        /// Should the first MFCC coefficient be replaced with LOG(energy)
+        /// Should the first MFCC coefficient be replaced with LOG(energy).
         /// </summary>
         protected readonly bool _includeEnergy;
 
         /// <summary>
-        /// Floor value for LOG-energy calculation
+        /// Floor value for LOG-energy calculation.
         /// </summary>
         protected readonly float _logEnergyFloor;
 
         /// <summary>
-        /// Delegate for calculating spectrum
+        /// Delegate for calculating spectrum.
         /// </summary>
         protected readonly Action<float[]> _getSpectrum;
 
         /// <summary>
-        /// Delegate for post-processing spectrum
+        /// Delegate for post-processing spectrum.
         /// </summary>
         protected readonly Action _postProcessSpectrum;
 
         /// <summary>
-        /// Delegate for applying DCT
+        /// Delegate for applying DCT.
         /// </summary>
         protected readonly Action<float[]> _applyDct;
         
         /// <summary>
-        /// Internal buffer for a signal spectrum at each step
+        /// Internal buffer for a signal spectrum at each step.
         /// </summary>
         protected readonly float[] _spectrum;
 
@@ -124,16 +121,16 @@ namespace NWaves.FeatureExtractors
         protected readonly float[] _melSpectrum;
 
         /// <summary>
-        /// Constructor
+        /// Construct extractor from configuration options.
         /// </summary>
-        /// <param name="options">MFCC options</param>
+        /// <param name="options">Extractor configuration options</param>
         public MfccExtractor(MfccOptions options) : base(options)
         {
             FeatureCount = options.FeatureCount;
 
             var filterbankSize = options.FilterBankSize;
 
-            if (options.FilterBank == null)
+            if (options.FilterBank is null)
             {
                 _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
@@ -214,22 +211,26 @@ namespace NWaves.FeatureExtractors
             _melSpectrum = new float[filterbankSize];
         }
 
-
         /// <summary>
-        /// Standard method for computing MFCC features.
-        /// According to default configuration, in each frame do:
-        /// 
-        ///     0) Apply window (base extractor does it)
-        ///     1) Obtain power spectrum X
-        ///     2) Apply mel filters and log() the result: Y = Log(X * H)
-        ///     3) Do dct: mfcc = Dct(Y)
-        ///     4) [Optional] liftering of mfcc
-        /// 
+        /// <para>Compute MFCC feature vector in one frame.</para>
+        /// <para>
+        /// General algorithm:
+        /// <list type="number">
+        ///     <item>Apply window</item>
+        ///     <item>Obtain power spectrum</item>
+        ///     <item>Apply mel filterbank (or any other filterbank)</item>
+        ///     <item>Apply nonlinearity (log, by default)</item>
+        ///     <item>Do DCT</item>
+        ///     <item>[Optional] lifter MFCC-cepstrum</item>
+        /// </list>
+        /// </para>
         /// </summary>
-        /// <param name="block">Samples for analysis</param>
-        /// <param name="features">MFCC vector</param>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Features (one MFCC feature vector) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
+            // 0) base extractor applies window
+
             // 1) calculate magnitude/power spectrum (with/without normalization)
 
             _getSpectrum(block);        //  block -> _spectrum
@@ -241,7 +242,6 @@ namespace NWaves.FeatureExtractors
             // 3) dct
 
             _applyDct(features);        // _melSpectrum -> mfccs
-
 
             // 4) (optional) liftering
 
@@ -259,15 +259,13 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// True if computations can be done in parallel
+        /// Does the extractor support parallelization. Returns true always.
         /// </summary>
-        /// <returns></returns>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Copy of current extractor that can work in parallel
+        /// Thread-safe copy of the extractor for parallel computations.
         /// </summary>
-        /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
             new MfccExtractor(
                 new MfccOptions

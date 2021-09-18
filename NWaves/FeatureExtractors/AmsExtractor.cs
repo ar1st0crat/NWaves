@@ -11,95 +11,103 @@ using NWaves.Windows;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Amplitude modulation spectra (AMS) extractor
+    /// Amplitude modulation spectra (AMS) extractor.
     /// </summary>
     public class AmsExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Feature descriptions.
+        /// Feature annotations.
         /// Initialized in constructor in the following manner (example):
-        /// 
-        ///     band_1_mf_0.5_Hz   band_1_mf_1.0_Hz   ...    band_1_mf_8.0_Hz
-        ///     band_2_mf_0.5_Hz   band_2_mf_1.0_Hz   ...    band_2_mf_8.0_Hz
-        ///     ...
-        ///     band_32_mf_0.5_Hz  band_32_mf_1.0_Hz  ...    band_32_mf_8.0_Hz
-        /// 
+        /// <code>
+        ///     band_1_mf_0.5_Hz   band_1_mf_1.0_Hz   ...    band_1_mf_8.0_Hz  <br/>
+        ///     band_2_mf_0.5_Hz   band_2_mf_1.0_Hz   ...    band_2_mf_8.0_Hz  <br/>
+        ///                                           ...                      <br/>
+        ///     band_32_mf_0.5_Hz  band_32_mf_1.0_Hz  ...    band_32_mf_8.0_Hz <br/>
+        /// </code>
         /// </summary>
         public override List<string> FeatureDescriptions { get; }
 
         /// <summary>
-        /// The "featuregram": the sequence of (feature) vectors;
-        /// if this sequence is given, then AmsExtractor computes 
+        /// The "featuregram": the sequence of feature vectors. 
+        /// If this sequence is given, then <see cref="AmsExtractor"/> computes 
         /// modulation spectral coefficients from sequences in each 'feature channel'.
         /// </summary>
         protected readonly float[][] _featuregram;
 
         /// <summary>
-        /// Filterbank matrix of dimension [filterCount * (fftSize/2 + 1)]
+        /// Filterbank matrix of dimension [filterCount * (fftSize/2 + 1)].
         /// </summary>
         protected readonly float[][] _filterbank;
+
+        /// <summary>
+        /// Filterbank matrix of dimension [filterCount * (fftSize/2 + 1)].
+        /// </summary>
         public float[][] Filterbank => _filterbank;
         
         /// <summary>
-        /// Signal envelopes in different frequency bands
+        /// Signal envelopes in different frequency bands.
         /// </summary>
         protected float[][] _envelopes;
+
+        /// <summary>
+        /// Signal envelopes in different frequency bands.
+        /// </summary>
         public float[][] Envelopes => _envelopes;
 
         /// <summary>
-        /// Size of FFT
+        /// Size of FFT.
         /// </summary>
         protected readonly int _fftSize;
 
         /// <summary>
-        /// FFT transformer
+        /// FFT transformer.
         /// </summary>
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// FFT transformer for modulation spectrum
+        /// FFT transformer for modulation spectrum.
         /// </summary>
         protected readonly RealFft _modulationFft;
 
         /// <summary>
-        /// Size of FFT applied to signal envelopes
+        /// Size of FFT applied to signal envelopes.
         /// </summary>
         protected readonly int _modulationFftSize;
 
         /// <summary>
-        /// Hop size for analysis of signal envelopes
+        /// Hop size for analysis of signal envelopes.
         /// </summary>
         protected readonly int _modulationHopSize;
 
         /// <summary>
-        /// Internal buffer for a signal block at each step
+        /// Internal buffer for a signal block at each step.
         /// </summary>
         protected readonly float[] _block;
 
         /// <summary>
-        /// Internal buffer for a signal spectrum at each step
+        /// Internal buffer for a signal spectrum at each step.
         /// </summary>
         protected readonly float[] _spectrum;
 
         /// <summary>
-        /// Internal buffer for filtered spectrum
+        /// Internal buffer for filtered spectrum.
         /// </summary>
         protected readonly float[] _filteredSpectrum;
 
         /// <summary>
-        /// Internal buffer for modulation spectrum analysis
+        /// Internal buffer for modulation spectrum analysis.
         /// </summary>
         protected readonly float[] _modBlock;
             
         /// <summary>
-        /// Modulation spectrum (in one band)
+        /// Modulation spectrum (in one band).
         /// </summary>
         protected readonly float[] _modSpectrum;
 
         /// <summary>
-        /// Constructor
+        /// Construct extractor from configuration options.
         /// </summary>
-        /// <param name="options">AMS options</param>
+        /// <param name="options">Extractor configuration options</param>
         public AmsExtractor(AmsOptions options) : base(options)
         {
             _modulationFftSize = options.ModulationFftSize;
@@ -114,7 +122,7 @@ namespace NWaves.FeatureExtractors
             }
             else
             {
-                if (options.FilterBank == null)
+                if (options.FilterBank is null)
                 {
                     _fftSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
@@ -168,13 +176,12 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Method for computing modulation spectra.
+        /// Compute modulation spectra. 
         /// Each vector representing one modulation spectrum is a flattened version of 2D spectrum.
         /// </summary>
-        /// <param name="samples">Samples for analysis</param>
-        /// <param name="startSample">The number (position) of the first sample for processing</param>
-        /// <param name="endSample">The number (position) of last sample for processing</param>
-        /// <returns>List of flattened modulation spectra</returns>
+        /// <param name="samples">Array of samples</param>
+        /// <param name="startSample">Index of the first sample in array for processing</param>
+        /// <param name="endSample">Index of the last sample in array for processing</param>
         public override List<float[]> ComputeFrom(float[] samples, int startSample, int endSample)
         {
             Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
@@ -187,7 +194,7 @@ namespace NWaves.FeatureExtractors
             var en = 0;
             var i = startSample;
 
-            if (_featuregram == null)
+            if (_featuregram is null)
             {
                 _envelopes = new float[_filterbank.Length][];
                 for (var n = 0; n < _envelopes.Length; n++)
@@ -314,11 +321,10 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Get 2D modulation spectrum from its flattened version.
+        /// Create 2D modulation spectrum from its flattened version. 
         /// Axes are: [short-time-frequency] x [modulation-frequency].
         /// </summary>
-        /// <param name="featureVector"></param>
-        /// <returns></returns>
+        /// <param name="featureVector">AMS feature vector</param>
         public float[][] MakeSpectrum2D(float[] featureVector)
         {
             var length = _filterbank?.Length ?? _featuregram[0].Length;
@@ -337,12 +343,11 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Get sequence of short-time spectra corresponding to particular modulation frequency
+        /// Get sequence of short-time spectra corresponding to particular modulation frequency 
         /// (by default, the most perceptually important modulation frequency of 4 Hz).
         /// </summary>
-        /// <param name="featureVectors"></param>
-        /// <param name="herz"></param>
-        /// <returns>Short-time spectra corresponding to particular modulation frequency</returns>
+        /// <param name="featureVectors">Sequence of AMS feature vectors</param>
+        /// <param name="herz">Modulation frequency</param>
         public List<float[]> VectorsAtHerz(IList<float[]> featureVectors, float herz = 4)
         {
             var length = _filterbank?.Length ?? _featuregram[0].Length;
@@ -367,15 +372,24 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// All logic is fully implemented in ComputeFrom() method
+        /// <para><see cref="AmsExtractor"/> does not provide this function.</para>
+        /// <para>Call method <see cref="ComputeFrom(float[], int, int)"/> instead.</para>
         /// </summary>
-        /// <param name="block"></param>
-        /// <param name="features"></param>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Features (one feature vector) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
             throw new NotImplementedException("AmsExtractor does not provide this function. Please call ComputeFrom() method");
         }
 
+        /// <summary>
+        /// <see cref="AmsExtractor"/> does not provide this function. 
+        /// Call overloaded method <see cref="ComputeFrom(float[], int, int)"/>.
+        /// </summary>
+        /// <param name="samples">Array of samples</param>
+        /// <param name="startSample">Index of the first sample in array for processing</param>
+        /// <param name="endSample">Index of the last sample in array for processing</param>
+        /// <param name="vectors">Pre-allocated sequence for storing the resulting feature vectors</param>
         public override int ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
             throw new NotImplementedException("AmsExtractor does not provide this function. Please call overloaded ComputeFrom() method");

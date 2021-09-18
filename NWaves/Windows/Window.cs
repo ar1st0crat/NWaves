@@ -5,16 +5,16 @@ using NWaves.Utils;
 namespace NWaves.Windows
 {
     /// <summary>
-    /// Factory class generating various types of window functions
+    /// Factory class for generating window coefficients of various types.
     /// </summary>
     public static class Window
     {
         /// <summary>
-        /// Main factory method
+        /// Generate window coefficients of given <paramref name="type"/> and <paramref name="length"/>.
         /// </summary>
         /// <param name="type">Window type</param>
         /// <param name="length">Window length</param>
-        /// <returns></returns>
+        /// <param name="parameters">Additional optional parameters</param>
         public static float[] OfType(WindowType type, int length, params object[] parameters)
         {
             switch (type)
@@ -61,20 +61,16 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Rectangular window
+        /// Generate rectangular window of given <paramref name="length"/>.
         /// </summary>
-        /// <param name="length">Length of the window</param>
-        /// <returns>Rectangular window</returns>
         public static float[] Rectangular(int length)
         {
             return Enumerable.Repeat(1.0f, length).ToArray();
         }
 
         /// <summary>
-        /// Triangular window
+        /// Generate triangular window of given <paramref name="length"/>.
         /// </summary>
-        /// <param name="length">Length of the window</param>
-        /// <returns>Triangular window</returns>
         public static float[] Triangular(int length)
         {
             var n = length - 1;
@@ -84,10 +80,8 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Hamming window
+        /// Generate Hamming window of given <paramref name="length"/>.
         /// </summary>
-        /// <param name="length">Length of the window</param>
-        /// <returns>Hamming window</returns>
         public static float[] Hamming(int length)
         {
             var n = 2 * Math.PI / (length - 1);
@@ -97,10 +91,8 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Blackman window
+        /// Generate Blackman window of given <paramref name="length"/>.
         /// </summary>
-        /// <param name="length">Length of the window</param>
-        /// <returns>Blackman window</returns>
         public static float[] Blackman(int length)
         {
             var n = 2 * Math.PI / (length - 1);
@@ -110,10 +102,8 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Hann window
+        /// Generate Hann window of given <paramref name="length"/>.
         /// </summary>
-        /// <param name="length">Length of the window</param>
-        /// <returns>Hann window</returns>
         public static float[] Hann(int length)
         {
             var n = 2 * Math.PI / (length - 1);
@@ -123,10 +113,8 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Gaussian window
+        /// Generate Gaussian window of given <paramref name="length"/>.
         /// </summary>
-        /// <param name="length">Length of the window</param>
-        /// <returns>Gaussian window</returns>
         public static float[] Gaussian(int length)
         {
             var n = (length - 1) / 2;
@@ -136,10 +124,8 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Kaiser window
+        /// Generate Kaiser window of given <paramref name="length"/>.
         /// </summary>
-        /// <param name="length">Length of the window</param>
-        /// <returns>Kaiser window</returns>
         public static float[] Kaiser(int length, double alpha = 12.0)
         {
             var n = 2.0 / (length - 1);
@@ -149,10 +135,8 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Kaiser-Bessel Derived window
+        /// Generate Kaiser-Bessel Derived window of given <paramref name="length"/>.
         /// </summary>
-        /// <param name="length">Length of the window</param>
-        /// <returns>KBD window</returns>
         public static float[] Kbd(int length, double alpha = 4.0)
         {
             var kbd = new float[length];
@@ -176,7 +160,7 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Bartlett-Hann window
+        /// Generate Bartlett-Hann window of given <paramref name="length"/>.
         /// </summary>
         public static float[] BartlettHann(int length)
         {
@@ -187,7 +171,7 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Lanczos window
+        /// Generate Lanczos window of given <paramref name="length"/>.
         /// </summary>
         public static float[] Lanczos(int length)
         {
@@ -198,7 +182,7 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Sin-beta window
+        /// Generate Sin-beta window of given <paramref name="length"/>.
         /// </summary>
         public static float[] PowerOfSine(int length, double alpha = 1.5)
         {
@@ -209,7 +193,7 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Flat-top window
+        /// Generate Flat-top window of given <paramref name="length"/>.
         /// </summary>
         public static float[] Flattop(int length)
         {
@@ -220,7 +204,7 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Cepstrum liftering.
+        /// Generate coefficients for cepstrum liftering.
         /// </summary>
         /// <param name="length">Length of the window</param>
         /// <param name="l">Denominator in liftering formula</param>

@@ -8,11 +8,16 @@ using System.Linq;
 
 namespace NWaves.FeatureExtractors
 {
+    /// <summary>
+    /// Chroma features extractor.
+    /// </summary>
     public class ChromaExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Descriptions
-        /// ("C", "C#", "D", "D#", etc. if chroma count == 12; "chroma1", "chroma2", etc. otherwise)
+        /// <para>Feature names</para>
+        /// <para>"C", "C#", "D", "D#", etc. if chroma count == 12 and baseC == true; </para>
+        /// <para>"A", "A#", "B", "C",  etc. if chroma count == 12 and baseC == false; </para>
+        /// <para>"chroma1", "chroma2", etc. otherwise.</para>
         /// </summary>
         public override List<string> FeatureDescriptions
         {
@@ -25,32 +30,36 @@ namespace NWaves.FeatureExtractors
                     : Enumerable.Range(1, FeatureCount).Select(i => "chroma" + i).ToList();
             }
         }
-            
+
         /// <summary>
-        /// Filterbank matrix of dimension [ChromaCount * (_blockSize/2 + 1)].
+        /// Filterbank matrix of dimension [ChromaCount * (blockSize/2 + 1)].
         /// </summary>
         protected readonly float[][] _filterBank;
+
+        /// <summary>
+        /// Filterbank matrix of dimension [ChromaCount * (blockSize/2 + 1)].
+        /// </summary>
         public float[][] FilterBank => _filterBank;
 
         /// <summary>
-        /// FFT transformer
+        /// FFT transformer.
         /// </summary>
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// Internal buffer for a signal spectrum at each step
+        /// Internal buffer for a signal spectrum at each step.
         /// </summary>
         protected readonly float[] _spectrum;
 
         /// <summary>
-        /// Chroma extractor options
+        /// Chroma extractor options.
         /// </summary>
         protected readonly ChromaOptions _options;
 
         /// <summary>
-        /// 
+        /// Construct extractor from configuration options.
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="options">Extractor configuration options</param>
         public ChromaExtractor(ChromaOptions options) : base(options)
         {
             _options = options;
@@ -72,10 +81,10 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// 
+        /// Compute chroma feature vector in one frame.
         /// </summary>
-        /// <param name="block"></param>
-        /// <param name="features"></param>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Features (one chroma feature vector) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
             _fft.PowerSpectrum(block, _spectrum, false);
@@ -84,15 +93,13 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// True if computations can be done in parallel
+        /// Does the extractor support parallelization. Returns true always.
         /// </summary>
-        /// <returns></returns>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Copy of current extractor that can work in parallel
+        /// Thread-safe copy of the extractor for parallel computations.
         /// </summary>
-        /// <returns></returns>
         public override FeatureExtractor ParallelCopy() => new ChromaExtractor(_options);
     }
 }

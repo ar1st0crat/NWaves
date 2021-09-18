@@ -9,55 +9,55 @@ using NWaves.Windows;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Linear Prediction Cepstral Coefficients extractor
+    /// Linear Prediction Cepstral Coefficients (LPCC) extractor
     /// </summary>
     public class LpccExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Descriptions (simply "lpcc0", "lpcc1", etc.)
+        /// Feature names (simply "lpcc0", "lpcc1", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions =>
             Enumerable.Range(0, FeatureCount).Select(i => "lpcc" + i).ToList();
 
         /// <summary>
-        /// Order of an LPC-filter
+        /// Order of an LPC-filter.
         /// </summary>
         protected readonly int _order;
 
         /// <summary>
-        /// Size of liftering window
+        /// Size of liftering window.
         /// </summary>
         protected readonly int _lifterSize;
 
         /// <summary>
-        /// Liftering window coefficients
+        /// Liftering window coefficients.
         /// </summary>
         protected readonly float[] _lifterCoeffs;
 
         /// <summary>
-        /// Internal convolver
+        /// Internal convolver.
         /// </summary>
         protected readonly Convolver _convolver;
 
         /// <summary>
-        /// Internal buffer for cross-correlation signal
+        /// Internal buffer for cross-correlation signal.
         /// </summary>
         protected readonly float[] _cc;
 
         /// <summary>
-        /// Internal buffer for LPC-coefficients
+        /// Internal buffer for LPC-coefficients.
         /// </summary>
         protected readonly float[] _lpc;
 
         /// <summary>
-        /// Internal buffer for reversed real parts of the currently processed block
+        /// Internal buffer for reversed real parts of the currently processed block.
         /// </summary>
         protected readonly float[] _reversed;
 
         /// <summary>
-        /// Constructor
+        /// Construct extractor from configuration options.
         /// </summary>
-        /// <param name="options">LPCC options</param>
+        /// <param name="options">Extractor configuration options</param>
         public LpccExtractor(LpccOptions options) : base(options)
         {
             FeatureCount = options.FeatureCount;
@@ -76,15 +76,16 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Method for computing LPCC features.
-        /// It essentially duplicates LPC extractor code 
-        /// (for efficient memory usage it doesn't just delegate its work to LpcExtractor)
-        /// and then post-processes LPC vectors to obtain LPCC coefficients.
+        /// Compute LPCC vector in one frame.
         /// </summary>
-        /// <param name="block">Samples for analysis</param>
-        /// <param name="features">LPCC vector</param>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Features (one LPCC feature vector) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
+            // The code here essentially duplicates LPC extractor code 
+            // (for efficient memory usage it doesn't just delegate its work to LpcExtractor)
+            // and then post-processes LPC vectors to obtain LPCC coefficients.
+             
             block.FastCopyTo(_reversed, FrameSize);
 
             // 1) autocorrelation
@@ -110,15 +111,13 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// True if computations can be done in parallel
+        /// Does the extractor support parallelization. Returns true always.
         /// </summary>
-        /// <returns></returns>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Copy of current extractor that can work in parallel
+        /// Thread-safe copy of the extractor for parallel computations.
         /// </summary>
-        /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
             new LpccExtractor(new LpccOptions
             {

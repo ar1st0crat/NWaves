@@ -10,61 +10,63 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors.Multi
 {
     /// <summary>
-    /// Extractor of spectral features.
-    /// It's a flexible extractor that allows setting frequencies of interest.
+    /// <para>Extractor of spectral features.</para>
+    /// <para>
+    /// It's a flexible extractor that allows setting frequencies of interest. 
     /// At least one spectral feature MUST be specified.
+    /// </para>
     /// </summary>
     public class SpectralFeaturesExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Names of supported spectral features
+        /// Full set of supported spectral features.
         /// </summary>
         public const string FeatureSet = "centroid, spread, flatness, noiseness, rolloff, crest, entropy, decrease, c1+c2+c3+c4+c5+c6";
 
         /// <summary>
-        /// String annotations (or simply names) of features
+        /// String annotations (or simply names) of features.
         /// </summary>
         public override List<string> FeatureDescriptions { get; }
 
         /// <summary>
-        /// Extractor functions
+        /// Extractor functions.
         /// </summary>
         protected List<Func<float[], float[], float>> _extractors;
 
         /// <summary>
-        /// Extractor parameters
+        /// Extractor parameters.
         /// </summary>
         protected readonly Dictionary<string, object> _parameters;
 
         /// <summary>
-        /// FFT transformer
+        /// FFT transformer.
         /// </summary>
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// Center frequencies (uniform in Herz scale by default; could be uniform in mel-scale or octave-scale, for example)
+        /// Center frequencies (uniform in Herz scale by default; could be uniform in mel-scale or octave-scale, for example).
         /// </summary>
         protected readonly float[] _frequencies;
 
         /// <summary>
-        /// Internal buffer for magnitude spectrum
+        /// Internal buffer for magnitude spectrum.
         /// </summary>
         protected readonly float[] _spectrum;
 
         /// <summary>
-        /// Internal buffer for magnitude spectrum taken only at frequencies of interest
+        /// Internal buffer for magnitude spectrum taken only at frequencies of interest.
         /// </summary>
         protected float[] _mappedSpectrum;
 
         /// <summary>
-        /// Internal buffer for spectral positions of frequencies of interest
+        /// Internal buffer for spectral positions of frequencies of interest.
         /// </summary>
         protected readonly int[] _frequencyPositions;
 
         /// <summary>
-        /// Constructor
+        /// Construct the extractor from configuration options.
         /// </summary>
-        /// <param name="options">Options</param>
+        /// <param name="options">Extractor configuration options</param>
         public SpectralFeaturesExtractor(MultiFeatureOptions options) : base(options)
         {
             var featureList = options.FeatureList;
@@ -187,10 +189,10 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Add one more feature with routine for its calculation
+        /// Add user-defined spectral feature to extractor's list (and the routine for its calculation).
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="algorithm"></param>
+        /// <param name="name">Feature name/annotation</param>
+        /// <param name="algorithm">Routine for calculation of the feature</param>
         public void AddFeature(string name, Func<float[], float[], float> algorithm)
         {
             FeatureCount++;
@@ -201,8 +203,8 @@ namespace NWaves.FeatureExtractors.Multi
         /// <summary>
         /// Compute spectral features in one frame
         /// </summary>
-        /// <param name="block"></param>
-        /// <param name="features"></param>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Features (one feature vector) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
             // compute and prepare spectrum
@@ -230,15 +232,13 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// True if computations can be done in parallel
+        /// Does the extractor support parallelization. Returns true always.
         /// </summary>
-        /// <returns></returns>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Copy of current extractor that can work in parallel
+        /// Thread-safe copy of the extractor for parallel computations.
         /// </summary>
-        /// <returns></returns>
         public override FeatureExtractor ParallelCopy()
         {
             var spectralFeatureSet = string.Join(",", FeatureDescriptions.Take(_extractors.Count));

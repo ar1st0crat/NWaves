@@ -12,12 +12,12 @@ using NWaves.Windows;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Perceptual Linear Predictive Coefficients extractor (PLP-RASTA)
+    /// Perceptual Linear Predictive Coefficients extractor (PLP-RASTA).
     /// </summary>
     public class PlpExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Descriptions (simply "plp0", "plp1", "plp2", etc.)
+        /// Feature names (simply "plp0", "plp1", "plp2", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions
         {
@@ -30,91 +30,93 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)].
-        /// By default it's bark filterbank like in original H.Hermansky's work
+        /// <para>Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)].</para>
+        /// <para>
+        /// By default it's bark filterbank like in original H.Hermansky's work 
         /// (although many people prefer mel bands).
+        /// </para>
         /// </summary>
         public float[][] FilterBank { get; }
 
         /// <summary>
-        /// Filterbank center frequencies
+        /// Filterbank center frequencies.
         /// </summary>
         protected readonly double[] _centerFrequencies;
 
         /// <summary>
-        /// RASTA coefficient (if zero, then no RASTA filtering)
+        /// RASTA coefficient (if zero, then no RASTA filtering).
         /// </summary>
         protected readonly double _rasta;
 
         /// <summary>
-        /// RASTA filters for each critical band
+        /// RASTA filters for each critical band.
         /// </summary>
         protected readonly RastaFilter[] _rastaFilters;
 
         /// <summary>
-        /// Size of liftering window
+        /// Size of liftering window.
         /// </summary>
         protected readonly int _lifterSize;
 
         /// <summary>
-        /// Liftering window coefficients
+        /// Liftering window coefficients.
         /// </summary>
         protected readonly float[] _lifterCoeffs;
 
         /// <summary>
-        /// Should the first PLP coefficient be replaced with LOG(energy)
+        /// Should the first PLP coefficient be replaced with LOG(energy).
         /// </summary>
         protected readonly bool _includeEnergy;
 
         /// <summary>
-        /// Floor value for LOG-energy calculation
+        /// Floor value for LOG-energy calculation.
         /// </summary>
         protected readonly float _logEnergyFloor;
 
         /// <summary>
-        /// FFT transformer
+        /// FFT transformer.
         /// </summary>
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// Internal buffer for a signal spectrum at each step
+        /// Internal buffer for a signal spectrum at each step.
         /// </summary>
         protected readonly float[] _spectrum;
 
         /// <summary>
-        /// Internal buffer for a signal spectrum grouped to frequency bands
+        /// Internal buffer for a signal spectrum grouped to frequency bands.
         /// </summary>
         protected readonly float[] _bandSpectrum;
 
         /// <summary>
-        /// Equal loudness weighting coefficients
+        /// Equal loudness weighting coefficients.
         /// </summary>
         protected readonly double[] _equalLoudnessCurve;
 
         /// <summary>
-        /// LPC order
+        /// LPC order.
         /// </summary>
         protected readonly int _lpcOrder;
 
         /// <summary>
-        /// Internal buffer for LPC-coefficients
+        /// Internal buffer for LPC-coefficients.
         /// </summary>
         protected readonly float[] _lpc;
 
         /// <summary>
-        /// Precomputed IDFT table
+        /// Precomputed IDFT table.
         /// </summary>
         protected readonly float[][] _idftTable;
 
         /// <summary>
-        /// Autocorrelation samples (computed as IDFT of power spectrum)
+        /// Autocorrelation samples (computed as IDFT of power spectrum).
         /// </summary>
         protected readonly float[] _cc;
 
         /// <summary>
-        /// Constructor
+        /// Construct extractor from configuration options.
         /// </summary>
-        /// <param name="options">PLP options</param>
+        /// <param name="options">Extractor configuration options</param>
         public PlpExtractor(PlpOptions options) : base(options)
         {
             FeatureCount = options.FeatureCount;
@@ -123,7 +125,7 @@ namespace NWaves.FeatureExtractors
 
             var filterbankSize = options.FilterBankSize;
 
-            if (options.FilterBank == null)
+            if (options.FilterBank is null)
             {
                 _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
@@ -245,24 +247,28 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Standard method for computing PLP features.
-        /// In each frame do:
-        /// 
-        ///     0) Apply window (base extractor does it)
-        ///     1) Obtain power spectrum
-        ///     2) Apply filterbank of bark bands (or mel bands)
-        ///     3) [Optional] filter each component of the processed spectrum with a RASTA filter
-        ///     4) Apply equal loudness curve
-        ///     5) Take cubic root
-        ///     6) Do LPC
-        ///     7) Convert LPC to cepstrum
-        ///     8) [Optional] lifter cepstrum
-        /// 
+        /// <para>Compute PLP-RASTA feature vector in one frame.</para>
+        /// <para>
+        /// General algorithm:
+        /// <list type="number">
+        ///     <item>Apply window</item>
+        ///     <item>Obtain power spectrum</item>
+        ///     <item>Apply filterbank of bark bands (or mel bands)</item>
+        ///     <item>[Optional] filter each component of the processed spectrum with a RASTA filter</item>
+        ///     <item>Apply equal loudness curve</item>
+        ///     <item>Apply nonlinearity (take cubic root)</item>
+        ///     <item>Do LPC</item>
+        ///     <item>Convert LPC to cepstrum</item>
+        ///     <item>[Optional] lifter cepstrum</item>
+        /// </list>
+        /// </para>
         /// </summary>
-        /// <param name="block">Samples for analysis</param>
-        /// <param name="features">PLP vectors</param>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Features (one PLP feature vector) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
+            // 0) base extractor applies window
+
             // 1) calculate power spectrum (without normalization)
 
             _fft.PowerSpectrum(block, _spectrum, false);
@@ -338,11 +344,11 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Reset state
+        /// Reset extractor
         /// </summary>
         public override void Reset()
         {
-            if (_rastaFilters == null) return;
+            if (_rastaFilters is null) return;
 
             foreach (var filter in _rastaFilters)
             {
@@ -351,15 +357,17 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// In case of RASTA filtering computations can't be done in parallel
+        /// <para>Does the extractor support parallelization.</para>
+        /// <para>
+        /// Returns false in RASTA-filtering mode (i.e. if RASTA-coefficient is not 0). 
+        /// Returns true in all other cases.
+        /// </para>
         /// </summary>
-        /// <returns></returns>
         public override bool IsParallelizable() => _rasta == 0;
 
         /// <summary>
-        /// Copy of current extractor that can work in parallel
+        /// Thread-safe copy of the extractor for parallel computations.
         /// </summary>
-        /// <returns></returns>
         public override FeatureExtractor ParallelCopy() => 
             new PlpExtractor(
                 new PlpOptions

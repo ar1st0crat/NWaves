@@ -3,15 +3,14 @@
 namespace NWaves.Features
 {
     /// <summary>
-    /// Perceptual features
+    /// Class providing methods for computing perceptual audio features.
     /// </summary>
     public static class Perceptual
     {
         /// <summary>
-        /// Perceptual loudness (is the sum of specific loudnesses: N'(z) = E(z)^0.23)
+        /// Compute perceptual loudness (the sum of specific loudnesses: N'(z) = E(z)^0.23).
         /// </summary>
-        /// <param name="spectralBands"></param>
-        /// <returns></returns>
+        /// <param name="spectralBands">Array of energies in given spectral bands</param>
         public static float Loudness(float[] spectralBands)
         {
             var loudness = 0.0;
@@ -25,14 +24,14 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Perceptual sharpness (is essentially the equivalent of spectral centroid).
-        /// 
+        /// <para>Compute perceptual sharpness (essentially, the equivalent of spectral centroid).</para>
+        /// <para>
         /// According to the original formula, the weights are slightly different 
-        /// for bark bands with index >= 15, but this implementation assumes
+        /// for bark bands with index >= 15, but this implementation assumes 
         /// that there will be no more than 15 bands.
+        /// </para>
         /// </summary>
-        /// <param name="spectralBands"></param>
-        /// <returns></returns>
+        /// <param name="spectralBands">Array of energies in given spectral bands</param>
         public static float Sharpness(float[] spectralBands)
         {
             var sharpness = 0.0;

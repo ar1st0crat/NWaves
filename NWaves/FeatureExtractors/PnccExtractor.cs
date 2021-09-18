@@ -10,12 +10,12 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Power-Normalized Cepstral Coefficients extractor
+    /// Power-Normalized Cepstral Coefficients (PNCC) extractor
     /// </summary>
     public class PnccExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Descriptions (simply "pncc0", "pncc1", "pncc2", etc.)
+        /// Feature names (simply "pncc0", "pncc1", "pncc2", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions
         {
@@ -28,80 +28,98 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Window length for median-time power (2 * M + 1)
+        /// Window length for median-time power (2 * M + 1).
         /// </summary>
         public int M { get; set; } = 2;
 
         /// <summary>
-        /// Window length for spectral smoothing (2 * N + 1)
+        /// Window length for spectral smoothing (2 * N + 1).
         /// </summary>
         public int N { get; set; } = 4;
 
         /// <summary>
-        /// Lambdas used in asymmetric noise suppression formula (4)
+        /// Lambda_a used in asymmetric noise suppression formula (4).
         /// </summary>
         public float LambdaA { get; set; } = 0.999f;
+
+        /// <summary>
+        /// Lambda_b used in asymmetric noise suppression formula (4).
+        /// </summary>
         public float LambdaB { get; set; } = 0.5f;
         
         /// <summary>
-        /// Forgetting factor in temporal masking formula
+        /// Forgetting factor in temporal masking formula.
         /// </summary>
         public float LambdaT { get; set; } = 0.85f;
 
         /// <summary>
-        /// Forgetting factor in formula (15) in [Kim & Stern, 2016]
+        /// Forgetting factor in formula (15) in [Kim and Stern, 2016].
         /// </summary>
         public float LambdaMu { get; set; } = 0.999f;
 
         /// <summary>
-        /// Threshold for detecting excitation/non-excitation segments
+        /// Threshold for detecting excitation/non-excitation segments.
         /// </summary>
         public float C { get; set; } = 2;
 
         /// <summary>
-        /// Multiplier in formula (12) in [Kim & Stern, 2016]
+        /// Multiplier in formula (12) in [Kim and Stern, 2016].
         /// </summary>
         public float MuT { get; set; } = 0.2f;
 
         /// <summary>
-        /// Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)].
+        /// Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)]. 
         /// By default it's gammatone filterbank.
         /// </summary>
         public float[][] FilterBank { get; }
         
         /// <summary>
-        /// Nonlinearity coefficient (if 0 then Log10 is applied)
+        /// Nonlinearity coefficient (if 0 then Log10 is applied).
         /// </summary>
         protected readonly int _power;
 
         /// <summary>
-        /// Should the first PNCC coefficient be replaced with LOG(energy)
+        /// Should the first PNCC coefficient be replaced with LOG(energy).
         /// </summary>
         protected readonly bool _includeEnergy;
 
         /// <summary>
-        /// Floor value for LOG-energy calculation
+        /// Floor value for LOG-energy calculation.
         /// </summary>
         protected readonly float _logEnergyFloor;
 
         /// <summary>
-        /// FFT transformer
+        /// FFT transformer.
         /// </summary>
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// DCT-II transformer
+        /// DCT-II transformer.
         /// </summary>
         protected readonly Dct2 _dct;
 
         /// <summary>
-        /// Internal buffer for a signal spectrum at each step
+        /// Internal buffer for a signal spectrum at each step.
         /// </summary>
         protected readonly float[] _spectrum;
 
         /// <summary>
-        /// Internal buffers for gammatone spectrum and its derivatives
+        /// Value for mean normalization.
         /// </summary>
+        protected float _mean = 4e07f;
+
+        /// <summary>
+        /// Ring buffer for efficient processing of consecutive spectra.
+        /// </summary>
+        protected readonly SpectraRingBuffer _ringBuffer;
+
+        /// <summary>
+        /// Step of PNCC algorithm.
+        /// </summary>
+        protected int _step;
+
+        // Internal buffers for gammatone spectrum and its derivatives
+
         protected readonly float[] _gammatoneSpectrum;
         protected readonly float[] _spectrumQOut;
         protected readonly float[] _filteredSpectrumQ;
@@ -112,31 +130,16 @@ namespace NWaves.FeatureExtractors
         protected readonly float[] _smoothedSpectrum;
 
         /// <summary>
-        /// Value for mean normalization
+        /// Construct extractor from configuration options.
         /// </summary>
-        protected float _mean = 4e07f;
-
-        /// <summary>
-        /// Ring buffer for efficient processing of consecutive spectra
-        /// </summary>
-        protected readonly SpectraRingBuffer _ringBuffer;
-
-        /// <summary>
-        /// Step of PNCC algorithm
-        /// </summary>
-        protected int _step;
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="options">PNCC options</param>
+        /// <param name="options">Extractor configuration options</param>
         public PnccExtractor(PnccOptions options) : base(options)
         {
             FeatureCount = options.FeatureCount;
 
             var filterbankSize = options.FilterBankSize;
 
-            if (options.FilterBank == null)
+            if (options.FilterBank is null)
             {
                 _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
@@ -175,25 +178,29 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// PNCC algorithm according to [Kim & Stern, 2016]:
-        /// Decompose signal into overlapping (hopSize) frames of length fftSize. In each frame do:
-        /// 
-        ///     0) Apply window (base extractor does it)
-        ///     1) Obtain power spectrum
-        ///     2) Apply gammatone filters (squared)
-        ///     3) Medium-time processing (asymmetric noise suppression, temporal masking, spectral smoothing)
-        ///     4) Apply nonlinearity
-        ///     5) Do dct-II (normalized)
-        /// 
+        /// <para>Compute PNCC vector in one frame according to [Kim and Stern, 2016].</para>
+        /// <para>
+        /// General algorithm:
+        /// <list type="number">
+        ///     <item>Apply window</item>
+        ///     <item>Obtain power spectrum</item>
+        ///     <item>Apply gammatone filters (squared)</item>
+        ///     <item>Medium-time processing (asymmetric noise suppression, temporal masking, spectral smoothing)</item>
+        ///     <item>Apply nonlinearity</item>
+        ///     <item>Do DCT-II (normalized)</item>
+        /// </list>
+        /// </para>
         /// </summary>
-        /// <param name="block">Block of samples for analysis</param>
-        /// <param name="features">List of pncc vectors</param>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Features (one PNCC feature vector) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
             const float MeanPower = 1e10f;
             const float Epsilon = 2.22e-16f;
 
             _step++;
+
+            // 0) base extractor applies window
 
             // 1) calculate power spectrum
 
@@ -342,7 +349,7 @@ namespace NWaves.FeatureExtractors
                 }
             }
 
-            // 5) dct-II (Norm = normalized)
+            // 5) DCT-II (Norm = normalized)
 
             _dct.DirectNorm(_smoothedSpectrum, features);
 
@@ -362,7 +369,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Reset state
+        /// Reset extractor.
         /// </summary>
         public override void Reset()
         {
@@ -373,7 +380,7 @@ namespace NWaves.FeatureExtractors
 
 
         /// <summary>
-        /// Helper Ring Buffer class for efficient processing of consecutive spectra
+        /// Helper Ring Buffer class for efficient processing of consecutive spectra.
         /// </summary>
         protected class SpectraRingBuffer
         {

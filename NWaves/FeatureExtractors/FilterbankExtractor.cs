@@ -10,74 +10,76 @@ using System.Linq;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// This extractor computes in each frame
+    /// <para>
+    /// <see cref="FilterbankExtractor"/> computes in each frame 
     /// spectral energies in frequency bands defined by a given filterbank (channel outputs).
+    /// </para>
     /// 
-    /// So it's like MFCC but without DCT-compressing of the filterbank-mapped spectrum.
+    /// <para>So it's like MFCC but without DCT-compressing of the filterbank-mapped spectrum.</para>
     /// 
     /// </summary>
     public class FilterbankExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Descriptions (simply "fb0", "fb1", "fb2", etc.)
+        /// Feature names (simply "fb0", "fb1", "fb2", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions =>
             Enumerable.Range(0, FeatureCount).Select(i => "fb" + i).ToList();
 
         /// <summary>
-        /// Filterbank matrix of dimension [filterbankSize * (_blockSize/2 + 1)].
+        /// Filterbank matrix of dimension [filterbankSize * (blockSize/2 + 1)].
         /// </summary>
         public float[][] FilterBank { get; }
 
         /// <summary>
-        /// FFT transformer
+        /// FFT transformer.
         /// </summary>
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// Non-linearity type (logE, log10, decibel, cubic root)
+        /// Non-linearity type (logE, log10, decibel, cubic root).
         /// </summary>
         protected readonly NonLinearityType _nonLinearityType;
 
         /// <summary>
-        /// Spectrum calculation scheme (power/magnitude normalized/not normalized)
+        /// Spectrum calculation scheme (power/magnitude normalized/not normalized).
         /// </summary>
         protected readonly SpectrumType _spectrumType;
 
         /// <summary>
-        /// Floor value for LOG calculations
+        /// Floor value for LOG calculations.
         /// </summary>
         protected readonly float _logFloor;
 
         /// <summary>
-        /// Delegate for calculating spectrum
+        /// Delegate for calculating spectrum.
         /// </summary>
         protected readonly Action<float[]> _getSpectrum;
 
         /// <summary>
-        /// Delegate for post-processing spectrum
+        /// Delegate for post-processing spectrum.
         /// </summary>
         protected readonly Action _postProcessSpectrum;
 
         /// <summary>
-        /// Internal buffer for a signal spectrum at each step
+        /// Internal buffer for a signal spectrum at each step.
         /// </summary>
         protected readonly float[] _spectrum;
 
         /// <summary>
-        /// Internal buffer for a post-processed band spectrum at each step
+        /// Internal buffer for a post-processed band spectrum at each step.
         /// </summary>
         protected readonly float[] _bandSpectrum;
 
         /// <summary>
-        /// Constructor
+        /// Construct extractor from configuration options.
         /// </summary>
-        /// <param name="options">Filterbank options</param>
+        /// <param name="options">Extractor configuration options</param>
         public FilterbankExtractor(FilterbankOptions options) : base(options)
         {
             var filterbankSize = options.FilterBankSize;
 
-            if (options.FilterBank == null)
+            if (options.FilterBank is null)
             {
                 _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
@@ -135,10 +137,10 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Compute sequence of filter bank channel outputs
+        /// Compute vector of filter bank channel outputs in one frame.
         /// </summary>
-        /// <param name="block"></param>
-        /// <param name="features"></param>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Features (one feature vector) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
             // 1) calculate magnitude/power spectrum (with/without normalization)
@@ -155,15 +157,13 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// True if computations can be done in parallel
+        /// Does the extractor support parallelization. Returns true always.
         /// </summary>
-        /// <returns></returns>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Copy of current extractor that can work in parallel
+        /// Thread-safe copy of the extractor for parallel computations.
         /// </summary>
-        /// <returns></returns>
         public override FeatureExtractor ParallelCopy() =>
             new FilterbankExtractor(
                 new FilterbankOptions

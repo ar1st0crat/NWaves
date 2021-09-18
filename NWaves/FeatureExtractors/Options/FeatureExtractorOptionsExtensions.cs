@@ -6,13 +6,16 @@ using System.Threading;
 
 namespace NWaves.FeatureExtractors.Options
 {
+    /// <summary>
+    /// Class providing methods for serializing and casting feature extractor configuration options. 
+    /// </summary>
     public static class FeatureExtractorOptionsExtensions
     {
         /// <summary>
-        /// Simple JSON serialization
+        /// Serialize feature extractor configuration options to JSON.
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="options"></param>
+        /// <param name="stream">Output stream for JSON data</param>
+        /// <param name="options">Feature extractor configuration options</param>
         public static void SaveOptions(this Stream stream, FeatureExtractorOptions options)
         {
             var currentCulture = Thread.CurrentThread.CurrentCulture;
@@ -34,10 +37,10 @@ namespace NWaves.FeatureExtractors.Options
         }
 
         /// <summary>
-        /// Simple JSON deserialization
+        /// Deserialize feature extractor configuration options from JSON.
         /// </summary>
-        /// <param name="stream"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">Options type</typeparam>
+        /// <param name="stream">Input stream containing JSON data</param>
         public static T LoadOptions<T>(this Stream stream) where T : FeatureExtractorOptions
         {
             var currentCulture = Thread.CurrentThread.CurrentCulture;
@@ -55,12 +58,11 @@ namespace NWaves.FeatureExtractors.Options
         }
 
         /// <summary>
-        /// Cast options of one type to options of another type
+        /// Cast feature extractor configuration options of one type to options of another type.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="options"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">Original options type</typeparam>
+        /// <typeparam name="U">Required options type</typeparam>
+        /// <param name="options">Feature extractor configuration options</param>
         public static U Cast<T, U>(this T options) where T : FeatureExtractorOptions
                                                    where U : FeatureExtractorOptions
         {

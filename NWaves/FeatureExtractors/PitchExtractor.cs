@@ -8,60 +8,66 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Pitch extractor calls autocorrelation method since it's best in terms of universality and quality.
+    /// <para>
+    /// Pitch extractor calls autocorrelation method since it's best in terms of universality and quality. 
     /// The feature vector contains 1 component : pitch.
-    /// 
-    /// If there's a need to create pitch extractor based on other time-domain method (YIN or ZcrSchmitt),
+    /// </para>
+    /// <para>
+    /// If there's a need to create pitch extractor based on other time-domain method (YIN or ZcrSchmitt), 
     /// then TimeDomainFeatureExtractor can be used.
-    /// 
-    /// If there's a need to create pitch extractor based on a certain spectral method (HSS or HPS),
+    /// </para>
+    /// <para>
+    /// If there's a need to create pitch extractor based on a certain spectral method (HSS or HPS), 
     /// then SpectralDomainFeatureExtractor can be used.
-    /// 
+    /// </para>
+    /// <para>
     /// Example:
     /// 
+    /// <code>
     /// var extractor = new TimeDomainFeaturesExtractor(sr, "en", 0.0256, 0.010);
-    /// 
+    /// <br/>
     /// extractor.AddFeature("yin", (s, start, end) => { return Pitch.FromYin(s, start, end); });
-    /// 
+    /// <br/>
     /// var pitches = extractor.ComputeFrom(signal);
-    /// 
+    /// </code>
+    /// </para>
     /// </summary>
     public class PitchExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Names of pitch algorithms
+        /// Names of pitch estimation algorithms.
         /// </summary>
         public override List<string> FeatureDescriptions { get; }
 
         /// <summary>
-        /// Lower pitch frequency
+        /// Lower frequency of expected pitch range.
         /// </summary>
         protected readonly float _low;
 
         /// <summary>
-        /// Upper pitch frequency
+        /// Upper frequency of expected pitch range.
         /// </summary>
         protected readonly float _high;
 
         /// <summary>
-        /// Internal convolver
+        /// Internal convolver.
         /// </summary>
         protected readonly Convolver _convolver;
 
         /// <summary>
-        /// Internal buffer for reversed real parts of the currently processed block
+        /// Internal buffer for reversed real parts of the currently processed block.
         /// </summary>
         protected readonly float[] _reversed;
 
         /// <summary>
-        /// Internal buffer for cross-correlation signal
+        /// Internal buffer for cross-correlation signal.
         /// </summary>
         protected readonly float[] _cc;
 
         /// <summary>
-        /// Constructor
+        /// Construct extractor from configuration options.
         /// </summary>
-        /// <param name="options">Pitch options</param>
+        /// <param name="options">Extractor configuration options</param>
         public PitchExtractor(PitchOptions options) : base(options)
         {
             _low = (float)options.LowFrequency;
@@ -78,10 +84,10 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Pitch tracking
+        /// Compute pitch in one frame.
         /// </summary>
-        /// <param name="block">Samples</param>
-        /// <param name="features">Pitch</param>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Pitch (feature vector containing only pitch) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
             block.FastCopyTo(_reversed, FrameSize);
@@ -114,15 +120,13 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Computations can be done in parallel
+        /// Does the extractor support parallelization. Returns true always.
         /// </summary>
-        /// <returns></returns>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Copy of current extractor that can work in parallel
+        /// Thread-safe copy of the extractor for parallel computations.
         /// </summary>
-        /// <returns></returns>
         public override FeatureExtractor ParallelCopy() => 
             new PitchExtractor(new PitchOptions
             {

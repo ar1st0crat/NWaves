@@ -4,16 +4,15 @@ using System.Linq;
 namespace NWaves.Features
 {
     /// <summary>
-    /// Spectral features
+    /// Class providing methods for computing spectral features.
     /// </summary>
     public static class Spectral
     {
         /// <summary>
-        /// Spectral centroid
+        /// Compute spectral centroid.
         /// </summary>
-        /// <param name="spectrum">Magnitude spectrum</param>
-        /// <param name="frequencies">Centre frequencies</param>
-        /// <returns>Spectral centroid</returns>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="frequencies">Center frequencies</param>
         public static float Centroid(float[] spectrum, float[] frequencies)
         {
             var sum = 1e-10f;
@@ -29,11 +28,10 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Spectral spread
+        /// Compute spectral spread.
         /// </summary>
-        /// <param name="spectrum"></param>
-        /// <param name="frequencies"></param>
-        /// <returns></returns>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="frequencies">Center frequencies</param>
         public static float Spread(float[] spectrum, float[] frequencies)
         {
             var centroid = Centroid(spectrum, frequencies);
@@ -51,10 +49,9 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Spectral dicrease
+        /// Compute spectral decrease.
         /// </summary>
-        /// <param name="spectrum"></param>
-        /// <returns></returns>
+        /// <param name="spectrum">Spectrum</param>
         public static float Decrease(float[] spectrum)
         {
             var sum = 1e-10f;
@@ -70,11 +67,10 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Spectral flatness
+        /// Compute spectral flatness.
         /// </summary>
-        /// <param name="spectrum">Magnitude spectrum</param>
-        /// <param name="minLevel"></param>
-        /// <returns></returns>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="minLevel">Amplitude threshold</param>
         public static float Flatness(float[] spectrum, float minLevel = 1e-10f)
         {
             var sum = 0.0f;
@@ -95,13 +91,12 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Spectral noiseness
+        /// Compute spectral noiseness.
         /// </summary>
-        /// <param name="spectrum"></param>
-        /// <param name="frequencies"></param>
-        /// <param name="noiseFrequency"></param>
-        /// <returns></returns>
-        public static float Noiseness(float[] spectrum, float[] frequencies, float noiseFrequency = 3000)
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="frequencies">Center frequencies</param>
+        /// <param name="noiseFrequency">Lower frequency of noise</param>
+        public static float Noiseness(float[] spectrum, float[] frequencies, float noiseFrequency = 3000/*Hz*/)
         {
             var noiseSum = 0.0f;
             var totalSum = 1e-10f;
@@ -122,12 +117,11 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Spectral rolloff frequency
+        /// Compute spectral rolloff frequency.
         /// </summary>
-        /// <param name="spectrum"></param>
-        /// <param name="frequencies">Centre frequencies</param>
-        /// <param name="rolloffPercent"></param>
-        /// <returns></returns>
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="frequencies">Center frequencies</param>
+        /// <param name="rolloffPercent">Rolloff percent</param>
         public static float Rolloff(float[] spectrum, float[] frequencies, float rolloffPercent = 0.85f)
         {
             var threshold = 0.0f;
@@ -155,10 +149,9 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Spectral crest
+        /// Compute spectral crest.
         /// </summary>
-        /// <param name="spectrum"></param>
-        /// <returns></returns>
+        /// <param name="spectrum">Spectrum</param>
         public static float Crest(float[] spectrum)
         {
             var sum = 0.0f;
@@ -180,14 +173,13 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Spectral contrast (array of *bandCount* values)
+        /// Compute array of spectral contrasts in spectral bands.
         /// </summary>
-        /// <param name="spectrum"></param>
-        /// <param name="frequencies"></param>
-        /// <param name="minFrequency"></param>
-        /// <param name="bandCount"></param>
-        /// <returns></returns>
-        public static float[] Contrast(float[] spectrum, float[] frequencies, float minFrequency = 200, int bandCount = 6)
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="frequencies">Center frequencies</param>
+        /// <param name="minFrequency">Starting frequency</param>
+        /// <param name="bandCount">Number of spectral bands</param>
+        public static float[] Contrast(float[] spectrum, float[] frequencies, float minFrequency = 200/*Hz*/, int bandCount = 6)
         {
             const double alpha = 0.02;
 
@@ -231,15 +223,13 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Spectral contrast in one particular spectral band (#bandNo).
-        /// This function is called from SpectralFeatureExtractor.
+        /// Compute spectral contrast in a spectral band with index <paramref name="bandNo"/>. 
         /// </summary>
-        /// <param name="spectrum"></param>
-        /// <param name="frequencies"></param>
-        /// <param name="bandNo"></param>
-        /// <param name="minFrequency"></param>
-        /// <returns></returns>
-        public static float Contrast(float[] spectrum, float[] frequencies, int bandNo, float minFrequency = 200)
+        /// <param name="spectrum">Spectrum</param>
+        /// <param name="frequencies">Center frequencies</param>
+        /// <param name="bandNo">Spectral band index</param>
+        /// <param name="minFrequency">Starting frequency</param>
+        public static float Contrast(float[] spectrum, float[] frequencies, int bandNo, float minFrequency = 200/*Hz*/)
         {
             const double alpha = 0.02;
 
@@ -273,8 +263,9 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Shannon entropy of a spectrum (spectrum is treated as p.d.f.)
+        /// Compute Shannon entropy of a spectrum (spectrum is treated as p.d.f.)
         /// </summary>
+        /// <param name="spectrum">Spectrum</param>
         public static float Entropy(float[] spectrum)
         {
             var entropy = 0.0;

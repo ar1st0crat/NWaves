@@ -8,27 +8,27 @@ using NWaves.Signals;
 namespace NWaves.FeatureExtractors.Multi
 {
     /// <summary>
-    /// Extractor of time-domain features
+    /// Extractor of time-domain features.
     /// </summary>
     public class TimeDomainFeaturesExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Full set of features
+        /// Full set of features.
         /// </summary>
         public const string FeatureSet = "energy, rms, zcr, entropy";
 
         /// <summary>
-        /// String annotations (or simply names) of features
+        /// String annotations (or simply names) of features.
         /// </summary>
         public override List<string> FeatureDescriptions { get; }
 
         /// <summary>
-        /// Extractor functions
+        /// Extractor functions.
         /// </summary>
         protected List<Func<DiscreteSignal, int, int, float>> _extractors;
 
         /// <summary>
-        /// Parameters
+        /// Parameters.
         /// </summary>
         protected readonly Dictionary<string, object> _parameters;
 
@@ -93,7 +93,7 @@ namespace NWaves.FeatureExtractors.Multi
 
         /// <summary>
         /// <para>Compute feature vectors from <paramref name="samples"/> and store them in <paramref name="vectors"/>.</para>
-        /// <para>Returns the number of actually computed feature vectors</para>
+        /// <para>Returns the number of actually computed feature vectors.</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>
         /// <param name="startSample">Index of the first sample in array for processing</param>
@@ -130,7 +130,7 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Does the extractor support parallelization (True if computations can be parallelized).
+        /// Does the extractor support parallelization. Returns true always.
         /// </summary>
         public override bool IsParallelizable() => true;
 

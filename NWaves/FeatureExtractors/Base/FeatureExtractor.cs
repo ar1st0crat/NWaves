@@ -57,17 +57,17 @@ namespace NWaves.FeatureExtractors.Base
         public double HopDuration { get; protected set; }
 
         /// <summary>
-        /// Size of analysis frame (in samples).
+        /// Size of analysis frame (number of samples).
         /// </summary>
         public int FrameSize { get; protected set; }
 
         /// <summary>
-        /// Hop size (in samples).
+        /// Hop size (number of samples).
         /// </summary>
         public int HopSize { get; protected set; }
 
         /// <summary>
-        /// Sampling rate that the processed signals are expected to have.
+        /// Expected sampling rate of signals for analysis.
         /// </summary>
         public int SamplingRate { get; protected set; }
 
@@ -297,12 +297,13 @@ namespace NWaves.FeatureExtractors.Base
         #region parallelization
 
         /// <summary>
-        /// Does the extractor support parallelization (True if computations can be parallelized).
+        /// Does the extractor support parallelization. Returns false.
         /// </summary>
         public virtual bool IsParallelizable() => false;
 
         /// <summary>
-        /// Thread-safe copy of the extractor for parallel computations.
+        /// <para>Thread-safe copy of the extractor for parallel computations.</para>
+        /// <para>Returns null if the extractor does not support parallelization.</para>
         /// </summary>
         public virtual FeatureExtractor ParallelCopy() => null;
 

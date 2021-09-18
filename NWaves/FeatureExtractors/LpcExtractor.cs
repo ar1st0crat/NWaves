@@ -8,40 +8,40 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Linear Predictive Coding coefficients extractor
+    /// Linear Predictive Coding (LPC) coefficients extractor.
     /// </summary>
     public class LpcExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Descriptions ("error", "lpc1", "lpc2", etc.)
+        /// Feature names ("error", "lpc1", "lpc2", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions => 
             new[] { "error" }.Concat(Enumerable.Range(1, _order).Select(i => "lpc" + i)).ToList();
 
         /// <summary>
-        /// Order of an LPC-filter
+        /// Order of an LPC-filter.
         /// </summary>
         protected readonly int _order;
 
         /// <summary>
-        /// Internal convolver
+        /// Internal convolver.
         /// </summary>
         protected readonly Convolver _convolver;
 
         /// <summary>
-        /// Internal buffer for reversed real parts of the currently processed block
+        /// Internal buffer for reversed real parts of the currently processed block.
         /// </summary>
         protected readonly float[] _reversed;
 
         /// <summary>
-        /// Internal buffer for cross-correlation signal
+        /// Internal buffer for cross-correlation signal.
         /// </summary>
         protected readonly float[] _cc;
 
         /// <summary>
-        /// Constructor
+        /// Construct extractor from configuration options.
         /// </summary>
-        /// <param name="options">LPC options</param>
+        /// <param name="options">Extractor configuration options</param>
         public LpcExtractor(LpcOptions options) : base(options)
         {
             _order = options.LpcOrder;
@@ -55,15 +55,15 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Standard method for computing LPC vector.
-        ///  
+        /// <para>Compute LPC vector in one frame.</para>
+        /// <para>
         /// Note:
-        ///     The first LP coefficient is always equal to 1.0.
+        ///     The first LP coefficient is always equal to 1.0. 
         ///     This method replaces it with the value of prediction error.
-        /// 
+        /// </para>
         /// </summary>
-        /// <param name="block">Samples for analysis</param>
-        /// <param name="features">LPC vector</param>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Features (one LPC feature vector) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
             block.FastCopyTo(_reversed, FrameSize);
@@ -80,15 +80,13 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// True if computations can be done in parallel
+        /// Does the extractor support parallelization. Returns true always.
         /// </summary>
-        /// <returns></returns>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Copy of current extractor that can work in parallel
+        /// Thread-safe copy of the extractor for parallel computations.
         /// </summary>
-        /// <returns></returns>
         public override FeatureExtractor ParallelCopy() => 
             new LpcExtractor(new LpcOptions
             {

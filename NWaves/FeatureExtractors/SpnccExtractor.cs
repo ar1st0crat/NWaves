@@ -10,12 +10,12 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Simplified Power-Normalized Cepstral Coefficients extractor
+    /// Simplified Power-Normalized Cepstral Coefficients (SPNCC) extractor.
     /// </summary>
     public class SpnccExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Descriptions (simply "spncc0", "spncc1", "spncc2", etc.)
+        /// Feature names (simply "spncc0", "spncc1", "spncc2", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions
         {
@@ -28,66 +28,66 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Forgetting factor in formula (15) in [Kim & Stern, 2016]
+        /// Forgetting factor in formula (15) in [Kim, Stern, 2016].
         /// </summary>
         public float LambdaMu { get; set; } = 0.999f;
 
         /// <summary>
-        /// Filterbank (gammatone by default)
+        /// Filterbank (gammatone by default).
         /// </summary>
         public float[][] FilterBank { get; }
 
         /// <summary>
-        /// Nonlinearity coefficient (if 0 then Log10 is applied)
+        /// Nonlinearity coefficient (if 0 then Log10 is applied).
         /// </summary>
         protected readonly int _power;
 
         /// <summary>
-        /// Should the first SPNCC coefficient be replaced with LOG(energy)
+        /// Should the first SPNCC coefficient be replaced with LOG(energy).
         /// </summary>
         protected readonly bool _includeEnergy;
 
         /// <summary>
-        /// Floor value for LOG-energy calculation
+        /// Floor value for LOG-energy calculation.
         /// </summary>
         protected readonly float _logEnergyFloor;
 
         /// <summary>
-        /// FFT transformer
+        /// FFT transformer.
         /// </summary>
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// DCT-II transformer
+        /// DCT-II transformer.
         /// </summary>
         protected readonly Dct2 _dct;
 
         /// <summary>
-        /// Internal buffer for a signal spectrum at each step
+        /// Internal buffer for a signal spectrum at each step.
         /// </summary>
         protected readonly float[] _spectrum;
 
         /// <summary>
-        /// Internal buffer for gammatone spectrum
+        /// Internal buffer for gammatone spectrum.
         /// </summary>
         protected readonly float[] _filteredSpectrum;
 
         /// <summary>
-        /// Value for mean normalization
+        /// Value for mean normalization.
         /// </summary>
         protected float _mean = 4e07f;
 
         /// <summary>
-        /// Main constructor
+        /// Construct extractor from configuration options.
         /// </summary>
-        /// <param name="options">PNCC options</param>
+        /// <param name="options">Extractor configuration options</param>
         public SpnccExtractor(PnccOptions options) : base(options)
         {
             FeatureCount = options.FeatureCount;
 
             var filterbankSize = options.FilterBankSize;
 
-            if (options.FilterBank == null)
+            if (options.FilterBank is null)
             {
                 _blockSize = options.FftSize > FrameSize ? options.FftSize : MathUtils.NextPowerOfTwo(FrameSize);
 
@@ -115,22 +115,26 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// S(implified)PNCC algorithm according to [Kim & Stern, 2016].
-        /// In each frame do:
-        /// 
-        ///     0) Apply window (base extractor does it)
-        ///     1) Obtain power spectrum
-        ///     2) Apply gammatone filters (squared)
-        ///     3) Mean power normalization
-        ///     4) Apply nonlinearity
-        ///     5) Do dct-II (normalized)
-        /// 
+        /// <para>Compute S(implified)PNCC vector in one frame according to [Kim and Stern, 2016].</para>
+        /// <para>
+        /// General algorithm:
+        /// <list type="number">
+        ///     <item>Apply window</item>
+        ///     <item>Obtain power spectrum</item>
+        ///     <item>Apply gammatone filters (squared)</item>
+        ///     <item>Mean power normalization</item>
+        ///     <item>Apply nonlinearity</item>
+        ///     <item>Do DCT-II (normalized)</item>
+        /// </list>
+        /// </para>
         /// </summary>
-        /// <param name="block">Block of samples for analysis</param>
-        /// <param name="features">List of spncc vectors</param>
+        /// <param name="block">Block of data</param>
+        /// <param name="features">Features (one SPNCC feature vector) computed in the block</param>
         public override void ProcessFrame(float[] block, float[] features)
         {
             const float meanPower = 1e10f;
+
+            // 0) base extractor applies window
 
             // 1) calculate power spectrum
 
