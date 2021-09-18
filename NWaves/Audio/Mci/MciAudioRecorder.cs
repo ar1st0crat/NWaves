@@ -3,14 +3,15 @@
 namespace NWaves.Audio.Mci
 {
     /// <summary>
-    /// Audio recorder based on MCI.
-    /// 
+    /// <para>Audio recorder based on MCI.</para>
+    /// <para>
     /// MciAudioRecorder works only with Windows, since it uses winmm.dll and MCI commands.
+    /// </para>
     /// </summary>
     public class MciAudioRecorder : IAudioRecorder
     {
         /// <summary>
-        /// Start recording audio with specific settings
+        /// Start recording audio with specific settings.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="channelCount">Number of channels (1=mono, 2=stereo)</param>
@@ -39,9 +40,9 @@ namespace NWaves.Audio.Mci
         }
 
         /// <summary>
-        /// Stop recording audio and save it to destination WAV-file
+        /// Stop recording audio and save it to WAV file.
         /// </summary>
-        /// <param name="destination">Output WAV file containing recorderd sound</param>
+        /// <param name="destination">Path to output WAV file containing recorded sound</param>
         public void StopRecording(string destination)
         {
             var mciCommand = "stop capture";

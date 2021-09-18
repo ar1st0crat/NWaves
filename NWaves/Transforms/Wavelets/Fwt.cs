@@ -5,50 +5,50 @@ using System.Linq;
 namespace NWaves.Transforms.Wavelets
 {
     /// <summary>
-    /// Fast Wavelet Transform
+    /// Class representing Fast Wavelet Transform (FWT).
     /// </summary>
     public class Fwt
     {
         /// <summary>
-        /// Size of the transform
+        /// Gets FWT size.
         /// </summary>
         public int Size { get; protected set; }
 
         /// <summary>
-        /// The length of the mother wavelet
+        /// The length of the mother wavelet.
         /// </summary>
         protected int _waveletLength;
 
         /// <summary>
-        /// LP coefficients for decomposition
+        /// LP coefficients for decomposition.
         /// </summary>
         protected float[] _loD;
 
         /// <summary>
-        /// HP coefficients for decomposition
+        /// HP coefficients for decomposition.
         /// </summary>
         protected float[] _hiD;
 
         /// <summary>
-        /// LP coefficients for reconstruction
+        /// LP coefficients for reconstruction.
         /// </summary>
         protected float[] _loR;
 
         /// <summary>
-        /// HP coefficients for reconstruction
+        /// HP coefficients for reconstruction.
         /// </summary>
         protected float[] _hiR;
 
         /// <summary>
-        /// Temporary internal buffer
+        /// Temporary internal buffer.
         /// </summary>
         protected float[] _temp;
 
         /// <summary>
-        /// Constructor
+        /// Construct FWT transformer.
         /// </summary>
-        /// <param name="size"></param>
-        /// <param name="wavelet"></param>
+        /// <param name="size">FWT size</param>
+        /// <param name="wavelet">Mother wavelet</param>
         public Fwt(int size, Wavelet wavelet)
         {
             Size = size;
@@ -71,11 +71,11 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Direct FWT (decomposition)
+        /// Do FWT (decomposition).
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="input">Input array of samples</param>
         /// <param name="output"></param>
-        /// <param name="level"></param>
+        /// <param name="level">FWT level</param>
         public void Direct(float[] input, float[] output, int level = 0)
         {
             var maxLevel = MaxLevel(input.Length);
@@ -124,11 +124,11 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Inverse FWT (reconstruction)
+        /// Do inverse FWT (reconstruction).
         /// </summary>
         /// <param name="input"></param>
         /// <param name="output"></param>
-        /// <param name="level"></param>
+        /// <param name="level">FWT level</param>
         public void Inverse(float[] input, float[] output, int level = 0)
         {
             var maxLevel = MaxLevel(input.Length);
@@ -173,10 +173,9 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Maximum decomposition level
+        /// Evaluate maximum decomposition level.
         /// </summary>
         /// <param name="length"></param>
-        /// <returns></returns>
-        public int MaxLevel(int length) => (int)(Math.Log(length / (_waveletLength - 1), 2));
+        public int MaxLevel(int length) => (int)Math.Log(length / (_waveletLength - 1), 2);
     }
 }

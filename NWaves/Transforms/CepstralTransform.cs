@@ -5,54 +5,54 @@ using NWaves.Utils;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class providing methods for various cepstrum transforms:
-    /// 
-    ///     1) Complex cepstrum (direct and inverse)
-    ///     2) Real cepstrum
-    ///     3) Power cepstrum
-    ///     4) Phase cepstrum
-    ///     
-    /// 1) and 2) are analogous to MATLAB cceps/icceps and rceps, respectively.
-    /// 
+    /// <para>Class representing Cepstral Transform (CT):</para>
+    /// <list type="number">
+    ///     <item>Direct Complex CT</item>
+    ///     <item>Inverse Complex CT</item>
+    ///     <item>Real cepstrum</item>
+    ///     <item>Power cepstrum</item>
+    ///     <item>Phase cepstrum</item>
+    /// </list>
+    /// <para>1,2) and 3) are identical to MATLAB cceps/icceps and rceps, respectively.</para>
     /// </summary>
     public class CepstralTransform
     {
         /// <summary>
-        /// Size of cepstrum
+        /// Gets cepstrum size.
         /// </summary>
         public int Size { get; }
 
         /// <summary>
-        /// FFT transformer
+        /// FFT transformer.
         /// </summary>
         private readonly Fft _fft;
 
         /// <summary>
-        /// Logarithm base (E or 10)
+        /// Logarithm base (E or 10).
         /// </summary>
         private readonly double _logBase;
 
         /// <summary>
-        /// Intermediate buffer storing real parts of spectrum
+        /// Intermediate buffer storing real parts of spectrum.
         /// </summary>
         private readonly float[] _realSpectrum;
 
         /// <summary>
-        /// Intermediate buffer storing imaginary parts of spectrum
+        /// Intermediate buffer storing imaginary parts of spectrum.
         /// </summary>
         private readonly float[] _imagSpectrum;
 
         /// <summary>
-        /// Intermediate buffer storing unwrapped phase
+        /// Intermediate buffer storing unwrapped phase.
         /// </summary>
         private readonly double[] _unwrapped;
 
         /// <summary>
-        /// Constructor with necessary parameters
+        /// Construct cepstral transformer.
         /// </summary>
-        /// <param name="cepstrumSize"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="logBase"></param>
+        /// <param name="cepstrumSize">Cepstrum size</param>
+        /// <param name="fftSize">FFT size</param>
+        /// <param name="logBase">Logarithm base</param>
         public CepstralTransform(int cepstrumSize, int fftSize = 0, double logBase = Math.E)
         {
             Size = cepstrumSize;
@@ -72,10 +72,10 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Direct complex cepstral transform:
-        /// 
-        /// Real{IFFT(log(abs(FFT(x)) + unwrapped_phase))}
-        /// 
+        /// Do direct complex cepstral transform:
+        /// <code>
+        ///    Real{IFFT(log(abs(FFT(x)) + unwrapped_phase))}
+        /// </code>
         /// </summary>
         /// <param name="input"></param>
         /// <param name="cepstrum"></param>

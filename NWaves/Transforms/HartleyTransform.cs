@@ -1,26 +1,29 @@
 ﻿namespace NWaves.Transforms
 {
+    /// <summary>
+    /// Class representing Fast Hartley Transform.
+    /// </summary>
     public class HartleyTransform
     {
         /// <summary>
-        /// Size of transform
+        /// Gets size of Hartley transform.
         /// </summary>
         public int Size { get; private set; }
 
         /// <summary>
-        /// Internal FFT transformer
+        /// Internal FFT transformer.
         /// </summary>
         private readonly Fft _fft;
 
         /// <summary>
-        /// Internal array for imaginary parts
+        /// Internal array for imaginary parts.
         /// </summary>
-        private float[] _im;
+        private readonly float[] _im;
 
         /// <summary>
-        /// Constructor
+        /// Construct Hartley transformer. Transform <paramref name="size"/> must be a power of 2.
         /// </summary>
-        /// <param name="size"></param>
+        /// <param name="size">Size of Hartley transform</param>
         public HartleyTransform(int size)
         {
             Size = size;
@@ -29,9 +32,9 @@
         }
 
         /// <summary>
-        /// Direct transform
+        /// Do Hartley transform in-place.
         /// </summary>
-        /// <param name="re"></param>
+        /// <param name="re">Input array of samples</param>
         public void Direct(float[] re)
         {
             for (var i = 0; i < _im.Length; i++)
@@ -48,9 +51,9 @@
         }
 
         /// <summary>
-        /// Inverse transform
+        /// Do inverse Hartley transform in-place.
         /// </summary>
-        /// <param name="re"></param>
+        /// <param name="re">Array of input samples</param>
         public void Inverse(float[] re)
         {
             _im[0] = 0;

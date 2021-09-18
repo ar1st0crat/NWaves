@@ -4,31 +4,36 @@ using System;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class providing methods for direct and inverse Fast Fourier Transforms
-    /// and postprocessing: magnitude spectrum, power spectrum, logpower spectrum.
+    /// <para>Class representing Complex Fast Fourier Transform for 64-bit data:</para>
+    /// <list type="bullet">
+    ///     <item>Direct FFT</item>
+    ///     <item>Inverse FFT</item>
+    ///     <item>Magnitude spectrum</item>
+    ///     <item>Power spectrum</item>
+    /// </list>
     /// </summary>
     public class Fft64
     {
         /// <summary>
-        /// The size of FFT
+        /// FFT size.
         /// </summary>
         public int Size => _fftSize;
         private readonly int _fftSize;
 
         /// <summary>
-        /// Precomputed cosines
+        /// Precomputed cosines.
         /// </summary>
         private readonly double[] _cosTbl;
 
         /// <summary>
-        /// Precomputed sines
+        /// Precomputed sines.
         /// </summary>
         private readonly double[] _sinTbl;
 
         /// <summary>
-        /// Constructor accepting the size of FFT
+        /// Construct FFT transformer.
         /// </summary>
-        /// <param name="fftSize">Size of FFT</param>
+        /// <param name="fftSize">FFT size</param>
         public Fft64(int fftSize = 512)
         {
             Guard.AgainstNotPowerOfTwo(fftSize, "FFT size");
@@ -48,12 +53,13 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Fast Fourier Transform algorithm
+        /// Do Fast Fourier Transform: 
+        /// complex (<paramref name="reInput"/>, <paramref name="imInput"/>) -> complex(<paramref name="re"/>, <paramref name="im"/>).
         /// </summary>
         /// <param name="reInput">Array of real parts (input)</param>
         /// <param name="imInput">Array of imaginary parts (input)</param>
-        /// <param name="reOut">Array of real parts (output)</param>
-        /// <param name="imOut">Array of imaginary parts (output)</param>
+        /// <param name="re">Array of real parts (output)</param>
+        /// <param name="im">Array of imaginary parts (output)</param>
         public void Direct(double[] reInput, double[] imInput, double[] re, double[] im)
         {
             reInput.FastCopyTo(re, reInput.Length);
@@ -113,7 +119,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Fast Fourier Transform algorithm (in-place)
+        /// Do Fast Fourier Transform in-place.
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
@@ -173,7 +179,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Inverse Fast Fourier Transform algorithm
+        /// Do Inverse Fast Fourier Transform in-place.
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
@@ -233,7 +239,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Inverse Fast Fourier Transform algorithm (with normalization by FFT size)
+        /// Do Inverse Fast Fourier Transform in-place, with normalization by FFT size.
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
@@ -250,12 +256,13 @@ namespace NWaves.Transforms
 
 #if NET50
         /// <summary>
-        /// Fast Fourier Transform algorithm
+        /// Do Fast Fourier Transform: 
+        /// complex (<paramref name="reInput"/>, <paramref name="imInput"/>) -> complex(<paramref name="re"/>, <paramref name="im"/>).
         /// </summary>
         /// <param name="reInput">Array of real parts (input)</param>
         /// <param name="imInput">Array of imaginary parts (input)</param>
-        /// <param name="reOut">Array of real parts (output)</param>
-        /// <param name="imOut">Array of imaginary parts (output)</param>
+        /// <param name="re">Array of real parts (output)</param>
+        /// <param name="im">Array of imaginary parts (output)</param>
         public void Direct(ReadOnlySpan<double> reInput, ReadOnlySpan<double> imInput, Span<double> re, Span<double> im)
         {
             reInput.CopyTo(re);
@@ -315,7 +322,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Fast Fourier Transform algorithm (in-place)
+        /// Do Fast Fourier Transform in-place.
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
@@ -375,7 +382,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Inverse Fast Fourier Transform algorithm
+        /// Do Inverse Fast Fourier Transform in-place.
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
@@ -435,7 +442,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Inverse Fast Fourier Transform algorithm (with normalization by FFT size)
+        /// Do Inverse Fast Fourier Transform in-place, with normalization by FFT size.
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>

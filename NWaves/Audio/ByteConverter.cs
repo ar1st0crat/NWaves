@@ -6,11 +6,11 @@
     public static class ByteConverter
     {
         /// <summary>
-        /// Convert Pcm_8bit to floats
+        /// Convert Pcm_8bit <paramref name="bytes"/> to arrays of <paramref name="floats"/>.
         /// </summary>
-        /// <param name="bytes"></param>
-        /// <param name="floats"></param>
-        /// <param name="normalize"></param>
+        /// <param name="bytes">Array of bytes</param>
+        /// <param name="floats">Arrays of floats</param>
+        /// <param name="normalize">Normalize samples</param>
         public static void ToFloats8Bit(byte[] bytes, float[][] floats, bool normalize = true)
         {
             var channelCount = floats.Length;
@@ -38,11 +38,11 @@
         }
 
         /// <summary>
-        /// Convert floats to Pcm_8bit
+        /// Convert arrays of <paramref name="floats"/> to Pcm_8bit <paramref name="bytes"/>.
         /// </summary>
-        /// <param name="floats"></param>
-        /// <param name="bytes"></param>
-        /// <param name="normalized"></param>
+        /// <param name="bytes">Array of bytes</param>
+        /// <param name="floats">Arrays of floats</param>
+        /// <param name="normalized">True if samples are normalized</param>
         public static void FromFloats8Bit(float[][] floats, byte[] bytes, bool normalized = true)
         {
             var channelCount = floats.Length;
@@ -70,12 +70,12 @@
         }
 
         /// <summary>
-        /// Convert Pcm_16bit to floats (little-endian or big-endian)
+        /// Convert Pcm_16bit <paramref name="bytes"/> to arrays of <paramref name="floats"/> (little-endian or big-endian).
         /// </summary>
-        /// <param name="bytes"></param>
-        /// <param name="floats"></param>
-        /// <param name="normalize"></param>
-        /// <param name="bigEndian"></param>
+        /// <param name="bytes">Array of bytes</param>
+        /// <param name="floats">Arrays of floats</param>
+        /// <param name="normalize">Normalize samples</param>
+        /// <param name="bigEndian">True if Big-endian</param>
         public static void ToFloats16Bit(byte[] bytes, float[][] floats, bool normalize = true, bool bigEndian = false)
         {
             var channelCount = floats.Length;
@@ -130,12 +130,12 @@
         }
 
         /// <summary>
-        /// Convert floats to Pcm_16bit (little-endian or big-endian)
+        /// Convert arrays of <paramref name="floats"/> to Pcm_16bit <paramref name="bytes"/> (little-endian or big-endian).
         /// </summary>
-        /// <param name="floats"></param>
-        /// <param name="bytes"></param>
-        /// <param name="normalized"></param>
-        /// <param name="bigEndian"></param>
+        /// <param name="bytes">Array of bytes</param>
+        /// <param name="floats">Arrays of floats</param>
+        /// <param name="normalized">True if samples are normalized</param>
+        /// <param name="bigEndian">True if Big-endian</param>
         public static void FromFloats16Bit(float[][] floats, byte[] bytes, bool normalized = true, bool bigEndian = false)
         {
             var channelCount = floats.Length;

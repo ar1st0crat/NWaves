@@ -25,15 +25,14 @@ namespace NWaves.Features
 
         /// <summary>
         /// <para>Compute perceptual sharpness (essentially, the equivalent of spectral centroid).</para>
-        /// <para>
-        /// According to the original formula, the weights are slightly different 
-        /// for bark bands with index >= 15, but this implementation assumes 
-        /// that there will be no more than 15 bands.
-        /// </para>
         /// </summary>
         /// <param name="spectralBands">Array of energies in given spectral bands</param>
         public static float Sharpness(float[] spectralBands)
         {
+            // According to the original formula, the weights are slightly different 
+            // for bark bands with index >= 15, but this implementation assumes 
+            // that there will be no more than 15 bands.
+             
             var sharpness = 0.0;
             var total = 0.0;
 

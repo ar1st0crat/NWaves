@@ -9,36 +9,36 @@ using NWaves.Signals;
 namespace NWaves.Audio
 {
     /// <summary>
-    /// WAV file container
+    /// <para>PCM WAV container.</para>
+    /// <para>
+    /// <see cref="WaveFile"/> is not intended to be a "wrapper around the stream", or to acquire any resource 
+    /// (it doesn't affect the underlying stream). It's more like a "constructor of signals in memory based on data 
+    /// from the stream" and its lifetime is not synchronized with the stream whatsoever. 
+    /// The synonym name of this class could be also "WaveContainer".
+    /// </para>
     /// </summary>
     public class WaveFile : IAudioContainer
     {
         /// <summary>
-        /// Signals from all channels.
-        /// Usually:
-        /// 
-        ///     Signals.Count = 1 (mono)
-        /// or
-        ///     Signals.Count = 2 (stereo)
-        /// 
+        /// Gets the list of discrete signals in container.
         /// </summary>
         public List<DiscreteSignal> Signals { get; protected set; }
 
         /// <summary>
-        /// Wav header struct
+        /// WAV header (WAVE format).
         /// </summary>
         public WaveFormat WaveFmt { get; protected set; }
 
         /// <summary>
-        /// Supported bit depths
+        /// Supported bit depths.
         /// </summary>
         public short[] SupportedBitDepths = { 8, 16, 24, 32 };
 
         /// <summary>
-        /// Constructor loads signals from a byte array (i.e. byte content of WAV file).
+        /// Constructs WAV container by loading signals from a byte array (i.e. byte content of WAV file).
         /// </summary>
         /// <param name="waveBytes">Input array of bytes</param>
-        /// <param name="normalized">Normalization flag</param>
+        /// <param name="normalized">Normalize samples</param>
         public WaveFile(byte[] waveBytes, bool normalized = true)
         {
             using (var stream = new MemoryStream(waveBytes))
@@ -48,11 +48,11 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// Constructor loads signals from part of a byte array (i.e. byte content of WAV file).
+        /// Constructs WAV container by loading signals from part of a byte array (i.e. byte content of WAV file).
         /// </summary>
         /// <param name="waveBytes">Input array of bytes</param>
         /// <param name="index">Start position in byte array</param>
-        /// <param name="normalized">Normalization flag</param>
+        /// <param name="normalized">Normalize samples</param>
         public WaveFile(byte[] waveBytes, int index, bool normalized = true) 
         {
             using (var stream = new MemoryStream(waveBytes, index, waveBytes.Length - index))
@@ -62,26 +62,20 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// Constructor loads signals from a wave file.
-        /// 
-        /// Since NWaves is .NET Standard 2.0 library, there's no universal FileStream class.
-        /// So it's supposed that the client code will take care 
-        /// for extracting the stream from a wave file.
-        /// 
+        /// Constructs WAV container by loading signals from <paramref name="waveStream"/>.
         /// </summary>
         /// <param name="waveStream">Input stream</param>
-        /// <param name="normalized">Normalization flag</param>
-        /// <exception>Possible null exception</exception>
+        /// <param name="normalized">Normalize samples</param>
         public WaveFile(Stream waveStream, bool normalized = true)
         {
             ReadWaveStream(waveStream, normalized);
         }
 
         /// <summary>
-        /// Read PCM WAV binary data and fill signals and WaveFormat structure
+        /// Read PCM WAV binary data and fill <see cref="Signals"/> and <see cref="WaveFmt"/> structure.
         /// </summary>
-        /// <param name="waveStream"></param>
-        /// <param name="normalized"></param>
+        /// <param name="waveStream">Input stream of PCM WAV binary data</param>
+        /// <param name="normalized">Normalize samples</param>
         protected void ReadWaveStream(Stream waveStream, bool normalized = true)
         {
             using (var reader = new BinaryReader(waveStream, Encoding.ASCII, true))
@@ -247,7 +241,7 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// Constructor loads signals into container.
+        /// Construct WAV container by loading into it collection of <paramref name="signals"/> with given <paramref name="bitsPerSample"/>.
         /// </summary>
         /// <param name="signals">Signals to be loaded into container</param>
         /// <param name="bitsPerSample">Bit depth</param>
@@ -291,7 +285,7 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// This constructor loads one signal into container.
+        /// Construct WAV container by loading into it one <paramref name="signal"/> with given <paramref name="bitsPerSample"/>.
         /// </summary>
         /// <param name="signal">Signal to be loaded into container</param>
         /// <param name="bitsPerSample">Bit depth</param>
@@ -300,10 +294,9 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// Method returns the contents of a wave file as array of bytes.
+        /// Return the contents of PCM WAV container as array of bytes.
         /// </summary>
-        /// <param name="normalized">Normalization flag</param>
-        /// <returns>Array of bytes</returns>
+        /// <param name="normalized">True if samples are normalized</param>
         public byte[] GetBytes(bool normalized = true)
         {
             using (var stream = new MemoryStream())
@@ -314,10 +307,10 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// Method saves the contents of a wave file to stream.
+        /// Save the contents of PCM WAV container to <paramref name="waveStream"/>.
         /// </summary>
-        /// <param name="waveStream">Output stream for saving</param>
-        /// <param name="normalized">Normalization flag</param>
+        /// <param name="waveStream">Output stream</param>
+        /// <param name="normalized">True if samples are normalized</param>
         public void SaveTo(Stream waveStream, bool normalized = true)
         {
             using (var writer = new BinaryWriter(waveStream, Encoding.ASCII, true))
@@ -407,16 +400,20 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// Fancy indexer:
-        /// 
-        ///     waveFile[Channels.Left] -> waveFile.Signals[0]
-        ///     waveFile[Channels.Right] -> waveFile.Signals[1]
+        /// <para>Return container's signal using indexing based on channel type. Examples</para>
+        /// <code>
+        ///     waveFile[Channels.Left]  -> waveFile.Signals[0]
+        ///     <br/>
+        ///     waveFile[Channels.Right] -> waveFile.Signals[1] (if it exists)
+        ///     <br/>
+        ///     waveFile[(Channels)2]    -> waveFile.Signals[2] (if it exists)
+        ///     <br/>
         ///     waveFile[Channels.Average] -> returns channel-averaged (new) signal
+        ///     <br/>
         ///     waveFile[Channels.Interleave] -> returns interleaved (new) signal
-        /// 
+        /// </code>
         /// </summary>
-        /// <param name="channel">Channel enum</param>
-        /// <returns>Signal from the channel or interleaved signal</returns>
+        /// <param name="channel">Channel (left, right, interleave, sum, average, or ordinary index)</param>
         public DiscreteSignal this[Channels channel]
         {
             get

@@ -7,51 +7,49 @@ using NWaves.Signals;
 namespace NWaves.Audio.Mci
 {
     /// <summary>
-    /// Audio player based on MCI.
-    /// 
-    /// MciAudioPlayer works only with Windows, since it uses winmm.dll and MCI commands.
-    /// 
-    /// MciAudioPlayer lets MCI do all the heavy-lifting with sound playback.
+    /// <para>Audio player based on MCI.</para>
+    /// <para>
+    /// MciAudioPlayer works only on Windows, since it uses winmm.dll and MCI commands.
+    /// </para>
+    /// <para>
+    /// MciAudioPlayer lets MCI do all the heavy-lifting with sound playback. 
     /// It launches MCI command and just awaits for amount of time 
     /// corresponding to the duration of a given segment.
-    /// 
-    /// If the playback was paused, the player memorizes how many milliseconds
-    /// it was "idle" and then adds this time to the total awaiting time.
-    /// 
+    /// </para>
     /// </summary>
     public class MciAudioPlayer : IAudioPlayer
     {
         /// <summary>
-        /// Hidden alias for an MCI waveaudio device
+        /// Hidden alias for an MCI waveaudio device.
         /// </summary>
         private string _alias;
 
         /// <summary>
-        /// Duration of pause in milliseconds
+        /// Duration of pause in milliseconds.
         /// </summary>
         private int _pauseDuration;
 
         /// <summary>
-        /// The exact time when playback was paused
+        /// The exact time when playback was paused.
         /// </summary>
         private DateTime _pauseTime;
 
         /// <summary>
-        /// The flag indicating whether audio playback is currently paused
+        /// The flag indicating whether audio playback is currently paused.
         /// </summary>
         private bool _isPaused;
 
         /// <summary>
-        /// Volume (measured in percents from the range [0.0f, 1.0f])
+        /// Gets or sets audio volume (measured in percents from the range [0.0f, 1.0f]).
         /// </summary>
         public float Volume { get; set; }
 
         /// <summary>
-        /// Play audio contained in WAV file asynchronously
+        /// Play audio contained in WAV file asynchronously.
         /// </summary>
-        /// <param name="source">WAV file to play</param>
-        /// <param name="startPos">Number of the first sample to play</param>
-        /// <param name="endPos">Number of the last sample to play</param>
+        /// <param name="source">Path to WAV file to play</param>
+        /// <param name="startPos">Index of the first sample to play</param>
+        /// <param name="endPos">Index of the last sample to play</param>
         public async Task PlayAsync(string source, int startPos = 0, int endPos = -1)
         {
             if (_isPaused)
@@ -122,25 +120,28 @@ namespace NWaves.Audio.Mci
         }
 
         /// <summary>
-        /// Unfortunately, MCI does not provide means for playing audio from buffers in memory.
+        /// <para><see cref="MciAudioPlayer"/> does not implement this method.</para>
+        /// <para>
+        /// Unfortunately, MCI does not provide means for playing audio from buffers in memory. 
         /// Moreover, since NWaves library is portable, there's even no easy way to write the buffer 
         /// into temporary file and play it here (it could be a workaround for the problem).
+        /// </para>
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
-        /// <param name="bitDepth"></param>
+        /// <param name="signal">Signal to play</param>
+        /// <param name="startPos">Index of the first sample to play</param>
+        /// <param name="endPos">Index of the last sample to play</param>
+        /// <param name="bitDepth">Number of bits per one sample</param>
         public Task PlayAsync(DiscreteSignal signal, int startPos = 0, int endPos = -1, short bitDepth = 16)
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// Pause audio playback
+        /// Pause playing audio.
         /// </summary>
         public void Pause()
         {
-            if (_alias == null)
+            if (_alias is null)
             {
                 return;
             }
@@ -148,16 +149,19 @@ namespace NWaves.Audio.Mci
             var mciCommand = string.Format("pause {0}", _alias);
             Mci.SendString(mciCommand, null, 0, 0);
 
+            // If the playback was paused, the player memorizes how many milliseconds 
+            // it was "idle" and then adds this time to the total awaiting time.
+
             _pauseTime = DateTime.Now;
             _isPaused = true;
         }
 
         /// <summary>
-        /// Resume playing audio
+        /// Resume playing audio.
         /// </summary>
         public void Resume()
         {
-            if (_alias == null || !_isPaused)
+            if (_alias is null || !_isPaused)
             {
                 return;
             }
@@ -172,11 +176,11 @@ namespace NWaves.Audio.Mci
         }
 
         /// <summary>
-        /// Stop playing audio and close MCI device
+        /// Stop playing audio and close MCI device.
         /// </summary>
         public void Stop()
         {
-            if (_alias == null)
+            if (_alias is null)
             {
                 return;
             }

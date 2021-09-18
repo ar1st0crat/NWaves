@@ -5,30 +5,29 @@ using System.Numerics;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class for Goertzel algorithm
+    /// Class providing implementations of Goertzel algorithm.
     /// </summary>
     public class Goertzel
     {
         /// <summary>
-        /// Size of FFT
+        /// FFT size.
         /// </summary>
         private readonly int _fftSize;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="Goertzel"/> object.
         /// </summary>
-        /// <param name="fftSize">Size of FFT</param>
+        /// <param name="fftSize">FFT size</param>
         public Goertzel(int fftSize)
         {
             _fftSize = fftSize;
         }
 
         /// <summary>
-        /// Very simple implementation of Goertzel algorithm
+        /// Compute <paramref name="n"/>-th component of a spectrum using Goertzel algorithm.
         /// </summary>
-        /// <param name="input">Input array</param>
+        /// <param name="input">Input array of samples</param>
         /// <param name="n">Number of the frequency component</param>
-        /// <returns>nth component of a complex spectrum</returns>
         public Complex Direct(float[] input, int n)
         {
             var f = (float)(2 * Math.Cos(2 * Math.PI * n / _fftSize));
@@ -52,11 +51,10 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Overloaded method for DiscreteSignal
+        /// Compute <paramref name="n"/>-th component of a spectrum using Goertzel algorithm.
         /// </summary>
         /// <param name="input">Input signal</param>
         /// <param name="n">Number of the frequency component</param>
-        /// <returns>nth component of a complex spectrum</returns>
         public Complex Direct(DiscreteSignal input, int n)
         {
             return Direct(input.Samples, n);

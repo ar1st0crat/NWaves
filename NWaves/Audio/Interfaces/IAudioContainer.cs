@@ -4,20 +4,19 @@ using NWaves.Signals;
 namespace NWaves.Audio.Interfaces
 {
     /// <summary>
-    /// Interface for sound containers
+    /// Interface for audio containers.
     /// </summary>
     public interface IAudioContainer
     {
         /// <summary>
-        /// Discrete signals contained in container's channels
+        /// Get the list of discrete signals in container.
         /// </summary>
         List<DiscreteSignal> Signals { get; }
 
         /// <summary>
-        /// Indexing based on channel type
+        /// Return container's signal using indexing based on channel type.
         /// </summary>
-        /// <param name="channel">channel type (left, right or interleave)</param>
-        /// <returns></returns>
+        /// <param name="channel">Channel (left, right, interleave, sum, average, or ordinary index)</param>
         DiscreteSignal this[Channels channel] { get; }
     }
 }

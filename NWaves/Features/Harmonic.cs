@@ -18,7 +18,7 @@ namespace NWaves.Features
         /// <param name="peaks">Array for storing computed peak positions</param>
         /// <param name="peakFrequencies">Array for storing computed peak frequencies</param>
         /// <param name="samplingRate">Sampling rate</param>
-        /// <param name="pitch">Pitch is given if it is known</param>
+        /// <param name="pitch">Pitch in Hz, or any negative number if the pitch is unknown</param>
         public static void Peaks(float[] spectrum, int[] peaks, float[] peakFrequencies, int samplingRate, float pitch = -1)
         {
             if (pitch < 0)
