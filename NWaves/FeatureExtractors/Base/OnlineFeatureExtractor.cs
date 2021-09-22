@@ -5,14 +5,19 @@ using System.Collections.Generic;
 namespace NWaves.FeatureExtractors.Base
 {
     /// <summary>
-    /// FeatureExtractor adapter for online feature extraction.
+    /// <see cref="FeatureExtractor"/> adapter for online feature extraction.
     /// </summary>
-    public class OnlineFeatureExtractor
+    public class OnlineFeatureExtractor : IFeatureExtractor
     {
         /// <summary>
-        /// Underlying feature extractor (can be set and replaced anytime).
+        /// Gets or sets underlying feature extractor.
         /// </summary>
         public FeatureExtractor Extractor { get; set; }
+
+        /// <summary>
+        /// Gets number of features to extract (feature vector size).
+        /// </summary>
+        public int FeatureCount => Extractor.FeatureCount;
 
         /// <summary>
         /// Should the last non-processed samples in the current block be ignored in the next block.
@@ -89,12 +94,12 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// <para>Process block of data and fill the list of resulting feature vectors.</para>
-        /// <para>Method returns the number of actually computed feature vectors.</para>
+        /// <para>Compute feature vectors from <paramref name="data"/> and store them in <paramref name="featureVectors"/>.</para>
+        /// <para>Returns the number of actually computed feature vectors.</para>
         /// </summary>
         /// <param name="data">Block of data</param>
-        /// <param name="featureVectors">Pre-allocated list for storing the resulting feature vectors</param>
-        public int ComputeFrom(float[] data, List<float[]> featureVectors)
+        /// <param name="featureVectors">Pre-allocated sequence for storing the resulting feature vectors</param>
+        public int ComputeFrom(float[] data, IList<float[]> featureVectors)
         {
             if (_ignoreLastSamples)
             {
@@ -119,7 +124,8 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Process block of data and return the list of resulting feature vectors.
+        /// <para>Compute feature vectors from <paramref name="data"/>.</para>
+        /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="data">Block of data</param>
         public List<float[]> ComputeFrom(float[] data)
@@ -136,7 +142,7 @@ namespace NWaves.FeatureExtractors.Base
 
                 _skippedCount += data.Length;
 
-                return null;
+                return new List<float[]>();
             }
 
             // otherwise pre-allocate memory and start processing
@@ -154,7 +160,34 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Reset online feature extractor
+        /// <para>Compute feature vectors from <paramref name="data"/> and store them in <paramref name="featureVectors"/>.</para>
+        /// <para>Returns the number of actually computed feature vectors.</para>
+        /// </summary>
+        /// <param name="data">Block of data</param>
+        /// <param name="startSample">Index of the first sample in array for processing</param>
+        /// <param name="endSample">Index of the last sample in array for processing</param>
+        /// <param name="featureVectors">Pre-allocated sequence for storing the resulting feature vectors</param>
+        public int ComputeFrom(float[] data, int startSample, int endSample, IList<float[]> featureVectors)
+        {
+            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
+            return ComputeFrom(data.FastCopyFragment(endSample - startSample + 1, startSample), featureVectors);
+        }
+
+        /// <summary>
+        /// <para>Compute feature vectors from <paramref name="data"/>.</para>
+        /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
+        /// </summary>
+        /// <param name="data">Block of data</param>
+        /// <param name="startSample">Index of the first sample in array for processing</param>
+        /// <param name="endSample">Index of the last sample in array for processing</param>
+        public List<float[]> ComputeFrom(float[] data, int startSample, int endSample)
+        {
+            Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
+            return ComputeFrom(data.FastCopyFragment(endSample - startSample + 1, startSample));
+        }
+
+        /// <summary>
+        /// Reset online feature extractor.
         /// </summary>
         public void Reset()
         {

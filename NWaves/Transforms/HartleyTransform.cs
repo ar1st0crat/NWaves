@@ -1,9 +1,13 @@
-﻿namespace NWaves.Transforms
+﻿using NWaves.Transforms.Base;
+using NWaves.Utils;
+using System;
+
+namespace NWaves.Transforms
 {
     /// <summary>
     /// Class representing Fast Hartley Transform.
     /// </summary>
-    public class HartleyTransform
+    public class HartleyTransform : ITransform
     {
         /// <summary>
         /// Gets size of Hartley transform.
@@ -32,15 +36,12 @@
         }
 
         /// <summary>
-        /// Do Hartley transform in-place.
+        /// Do Fast Hartley Transform in-place.
         /// </summary>
-        /// <param name="re">Input array of samples</param>
+        /// <param name="re">Input/output data</param>
         public void Direct(float[] re)
         {
-            for (var i = 0; i < _im.Length; i++)
-            {
-                _im[i] = 0;
-            }
+            Array.Clear(_im, 0, _im.Length);
 
             _fft.Direct(re, _im);
 
@@ -53,11 +54,32 @@
         /// <summary>
         /// Do inverse Hartley transform in-place.
         /// </summary>
-        /// <param name="re">Array of input samples</param>
+        /// <param name="re">Input/output data</param>
         public void Inverse(float[] re)
         {
             _im[0] = 0;
             
+            for (var i = 1; i <= re.Length / 2; i++)
+            {
+                var x = (re[Size - i] - re[i]) * 0.5f;
+                _im[i] = x;
+                _im[Size - i] = -x;
+
+                x = (re[i] + re[Size - i]) * 0.5f;
+                re[i] = re[Size - i] = x;
+            }
+
+            _fft.Inverse(re, _im);
+        }
+
+        /// <summary>
+        /// Do normalized Inverse Fast Hartley transform in-place.
+        /// </summary>
+        /// <param name="re">Input/output data</param>
+        public void InverseNorm(float[] re)
+        {
+            _im[0] = 0;
+
             for (var i = 1; i <= re.Length / 2; i++)
             {
                 var x = (re[Size - i] - re[i]) * 0.5f;
@@ -74,6 +96,51 @@
             {
                 re[i] /= Size;
             }
+        }
+
+        /// <summary>
+        /// Do Fast Hartley Transform.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
+        public void Direct(float[] input, float[] output)
+        {
+            input.FastCopyTo(output, input.Length);
+            Direct(output);
+        }
+
+        /// <summary>
+        /// Do normalized Fast Hartley Transform. 
+        /// Identical to <see cref="Direct(float[], float[])"/>.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
+        public void DirectNorm(float[] input, float[] output)
+        {
+            input.FastCopyTo(output, input.Length);
+            Direct(output);
+        }
+
+        /// <summary>
+        /// Do Inverse Fast Hartley Transform.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
+        public void Inverse(float[] input, float[] output)
+        {
+            input.FastCopyTo(output, input.Length);
+            Inverse(output);
+        }
+
+        /// <summary>
+        /// Do normalized Inverse Fast Hartley Transform.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
+        public void InverseNorm(float[] input, float[] output)
+        {
+            input.FastCopyTo(output, input.Length);
+            InverseNorm(output);
         }
     }
 }

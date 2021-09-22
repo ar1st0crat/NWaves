@@ -6,54 +6,55 @@ using System.Linq;
 namespace NWaves.Transforms.Wavelets
 {
     /// <summary>
-    /// Wavelet
+    /// Wavelet.
     /// </summary>
     public class Wavelet
     {
         /// <summary>
-        /// Name
+        /// Gets wavelet name.
         /// </summary>
         public string Name { get; protected set; }
 
         /// <summary>
-        /// The length of the mother wavelet
+        /// Gets wavelet length.
         /// </summary>
         public int Length { get; protected set; }
 
         /// <summary>
-        /// LP coefficients for decomposition
+        /// Gets LP coefficients for decomposition.
         /// </summary>
         public float[] LoD { get; protected set; }
 
         /// <summary>
-        /// HP coefficients for decomposition
+        /// Gets HP coefficients for decomposition.
         /// </summary>
         public float[] HiD { get; protected set; }
 
         /// <summary>
-        /// LP coefficients for reconstruction
+        /// Gets LP coefficients for reconstruction.
         /// </summary>
         public float[] LoR { get; protected set; }
 
         /// <summary>
-        /// HP coefficients for reconstruction
+        /// Gets HP coefficients for reconstruction.
         /// </summary>
         public float[] HiR { get; protected set; }
 
         /// <summary>
-        /// Constructor from wavelet family and number of taps
+        /// Construct wavelet from <paramref name="waveletFamily"/> and number of <paramref name="taps"/>.
         /// </summary>
-        /// <param name="waveletFamily"></param>
-        /// <param name="taps">Set for all wavelets</param>
+        /// <param name="waveletFamily">Wavelet family</param>
+        /// <param name="taps">Number of taps</param>
         public Wavelet(WaveletFamily waveletFamily, int taps = 1)
         {
             MakeWavelet(waveletFamily, taps);
         }
 
         /// <summary>
-        /// Constructor from name
+        /// Construct wavelet from <paramref name="name"/>. 
+        /// Supported names: "haar", "db1".."db20", "sym2".."sym20", "coif1".."coif5".
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">Wavelet name</param>
         public Wavelet(string name)
         {
             WaveletFamily waveletFamily;
@@ -109,7 +110,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Constructor from wavelet coefficients (perhaps, calculated in external software)
+        /// Construct wavelet from wavelet coefficients (perhaps, calculated in external software).
         /// </summary>
         /// <param name="loD">LP coefficients for decomposition</param>
         /// <param name="hiD">HP coefficients for decomposition</param>
@@ -131,10 +132,10 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Fill wavelet fields: name, length and coefficients
+        /// Fill wavelet fields: name, length and coefficients.
         /// </summary>
-        /// <param name="waveletFamily"></param>
-        /// <param name="taps"></param>
+        /// <param name="waveletFamily">Wavelet family</param>
+        /// <param name="taps">Number of taps</param>
         private void MakeWavelet(WaveletFamily waveletFamily, int taps)
         {
             switch (waveletFamily)
@@ -157,7 +158,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Compute orthonormal coefficients from LoD coefficients only
+        /// Compute orthonormal coefficients (from LoD coefficients only).
         /// </summary>
         public void ComputeOrthonormalCoeffs()
         {
@@ -176,9 +177,9 @@ namespace NWaves.Transforms.Wavelets
         #region wavelet coefficients
 
         /// <summary>
-        /// Haar wavelet
+        /// Setup Haar wavelet.
         /// </summary>
-        public void MakeHaarWavelet()
+        protected void MakeHaarWavelet()
         {
             Name = "haar";
             Length = 2;
@@ -189,10 +190,10 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Daubechies wavelet
+        /// Setup Daubechies wavelet.
         /// </summary>
-        /// <param name="taps"></param>
-        public void MakeDaubechiesWavelet(int taps)
+        /// <param name="taps">Number of taps</param>
+        protected void MakeDaubechiesWavelet(int taps)
         {
             Name = $"db{taps}";
             Length = 2 * taps;
@@ -665,10 +666,10 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Symlet wavelet
+        /// Setup Symlet wavelet.
         /// </summary>
-        /// <param name="taps"></param>
-        public void MakeSymletWavelet(int taps)
+        /// <param name="taps">Number of taps</param>
+        protected void MakeSymletWavelet(int taps)
         {
             Name = $"sym{taps}";
             Length = 2 * taps;
@@ -1137,10 +1138,10 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Coiflet wavelet
+        /// Setup Coiflet wavelet.
         /// </summary>
-        /// <param name="taps"></param>
-        public void MakeCoifletWavelet(int taps)
+        /// <param name="taps">Number of taps</param>
+        protected void MakeCoifletWavelet(int taps)
         {
             Name = $"coif{taps}";
             Length = 6 * taps;

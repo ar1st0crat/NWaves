@@ -34,17 +34,14 @@ namespace NWaves.Tests.FeaturesTest
             var i = 0;
             while (i < signal.Length)
             {
+                // emulating online blocks with different sizes:
                 var size = (i + 1) * 15;
-
                 var block = signal.Samples.Skip(i).Take(size).ToArray();
 
                 var newVectors = onlineMfccExtractor.ComputeFrom(block);
 
-                if (newVectors != null)
-                {
-                    onlineMfccVectors.AddRange(newVectors);
-                }
-
+                onlineMfccVectors.AddRange(newVectors);
+                
                 i += size;
             }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using NWaves.Signals;
+using NWaves.Transforms.Base;
 using NWaves.Utils;
 
 namespace NWaves.Transforms
@@ -15,7 +16,7 @@ namespace NWaves.Transforms
     /// </list>
     /// <para>1,2) and 3) are identical to MATLAB cceps/icceps and rceps, respectively.</para>
     /// </summary>
-    public class CepstralTransform
+    public class CepstralTransform : IComplexTransform
     {
         /// <summary>
         /// Gets cepstrum size.
@@ -303,6 +304,26 @@ namespace NWaves.Transforms
 
                 cepstrum[i] = pc * pc;
             }
+        }
+
+        public void Direct(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DirectNorm(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Inverse(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void InverseNorm(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -16,9 +16,9 @@ namespace NWaves.FeatureExtractors.Base
     // more efficiently by reusing memory already allocated in base classes.
 
     /// <summary>
-    /// Abstract class for all feature extractors.
+    /// Abstract class for all NWaves-style feature extractors.
     /// </summary>
-    public abstract class FeatureExtractor
+    public abstract class FeatureExtractor : IFeatureExtractor, IParallelFeatureExtractor
     {
         /// <summary>
         /// Number of features to extract (feature vector size).
@@ -143,7 +143,7 @@ namespace NWaves.FeatureExtractors.Base
         /// </summary>
         /// <param name="samples">Array of samples</param>
         /// <param name="startSample">Index of the first sample in array for processing</param>
-        /// <param name="endSample">Index of the last sample in array for processing</param>
+        /// <param name="endSample">Index of the last sample (exclusive) in array for processing</param>
         /// <param name="vectors">Pre-allocated sequence for storing the resulting feature vectors</param>
         public virtual int ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors)
         {
@@ -208,19 +208,30 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
+        /// <para>Compute feature vectors from <paramref name="samples"/> and store them in <paramref name="vectors"/>.</para>
+        /// <para>Returns the number of actually computed feature vectors</para>
+        /// </summary>
+        /// <param name="samples">Array of samples</param>
+        /// <param name="vectors">Pre-allocated sequence for storing the resulting feature vectors</param>
+        public virtual int ComputeFrom(float[] samples, IList<float[]> vectors)
+        {
+            return ComputeFrom(samples, 0, samples.Length, vectors);
+        }
+
+        /// <summary>
         /// <para>Compute feature vectors from <paramref name="samples"/>.</para>
-        /// <para>Returns the list of computed feature vectors or null, if the number of samples is less than the size of analysis frame.</para>
+        /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>
         /// <param name="startSample">Index of the first sample in array for processing</param>
-        /// <param name="endSample">Index of the last sample in array for processing</param>
+        /// <param name="endSample">Index of the last sample (exclusive) in array for processing</param>
         public virtual List<float[]> ComputeFrom(float[] samples, int startSample, int endSample)
         {
             Guard.AgainstInvalidRange(startSample, endSample, "starting pos", "ending pos");
 
             if (endSample - startSample < FrameSize)
             {
-                return null;
+                return new List<float[]>();
             }
 
             // pre-allocate memory for data:
@@ -239,7 +250,7 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Return time markers (in seconds).
+        /// Returns time markers (in seconds).
         /// </summary>
         /// <param name="vectorCount">Number of feature vectors</param>
         /// <param name="startFrom">Starting time position (in seconds)</param>
@@ -259,7 +270,8 @@ namespace NWaves.FeatureExtractors.Base
         public abstract void ProcessFrame(float[] block, float[] features);
 
         /// <summary>
-        /// Compute feature vectors from <paramref name="samples"/>.
+        /// <para>Compute feature vectors from <paramref name="samples"/>.</para>
+        /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>
         public List<float[]> ComputeFrom(float[] samples)
@@ -268,23 +280,25 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Compute feature vectors from <paramref name="signal"/>.
+        /// <para>Compute feature vectors from <paramref name="signal"/>.</para>
+        /// <para>Returns the list of computed feature vectors or empty list, if the signal length is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="signal">Discrete signal</param>
         /// <param name="startSample">Index of the first sample in signal for processing</param>
-        /// <param name="endSample">Index of the last sample in signal for processing</param>
+        /// <param name="endSample">Index of the last sample (exclusive) in signal for processing</param>
         public List<float[]> ComputeFrom(DiscreteSignal signal, int startSample, int endSample)
         {
             return ComputeFrom(signal.Samples, startSample, endSample);
         }
 
         /// <summary>
-        /// Compute feature vectors from <paramref name="signal"/>.
+        /// <para>Compute feature vectors from <paramref name="signal"/>.</para>
+        /// <para>Returns the list of computed feature vectors or empty list, if the signal length is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="signal">Discrete signal</param>
         public List<float[]> ComputeFrom(DiscreteSignal signal)
         {
-            return ComputeFrom(signal, 0, signal.Length);
+            return ComputeFrom(signal.Samples, 0, signal.Length);
         }
 
         /// <summary>
@@ -308,7 +322,8 @@ namespace NWaves.FeatureExtractors.Base
         public virtual FeatureExtractor ParallelCopy() => null;
 
         /// <summary>
-        /// Compute parallelly the feature vectors (return chunks of fecture vector lists computed in each separate thread).
+        /// <para>Compute parallelly feature vectors from <paramref name="samples"/>.</para>
+        /// <para>Returns chunks of fecture vector lists computed in each separate thread.</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>
         /// <param name="startSample">Index of the first sample in array for processing</param>
@@ -366,7 +381,8 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Compute parallelly the feature vectors from <paramref name="samples"/>.
+        /// <para>Compute parallelly feature vectors from <paramref name="samples"/>.</para>
+        /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>
         /// <param name="startSample">Index of the first sample in array for processing</param>
@@ -387,7 +403,8 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Compute parallelly the feature vectors from <paramref name="samples"/>.
+        /// <para>Compute parallelly feature vectors from <paramref name="samples"/>.</para>
+        /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>
         /// <param name="parallelThreads">Number of threads (all available processors, by default)</param>
@@ -397,7 +414,8 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Compute parallelly the feature vectors from <paramref name="signal"/>.
+        /// <para>Compute parallelly feature vectors from <paramref name="signal"/>.</para>
+        /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="signal">Discrete signal</param>
         /// <param name="startSample">Index of the first sample in signal for processing</param>
@@ -409,7 +427,8 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Compute parallelly the feature vectors from <paramref name="signal"/>.
+        /// <para>Compute parallelly feature vectors from <paramref name="signal"/>.</para>
+        /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="signal">Discrete signal</param>
         /// <param name="parallelThreads">Number of threads (all available processors, by default)</param>

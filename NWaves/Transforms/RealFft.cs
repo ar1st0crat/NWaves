@@ -1,51 +1,57 @@
 ﻿using NWaves.Signals;
+using NWaves.Transforms.Base;
 using NWaves.Utils;
 using System;
 
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// FFT transformer for real inputs
+    /// <para>Class representing Complex Fast Fourier Transform (for real-valued input):</para>
+    /// <list type="bullet">
+    ///     <item>Direct FFT for real-valued input</item>
+    ///     <item>Inverse FFT with real-valued output</item>
+    ///     <item>Magnitude spectrum</item>
+    ///     <item>Power spectrum</item>
+    /// </list>
     /// </summary>
-    public class RealFft
+    public class RealFft : IComplexTransform
     {
         /// <summary>
-        /// Size of FFT
+        /// FFT size.
         /// </summary>
         public int Size => _fftSize * 2;
 
         /// <summary>
-        /// Half of FFT size (for calculations)
+        /// Half of FFT size (for calculations).
         /// </summary>
-        private int _fftSize;
+        private readonly int _fftSize;
 
         /// <summary>
-        /// Precomputed cosines
+        /// Precomputed cosines.
         /// </summary>
         private readonly float[] _cosTbl;
 
         /// <summary>
-        /// Precomputed sines
+        /// Precomputed sines.
         /// </summary>
         private readonly float[] _sinTbl;
 
         /// <summary>
-        /// Precomputed coefficients
+        /// Precomputed coefficients.
         /// </summary>
-        private float[] _ar, _br, _ai, _bi;
+        private readonly float[] _ar, _br, _ai, _bi;
 
-        /// <summary>
-        /// Internal buffers
-        /// </summary>
+        // Internal buffers
+        
         private readonly float[] _re;
         private readonly float[] _im;
         private readonly float[] _realSpectrum;
         private readonly float[] _imagSpectrum;
 
         /// <summary>
-        /// Constructor
+        /// Construct FFT transformer with given <paramref name="size"/>. FFT size must be a power of two.
         /// </summary>
-        /// <param name="size"></param>
+        /// <param name="size">FFT size</param>
         public RealFft(int size)
         {
             Guard.AgainstNotPowerOfTwo(size, "Size of FFT");
@@ -88,11 +94,14 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Direct transform
+        /// <para>
+        /// Do Fast Fourier Transform: 
+        /// real <paramref name="input"/> -> complex (<paramref name="re"/>, <paramref name="im"/>).
+        /// </para>
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="re"></param>
-        /// <param name="im"></param>
+        /// <param name="input">Input data (real)</param>
+        /// <param name="re">Output data (real parts)</param>
+        /// <param name="im">Output data (imaginary parts)</param>
         public void Direct(float[] input, float[] re, float[] im)
         {
             // do half-size complex FFT:
@@ -171,11 +180,14 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Inverse transform
+        /// <para>
+        /// Do Inverse Fast Fourier Transform: 
+        /// complex (<paramref name="re"/>, <paramref name="im"/>) -> real <paramref name="output"/>.
+        /// </para>
         /// </summary>
-        /// <param name="re"></param>
-        /// <param name="im"></param>
-        /// <param name="output"></param>
+        /// <param name="re">Input data (real parts)</param>
+        /// <param name="im">Input data (imaginary parts)</param>
+        /// <param name="output">Output data (real)</param>
         public void Inverse(float[] re, float[] im, float[] output)
         {
             // do the first step:
@@ -250,11 +262,14 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Inverse transform (with normalization by Fft size)
+        /// <para>
+        /// Do normalized Inverse Fast Fourier Transform: 
+        /// complex (<paramref name="re"/>, <paramref name="im"/>) -> real <paramref name="output"/>.
+        /// </para>
         /// </summary>
-        /// <param name="re"></param>
-        /// <param name="im"></param>
-        /// <param name="output"></param>
+        /// <param name="re">Input data (real parts)</param>
+        /// <param name="im">Input data (imaginary parts)</param>
+        /// <param name="output">Output data (real)</param>
         public void InverseNorm(float[] re, float[] im, float[] output)
         {
             // do the first step:
@@ -329,20 +344,85 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Magnitude spectrum:
-        /// 
-        ///     spectrum = sqrt(re * re + im * im)
-        /// 
-        /// Since for realFFT: im[0] = im[fftSize/2] = 0
-        /// we don't process separately these elements (like in case of FFT)
-        /// 
+        /// <para>
+        /// Do Fast Fourier Transform: 
+        /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
+        /// </para>
+        /// <para><paramref name="inIm"/> is ignored.</para>
         /// </summary>
-        /// <param name="samples">Array of samples (samples parts)</param>
+        /// <param name="inRe">Input data (real parts)</param>
+        /// <param name="inIm">Input data (imaginary parts)</param>
+        /// <param name="outRe">Output data (real parts)</param>
+        /// <param name="outIm">Output data (imaginary parts)</param>
+        public void Direct(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
+        {
+            Direct(inRe, outRe, outIm);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Do normalized Fast Fourier Transform: 
+        /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
+        /// </para>
+        /// <para><paramref name="inIm"/> is ignored.</para>
+        /// </summary>
+        /// <param name="inRe">Input data (real parts)</param>
+        /// <param name="inIm">Input data (imaginary parts)</param>
+        /// <param name="outRe">Output data (real parts)</param>
+        /// <param name="outIm">Output data (imaginary parts)</param>
+        public void DirectNorm(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
+        {
+            Direct(inRe, outRe, outIm);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Do Inverse Fast Fourier Transform: 
+        /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
+        /// </para>
+        /// <para><paramref name="outIm"/> is ignored.</para>
+        /// </summary>
+        /// <param name="inRe">Input data (real parts)</param>
+        /// <param name="inIm">Input data (imaginary parts)</param>
+        /// <param name="outRe">Output data (real parts)</param>
+        /// <param name="outIm">Output data (imaginary parts)</param>
+        public void Inverse(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
+        {
+            Inverse(inRe, inIm, outRe);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Do normalized Inverse Fast Fourier Transform: 
+        /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
+        /// </para>
+        /// <para><paramref name="outIm"/> is ignored.</para>
+        /// </summary>
+        /// <param name="inRe">Input data (real parts)</param>
+        /// <param name="inIm">Input data (imaginary parts)</param>
+        /// <param name="outRe">Output data (real parts)</param>
+        /// <param name="outIm">Output data (imaginary parts)</param>
+        public void InverseNorm(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
+        {
+            InverseNorm(inRe, inIm, outRe);
+        }
+
+        /// <summary>
+        /// <para>Compute magnitude spectrum from <paramref name="samples"/>:</para>
+        /// <code>
+        ///     spectrum = sqrt(re * re + im * im)
+        /// </code>
+        /// <para>Method fills array <paramref name="spectrum"/>. It must have size at least fftSize/2+1.</para>
+        /// </summary>
+        /// <param name="samples">Array of samples</param>
         /// <param name="spectrum">Magnitude spectrum</param>
-        /// <param name="normalize">Normalization flag</param>
+        /// <param name="normalize">Normalize by FFT size or not</param>
         public void MagnitudeSpectrum(float[] samples, float[] spectrum, bool normalize = false)
         {
             Direct(samples, _realSpectrum, _imagSpectrum);
+
+            // Since for realFFT: im[0] = im[fftSize/2] = 0
+            // we don't process separately these elements (like in case of FFT)
 
             if (normalize)
             {
@@ -361,20 +441,21 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Power spectrum (normalized by default):
-        /// 
-        ///     spectrum =   (re * re + im * im) / fftSize
-        /// 
-        /// Since for realFFT: im[0] = im[fftSize/2] = 0
-        /// we don't process separately these elements (like in case of FFT)
-        /// 
+        /// <para>Compute power spectrum from <paramref name="samples"/>:</para>
+        /// <code>
+        ///     spectrum = sqrt(re * re + im * im)
+        /// </code>
+        /// <para>Method fills array <paramref name="spectrum"/>. It must have size at least fftSize/2+1.</para>
         /// </summary>
-        /// <param name="samples">Array of samples (samples parts)</param>
-        /// <param name="spectrum">Power spectrum</param>
-        /// <param name="normalize">Normalization flag</param>
+        /// <param name="samples">Array of samples</param>
+        /// <param name="spectrum">Magnitude spectrum</param>
+        /// <param name="normalize">Normalize by FFT size or not</param>
         public void PowerSpectrum(float[] samples, float[] spectrum, bool normalize = true)
         {
             Direct(samples, _realSpectrum, _imagSpectrum);
+
+            // Since for realFFT: im[0] = im[fftSize/2] = 0
+            // we don't process separately these elements (like in case of FFT)
 
             if (normalize)
             {
@@ -393,11 +474,13 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Overloaded method for DiscreteSignal as an input
+        /// <para>Compute and return magnitude spectrum from <paramref name="signal"/>:</para>
+        /// <code>
+        ///     spectrum = sqrt(re * re + im * im)
+        /// </code>
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="normalize"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="normalize">Normalize by FFT size or not</param>
         public DiscreteSignal MagnitudeSpectrum(DiscreteSignal signal, bool normalize = false)
         {
             var spectrum = new float[_fftSize + 1];
@@ -406,11 +489,13 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Overloaded method for DiscreteSignal as an input
+        /// <para>Compute and return power spectrum from <paramref name="signal"/>:</para>
+        /// <code>
+        ///     spectrum = (re * re + im * im)
+        /// </code>
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="normalize"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="normalize">Normalize by FFT size or not</param>
         public DiscreteSignal PowerSpectrum(DiscreteSignal signal, bool normalize = true)
         {
             var spectrum = new float[_fftSize + 1];
@@ -419,9 +504,8 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// FFT shift (in-place)
+        /// FFT shift in-place. Throws <see cref="ArgumentException"/> if array of <paramref name="samples"/> has odd length.
         /// </summary>
-        /// <param name="samples"></param>
         public static void Shift(float[] samples)
         {
             if ((samples.Length & 1) == 1)
@@ -443,11 +527,14 @@ namespace NWaves.Transforms
 
 #if NET50
         /// <summary>
-        /// Direct transform
+        /// <para>
+        /// Do Fast Fourier Transform: 
+        /// real <paramref name="input"/> -> complex (<paramref name="re"/>, <paramref name="im"/>).
+        /// </para>
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="re"></param>
-        /// <param name="im"></param>
+        /// <param name="input">Input data (real)</param>
+        /// <param name="re">Output data (real parts)</param>
+        /// <param name="im">Output data (imaginary parts)</param>
         public void Direct(ReadOnlySpan<float> input, Span<float> re, Span<float> im)
         {
             // do half-size complex FFT:
@@ -526,11 +613,14 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Inverse transform
+        /// <para>
+        /// Do Inverse Fast Fourier Transform: 
+        /// complex (<paramref name="re"/>, <paramref name="im"/>) -> real <paramref name="output"/>.
+        /// </para>
         /// </summary>
-        /// <param name="re"></param>
-        /// <param name="im"></param>
-        /// <param name="output"></param>
+        /// <param name="re">Input data (real parts)</param>
+        /// <param name="im">Input data (imaginary parts)</param>
+        /// <param name="output">Output data (real)</param>
         public void Inverse(ReadOnlySpan<float> re, ReadOnlySpan<float> im, Span<float> output)
         {
             // do the first step:
@@ -605,11 +695,14 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Inverse transform (with normalization by Fft size)
+        /// <para>
+        /// Do normalized Inverse Fast Fourier Transform: 
+        /// complex (<paramref name="re"/>, <paramref name="im"/>) -> real <paramref name="output"/>.
+        /// </para>
         /// </summary>
-        /// <param name="re"></param>
-        /// <param name="im"></param>
-        /// <param name="output"></param>
+        /// <param name="re">Input data (real parts)</param>
+        /// <param name="im">Input data (imaginary parts)</param>
+        /// <param name="output">Output data (real)</param>
         public void InverseNorm(ReadOnlySpan<float> re, ReadOnlySpan<float> im, Span<float> output)
         {
             // do the first step:
