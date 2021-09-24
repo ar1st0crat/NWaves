@@ -1,13 +1,13 @@
-﻿using NWaves.Transforms.Base;
+﻿using NWaves.Signals;
 using NWaves.Utils;
 using System;
 
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class representing Fast Hilbert Transform.
+    /// Class representing Fast Hilbert Transform (for 64-bit data).
     /// </summary>
-    public class HilbertTransform : ITransform
+    public class HilbertTransform64
     {
         /// <summary>
         /// Gets size of Hilbert transform.
@@ -17,35 +17,35 @@ namespace NWaves.Transforms
         /// <summary>
         /// Internal FFT transformer.
         /// </summary>
-        private readonly Fft _fft;
+        private readonly Fft64 _fft;
 
         /// <summary>
         /// Intermediate buffer for real parts.
         /// </summary>
-        private readonly float[] _re;
+        private readonly double[] _re;
 
         /// <summary>
         /// Intermediate buffer for imaginary parts.
         /// </summary>
-        private readonly float[] _im;
+        private readonly double[] _im;
 
         /// <summary>
         /// Construct Hilbert transformer. Transform <paramref name="size"/> must be a power of 2.
         /// </summary>
         /// <param name="size">Size of Hilbert Transform</param>
-        public HilbertTransform(int size = 512)
+        public HilbertTransform64(int size = 512)
         {
             Size = size;
-            _fft = new Fft(size);
-            _re = new float[size];
-            _im = new float[size];
+            _fft = new Fft64(size);
+            _re = new double[size];
+            _im = new double[size];
         }
 
         /// <summary>
         /// Compute complex analytic signal (real and imaginary parts) from <paramref name="input"/>.
         /// </summary>
         /// <param name="input">Input data</param>
-        public (float[], float[]) AnalyticSignal(float[] input)
+        public ComplexDiscreteSignal AnalyticSignal(double[] input)
         {
             Direct(input, _im);
 
@@ -54,8 +54,8 @@ namespace NWaves.Transforms
                 _re[i] /= Size;
                 _im[i] /= Size;
             }
-            
-            return (_re.FastCopy(), _im.FastCopy());
+
+            return new ComplexDiscreteSignal(1, _re, _im, allocateNew: true);
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
-        public void Direct(float[] input, float[] output)
+        public void Direct(double[] input, double[] output)
         {
             // just here, for code brevity, use alias _im for output (i.e. it's not internal _im)
             var _im = output;
@@ -95,7 +95,7 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
-        public void DirectNorm(float[] input, float[] output)
+        public void DirectNorm(double[] input, double[] output)
         {
             Direct(input, output);
 
@@ -110,7 +110,7 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
-        public void Inverse(float[] input, float[] output)
+        public void Inverse(double[] input, double[] output)
         {
             Direct(input, output);
 
@@ -125,7 +125,7 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
-        public void InverseNorm(float[] input, float[] output)
+        public void InverseNorm(double[] input, double[] output)
         {
             DirectNorm(input, output);
 

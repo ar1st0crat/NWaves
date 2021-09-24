@@ -15,7 +15,7 @@ namespace NWaves.Tests.TransformTests
         {
             var output = new float[8];
 
-            _ct.Direct(_input, output);
+            _ct.DirectNorm(_input, output);
 
             Assert.That(output, Is.EqualTo(new[] { 5.34123949e+00, -6.07112628e-02, -3.81738790e-02,  1.43294733e-01,
                                                    6.28384672e-03,  1.79680255e-03, -5.12632421e-03,  7.09771400e-03 }).Within(1e-5));
@@ -30,8 +30,8 @@ namespace NWaves.Tests.TransformTests
             var output = new float[8];
             var cepstrum = new float[8];
 
-            var d = ct.Direct(input, output);
-            ct.Inverse(output, cepstrum, d);
+            var d = ct.ComplexCepstrum(input, output);
+            ct.InverseComplexCepstrum(output, cepstrum, true, d);
 
             Assert.That(cepstrum, Is.EqualTo(input).Within(1e-4));
         }

@@ -3,31 +3,30 @@ using System;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class providing methods for Discrete Cosine Transform of type-II.
-    /// See https://en.wikipedia.org/wiki/Discrete_cosine_transform
+    /// Class representing Discrete Cosine Transform of Type-II.
     /// </summary>
     public class Dct2 : IDct
     {
         /// <summary>
-        /// DCT precalculated cosine matrix
+        /// DCT-II precalculated cosine matrix. 
         /// </summary>
         private readonly float[][] _dctMtx;
 
         /// <summary>
-        /// IDCT precalculated cosine matrix
+        /// IDCT-II precalculated cosine matrix.
         /// </summary>
         private readonly float[][] _dctMtxInv;
 
         /// <summary>
-        /// Size of DCT
+        /// Size of DCT-II.
         /// </summary>
         public int Size => _dctSize;
         private readonly int _dctSize;
 
         /// <summary>
-        /// Precalculate DCT matrices
+        /// Construct <see cref="Dct2"/> of given <paramref name="dctSize"/> and precalculate DCT matrices.
         /// </summary>
-        /// <param name="dctSize"></param>
+        /// <param name="dctSize">Size of DCT-II</param>
         public Dct2(int dctSize)
         {
             _dctSize = dctSize;
@@ -60,10 +59,10 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// DCT-II (without normalization)
+        /// Do DCT-II.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void Direct(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
@@ -78,10 +77,10 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// DCT-II (with normalization)
+        /// Do normalized DCT-II.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void DirectNorm(float[] input, float[] output)
         {
             var norm0 = (float)Math.Sqrt(0.5);
@@ -103,10 +102,10 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// IDCT-II (without normalization)
+        /// Do Inverse DCT-II.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void Inverse(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
@@ -121,10 +120,10 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// IDCT-II (with normalization)
+        /// Do normalized Inverse DCT-II.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void InverseNorm(float[] input, float[] output)
         {
             var norm0 = (float)Math.Sqrt(0.5);

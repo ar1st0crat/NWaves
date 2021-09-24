@@ -1,22 +1,22 @@
-﻿using System;
-using NWaves.Signals;
-using NWaves.Transforms.Base;
+﻿using NWaves.Transforms.Base;
 using NWaves.Utils;
+using System;
 
 namespace NWaves.Transforms
 {
     /// <summary>
     /// <para>Class representing Cepstral Transform (CT):</para>
     /// <list type="number">
-    ///     <item>Direct Complex CT</item>
+    ///     <item>Direct Complex CT (complex cepstrum)</item>
     ///     <item>Inverse Complex CT</item>
     ///     <item>Real cepstrum</item>
     ///     <item>Power cepstrum</item>
     ///     <item>Phase cepstrum</item>
     /// </list>
-    /// <para>1,2) and 3) are identical to MATLAB cceps/icceps and rceps, respectively.</para>
+    /// <para>1,2) and 3) are identical to MATLAB functions cceps, icceps and rceps, respectively.</para>
+    /// <para><see cref="CepstralTransform"/> operates on real-valued data.</para>
     /// </summary>
-    public class CepstralTransform : IComplexTransform
+    public class CepstralTransform : ITransform
     {
         /// <summary>
         /// Gets cepstrum size.
@@ -34,22 +34,24 @@ namespace NWaves.Transforms
         private readonly double _logBase;
 
         /// <summary>
-        /// Intermediate buffer storing real parts of spectrum.
+        /// Internal array for real parts of spectrum.
         /// </summary>
-        private readonly float[] _realSpectrum;
+        private readonly float[] _re;
 
         /// <summary>
-        /// Intermediate buffer storing imaginary parts of spectrum.
+        /// Internal array for imaginary parts of spectrum.
         /// </summary>
-        private readonly float[] _imagSpectrum;
+        private readonly float[] _im;
 
         /// <summary>
-        /// Intermediate buffer storing unwrapped phase.
+        /// Internal array for storing the unwrapped phase.
         /// </summary>
         private readonly double[] _unwrapped;
 
         /// <summary>
-        /// Construct cepstral transformer.
+        /// Construct cepstral transformer. 
+        /// If <paramref name="cepstrumSize"/> exceeds <paramref name="fftSize"/>, 
+        /// FFT size will be recalculated as the nearest power of 2 to cepstrum size.
         /// </summary>
         /// <param name="cepstrumSize">Cepstrum size</param>
         /// <param name="fftSize">FFT size</param>
@@ -67,43 +69,44 @@ namespace NWaves.Transforms
 
             _logBase = logBase;
 
-            _realSpectrum = new float[fftSize];
-            _imagSpectrum = new float[fftSize];
+            _re = new float[fftSize];
+            _im = new float[fftSize];
             _unwrapped = new double[fftSize];
         }
 
         /// <summary>
-        /// Do direct complex cepstral transform:
+        /// Evaluate complex cepstrum as:
         /// <code>
         ///    Real{IFFT(log(abs(FFT(x)) + unwrapped_phase))}
         /// </code>
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="cepstrum"></param>
-        /// <returns></returns>
-        public double Direct(float[] input, float[] cepstrum)
+        /// <param name="input">Input data</param>
+        /// <param name="cepstrum">Complex cepstrum</param>
+        /// <param name="normalize">Normalize cepstrum by FFT size</param>
+        /// <returns>Circular delay (number of samples) added to <paramref name="input"/></returns>
+        public double ComplexCepstrum(float[] input, float[] cepstrum, bool normalize = true)
         {
-            Array.Clear(_realSpectrum, 0, _realSpectrum.Length);
-            Array.Clear(_imagSpectrum, 0, _imagSpectrum.Length);
+            Array.Clear(_re, 0, _re.Length);
+            Array.Clear(_im, 0, _im.Length);
 
-            input.FastCopyTo(_realSpectrum, input.Length);
+            input.FastCopyTo(_re, input.Length);
 
             // complex fft
 
-            _fft.Direct(_realSpectrum, _imagSpectrum);
+            _fft.Direct(_re, _im);
 
             // complex logarithm of magnitude spectrum
 
             // the most difficult part is phase unwrapping which is slightly different from MathUtils.Unwrap
-            
+
             var offset = 0.0;
             _unwrapped[0] = 0.0;
 
-            var prevPhase = Math.Atan2(_imagSpectrum[0], _realSpectrum[0]);
+            var prevPhase = Math.Atan2(_im[0], _re[0]);
 
             for (var n = 1; n < _unwrapped.Length; n++)
             {
-                var phase = Math.Atan2(_imagSpectrum[n], _realSpectrum[n]);
+                var phase = Math.Atan2(_im[n], _re[n]);
 
                 var delta = phase - prevPhase;
 
@@ -120,162 +123,145 @@ namespace NWaves.Transforms
                 prevPhase = phase;
             }
 
-            var mid = _realSpectrum.Length / 2;
+            var mid = _re.Length / 2;
             var delay = Math.Round(_unwrapped[mid] / Math.PI);
 
-            for (var i = 0; i < _realSpectrum.Length; i++)
+            for (var i = 0; i < _re.Length; i++)
             {
                 _unwrapped[i] -= Math.PI * delay * i / mid;
 
-                var mag = Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]);
+                var mag = Math.Sqrt(_re[i] * _re[i] + _im[i] * _im[i]);
 
-                _realSpectrum[i] = (float)Math.Log(mag + float.Epsilon, _logBase);
-                _imagSpectrum[i] = (float)_unwrapped[i];
+                _re[i] = (float)Math.Log(mag + float.Epsilon, _logBase);
+                _im[i] = (float)_unwrapped[i];
             }
 
             // complex ifft
 
-            _fft.Inverse(_realSpectrum, _imagSpectrum);
+            _fft.Inverse(_re, _im);
 
             // take truncated part
 
-            _realSpectrum.FastCopyTo(cepstrum, Size);
+            _re.FastCopyTo(cepstrum, Size);
 
-            // normalize
-
-            for (var i = 0; i < cepstrum.Length; i++)
+            if (normalize)
             {
-                cepstrum[i] /= _fft.Size;
+                for (var i = 0; i < cepstrum.Length; i++)
+                {
+                    cepstrum[i] /= _fft.Size;
+                }
             }
 
             return delay;
         }
 
         /// <summary>
-        /// Direct complex cepstral transform
+        /// Evaluate inverse complex cepstrum of <paramref name="input"/> (removing <paramref name="delay"/> samples).
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public DiscreteSignal Direct(DiscreteSignal signal)
+        /// <param name="input">Input data</param>
+        /// <param name="cepstrum">Inverse complex cepstrum</param>
+        /// <param name="normalize">Normalize result by FFT size</param>
+        /// <param name="delay">Delay (usually, returned by function <see cref="ComplexCepstrum(float[], float[], bool)"/>)</param>
+        public void InverseComplexCepstrum(float[] input, float[] cepstrum, bool normalize = true, double delay = 0)
         {
-            var cepstrum = new float[Size];
-            Direct(signal.Samples, cepstrum);
-            return new DiscreteSignal(signal.SamplingRate, cepstrum);
-        }
+            Array.Clear(_re, 0, _re.Length);
+            Array.Clear(_im, 0, _im.Length);
 
-        /// <summary>
-        /// Inverse complex cepstral transform
-        /// </summary>
-        /// <param name="cepstrum"></param>
-        /// <param name="output"></param>
-        /// <param name="delay"></param>
-        /// <returns></returns>
-        public void Inverse(float[] cepstrum, float[] output, double delay = 0)
-        {
-            Array.Clear(_realSpectrum, 0, _realSpectrum.Length);
-            Array.Clear(_imagSpectrum, 0, _imagSpectrum.Length);
-
-            cepstrum.FastCopyTo(_realSpectrum, cepstrum.Length);
+            input.FastCopyTo(_re, input.Length);
 
             // complex fft
 
-            _fft.Direct(_realSpectrum, _imagSpectrum);
+            _fft.Direct(_re, _im);
 
             // complex exp() of spectrum
 
-            var mid = _realSpectrum.Length / 2;
+            var mid = _re.Length / 2;
 
-            for (var i = 0; i < _realSpectrum.Length; i++)
+            for (var i = 0; i < _re.Length; i++)
             {
-                var mag = _realSpectrum[i];
-                var phase = _imagSpectrum[i] + Math.PI * delay * i / mid;
+                var mag = _re[i];
+                var phase = _im[i] + Math.PI * delay * i / mid;
 
-                _realSpectrum[i] = (float)(Math.Pow(_logBase, mag) * Math.Cos(phase));
-                _imagSpectrum[i] = (float)(Math.Pow(_logBase, mag) * Math.Sin(phase));
+                _re[i] = (float)(Math.Pow(_logBase, mag) * Math.Cos(phase));
+                _im[i] = (float)(Math.Pow(_logBase, mag) * Math.Sin(phase));
             }
 
             // complex ifft
 
-            _fft.Inverse(_realSpectrum, _imagSpectrum);
+            _fft.Inverse(_re, _im);
 
             // take truncated part
 
-            _realSpectrum.FastCopyTo(output, output.Length);
+            _re.FastCopyTo(cepstrum, cepstrum.Length);
 
-            // normalize
-
-            for (var i = 0; i < output.Length; i++)
+            if (normalize)
             {
-                output[i] /= _fft.Size;
+                for (var i = 0; i < cepstrum.Length; i++)
+                {
+                    cepstrum[i] /= _fft.Size;
+                }
             }
         }
 
         /// <summary>
-        /// Inverse complex cepstral transform
+        /// Evaluate real cepstrum as:
+        /// <code>
+        ///    real{IFFT(log(abs(FFT(x))))}
+        /// </code>
         /// </summary>
-        /// <param name="cepstrum"></param>
-        /// <returns></returns>
-        public DiscreteSignal Inverse(DiscreteSignal cepstrum)
+        /// <param name="input">Input data</param>
+        /// <param name="cepstrum">Real cesptrum</param>
+        /// <param name="normalize">Normalize cepstrum by FFT size</param>
+        public void RealCepstrum(float[] input, float[] cepstrum, bool normalize = true)
         {
-            var output = new float[_realSpectrum.Length];
-            Inverse(cepstrum.Samples, output);
-            return new DiscreteSignal(cepstrum.SamplingRate, output);
-        }
+            Array.Clear(_re, 0, _re.Length);
+            Array.Clear(_im, 0, _im.Length);
 
-        /// <summary>
-        /// Real cepstrum:
-        /// 
-        /// real{IFFT(log(abs(FFT(x))))}
-        /// 
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="cepstrum"></param>
-        public void RealCepstrum(float[] input, float[] cepstrum)
-        {
-            Array.Clear(_realSpectrum, 0, _realSpectrum.Length);
-            Array.Clear(_imagSpectrum, 0, _imagSpectrum.Length);
-
-            input.FastCopyTo(_realSpectrum, input.Length);
+            input.FastCopyTo(_re, input.Length);
 
             // complex fft
 
-            _fft.Direct(_realSpectrum, _imagSpectrum);
+            _fft.Direct(_re, _im);
 
             // logarithm of magnitude spectrum
 
-            for (var i = 0; i < _realSpectrum.Length; i++)
+            for (var i = 0; i < _re.Length; i++)
             {
-                var mag = Math.Sqrt(_realSpectrum[i] * _realSpectrum[i] + _imagSpectrum[i] * _imagSpectrum[i]);
+                var mag = Math.Sqrt(_re[i] * _re[i] + _im[i] * _im[i]);
 
-                _realSpectrum[i] = (float)Math.Log(mag + float.Epsilon, _logBase);
-                _imagSpectrum[i] = 0.0f;
+                _re[i] = (float)Math.Log(mag + float.Epsilon, _logBase);
+                _im[i] = 0.0f;
             }
 
             // complex ifft
 
-            _fft.Inverse(_realSpectrum, _imagSpectrum);
+            _fft.Inverse(_re, _im);
 
             // take truncated part
 
-            _realSpectrum.FastCopyTo(cepstrum, Size);
+            _re.FastCopyTo(cepstrum, Size);
 
-            // normalize
-
-            for (var i = 0; i < cepstrum.Length; i++)
+            if (normalize)
             {
-                cepstrum[i] /= _fft.Size;
+                for (var i = 0; i < cepstrum.Length; i++)
+                {
+                    cepstrum[i] /= _fft.Size;
+                }
             }
         }
 
         /// <summary>
-        /// Wiki:
-        /// power_cepstrum = 4 * real_cepstrum ^ 2
+        /// Evaluate power cepstrum as: 
+        /// <code>
+        ///    power_cepstrum = 4 * real_cepstrum ^ 2
+        /// </code>
         /// </summary>
         /// <param name="input"></param>
         /// <param name="cepstrum"></param>
-        public void PowerCepstrum(float[] input, float[] cepstrum)
+        /// <param name="normalize"></param>
+        public void PowerCepstrum(float[] input, float[] cepstrum, bool normalize = true)
         {
-            RealCepstrum(input, cepstrum);
+            RealCepstrum(input, cepstrum, normalize);
 
             for (var i = 0; i < cepstrum.Length; i++)
             {
@@ -286,44 +272,59 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Wiki:
-        /// phase_cepstrum = (complex_cepstrum - reversed_complex_cepstrum) ^ 2
+        /// Evaluate phase cepstrum as: 
+        /// <code>
+        ///     phase_cepstrum = (complex_cepstrum - reversed_complex_cepstrum) ^ 2
+        /// </code>
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="cepstrum"></param>
-        public void PhaseCepstrum(float[] input, float[] cepstrum)
+        /// <param name="input">Input data</param>
+        /// <param name="cepstrum">Phase cepstrum</param>
+        /// <param name="normalize">Normalize cepstrum by FFT size</param>
+        public void PhaseCepstrum(float[] input, float[] cepstrum, bool normalize = true)
         {
-            Direct(input, cepstrum);
+            ComplexCepstrum(input, cepstrum, normalize);
 
             // use this free memory block for storing reversed cepstrum
-            cepstrum.FastCopyTo(_realSpectrum, cepstrum.Length);
+            cepstrum.FastCopyTo(_re, cepstrum.Length);
 
             for (var i = 0; i < cepstrum.Length; i++)
             {
-                var pc = cepstrum[i] - _realSpectrum[cepstrum.Length - 1 - i];
+                var pc = cepstrum[i] - _re[cepstrum.Length - 1 - i];
 
                 cepstrum[i] = pc * pc;
             }
         }
 
-        public void Direct(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Do cepstral transform. 
+        /// It simply calls <see cref="ComplexCepstrum(float[], float[], bool)"/> ignoring the delay parameter.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
+        public void Direct(float[] input, float[] output) => ComplexCepstrum(input, output, false);
 
-        public void DirectNorm(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Do normalized cepstral transform. 
+        /// It simply calls <see cref="ComplexCepstrum(float[], float[], bool)"/> ignoring the delay parameter.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
+        public void DirectNorm(float[] input, float[] output) => ComplexCepstrum(input, output);
 
-        public void Inverse(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Do inverse cepstral transform. 
+        /// It simply calls <see cref="InverseComplexCepstrum(float[], float[], bool, double)"/> ignoring the delay parameter.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
+        public void Inverse(float[] input, float[] output) => InverseComplexCepstrum(input, output, false);
 
-        public void InverseNorm(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Do normalized inverse cepstral transform. 
+        /// It simply calls <see cref="InverseComplexCepstrum(float[], float[], bool, double)"/> ignoring the delay parameter.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
+        public void InverseNorm(float[] input, float[] output) => InverseComplexCepstrum(input, output);
     }
 }

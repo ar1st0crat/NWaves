@@ -55,22 +55,7 @@ namespace NWaves.Transforms
         /// Do inverse Hartley transform in-place.
         /// </summary>
         /// <param name="re">Input/output data</param>
-        public void Inverse(float[] re)
-        {
-            _im[0] = 0;
-            
-            for (var i = 1; i <= re.Length / 2; i++)
-            {
-                var x = (re[Size - i] - re[i]) * 0.5f;
-                _im[i] = x;
-                _im[Size - i] = -x;
-
-                x = (re[i] + re[Size - i]) * 0.5f;
-                re[i] = re[Size - i] = x;
-            }
-
-            _fft.Inverse(re, _im);
-        }
+        public void Inverse(float[] re) => Direct(re);
 
         /// <summary>
         /// Do normalized Inverse Fast Hartley transform in-place.
@@ -78,19 +63,7 @@ namespace NWaves.Transforms
         /// <param name="re">Input/output data</param>
         public void InverseNorm(float[] re)
         {
-            _im[0] = 0;
-
-            for (var i = 1; i <= re.Length / 2; i++)
-            {
-                var x = (re[Size - i] - re[i]) * 0.5f;
-                _im[i] = x;
-                _im[Size - i] = -x;
-
-                x = (re[i] + re[Size - i]) * 0.5f;
-                re[i] = re[Size - i] = x;
-            }
-
-            _fft.Inverse(re, _im);
+            Direct(re);
 
             for (var i = 0; i < re.Length; i++)
             {

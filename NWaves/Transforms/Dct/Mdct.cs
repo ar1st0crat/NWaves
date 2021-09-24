@@ -3,26 +3,30 @@
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class providing methods for Modified Discrete Cosine Transform (MDCT).
+    /// Class representing Modified Discrete Cosine Transform (MDCT).
     /// </summary>
     public class Mdct : IDct
     {
         /// <summary>
-        /// Internal DCT-IV transformer
+        /// Internal DCT-IV transformer.
         /// </summary>
         private readonly IDct _dct;
         
         /// <summary>
-        /// Internal temporary buffer
+        /// Internal temporary buffer.
         /// </summary>
         private readonly float[] _temp;
 
         /// <summary>
-        /// MDCT size
+        /// Size of MDCT.
         /// </summary>
         public int Size => _dct.Size;
 
-
+        /// <summary>
+        /// Construct <see cref="Mdct"/> of given <paramref name="dctSize"/>.
+        /// </summary>
+        /// <param name="dctSize">Size of MDCT</param>
+        /// <param name="dct">Internal DCT transformer (by default, <see cref="Dct4"/>)</param>
         public Mdct(int dctSize, IDct dct = null)
         {
             _dct = dct ?? new Dct4(dctSize);
@@ -30,10 +34,12 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Direct MDCT
+        /// Do MDCT. 
+        /// Length of <paramref name="input"/> must be equal to 2*<see cref="Mdct.Size"/>. 
+        /// Length of <paramref name="output"/> must be equal to <see cref="Mdct.Size"/>. 
         /// </summary>
-        /// <param name="input">Input length must be equal to 2*DctSize</param>
-        /// <param name="output">Output length must be equal to DctSize</param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void Direct(float[] input, float[] output)
         {
             int N = _dct.Size;
@@ -51,10 +57,27 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Inverse MDCT
+        /// Do normalized MDCT.
+        /// Length of <paramref name="input"/> must be equal to 2*<see cref="Mdct.Size"/>. 
+        /// Length of <paramref name="output"/> must be equal to <see cref="Mdct.Size"/>. 
         /// </summary>
-        /// <param name="input">Input length must be equal to DctSize</param>
-        /// <param name="output">Output length must be equal to 2*DctSize</param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
+        public void DirectNorm(float[] input, float[] output)
+        {
+            Direct(input, output);
+
+            var norm = 2 * (float)Math.Sqrt(2 * _dct.Size);
+            for (var i = 0; i < output.Length; output[i++] /= norm) ;
+        }
+
+        /// <summary>
+        /// Do Inverse MDCT.
+        /// Length of <paramref name="input"/> must be equal to <see cref="Mdct.Size"/>. 
+        /// Length of <paramref name="output"/> must be equal to 2*<see cref="Mdct.Size"/>. 
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void Inverse(float[] input, float[] output)
         {
             int N = _dct.Size;
@@ -80,23 +103,12 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Direct MDCT (with normalization)
+        /// Do normalized Inverse MDCT.
+        /// Length of <paramref name="input"/> must be equal to <see cref="Mdct.Size"/>. 
+        /// Length of <paramref name="output"/> must be equal to 2*<see cref="Mdct.Size"/>. 
         /// </summary>
-        /// <param name="input">Input length must be equal to 2*DctSize</param>
-        /// <param name="output">Output length must be equal to DctSize</param>
-        public void DirectNorm(float[] input, float[] output)
-        {
-            Direct(input, output);
-
-            var norm = 2 * (float)Math.Sqrt(2 * _dct.Size);
-            for (var i = 0; i < output.Length; output[i++] /= norm) ;
-        }
-
-        /// <summary>
-        /// Inverse MDCT (with normalization)
-        /// </summary>
-        /// <param name="input">Input length must be equal to DctSize</param>
-        /// <param name="output">Output length must be equal to 2*DctSize</param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void InverseNorm(float[] input, float[] output)
         {
             Inverse(input, output);

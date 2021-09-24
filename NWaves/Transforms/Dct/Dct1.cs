@@ -3,26 +3,25 @@ using System;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class providing methods for Discrete Cosine Transform of type-I.
-    /// See https://en.wikipedia.org/wiki/Discrete_cosine_transform
+    /// Class representing Discrete Cosine Transform of Type-I.
     /// </summary>
     public class Dct1 : IDct
     {
         /// <summary>
-        /// DCT precalculated cosine matrix
+        /// DCT-I precalculated cosine matrix. 
         /// </summary>
         private readonly float[][] _dctMtx;
 
         /// <summary>
-        /// Size of DCT
+        /// Size of DCT-I.
         /// </summary>
         public int Size => _dctSize;
         private readonly int _dctSize;
 
         /// <summary>
-        /// Precalculate DCT matrices
+        /// Construct <see cref="Dct1"/> of given <paramref name="dctSize"/> and precalculate DCT matrices.
         /// </summary>
-         /// <param name="dctSize"></param>
+         /// <param name="dctSize">Size of DCT-I</param>
         public Dct1(int dctSize)
         {
             _dctSize = dctSize;
@@ -44,10 +43,10 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// DCT-I (without normalization)
+        /// Do DCT-I.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void Direct(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
@@ -69,35 +68,10 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// IDCT-I (without normalization)
+        /// Do normalized DCT-I.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
-        public void Inverse(float[] input, float[] output)
-        {
-            for (var k = 0; k < output.Length; k++)
-            {
-                if ((k & 1) == 0)
-                {
-                    output[k] = (input[0] + input[input.Length - 1]);
-                }
-                else
-                {
-                    output[k] = (input[0] - input[input.Length - 1]);
-                }
-
-                for (var n = 1; n < input.Length - 1; n++)
-                {
-                    output[k] += input[n] * _dctMtx[k][n];
-                }
-            }
-        }
-
-        /// <summary>
-        /// DCT-I (with normalization)
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void DirectNorm(float[] input, float[] output)
         {
             var sqrt2 = (float)Math.Sqrt(2);
@@ -131,10 +105,35 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Inverse DCT-I (with normalization)
+        /// Do Inverse DCT-I.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
+        public void Inverse(float[] input, float[] output)
+        {
+            for (var k = 0; k < output.Length; k++)
+            {
+                if ((k & 1) == 0)
+                {
+                    output[k] = (input[0] + input[input.Length - 1]);
+                }
+                else
+                {
+                    output[k] = (input[0] - input[input.Length - 1]);
+                }
+
+                for (var n = 1; n < input.Length - 1; n++)
+                {
+                    output[k] += input[n] * _dctMtx[k][n];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Do normalized Inverse DCT-I.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void InverseNorm(float[] input, float[] output)
         {
             var sqrt2 = (float)Math.Sqrt(2);

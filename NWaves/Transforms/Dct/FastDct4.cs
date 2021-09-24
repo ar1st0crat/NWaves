@@ -3,28 +3,31 @@
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Fast implementation of DCT-IV via FFT
+    /// Class representing Discrete Cosine Transform of Type-IV. 
+    /// This FFT-based implementation of DCT-IV is faster for bigger DCT sizes.
     /// </summary>
     public class FastDct4 : IDct
     {
         /// <summary>
-        /// Internal FFT transformer
+        /// Internal FFT transformer.
         /// </summary>
         private readonly Fft _fft;
 
-        /// <summary>
-        /// Internal temporary buffer
-        /// </summary>
+        // Internal temporary buffers:
+        
         private readonly float[] _temp;
         private readonly float[] _tempRe;
         private readonly float[] _tempIm;
 
         /// <summary>
-        /// DCT size
+        /// Size of DCT-IV.
         /// </summary>
         public int Size => 2 * _fft.Size;
 
-
+        /// <summary>
+        /// Construct <see cref="FastDct4"/> of given <paramref name="dctSize"/>.
+        /// </summary>
+        /// <param name="dctSize">Size of DCT-IV</param>
         public FastDct4(int dctSize)
         {
             var halfSize = dctSize / 2;
@@ -34,6 +37,11 @@ namespace NWaves.Transforms
             _tempIm = new float[halfSize];
         }
 
+        /// <summary>
+        /// Do DCT-IV.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void Direct(float[] input, float[] output)
         {
             Array.Clear(output, 0, output.Length);
@@ -78,6 +86,11 @@ namespace NWaves.Transforms
             }
         }
 
+        /// <summary>
+        /// Do normalized DCT-IV.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void DirectNorm(float[] input, float[] output)
         {
             Direct(input, output);
@@ -87,11 +100,21 @@ namespace NWaves.Transforms
             for (var i = 0; i < Size; output[i++] *= norm) ;
         }
 
+        /// <summary>
+        /// Do Inverse DCT-IV.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void Inverse(float[] input, float[] output)
         {
             Direct(input, output);
         }
 
+        /// <summary>
+        /// Do normalized Inverse DCT-IV.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void InverseNorm(float[] input, float[] output)
         {
             DirectNorm(input, output);

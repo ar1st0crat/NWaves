@@ -21,6 +21,11 @@ namespace NWaves.Transforms
         public int Size { get; private set; }
 
         /// <summary>
+        /// Beta coefficient (0.5 by default, which corresponds to Scale transform).
+        /// </summary>
+        private readonly double _beta;
+
+        /// <summary>
         /// Time points on linear scale.
         /// </summary>
         private readonly float[] _linScale;
@@ -41,13 +46,15 @@ namespace NWaves.Transforms
         /// </summary>
         /// <param name="inputSize">Expected size of input data</param>
         /// <param name="size">Size of output data</param>
-        public MellinTransform(int inputSize, int size)
+        /// <param name="beta">Beta coefficient (0.5 by default, which corresponds to Scale transform)</param>
+        public MellinTransform(int inputSize, int size, double beta = 0.5)
         {
             Guard.AgainstNotPowerOfTwo(size, "Output size of Mellin Transform");
 
             InputSize = inputSize;
             Size = size;
 
+            _beta = beta;
             _fft = new RealFft(size);
 
             _linScale = Enumerable.Range(0, inputSize)
@@ -71,24 +78,28 @@ namespace NWaves.Transforms
         /// <param name="input">Input array of samples</param>
         /// <param name="outRe">Output array of real parts</param>
         /// <param name="outIm">Output array of imaginary parts</param>
-        /// <param name="beta">Beta coefficient (0.5 by default, which corresponds to Scale transform)</param>
-        /// <param name="normalize">Normalize output by square root of FFT size</param>
-        public void Direct(float[] input, float[] outRe, float[] outIm, double beta = 0.5, bool normalize = true)
+        public void Direct(float[] input, float[] outRe, float[] outIm)
         {
             MathUtils.InterpolateLinear(_linScale, input, _expScale, outRe);
 
             for (var i = 0; i < outRe.Length; i++)
             {
-                outRe[i] *= (float)Math.Pow(_expScale[i], beta);
+                outRe[i] *= (float)Math.Pow(_expScale[i], _beta);
                 outIm[i] = 0;
             }
 
             _fft.Direct(outRe, outRe, outIm);
+        }
 
-            if (!normalize)
-            {
-                return;
-            }
+        /// <summary>
+        /// Do normalized Fast Mellin Transform.
+        /// </summary>
+        /// <param name="input">Input array of samples</param>
+        /// <param name="outRe">Output array of real parts</param>
+        /// <param name="outIm">Output array of imaginary parts</param>
+        public void DirectNorm(float[] input, float[] outRe, float[] outIm)
+        {
+            Direct(input, outRe, outIm);
 
             var norm = (float)(1 / Math.Sqrt(outRe.Length));
 
@@ -108,7 +119,7 @@ namespace NWaves.Transforms
         /// <param name="outIm">Output data (imaginary parts)</param>
         public void Direct(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
         {
-            Direct(inRe, outRe, outIm, normalize: false);
+            Direct(inRe, outRe, outIm);
         }
 
         /// <summary>
@@ -120,7 +131,7 @@ namespace NWaves.Transforms
         /// <param name="outIm">Output data (imaginary parts)</param>
         public void DirectNorm(float[] inRe, float[] inIm, float[] outRe, float[] outIm)
         {
-            Direct(inRe, outRe, outIm, normalize: true);
+            DirectNorm(inRe, outRe, outIm);
         }
 
         /// <summary>

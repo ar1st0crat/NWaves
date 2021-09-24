@@ -169,7 +169,7 @@ namespace NWaves.Operations
         /// <returns></returns>
         public DiscreteSignal DemodulateAmplitude(DiscreteSignal signal)
         {
-            var ht = new HilbertTransform(signal.Length, false);
+            var ht = new HilbertTransform(signal.Length);
             var mag = ht.AnalyticSignal(signal.Samples).Magnitude();
 
             return new DiscreteSignal(signal.SamplingRate, mag) - 1.0f;
@@ -186,7 +186,7 @@ namespace NWaves.Operations
 
             MathUtils.Diff(signal.Samples, diff);
 
-            var ht = new HilbertTransform(signal.Length, false);
+            var ht = new HilbertTransform(signal.Length);
             var mag = ht.AnalyticSignal(diff).Magnitude();
 
             return new DiscreteSignal(signal.SamplingRate, mag) - 1.0f;

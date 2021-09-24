@@ -3,26 +3,30 @@
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Fast implementation of DCT-II via FFT
+    /// Class representing Discrete Cosine Transform of Type-II. 
+    /// This FFT-based implementation of DCT-II is faster for bigger DCT sizes.
     /// </summary>
     public class FastDct2 : IDct
     {
         /// <summary>
-        /// Internal FFT transformer
+        /// Internal FFT transformer.
         /// </summary>
         private readonly Fft _fft;
 
         /// <summary>
-        /// Internal temporary buffer
+        /// Internal temporary buffer.
         /// </summary>
         private readonly float[] _temp;
 
         /// <summary>
-        /// Size of DCT
+        /// Size of DCT-II.
         /// </summary>
         public int Size => _fft.Size;
 
-
+        /// <summary>
+        /// Construct <see cref="FastDct2"/> of given <paramref name="dctSize"/>.
+        /// </summary>
+        /// <param name="dctSize">Size of DCT-II</param>
         public FastDct2(int dctSize)
         {
             _fft = new Fft(dctSize);
@@ -30,10 +34,10 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Direct DCT-II via FFT
+        /// Do DCT-II.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void Direct(float[] input, float[] output)
         {
             Array.Clear(output, 0, output.Length);
@@ -56,10 +60,10 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Direct DCT-II via FFT (with normalization)
+        /// Do normalized DCT-II.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void DirectNorm(float[] input, float[] output)
         {
             Array.Clear(output, 0, output.Length);
@@ -86,10 +90,10 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Inverse DCT-II via FFT
+        /// Do Inverse DCT-II.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void Inverse(float[] input, float[] output)
         {
             // multiply by exp(j * pi * n / 2N):
@@ -112,6 +116,11 @@ namespace NWaves.Transforms
             }
         }
 
+        /// <summary>
+        /// Normalized Inverse DCT-II via FFT is not implemented.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void InverseNorm(float[] input, float[] output)
         {
             throw new NotImplementedException();

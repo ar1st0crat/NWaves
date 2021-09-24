@@ -3,26 +3,25 @@ using System;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class providing methods for Discrete Cosine Transform of type-IV.
-    /// See https://en.wikipedia.org/wiki/Discrete_cosine_transform
+    /// Class representing Discrete Cosine Transform of Type-IV.
     /// </summary>
     public class Dct4 : IDct
     {
         /// <summary>
-        /// DCT precalculated cosine matrix
+        /// DCT-IV precalculated cosine matrix.
         /// </summary>
         private readonly float[][] _dctMtx;
 
         /// <summary>
-        /// Size of DCT
+        /// Size of DCT-IV.
         /// </summary>
         public int Size => _dctSize;
         private readonly int _dctSize;
 
         /// <summary>
-        /// Precalculate DCT matrices
+        /// Construct <see cref="Dct4"/> of given <paramref name="dctSize"/> and precalculate DCT matrices.
         /// </summary>
-        /// <param name="dctSize"></param>
+        /// <param name="dctSize">Size of DCT-IV</param>
         public Dct4(int dctSize)
         {
             _dctSize = dctSize;
@@ -44,10 +43,10 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// DCT-IV (without normalization)
+        /// Do DCT-IV.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void Direct(float[] input, float[] output)
         {
             for (var k = 0; k < output.Length; k++)
@@ -61,28 +60,10 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// IDCT-IV (without normalization)
+        /// Do normalized DCT-IV.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
-        public void Inverse(float[] input, float[] output)
-        {
-            for (var k = 0; k < output.Length; k++)
-            {
-                output[k] = 0.0f;
-
-                for (var n = 0; n < input.Length; n++)
-                {
-                    output[k] += input[n] * _dctMtx[k][n];
-                }
-            }
-        }
-
-        /// <summary>
-        /// DCT-IV (with normalization)
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void DirectNorm(float[] input, float[] output)
         {
             var norm = (float)(0.5 * Math.Sqrt(2.0 / _dctSize));
@@ -101,10 +82,28 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// IDCT-IV (with normalization)
+        /// Do Inverse DCT-IV.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
+        public void Inverse(float[] input, float[] output)
+        {
+            for (var k = 0; k < output.Length; k++)
+            {
+                output[k] = 0.0f;
+
+                for (var n = 0; n < input.Length; n++)
+                {
+                    output[k] += input[n] * _dctMtx[k][n];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Do normalized Inverse DCT-IV.
+        /// </summary>
+        /// <param name="input">Input data</param>
+        /// <param name="output">Output data</param>
         public void InverseNorm(float[] input, float[] output)
         {
             var norm = (float)(0.5 * Math.Sqrt(2.0 / _dctSize));
