@@ -7,48 +7,37 @@ using NWaves.Utils;
 namespace NWaves.Signals
 {
     /// <summary>
-    /// Base class for finite complex-valued discrete-time signals.
-    /// 
-    /// Any finite complex DT signal is stored as two arrays of data (real parts and imaginary parts)
-    /// sampled at certain sampling rate.
-    /// 
-    /// See also ComplexDiscreteSignalExtensions for additional functionality of complex DT signals.
-    /// 
-    /// Note.
-    /// 1) I intentionally do not implement reusable code mechanisms (like generics or inheritance) 
-    ///    for coding DiscreteSignals and ComplexDiscreteSignals. Also for better performance 
-    ///    I did not use Complex type (instead we just work with 2 plain arrays).
-    ///    The reason is that currently ComplexDiscreteSignal is more like a helper class used in DSP internals.
-    ///    For all tasks users will most likely use real-valued DiscreteSignal or simply an array of samples.
-    ///    However they can switch between complex and real-valued signals anytime.
-    /// 
-    /// 2) Method implementations are LINQ-less for better performance.
-    /// 
+    /// Base class for finite complex-valued discrete-time signals. 
+    /// Finite complex DT signal is stored as two arrays of data (real parts and imaginary parts) sampled at certain sampling rate. 
+    /// See also <see cref="ComplexDiscreteSignalExtensions"/> for extra functionality of complex DT signals.
     /// </summary>
     public class ComplexDiscreteSignal
     {
         /// <summary>
-        /// Number of samples per unit of time (1 second)
+        /// Gets sampling rate (number of samples per one second).
         /// </summary>
         public int SamplingRate { get; }
 
         /// <summary>
-        /// Array or real parts of samples
+        /// Gets the real parts of complex-valued samples.
         /// </summary>
         public double[] Real { get; }
 
         /// <summary>
-        /// Array or imaginary parts of samples
+        /// Gets the imaginary parts of complex-valued samples.
         /// </summary>
         public double[] Imag { get; }
 
         /// <summary>
-        /// Length of the signal
+        /// Gets the length of the signal.
         /// </summary>
         public int Length => Real.Length;
 
         /// <summary>
-        /// The most efficient constructor for initializing complex signals
+        /// The most efficient constructor for initializing complex discrete signals. 
+        /// By default, it just wraps <see cref="ComplexDiscreteSignal"/> 
+        /// around arrays <paramref name="real"/> and <paramref name="imag"/> (without copying).
+        /// If a new memory should be allocated for signal data, set <paramref name="allocateNew"/> to true.
         /// </summary>
         /// <param name="samplingRate">Sampling rate of the signal</param>
         /// <param name="real">Array of real parts of the complex-valued signal</param>
@@ -76,33 +65,33 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Constructor for initializing complex signals with any double enumerables
+        /// Construct complex signal from collections of <paramref name="real"/> and <paramref name="imag"/> parts.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="real"></param>
-        /// <param name="imag"></param>
+        /// <param name="samplingRate">Sampling rate of the signal</param>
+        /// <param name="real">Array of real parts of the complex-valued signal</param>
+        /// <param name="imag">Array of imaginary parts of the complex-valued signal</param>
         public ComplexDiscreteSignal(int samplingRate, IEnumerable<double> real, IEnumerable<double> imag = null)
             : this(samplingRate, real.ToArray(), imag?.ToArray())
         {
         }
 
         /// <summary>
-        /// Constructor for initializing complex signals with complex numbers
+        /// Construct signal from collection of <paramref name="samples"/> sampled at <paramref name="samplingRate"/>.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="samples"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="samples">Collection of complex-valued samples</param>
         public ComplexDiscreteSignal(int samplingRate, IEnumerable<Complex> samples)
             : this(samplingRate, samples.Select(s => s.Real), samples.Select(s => s.Imaginary))
         {
         }
 
         /// <summary>
-        /// Constructor creates the complex signal of specified length filled with specified values
+        /// Construct signal of given <paramref name="length"/> filled with specified values.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="length"></param>
-        /// <param name="real"></param>
-        /// <param name="imag"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="length">Number of samples</param>
+        /// <param name="real">Value of each sample</param>
+        /// <param name="imag">Value of each sample</param>
         public ComplexDiscreteSignal(int samplingRate, int length, double real = 0.0, double imag = 0.0)
         {
             Guard.AgainstNonPositive(samplingRate, "Sampling rate");
@@ -121,11 +110,11 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Constructor for initializing complex signals with any integer enumerables
+        /// Construct signal from collection of integer <paramref name="samples"/> sampled at given <paramref name="samplingRate"/>.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="samples"></param>
-        /// <param name="normalizeFactor"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="samples">Collection of integer samples</param>
+        /// <param name="normalizeFactor">Each sample will be divided by this value</param>
         public ComplexDiscreteSignal(int samplingRate, IEnumerable<int> samples, double normalizeFactor = 1.0)
         {
             Guard.AgainstNonPositive(samplingRate, "Sampling rate");
@@ -143,18 +132,17 @@ namespace NWaves.Signals
             Real = realSamples;
             Imag = new double[intSamples.Length];
         }
-        
+
         /// <summary>
-        /// Method for creating the deep copy of a complex signal
+        /// Create deep copy of the signal.
         /// </summary>
-        /// <returns>New copied signal</returns>
         public ComplexDiscreteSignal Copy()
         {
             return new ComplexDiscreteSignal(SamplingRate, Real, Imag, allocateNew: true);
         }
 
         /// <summary>
-        /// Indexer works only with array of real parts of samples. Use it with caution.
+        /// Sample indexer. Works only with array of real parts of samples. Use it with caution.
         /// </summary>
         public double this[int index]
         {
@@ -163,20 +151,13 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Slice the signal (Python-style)
-        /// 
+        /// Create the slice of the signal: 
+        /// <code>
         ///     var middle = signal[900, 1200];
-        /// 
-        /// Implementaion is LINQ-less, since Skip() would be less efficient:
-        ///                 
-        ///     return new DiscreteSignal(SamplingRate, 
-        ///                               Real.Skip(startPos).Take(endPos - startPos),
-        ///                               Imag.Skip(startPos).Take(endPos - startPos));
+        /// </code>
         /// </summary>
-        /// <param name="startPos">Position of the first sample</param>
-        /// <param name="endPos">Position of the last sample (exclusive)</param>
-        /// <returns>Slice of the signal</returns>
-        /// <exception>Overflow possible if endPos is less than startPos</exception>
+        /// <param name="startPos">Index of the first sample (inclusive)</param>
+        /// <param name="endPos">Index of the last sample (exclusive)</param>
         public ComplexDiscreteSignal this[int startPos, int endPos]
         {
             get
@@ -192,7 +173,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Get real-valued signal containing magnitudes of complex-valued samples
+        /// Gets the magnitudes of complex-valued samples.
         /// </summary>
         public double[] Magnitude
         {
@@ -212,7 +193,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Get real-valued signal containing squared magnitudes of complex-valued samples
+        /// Gets the power (squared magnitudes) of complex-valued samples.
         /// </summary>
         public double[] Power
         {
@@ -232,7 +213,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Get real-valued signal containing phases of complex-valued samples
+        /// Gets the phases of complex-valued samples.
         /// </summary>
         public double[] Phase
         {
@@ -252,7 +233,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Get unwrapped phase
+        /// Gets the unwrapped phases of complex-valued samples.
         /// </summary>
         public double[] PhaseUnwrapped => MathUtils.Unwrap(Phase);
 
@@ -260,44 +241,41 @@ namespace NWaves.Signals
         #region overloaded operators
 
         /// <summary>
-        /// Overloaded + (superimpose signals)
+        /// Create new signal by superimposing signals <paramref name="s1"/> and <paramref name="s2"/>. 
+        /// If sizes are different then the smaller signal is broadcast to fit the size of the larger signal.
         /// </summary>
-        /// <param name="s1">Left signal</param>
-        /// <param name="s2">Right signal</param>
-        /// <returns>Superimposed signal</returns>
+        /// <param name="s1">First signal</param>
+        /// <param name="s2">Second signal</param>
         public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s1, ComplexDiscreteSignal s2)
         {
             return s1.Superimpose(s2);
         }
 
         /// <summary>
-        /// Overloaded + (add constant)
+        /// Create new signal by adding <paramref name="constant"/> to signal <paramref name="s"/>.
         /// </summary>
         /// <param name="s">Signal</param>
         /// <param name="constant">Constant to add to each sample</param>
-        /// <returns>Modified signal</returns>
         public static ComplexDiscreteSignal operator +(ComplexDiscreteSignal s, double constant)
         {
             return new ComplexDiscreteSignal(s.SamplingRate, s.Real.Select(x => x + constant));
         }
 
         /// <summary>
-        /// Overloaded - (subtract constant)
+        /// Create new signal by subtracting <paramref name="constant"/> from signal <paramref name="s"/>.
         /// </summary>
         /// <param name="s">Signal</param>
         /// <param name="constant">Constant to subtract from each sample</param>
-        /// <returns>Modified signal</returns>
         public static ComplexDiscreteSignal operator -(ComplexDiscreteSignal s, double constant)
         {
             return new ComplexDiscreteSignal(s.SamplingRate, s.Real.Select(x => x - constant));
         }
 
         /// <summary>
-        /// Overloaded * (signal amplification)
+        /// Create new signal by multiplying <paramref name="s"/> by <paramref name="coeff"/> (amplification/attenuation).
         /// </summary>
         /// <param name="s">Signal</param>
-        /// <param name="coeff">Amplification coefficient</param>
-        /// <returns>Amplified signal</returns>
+        /// <param name="coeff">Amplification/attenuation coefficient</param>
         public static ComplexDiscreteSignal operator *(ComplexDiscreteSignal s, float coeff)
         {
             var signal = s.Copy();

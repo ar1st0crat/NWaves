@@ -1,31 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
+using NWaves.Signals.Builders.Base;
 using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Class for the generator of periodic pulse waves
+    /// Builder of periodic pulse waves.
+    /// <para>
+    /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
+    /// <list type="bullet">
+    ///     <item>"low", "lo", "min" (default: -1.0)</item>
+    ///     <item>"high", "hi", "max" (default: 1.0)</item>
+    ///     <item>"pulse", "width" (default: 0.05 seconds)</item>
+    ///     <item>"period", "t" (default: 0.1 seconds)</item>
+    /// </list>
+    /// </para>
     /// </summary>
     public class PulseWaveBuilder : SignalBuilder
     {
         /// <summary>
-        /// Lower amplitude level
+        /// Lower amplitude level.
         /// </summary>
         private double _low;
 
         /// <summary>
-        /// Upper amplitude level
+        /// Upper amplitude level.
         /// </summary>
         private double _high;
 
         /// <summary>
-        /// Pulse duration
+        /// Pulse duration (in seconds).
         /// </summary>
         private double _pulse;
 
         /// <summary>
-        /// Period of pulse wave
+        /// Period of pulse wave (in seconds).
         /// </summary>
         private double _period;
 
@@ -44,14 +54,13 @@ namespace NWaves.Signals.Builders
 
             _low = -1.0;
             _high = 1.0;
-            _pulse = 0.0;
-            _period = 0.0;
+            _pulse = 0.05; // 50 ms
+            _period = 0.1; // 100 ms
         }
 
         /// <summary>
-        /// Method generates simple sequence of rectangular pulses.
+        /// Generate new sample.
         /// </summary>
-        /// <returns></returns>
         public override float NextSample()
         {
             var sample = _n <= (int)(_pulse * SamplingRate) ? _high : _low;
@@ -64,11 +73,19 @@ namespace NWaves.Signals.Builders
             return (float)sample;
         }
 
+        /// <summary>
+        /// Reset sample generator.
+        /// </summary>
         public override void Reset()
         {
             _n = 0;
         }
 
+        /// <summary>
+        /// Generate signal by generating all its samples one-by-one. 
+        /// Period and pulse duration must be greater than zero. 
+        /// Period must be greater than pulse duration.
+        /// </summary>
         protected override DiscreteSignal Generate()
         {
             Guard.AgainstNonPositive(_period, "Period");

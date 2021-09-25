@@ -1,31 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
+using NWaves.Signals.Builders.Base;
 using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Class for the generator of triangle waves
+    /// Builder of square waves. 
+    /// <para>
+    /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
+    /// <list type="bullet">
+    ///     <item>"low", "lo", "min" (default: -1.0)</item>
+    ///     <item>"high", "hi", "max" (default: 1.0)</item>
+    ///     <item>"frequency", "freq" (default: 100.0 Hz)</item>
+    /// </list>
+    /// </para>
     /// </summary>
     public class SquareWaveBuilder : SignalBuilder
     {
         /// <summary>
-        /// Lower amplitude level
+        /// Lower amplitude level.
         /// </summary>
         private double _low;
 
         /// <summary>
-        /// Upper amplitude level
+        /// Upper amplitude level.
         /// </summary>
         private double _high;
 
         /// <summary>
-        /// Frequency of the triangle wave
+        /// Frequency of the square wave (Hz).
         /// </summary>
         private double _frequency;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="SquareWaveBuilder"/>.
         /// </summary>
         public SquareWaveBuilder()
         {
@@ -33,14 +42,22 @@ namespace NWaves.Signals.Builders
             {
                 { "low, lo, min",    param => _low = param },
                 { "high, hi, max",   param => _high = param },
-                { "frequency, freq", param => { _frequency = param; _cycles = SamplingRate / _frequency; }}
+                { "frequency, freq", param => 
+                                     { 
+                                         _frequency = param;
+                                         _cycles = SamplingRate / _frequency;
+                                     }
+                }
             };
+
+            _low = -1.0;
+            _high = 1.0;
+            _frequency = 100.0;
         }
 
         /// <summary>
-        /// Method generates square wave
+        /// Generate new sample.
         /// </summary>
-        /// <returns></returns>
         public override float NextSample()
         {
             var x = _n % _cycles;
@@ -49,17 +66,29 @@ namespace NWaves.Signals.Builders
             return (float)sample;
         }
 
+        /// <summary>
+        /// Reset sample generator.
+        /// </summary>
         public override void Reset()
         {
             _n = 0;
         }
 
+        /// <summary>
+        /// Set the sampling rate of the signal to build.
+        /// </summary>
+        /// <param name="samplingRate">Sampling rate</param>
         public override SignalBuilder SampledAt(int samplingRate)
         {
             _cycles = samplingRate / _frequency;
             return base.SampledAt(samplingRate);
         }
 
+        /// <summary>
+        /// Generate signal by generating all its samples one-by-one. 
+        /// Frequency must be greater than zero. 
+        /// Upper amplitude must be greater than lower amplitude.
+        /// </summary>
         protected override DiscreteSignal Generate()
         {
             Guard.AgainstNonPositive(_frequency, "Frequency");

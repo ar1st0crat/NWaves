@@ -192,4 +192,28 @@ namespace NWaves.Operations
             return new DiscreteSignal(signal.SamplingRate, mag) - 1.0f;
         }
     }
+
+    /// <summary>
+    /// Class with extension methods for <see cref="Modulator"/>.
+    /// </summary>
+    public static class ModulatorExtensions
+    {
+        /// <summary>
+        /// Create array of magnitudes of complex numbers given as tuple of arrays (real and imaginary parts).
+        /// </summary>
+        /// <param name="signal">Tuple of real-valued arrays (real and imaginary parts)</param>
+        public static float[] Magnitude(this (float[], float[]) signal)
+        {
+            var (real, imag) = signal;
+
+            var magnitude = new float[real.Length];
+
+            for (var i = 0; i < magnitude.Length; i++)
+            {
+                magnitude[i] = (float)Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]);
+            }
+
+            return magnitude;
+        }
+    }
 }

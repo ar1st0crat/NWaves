@@ -5,28 +5,20 @@ using NWaves.Utils;
 namespace NWaves.Signals
 {
     /// <summary>
-    /// In general, any finite DT signal is simply an array of data sampled at certain sampling rate.
-    /// 
-    /// This array of samples can be:
-    ///     - delayed (shifted) by positive or negative number of samples
-    ///     - superimposed with another array of samples (another signal)
-    ///     - concatenated with another array of samples (another signal)
-    ///     - repeated N times
-    ///     - amplified
-    ///
-    /// Note.
-    /// Method implementations are LINQ-less and do Buffer.BlockCopy() for better performance.
+    /// Static class providing extension methods for working with <see cref="DiscreteSignal"/> objects.
     /// </summary>
     public static class DiscreteSignalExtensions
     {
+        // Note.
+        // Method implementations are LINQ-less and leverage FastCopy() for better performance.
+
         /// <summary>
-        /// Method delays the signal
-        ///     either by shifting it to the right (positive, e.g. Delay(1000))
-        ///         or by shifting it to the left (negative, e.g. Delay(-1000))
+        /// Create the delayed copy of <paramref name="signal"/> 
+        /// by shifting it either to the right (positive <paramref name="delay"/>, e.g. Delay(1000)) 
+        /// or to the left (negative <paramref name="delay"/>, e.g. Delay(-1000)).
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="delay"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="delay">Delay (positive or negative number of delay samples)</param>
         public static DiscreteSignal Delay(this DiscreteSignal signal, int delay)
         {
             var length = signal.Length;
@@ -48,13 +40,11 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Method superimposes two signals.
-        /// If sizes are different then the smaller signal is broadcasted 
-        /// to fit the size of the larger signal.
+        /// Superimpose signals <paramref name="signal1"/> and <paramref name="signal2"/>. 
+        /// If sizes are different then the smaller signal is broadcast to fit the size of the larger signal.
         /// </summary>
-        /// <param name="signal1"></param>
-        /// <param name="signal2"></param>
-        /// <returns></returns>
+        /// <param name="signal1">First signal</param>
+        /// <param name="signal2">Second signal</param>
         public static DiscreteSignal Superimpose(this DiscreteSignal signal1, DiscreteSignal signal2)
         {
             Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
@@ -85,13 +75,11 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Method superimposes two signals.
-        /// If sizes are different then the smaller signal is broadcasted 
-        /// to fit the size of the larger signal.
+        /// Superimpose <paramref name="signal2"/> and <paramref name="signal1"/> multiple times at given <paramref name="positions"/>.
         /// </summary>
-        /// <param name="signal1"></param>
-        /// <param name="signal2"></param>
-        /// <returns></returns>
+        /// <param name="signal1">First signal</param>
+        /// <param name="signal2">Second signal</param>
+        /// <param name="positions">Positions (indices) where to insert <paramref name="signal2"/></param>
         public static DiscreteSignal SuperimposeMany(this DiscreteSignal signal1, DiscreteSignal signal2, int[] positions)
         {
             Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
@@ -116,13 +104,11 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Method subtracts one signal from another.
-        /// If sizes are different then the smaller signal is broadcasted 
-        /// to fit the size of the larger signal.
+        /// Method subtracts <paramref name="signal2"/> from <paramref name="signal1"/>. 
+        /// If sizes are different then the smaller signal is broadcast to fit the size of the larger signal.
         /// </summary>
-        /// <param name="signal1"></param>
-        /// <param name="signal2"></param>
-        /// <returns></returns>
+        /// <param name="signal1">First signal</param>
+        /// <param name="signal2">Second signal</param>
         public static DiscreteSignal Subtract(this DiscreteSignal signal1, DiscreteSignal signal2)
         {
             Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
@@ -157,11 +143,10 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Method concatenates two signals.
+        /// Concatenate <paramref name="signal1"/> and <paramref name="signal2"/>.
         /// </summary>
-        /// <param name="signal1"></param>
-        /// <param name="signal2"></param>
-        /// <returns></returns>
+        /// <param name="signal1">First signal</param>
+        /// <param name="signal2">Second signal</param>
         public static DiscreteSignal Concatenate(this DiscreteSignal signal1, DiscreteSignal signal2)
         {
             Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
@@ -173,25 +158,24 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Method returns repeated n times copy of the signal
+        /// Create the copy of <paramref name="signal"/> repeated <paramref name="n"/> times.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="times"></param>
-        /// <returns></returns>
-        public static DiscreteSignal Repeat(this DiscreteSignal signal, int times)
+        /// <param name="signal">Signal</param>
+        /// <param name="n">Number of times to repeat <paramref name="signal"/></param>
+        public static DiscreteSignal Repeat(this DiscreteSignal signal, int n)
         {
-            Guard.AgainstNonPositive(times, "Number of repeat times");
+            Guard.AgainstNonPositive(n, "Number of repeat times");
             
             return new DiscreteSignal(
                             signal.SamplingRate,
-                            signal.Samples.RepeatArray(times));
+                            signal.Samples.RepeatArray(n));
         }
 
         /// <summary>
-        /// In-place signal amplification by coeff
+        /// Amplify <paramref name="signal"/> by <paramref name="coeff"/> in-place.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="coeff"></param>
+        /// <param name="signal">Signal</param>
+        /// <param name="coeff">Amplification coefficient</param>
         public static void Amplify(this DiscreteSignal signal, float coeff)
         {
             for (var i = 0; i < signal.Length; i++)
@@ -201,10 +185,10 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// In-place signal attenuation by coeff
+        /// Attenuate <paramref name="signal"/> by <paramref name="coeff"/> in-place.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="coeff"></param>
+        /// <param name="signal">Signal</param>
+        /// <param name="coeff">Attenuation coefficient</param>
         public static void Attenuate(this DiscreteSignal signal, float coeff)
         {
             Guard.AgainstNonPositive(coeff, "Attenuation coefficient");
@@ -213,9 +197,9 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Reverse signal in-place
+        /// Reverse <paramref name="signal"/> in-place.
         /// </summary>
-        /// <param name="signal"></param>
+        /// <param name="signal">Signal</param>
         public static void Reverse(this DiscreteSignal signal)
         {
             var samples = signal.Samples;
@@ -229,43 +213,39 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Return copy of first N samples
+        /// Create new signal from first <paramref name="n"/> samples of <paramref name="signal"/>.
         /// </summary>
         /// <param name="signal">Signal</param>
-        /// <param name="sampleCount">Number of samples</param>
-        /// <returns>Copy of the first samples of signal</returns>
-        public static DiscreteSignal First(this DiscreteSignal signal, int sampleCount)
+        /// <param name="n">Number of samples to copy</param>
+        public static DiscreteSignal First(this DiscreteSignal signal, int n)
         {
-            Guard.AgainstNonPositive(sampleCount, "Number of samples");
-            Guard.AgainstExceedance(sampleCount, signal.Length, "Number of samples", "signal length");
+            Guard.AgainstNonPositive(n, "Number of samples");
+            Guard.AgainstExceedance(n, signal.Length, "Number of samples", "signal length");
             
             return new DiscreteSignal(
                             signal.SamplingRate,
-                            signal.Samples.FastCopyFragment(sampleCount));
+                            signal.Samples.FastCopyFragment(n));
         }
 
         /// <summary>
-        /// More or less efficient LINQ-less version.
-        /// Skip() would require unnecessary enumeration.
+        /// Create new signal from last <paramref name="n"/> samples of <paramref name="signal"/>.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="sampleCount"></param>
-        /// <returns></returns>
-        public static DiscreteSignal Last(this DiscreteSignal signal, int sampleCount)
+        /// <param name="signal">Signal</param>
+        /// <param name="n">Number of samples to copy</param>
+        public static DiscreteSignal Last(this DiscreteSignal signal, int n)
         {
-            Guard.AgainstNonPositive(sampleCount, "Number of samples");
-            Guard.AgainstExceedance(sampleCount, signal.Length, "Number of samples", "signal length");
+            Guard.AgainstNonPositive(n, "Number of samples");
+            Guard.AgainstExceedance(n, signal.Length, "Number of samples", "signal length");
 
             return new DiscreteSignal(
                             signal.SamplingRate,
-                            signal.Samples.FastCopyFragment(sampleCount, signal.Length - sampleCount));
+                            signal.Samples.FastCopyFragment(n, signal.Length - n));
         }
 
         /// <summary>
-        /// Full rectification (in-place)
+        /// Full-rectify <paramref name="signal"/> in-place.
         /// </summary>
         /// <param name="signal">Signal</param>
-        /// <returns>Fully rectified signal</returns>
         public static void FullRectify(this DiscreteSignal signal)
         {
             for (var i = 0; i < signal.Length; i++)
@@ -278,10 +258,9 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Half rectification (in-place)
+        /// Half-rectify <paramref name="signal"/> in-place.
         /// </summary>
         /// <param name="signal">Signal</param>
-        /// <returns>Half rectified signal</returns>
         public static void HalfRectify(this DiscreteSignal signal)
         {
             for (var i = 0; i < signal.Length; i++)
@@ -294,9 +273,10 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Normalization by max abs value (to range [-1, 1])
+        /// Normalize <paramref name="signal"/> by its max absolute value (to range [-1, 1]).
         /// </summary>
-        /// <param name="signal"></param>
+        /// <param name="signal">Signal</param>
+        /// <param name="bitsPerSample">Bit depth</param>
         public static void NormalizeMax(this DiscreteSignal signal, int bitsPerSample = 0)
         {
             var norm = 1 / signal.Samples.Max(s => Math.Abs(s));
@@ -310,10 +290,10 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Method copies discrete signal samples into complex signal
+        /// Create <see cref="ComplexDiscreteSignal"/> from <see cref="DiscreteSignal"/>. 
+        /// Imaginary parts will be filled with zeros.
         /// </summary>
         /// <param name="signal">Real-valued signal</param>
-        /// <returns>Corresponding complex-valued signal</returns>
         public static ComplexDiscreteSignal ToComplex(this DiscreteSignal signal)
         {
             return new ComplexDiscreteSignal(signal.SamplingRate, signal.Samples.ToDoubles());

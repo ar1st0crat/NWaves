@@ -1,36 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
+using NWaves.Signals.Builders.Base;
 using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Class for generating chirp signals
+    /// Class for generating chirp signals.
+    /// <para>
+    /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
+    /// <list type="bullet">
+    ///     <item>"low", "lo", "min" (default: -1.0)</item>
+    ///     <item>"high", "hi", "max" (default: 1.0)</item>
+    ///     <item>"start", "f0", "freq0" (default: 100.0 Hz)</item>
+    ///     <item>"end", "f1", "freq1" (default: 1000.0 Hz)</item>
+    /// </list>
+    /// </para>
     /// </summary>
     public class ChirpBuilder : SignalBuilder
     {
         /// <summary>
-        /// Lower amplitude level
+        /// Lower amplitude level.
         /// </summary>
         private double _low;
 
         /// <summary>
-        /// Upper amplitude level
+        /// Upper amplitude level.
         /// </summary>
         private double _high;
 
         /// <summary>
-        /// Start frequency
+        /// Start frequency.
         /// </summary>
         private double _f0;
 
         /// <summary>
-        /// End frequency
+        /// End frequency.
         /// </summary>
         private double _f1;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="ChirpBuilder"/>.
         /// </summary>
         public ChirpBuilder()
         {
@@ -49,18 +59,19 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Method for generating chirp signal according to formula:
-        /// 
-        ///     y[n] = A * cos(2 * pi * (f0 + k * n) / fs * n)
-        /// 
-        /// The same could be achieved via:
-        /// 
-        ///     new Modulator().FrequencyLinear(f, amp, k, Length, SamplingRate);
-        /// 
+        /// Generate new sample.
         /// </summary>
-        /// <returns></returns>
         public override float NextSample()
         {
+            // Chirp signal is generated according to formula:
+            // 
+            //     y[n] = A * cos(2 * pi * (f0 + k * n) / fs * n)
+            // 
+            // The same could be achieved via:
+            // 
+            //     new Modulator().FrequencyLinear(f, amp, k, Length, SamplingRate);
+            //
+
             var k = (float)((_f1 - _f0) / Length);
             var fs = SamplingRate;
             
@@ -78,11 +89,18 @@ namespace NWaves.Signals.Builders
             return (float)sample;
         }
 
+        /// <summary>
+        /// Reset sample generator.
+        /// </summary>
         public override void Reset()
         {
             _n = 0;
         }
 
+        /// <summary>
+        /// Generate signal by generating all its samples one-by-one. 
+        /// Start frequency and end frequency must be greater than zero.
+        /// </summary>
         protected override DiscreteSignal Generate()
         {
             Guard.AgainstNonPositive(_f0, "Start frequency");

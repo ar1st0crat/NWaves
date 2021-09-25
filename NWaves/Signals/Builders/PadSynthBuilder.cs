@@ -1,28 +1,74 @@
-﻿using NWaves.Transforms;
+﻿using NWaves.Signals.Builders.Base;
+using NWaves.Transforms;
 using System;
 using System.Linq;
 
 namespace NWaves.Signals.Builders
 {
+    // PADSynth algorithm by Nasca Octavian Paul:
+    //
+    // (https://zynaddsubfx.sourceforge.io/doc/PADsynth/PADsynth.htm)
+    // 
+
     /// <summary>
-    /// Class providing implementation of the PADSynth algorithm by Nasca Octavian Paul
-    /// (https://zynaddsubfx.sourceforge.io/doc/PADsynth/PADsynth.htm)
+    /// Class for generating cosinusoidal signals.
+    /// <para>
+    /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
+    /// <list type="bullet">
+    ///     <item>"frequency", "freq", "f" (default: 440.0 Hz)</item>
+    ///     <item>"fftsize", "size" (default: 2048)</item>
+    ///     <item>"bandwidth", "bw" (default: 40)</item>
+    ///     <item>"bwscale", "scale" (default: 1.25)</item>
+    /// </list>
+    /// </para>
     /// </summary>
     public class PadSynthBuilder : WaveTableBuilder
     {
         private readonly Random _rand = new Random();
 
-        protected float _frequency;
+        /// <summary>
+        /// Frequency of the note.
+        /// </summary>
+        protected float _frequency = 440;/*Hz*/
+
+        /// <summary>
+        /// Amplitudes of harmonics.
+        /// </summary>
         protected float[] _amplitudes;
 
+        /// <summary>
+        /// Bandwidth of the first harmonic.
+        /// </summary>
         protected float _bw = 40;
+
+        /// <summary>
+        /// how much the bandwidth of the harmonic increase according to it's frequency
+        /// </summary>
         protected float _bwScale = 1.25f;
 
+        /// <summary>
+        /// Internal FFT transformer.
+        /// </summary>
         protected RealFft _fft;
-        protected int _fftSize;
+        
+        /// <summary>
+        /// FFT size.
+        /// </summary>
+        protected int _fftSize = 2048;
+        
+        /// <summary>
+        /// Internal buffer for real parts of spectrum.
+        /// </summary>
         protected float[] _re;
+
+        /// <summary>
+        /// Internal buffer for imaginary parts of spectrum. 
+        /// </summary>
         protected float[] _im;
 
+        /// <summary>
+        /// Construct <see cref="PadSynthBuilder"/>.
+        /// </summary>
         public PadSynthBuilder() : base(null)
         {
             ParameterSetters.Add("frequency, freq, f", param => SetFrequency((float)param));
@@ -31,17 +77,25 @@ namespace NWaves.Signals.Builders
             ParameterSetters.Add("scale, bwscale", param => SetScale((float)param));
         }
 
+        /// <summary>
+        /// Set frequency of the note.
+        /// </summary>
+        /// <param name="frequency">Frequency</param>
         protected void SetFrequency(float frequency)
         {
             _frequency = frequency;
             GenerateWavetable();
         }
 
+        /// <summary>
+        /// Set FFT size. Must be power of 2.
+        /// </summary>
+        /// <param name="fftSize">FFT size</param>
         protected void SetFftSize(int fftSize)
         {
             _fftSize = fftSize;
 
-            if (_fft == null || _fft.Size != _fftSize)
+            if (_fft is null || _fft.Size != _fftSize)
             {
                 _fft = new RealFft(_fftSize);
 
@@ -54,27 +108,42 @@ namespace NWaves.Signals.Builders
             GenerateWavetable();
         }
 
+        /// <summary>
+        /// Set bandwidth.
+        /// </summary>
+        /// <param name="bw">Bandwidth</param>
         protected void SetBandwidth(float bw)
         {
             _bw = bw;
             GenerateWavetable();
         }
 
+        /// <summary>
+        /// Set 'bandwidth scale' parameter.
+        /// </summary>
+        /// <param name="bwScale">Bandwidth scale</param>
         protected void SetScale(float bwScale)
         {
             _bwScale = bwScale;
             GenerateWavetable();
         }
 
+        /// <summary>
+        /// Set amplitudes of harmonics.
+        /// </summary>
+        /// <param name="amplitudes">Array of amplitudes</param>
         internal void SetAmplitudeArray(float[] amplitudes)
         {
             _amplitudes = amplitudes;
             GenerateWavetable();
         }
 
+        /// <summary>
+        /// Generate wave table using PadSynth algorithm.
+        /// </summary>
         protected void GenerateWavetable()
         {
-            if (_fft == null || _amplitudes == null || _frequency == 0)
+            if (_fft is null || _amplitudes is null || _frequency == 0)
             {
                 return;
             }
@@ -132,12 +201,21 @@ namespace NWaves.Signals.Builders
             for (var i = 0; i < _samples.Length; _samples[i++] *= norm) ;
         }
 
-        protected double Profile(double f, double bw)
+        /// <summary>
+        /// Helper method used in PadSynth algorithm.
+        /// </summary>
+        /// <param name="f">Frequency of the note</param>
+        /// <param name="bw">Bandwidth</param>
+        protected static double Profile(double f, double bw)
         {
             var x = f / bw;
             return Math.Exp(-x * x) / bw;
         }
 
+        /// <summary>
+        /// Set the sampling rate of the signal to build.
+        /// </summary>
+        /// <param name="samplingRate">Sampling rate</param>
         public override SignalBuilder SampledAt(int samplingRate)
         {
             if (samplingRate <= 0)
@@ -148,23 +226,6 @@ namespace NWaves.Signals.Builders
             SamplingRate = samplingRate;
             GenerateWavetable();
             return this;
-        }
-    }
-
-    public static class PadSynthBuilderExtensions
-    {
-        public static SignalBuilder SetAmplitudes(this SignalBuilder builder, float[] amplitudes)
-        {
-            PadSynthBuilder padSynth = builder as PadSynthBuilder;
-
-            if (padSynth == null)
-            {
-                return builder;
-            }
-
-            padSynth.SetAmplitudeArray(amplitudes);
-            
-            return padSynth;
         }
     }
 }

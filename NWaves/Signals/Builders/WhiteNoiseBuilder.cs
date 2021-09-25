@@ -1,26 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using NWaves.Signals.Builders.Base;
 using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Class for a white noise generator
+    /// White noise builder.
+    /// <para>
+    /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
+    /// <list type="bullet">
+    ///     <item>"low", "lo", "min" (default: -1.0)</item>
+    ///     <item>"high", "hi", "max" (default: 1.0)</item>
+    /// </list>
+    /// </para>
     /// </summary>
     public class WhiteNoiseBuilder : SignalBuilder
     {
         /// <summary>
-        /// Lower amplitude level
+        /// Lower amplitude level.
         /// </summary>
         private double _low;
 
         /// <summary>
-        /// Upper amplitude level
+        /// Upper amplitude level.
         /// </summary>
         private double _high;
         
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="WhiteNoiseBuilder"/>.
         /// </summary>
         public WhiteNoiseBuilder()
         {
@@ -34,6 +42,10 @@ namespace NWaves.Signals.Builders
             _high = 1.0;
         }
 
+        /// <summary>
+        /// Generate signal by generating all its samples one-by-one. 
+        /// Upper amplitude must be greater than lower amplitude.
+        /// </summary>
         protected override DiscreteSignal Generate()
         {
             Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
@@ -41,15 +53,13 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Method generates white noise by simply generating 
-        /// consecutive decorrelated random samples.
+        /// Generate new sample.
         /// </summary>
-        /// <returns></returns>
         public override float NextSample()
         {
             return (float)(_rand.NextDouble() * (_high - _low) + _low);
         }
 
-        private Random _rand = new Random();
+        private readonly Random _rand = new Random();
     }
 }

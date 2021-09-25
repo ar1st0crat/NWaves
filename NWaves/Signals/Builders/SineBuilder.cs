@@ -1,36 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
+using NWaves.Signals.Builders.Base;
 using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Class for a simple generator of one sinusoid
+    /// Class for generating sinusoidal signals.
+    /// <para>
+    /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
+    /// <list type="bullet">
+    ///     <item>"low", "lo", "min" (default: -1.0)</item>
+    ///     <item>"high", "hi", "max" (default: 1.0)</item>
+    ///     <item>"frequency", "freq" (default: 100.0 Hz)</item>
+    ///     <item>"phase", "phi" (default: 0.0)</item>
+    /// </list>
+    /// </para>
     /// </summary>
     public class SineBuilder : SignalBuilder
     {
         /// <summary>
-        /// Lower amplitude level
+        /// Lower amplitude level.
         /// </summary>
         private double _low;
 
         /// <summary>
-        /// Upper amplitude level
+        /// Upper amplitude level.
         /// </summary>
         private double _high;
 
         /// <summary>
-        /// Frequency of the sinusoid (as a fraction of sampling frequency)
+        /// Frequency of the sinusoid (in Hz).
         /// </summary>
         private double _frequency;
 
         /// <summary>
-        /// Initial phase of the sinusoid (in radians)
+        /// Initial phase of the sinusoid (in radians).
         /// </summary>
         private double _phase;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="SineBuilder"/>.
         /// </summary>
         public SineBuilder()
         {
@@ -44,17 +54,13 @@ namespace NWaves.Signals.Builders
 
             _low = -1.0;
             _high = 1.0;
-            _frequency = 0.0;
+            _frequency = 100.0;
             _phase = 0.0;
         }
 
         /// <summary>
-        /// Method for generating one sinusoid according to simple formula:
-        /// 
-        ///     y[n] = A * sin(2 * pi * f / fs * n + phase)
-        /// 
+        /// Generate new sample.
         /// </summary>
-        /// <returns></returns>
         public override float NextSample()
         {
             var sample = Math.Sin(2 * Math.PI * _frequency / SamplingRate * _n + _phase);
@@ -67,11 +73,18 @@ namespace NWaves.Signals.Builders
             return (float)sample;
         }
 
+        /// <summary>
+        /// Reset sample generator.
+        /// </summary>
         public override void Reset()
         {
             _n = 0;
         }
 
+        /// <summary>
+        /// Generate signal by generating all its samples one-by-one. 
+        /// Frequency must be greater than zero.
+        /// </summary>
         protected override DiscreteSignal Generate()
         {
             Guard.AgainstNonPositive(_frequency, "Frequency");

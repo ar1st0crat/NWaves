@@ -1,31 +1,40 @@
-﻿using NWaves.Utils;
+﻿using NWaves.Signals.Builders.Base;
+using NWaves.Utils;
 using System;
 using System.Collections.Generic;
 
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Class for a simple generator of a sinc-signal
+    /// Builder of signal Sinc(x).
+    /// <para>
+    /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
+    /// <list type="bullet">
+    ///     <item>"low", "lo", "min" (default: -1.0)</item>
+    ///     <item>"high", "hi", "max" (default: 1.0)</item>
+    ///     <item>"frequency", "freq" (default: 100.0 Hz)</item>
+    /// </list>
+    /// </para>
     /// </summary>
     public class SincBuilder : SignalBuilder
     {
         /// <summary>
-        /// Lower amplitude level
+        /// Lower amplitude level.
         /// </summary>
         private double _low;
 
         /// <summary>
-        /// Upper amplitude level
+        /// Upper amplitude level.
         /// </summary>
         private double _high;
 
         /// <summary>
-        /// Frequency of the sinc (as a fraction of sampling frequency)
+        /// Frequency of the sinc (Hz).
         /// </summary>
         private double _frequency;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="SincBuilder"/>.
         /// </summary>
         public SincBuilder()
         {
@@ -38,28 +47,33 @@ namespace NWaves.Signals.Builders
 
             _low = -1.0;
             _high = 1.0;
-            _frequency = 0.0;
+            _frequency = 100.0;
         }
 
         /// <summary>
-        /// Method for generating sinc signal according to simple formula:
-        /// 
-        ///     y[n] = A * sinc(f/fs * n)
-        /// 
+        /// Generate new sample.
         /// </summary>
-        /// <returns></returns>
         public override float NextSample()
         {
+            // y[n] = A * sinc(f / fs * n)
+
             var sample = (float)(_low + (_high - _low) * MathUtils.Sinc(_n * _frequency / SamplingRate));
             _n++;
             return sample;
         }
 
+        /// <summary>
+        /// Reset sample generator.
+        /// </summary>
         public override void Reset()
         {
             _n = 0;
         }
 
+        /// <summary>
+        /// Generate signal by generating all its samples one-by-one. 
+        /// Frequency must be greater than zero.
+        /// </summary>
         protected override DiscreteSignal Generate()
         {
             Guard.AgainstNonPositive(_frequency, "Frequency");

@@ -6,26 +6,17 @@ using NWaves.Utils;
 namespace NWaves.Signals
 {
     /// <summary>
-    /// Any finite complex DT signal is simply two arrays of data (real and imaginary parts)
-    /// sampled at certain sampling rate.
-    /// 
-    /// This arrays of samples can be:
-    ///     - delayed (shifted) by positive or negative number of samples
-    ///     - superimposed with another arrays of samples (another signal)
-    ///     - concatenated with another arrays of samples (another signal)
-    ///     - repeated N times
-    /// 
-    /// Note.
-    /// Method implementations are LINQ-less and do Buffer.BlockCopy() for better performance.
+    /// Static class providing extension methods for working with complex discrete signals.
     /// </summary>
     public static class ComplexDiscreteSignalExtensions
     {
-        /// Method delays the signal
-        ///     either by shifting it to the right (positive, e.g. Delay(1000))
-        ///         or by shifting it to the left (negative, e.g. Delay(-1000))
-        /// <param name="signal"></param>
-        /// <param name="delay"></param>
-        /// <returns></returns>
+        /// <summary>
+        /// Create the delayed copy of <paramref name="signal"/> 
+        /// by shifting it either to the right (positive <paramref name="delay"/>, e.g. Delay(1000)) 
+        /// or to the left (negative <paramref name="delay"/>, e.g. Delay(-1000)).
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="delay">Delay (positive or negative number of delay samples)</param>
         public static ComplexDiscreteSignal Delay(this ComplexDiscreteSignal signal, int delay)
         {
             var length = signal.Length;
@@ -49,13 +40,11 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Method superimposes two signals.
-        /// If sizes are different then the smaller signal is broadcasted 
-        /// to fit the size of the larger signal.
+        /// Superimpose signals <paramref name="signal1"/> and <paramref name="signal2"/>. 
+        /// If sizes are different then the smaller signal is broadcast to fit the size of the larger signal.
         /// </summary>
-        /// <param name="signal1">Object signal</param>
-        /// <param name="signal2">Argument signal</param>
-        /// <returns></returns>
+        /// <param name="signal1">First signal</param>
+        /// <param name="signal2">Second signal</param>
         public static ComplexDiscreteSignal Superimpose(this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
         {
             Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
@@ -88,11 +77,10 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Method concatenates two signals.
+        /// Concatenate <paramref name="signal1"/> and <paramref name="signal2"/>.
         /// </summary>
-        /// <param name="signal1"></param>
-        /// <param name="signal2"></param>
-        /// <returns></returns>
+        /// <param name="signal1">First signal</param>
+        /// <param name="signal2">Second signal</param>
         public static ComplexDiscreteSignal Concatenate(this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
         {
             Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate,
@@ -105,26 +93,25 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Method returns repeated n times copy of the signal
+        /// Create the copy of <paramref name="signal"/> repeated <paramref name="n"/> times.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="times"></param>
-        /// <returns></returns>
-        public static ComplexDiscreteSignal Repeat(this ComplexDiscreteSignal signal, int times)
+        /// <param name="signal">Signal</param>
+        /// <param name="n">Number of times to repeat <paramref name="signal"/></param>
+        public static ComplexDiscreteSignal Repeat(this ComplexDiscreteSignal signal, int n)
         {
-            Guard.AgainstNonPositive(times, "Number of repeat times");
+            Guard.AgainstNonPositive(n, "Number of repeat times");
 
             return new ComplexDiscreteSignal(
                             signal.SamplingRate,
-                            signal.Real.RepeatArray(times),
-                            signal.Imag.RepeatArray(times));
+                            signal.Real.RepeatArray(n),
+                            signal.Imag.RepeatArray(n));
         }
 
         /// <summary>
-        /// In-place signal amplification by coeff
+        /// Amplify <paramref name="signal"/> by <paramref name="coeff"/> in-place.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="coeff"></param>
+        /// <param name="signal">Signal</param>
+        /// <param name="coeff">Amplification coefficient</param>
         public static void Amplify(this ComplexDiscreteSignal signal, double coeff)
         {
             for (var i = 0; i < signal.Length; i++)
@@ -135,10 +122,10 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// In-place signal attenuation by coeff
+        /// Attenuate <paramref name="signal"/> by <paramref name="coeff"/> in-place.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="coeff"></param>
+        /// <param name="signal">Signal</param>
+        /// <param name="coeff">Attenuation coefficient</param>
         public static void Attenuate(this ComplexDiscreteSignal signal, double coeff)
         {
             Guard.AgainstNonPositive(coeff, "Attenuation coefficient");
@@ -147,66 +134,60 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="sampleCount"></param>
-        /// <returns></returns>
-        public static ComplexDiscreteSignal First(this ComplexDiscreteSignal signal, int sampleCount)
-        {
-            Guard.AgainstNonPositive(sampleCount, "Number of samples");
-            Guard.AgainstExceedance(sampleCount, signal.Length, "Number of samples", "signal length");
-
-            return new ComplexDiscreteSignal(
-                            signal.SamplingRate,
-                            signal.Real.FastCopyFragment(sampleCount),
-                            signal.Imag.FastCopyFragment(sampleCount));
-        }
-
-        /// <summary>
-        /// More or less efficient LINQ-less version.
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="sampleCount"></param>
-        /// <returns></returns>
-        public static ComplexDiscreteSignal Last(this ComplexDiscreteSignal signal, int sampleCount)
-        {
-            Guard.AgainstNonPositive(sampleCount, "Number of samples");
-            Guard.AgainstExceedance(sampleCount, signal.Length, "Number of samples", "signal length");
-
-            return new ComplexDiscreteSignal(
-                            signal.SamplingRate,
-                            signal.Real.FastCopyFragment(sampleCount, signal.Length - sampleCount),
-                            signal.Imag.FastCopyFragment(sampleCount, signal.Imag.Length - sampleCount));
-        }
-
-        /// <summary>
-        /// Method creates new zero-padded complex discrete signal from the current signal.
+        /// Create new signal from first <paramref name="n"/> samples of <paramref name="signal"/>.
         /// </summary>
         /// <param name="signal">Signal</param>
-        /// <param name="newLength">The length of a zero-padded signal.
-        /// By default array is zero-padded to have length of next power of 2.</param>
-        /// <returns>Zero padded complex discrete signal</returns>
-        public static ComplexDiscreteSignal ZeroPadded(this ComplexDiscreteSignal signal, int newLength)
+        /// <param name="n">Number of samples to copy</param>
+        public static ComplexDiscreteSignal First(this ComplexDiscreteSignal signal, int n)
         {
-            if (newLength <= 0)
+            Guard.AgainstNonPositive(n, "Number of samples");
+            Guard.AgainstExceedance(n, signal.Length, "Number of samples", "signal length");
+
+            return new ComplexDiscreteSignal(
+                            signal.SamplingRate,
+                            signal.Real.FastCopyFragment(n),
+                            signal.Imag.FastCopyFragment(n));
+        }
+
+        /// <summary>
+        /// Create new signal from last <paramref name="n"/> samples of <paramref name="signal"/>.
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="n">Number of samples to copy</param>
+        public static ComplexDiscreteSignal Last(this ComplexDiscreteSignal signal, int n)
+        {
+            Guard.AgainstNonPositive(n, "Number of samples");
+            Guard.AgainstExceedance(n, signal.Length, "Number of samples", "signal length");
+
+            return new ComplexDiscreteSignal(
+                            signal.SamplingRate,
+                            signal.Real.FastCopyFragment(n, signal.Length - n),
+                            signal.Imag.FastCopyFragment(n, signal.Imag.Length - n));
+        }
+
+        /// <summary>
+        /// Create new zero-padded complex discrete signal of <paramref name="length"/> from <paramref name="signal"/>.
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="length">The length of a zero-padded signal.</param>
+        public static ComplexDiscreteSignal ZeroPadded(this ComplexDiscreteSignal signal, int length)
+        {
+            if (length <= 0)
             {
-                newLength = MathUtils.NextPowerOfTwo(signal.Length);
+                length = MathUtils.NextPowerOfTwo(signal.Length);
             }
 
             return new ComplexDiscreteSignal(
                             signal.SamplingRate,
-                            signal.Real.PadZeros(newLength),
-                            signal.Imag.PadZeros(newLength));
+                            signal.Real.PadZeros(length),
+                            signal.Imag.PadZeros(length));
         }
 
         /// <summary>
-        /// Method performs the complex multiplication of two signals
-        /// (with normalization by length)
+        /// Perform the complex multiplication of <paramref name="signal1"/> and <paramref name="signal2"/> (with normalization by length).
         /// </summary>
-        /// <param name="signal1"></param>
-        /// <param name="signal2"></param>
-        /// <returns></returns>
+        /// <param name="signal1">First signal</param>
+        /// <param name="signal2">Second signal</param>
         public static ComplexDiscreteSignal Multiply(
             this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
         {
@@ -233,12 +214,10 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Method performs the complex division of two signals
-        /// (with normalization by length)
+        /// Perform the complex division of <paramref name="signal1"/> and <paramref name="signal2"/> (with normalization by length).
         /// </summary>
-        /// <param name="signal1"></param>
-        /// <param name="signal2"></param>
-        /// <returns></returns>
+        /// <param name="signal1">First signal</param>
+        /// <param name="signal2">Second signal</param>
         public static ComplexDiscreteSignal Divide(
             this ComplexDiscreteSignal signal1, ComplexDiscreteSignal signal2)
         {
@@ -266,59 +245,19 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Just another way for calling Unwrap() function
+        /// Unwrap phases of complex-valued samples.
         /// </summary>
-        /// <param name="phase"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
+        /// <param name="phase">Phases</param>
+        /// <param name="tolerance">Jump size</param>
         public static double[] Unwrap(this double[] phase, double tolerance = Math.PI)
         {
             return MathUtils.Unwrap(phase, tolerance);
         }
 
         /// <summary>
-        /// Magnitude of complex numbers given in tuple of float arrays (re and im)
+        /// Yield complex numbers as type <see cref="Complex"/> from <paramref name="signal"/> samples.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public static float[] Magnitude(this (float[], float[]) signal)
-        {
-            var (real, imag) = signal;
-            
-            var magnitude = new float[real.Length];
-
-            for (var i = 0; i < magnitude.Length; i++)
-            {
-                magnitude[i] = (float)Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]);
-            }
-
-            return magnitude;
-        }
-
-        /// <summary>
-        /// Phase of complex numbers given in tuple of float arrays (re and im)
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public static float[] Phase(this (float[], float[]) signal)
-        {
-            var (real, imag) = signal;
-
-            var magnitude = new float[real.Length];
-
-            for (var i = 0; i < magnitude.Length; i++)
-            {
-                magnitude[i] = (float)Math.Atan2(imag[i], real[i]);
-            }
-
-            return magnitude;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
+        /// <param name="signal">Complex discrete signal</param>
         public static IEnumerable<Complex> ToComplexNumbers(this ComplexDiscreteSignal signal)
         {
             for (var i = 0; i < signal.Length; i++)

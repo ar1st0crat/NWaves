@@ -1,25 +1,36 @@
-﻿using System;
+﻿using NWaves.Signals.Builders.Base;
+using System;
 using System.Collections.Generic;
 
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Average White Gaussian Noise
+    /// <para>
+    /// Additive White Gaussian Noise (AWGN) builder. 
+    /// Generates additive white gaussian noise using Box-Muller transform.
+    /// </para>
+    /// <para>
+    /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
+    /// <list type="bullet">
+    ///     <item>"mean", "mu" (default: 0.0)</item>
+    ///     <item>"sigma", "stddev" (default: 1.0)</item>
+    /// </list>
+    /// </para>
     /// </summary>
     public class AwgnBuilder : SignalBuilder
     {
         /// <summary>
-        /// Mean
+        /// Mean.
         /// </summary>
         private double _mu;
 
         /// <summary>
-        /// Standard deviation
+        /// Standard deviation.
         /// </summary>
         private double _sigma;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="AwgnBuilder"/>.
         /// </summary>
         public AwgnBuilder()
         {
@@ -34,9 +45,8 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Method generates additive white gaussian noise by Box-Muller transform.
+        /// Generate new sample.
         /// </summary>
-        /// <returns></returns>
         public override float NextSample()
         {
             if (_nextReady)
@@ -56,6 +66,9 @@ namespace NWaves.Signals.Builders
             return sample;
         }
 
+        /// <summary>
+        /// Reset sample generator.
+        /// </summary>
         public override void Reset()
         {
             _nextReady = false;
@@ -64,6 +77,6 @@ namespace NWaves.Signals.Builders
         private float _next;
         private bool _nextReady;
 
-        private Random _rand = new Random();
+        private readonly Random _rand = new Random();
     }
 }

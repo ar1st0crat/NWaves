@@ -1,27 +1,33 @@
-﻿using NWaves.Utils;
+﻿using NWaves.Signals.Builders.Base;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Class for a simple generator of a straight line signal
+    /// Builder of straight line signals: y[n] = slope * n + intercept. 
+    /// <para>
+    /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
+    /// <list type="bullet">
+    ///     <item>"slope", "k" (default: 0.0)</item>
+    ///     <item>"intercept", "b" (default: 0.0)</item>
+    /// </list>
+    /// </para>
     /// </summary>
     public class RampBuilder : SignalBuilder
     {
         /// <summary>
-        /// Slope
+        /// Slope.
         /// </summary>
         private double _slope;
 
         /// <summary>
-        /// Intercept
+        /// Intercept.
         /// </summary>
         private double _intercept;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="RampBuilder"/>.
         /// </summary>
         public RampBuilder()
         {
@@ -36,12 +42,8 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Method for generating one straight line according to simple formula:
-        /// 
-        ///     y[n] = slope * n + intercept
-        /// 
+        /// Generate new sample.
         /// </summary>
-        /// <returns></returns>
         public override float NextSample()
         {
             var sample = (float)(_slope * _n + _intercept);
@@ -49,6 +51,9 @@ namespace NWaves.Signals.Builders
             return sample;
         }
 
+        /// <summary>
+        /// Reset sample generator.
+        /// </summary>
         public override void Reset()
         {
             _n = 0;

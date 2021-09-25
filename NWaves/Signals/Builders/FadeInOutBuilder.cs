@@ -1,44 +1,52 @@
-﻿namespace NWaves.Signals.Builders
+﻿using NWaves.Signals.Builders.Base;
+
+namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Fade in/out decorator for any signal builder
+    /// <para>Fade in/out decorator for signal builders.</para>
+    /// <para>Example:</para>
+    /// <code>
+    ///     var sine = new SineBuilder(...); 
+    ///     <br/>
+    ///     var fadeSine = new FadeInOutBuilder(sine).In(0.05).Out(0.2);
+    /// </code>
     /// </summary>
     public class FadeInOutBuilder : SignalBuilder
     {
         /// <summary>
-        /// Signal builder to decorate
+        /// Signal builder to decorate.
         /// </summary>
         private readonly SignalBuilder _builder;
 
         /// <summary>
-        /// Number of samples in fade-in section
+        /// Number of samples in fade-in section.
         /// </summary>
         private int _fadeInSampleCount;
 
         /// <summary>
-        /// Number of samples in fade-out section
+        /// Number of samples in fade-out section.
         /// </summary>
         private int _fadeOutSampleCount;
 
         /// <summary>
-        /// Index of the sample in fade-in section
+        /// Index of the sample in fade-in section.
         /// </summary>
         private int _fadeInIndex;
 
         /// <summary>
-        /// Index of the sample in fade-out section
+        /// Index of the sample in fade-out section.
         /// </summary>
         private int _fadeOutIndex;
 
         /// <summary>
-        /// Index of current sample
+        /// Index of current sample.
         /// </summary>
         private int _index;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="FadeInOutBuilder"/> around <paramref name="builder"/>.
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="builder">Underlying signal builder</param>
         public FadeInOutBuilder(SignalBuilder builder)
         {
             _builder = builder;
@@ -49,9 +57,8 @@
         }
 
         /// <summary>
-        /// 
+        /// Generate new sample.
         /// </summary>
-        /// <returns></returns>
         public override float NextSample()
         {
             var sample = _builder.NextSample();
@@ -72,7 +79,7 @@
         }
 
         /// <summary>
-        /// Reset
+        /// Reset sample generator.
         /// </summary>
         public override void Reset()
         {
@@ -85,7 +92,7 @@
         }
 
         /// <summary>
-        /// Set fadeIn size in seconds
+        /// Set duration of fade-in section in seconds.
         /// </summary>
         /// <param name="seconds"></param>
         public FadeInOutBuilder In(double seconds)
@@ -95,7 +102,7 @@
         }
 
         /// <summary>
-        /// Set fadeOut size in seconds
+        /// Set duration of fade-out section in seconds.
         /// </summary>
         /// <param name="seconds"></param>
         public FadeInOutBuilder Out(double seconds)
@@ -106,7 +113,7 @@
         }
 
         /// <summary>
-        /// Start fading out
+        /// Start fading out.
         /// </summary>
         public void FadeOut()
         {
@@ -118,12 +125,12 @@
         }
 
         /// <summary>
-        /// Is signal started fading
+        /// Is signal started fading.
         /// </summary>
         public bool FadeStarted { get; protected set; }
 
         /// <summary>
-        /// Is signal finished fading
+        /// Is signal finished fading.
         /// </summary>
         public bool FadeFinished => _fadeOutIndex <= 0;
     }

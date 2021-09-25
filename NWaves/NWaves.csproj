@@ -13,6 +13,7 @@
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageIconUrl></PackageIconUrl>
     <RepositoryUrl>https://github.com/ar1st0crat/NWaves</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>audio, dsp, filtering, tsm, sound-effects, feature-extraction, psychoacoustics, wav, mfcc, lpc, plp, pncc, resampling, pitch, wavelets, mir, fda, noise, adaptive-filtering</PackageTags>
     <FileVersion>0.9.6</FileVersion>
     <AssemblyVersion>0.9.6</AssemblyVersion>
@@ -30,6 +31,7 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <ItemGroup>

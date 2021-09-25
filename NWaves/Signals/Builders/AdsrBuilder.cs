@@ -1,10 +1,21 @@
-﻿using System;
+﻿using NWaves.Signals.Builders.Base;
+using System;
 using System.Collections.Generic;
 
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// ASDR envelope builder
+    /// <para>ADSR envelope builder.</para>
+    /// <para>
+    /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
+    /// <list type="bullet">
+    ///     <item>"attack", "a" (default: 0.2)</item>
+    ///     <item>"decay", "d" (default: 0.2)</item>
+    ///     <item>"sustain", "s" (default: 0.2)</item>
+    ///     <item>"release", "r" (default: 0.2)</item>
+    ///     <item>"attackAmp", "amp" (default: 1.5)</item>
+    /// </list>
+    /// </para>
     /// </summary>
     public class AdsrBuilder : SignalBuilder
     {
@@ -16,24 +27,26 @@ namespace NWaves.Signals.Builders
             Release
         }
 
-        private double _attack;
-        private double _decay;
-        private double _sustain;
-        private double _release;
-
-        private AdsrState _state;
+        /// <summary>
+        /// Gets ADSR state (attack, decay, sustain, release).
+        /// </summary>
         public AdsrState State
         {
-            get { return _state; }
+            get => _state;
             private set
             {
                 _state = value;
                 UpdateCoefficients();
             }
         }
+        private AdsrState _state;
+
+        private double _attack;
+        private double _decay;
+        private double _sustain;
+        private double _release;
 
         private float _attackAmp = 1.5f;
-
         private double _attackSlope = 0.2;
         private double _decaySlope = 0.2;
         private double _sustainSlope = 0.2;
@@ -45,12 +58,12 @@ namespace NWaves.Signals.Builders
         private float _a, _b;
 
         /// <summary>
-        /// Constructor for ADSR parameters in terms of sample count
+        /// Constructs <see cref="AdsrBuilder"/> from ADSR parameters (in the form of number of samples).
         /// </summary>
-        /// <param name="attack"></param>
-        /// <param name="decay"></param>
-        /// <param name="sustain"></param>
-        /// <param name="release"></param>
+        /// <param name="attack">Number of samples for attack stage</param>
+        /// <param name="decay">Number of samples for decay stage</param>
+        /// <param name="sustain">Number of samples for sustain stage</param>
+        /// <param name="release">Number of samples for release stage</param>
         public AdsrBuilder(int attack, int decay, int sustain, int release)
         {
             ParameterSetters = new Dictionary<string, Action<double>>
@@ -71,12 +84,12 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Constructor for ADSR parameters in terms of time duration (in sec)
+        /// Constructs <see cref="AdsrBuilder"/> from ADSR parameters (in the form of duration in seconds).
         /// </summary>
-        /// <param name="attack"></param>
-        /// <param name="decay"></param>
-        /// <param name="sustain"></param>
-        /// <param name="release"></param>
+        /// <param name="attack">Duration of attack stage (seconds)</param>
+        /// <param name="decay">Duration of decay stage (seconds)</param>
+        /// <param name="sustain">Duration of sustain stage (seconds)</param>
+        /// <param name="release">Duration of release stage (seconds)</param>
         public AdsrBuilder(double attack, double decay, double sustain, double release)
         {
             // these parameters will be cast to sample count when the sampling rate is specified
@@ -98,6 +111,9 @@ namespace NWaves.Signals.Builders
             Reset();
         }
 
+        /// <summary>
+        /// Generate new sample.
+        /// </summary>
         public override float NextSample()
         {
             float cur;
@@ -141,6 +157,9 @@ namespace NWaves.Signals.Builders
             return _prev;
         }
 
+        /// <summary>
+        /// Reset sample generator.
+        /// </summary>
         public override void Reset()
         {
             _n = 0;
@@ -149,6 +168,10 @@ namespace NWaves.Signals.Builders
             State = AdsrState.Attack;
         }
 
+        /// <summary>
+        /// Set the sampling rate of the signal to build.
+        /// </summary>
+        /// <param name="samplingRate">Sampling rate</param>
         public override SignalBuilder SampledAt(int samplingRate)
         {
             _attack *= samplingRate;

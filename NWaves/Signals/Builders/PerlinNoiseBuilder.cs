@@ -1,41 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
+using NWaves.Signals.Builders.Base;
 using NWaves.Utils;
 
 namespace NWaves.Signals.Builders
 {
+    // Implementation of 1D Perlin Noise ported from Stefan Gustavson's code:
+    //
+    //      https://github.com/stegu/perlin-noise/blob/master/src/noise1234.c
+    //
+
     /// <summary>
-    /// Perlin noise (improved, 1D simplex noise)
-    /// 
-    /// Implementation of 1D Perlin Noise ported from Stefan Gustavson's code:
-    /// 
-    ///    https://github.com/stegu/perlin-noise/blob/master/src/noise1234.c
-    ///
+    /// Perlin noise builder (1D simplex noise).
+    /// <para>
+    /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
+    /// <list type="bullet">
+    ///     <item>"low", "lo", "min" (default: -1.0)</item>
+    ///     <item>"high", "hi", "max" (default: 1.0)</item>
+    ///     <item>"scale", "octave" (default: 0.02)</item>
+    /// </list>
+    /// </para>
     /// </summary>
     public class PerlinNoiseBuilder : SignalBuilder
     {
         /// <summary>
-        /// Lower amplitude level
+        /// Lower amplitude level.
         /// </summary>
         private double _low;
 
         /// <summary>
-        /// Upper amplitude level
+        /// Upper amplitude level.
         /// </summary>
         private double _high;
 
         /// <summary>
-        /// Scale
+        /// Scale.
         /// </summary>
         private double _scale;
 
         /// <summary>
-        /// Table of permutations
+        /// Table of permutations.
         /// </summary>
         private readonly byte[] _permutation = new byte[512];
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="PerlinNoiseBuilder"/>.
         /// </summary>
         public PerlinNoiseBuilder()
         {
@@ -54,10 +63,8 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// 1D simplex noise
+        /// 1D simplex noise.
         /// </summary>
-        /// <param name="x"></param>
-        /// <returns></returns>
         private double GenerateSample(double x)
         {
             var i1 = (int)x < x ? (int)x : (int)x - 1;
@@ -72,12 +79,9 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Gradient
+        /// Gradient.
         /// </summary>
-        /// <param name="hash"></param>
-        /// <param name="x"></param>
-        /// <returns></returns>
-        private double Gradient(int hash, double x)
+        private static double Gradient(int hash, double x)
         {
             var h = hash & 15;
             var g = 1.0 + (h & 7);
@@ -85,31 +89,24 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Improved interpolator
+        /// Improved interpolator.
         /// </summary>
-        /// <param name="t"></param>
-        /// <returns></returns>
         private static double Fade(double t)
         {
             return t * t * t * (t * (t * 6 - 15) + 10);
         }
 
         /// <summary>
-        /// Linear interpolator
+        /// Linear interpolator.
         /// </summary>
-        /// <param name="t"></param>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
         private static double Lerp(double t, double a, double b)
         {
             return a + t * (b - a);
         }
 
         /// <summary>
-        /// Method for generating Perlin noise
+        /// Generate new sample.
         /// </summary>
-        /// <returns></returns>
         public override float NextSample()
         {
             var sample = GenerateSample(_n * _scale) * (_high - _low) / 2 + (_high + _low) / 2;
@@ -117,12 +114,19 @@ namespace NWaves.Signals.Builders
             return (float)sample;
         }
 
+        /// <summary>
+        /// Reset sample generator.
+        /// </summary>
         public override void Reset()
         {
             _n = 0;
             _rand.NextBytes(_permutation);
         }
 
+        /// <summary>
+        /// Generate signal by generating all its samples one-by-one. 
+        /// Upper amplitude must be greater than lower amplitude.
+        /// </summary>
         protected override DiscreteSignal Generate()
         {
             Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
@@ -131,6 +135,6 @@ namespace NWaves.Signals.Builders
 
         private int _n;
 
-        private Random _rand = new Random();
+        private readonly Random _rand = new Random();
     }
 }

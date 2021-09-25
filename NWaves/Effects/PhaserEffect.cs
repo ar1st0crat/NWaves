@@ -1,6 +1,7 @@
 ﻿using NWaves.Effects.Base;
 using NWaves.Filters.BiQuad;
 using NWaves.Signals.Builders;
+using NWaves.Signals.Builders.Base;
 
 namespace NWaves.Effects
 {

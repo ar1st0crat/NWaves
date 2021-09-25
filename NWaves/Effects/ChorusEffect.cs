@@ -1,5 +1,6 @@
 ﻿using NWaves.Effects.Base;
 using NWaves.Signals.Builders;
+using NWaves.Signals.Builders.Base;
 using NWaves.Utils;
 using System.Linq;
 
