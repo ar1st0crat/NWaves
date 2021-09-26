@@ -6,49 +6,49 @@ using NWaves.Utils;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Pitch Shift effect based on phase vocoder and processing in frequency domain
+    /// Class representing pitch shift audio effect 
+    /// based on overlap-add filtering and pitch shifting in frequency domain.
     /// </summary>
     public class PitchShiftVocoderEffect : OverlapAddFilter
     {
         /// <summary>
-        /// Shift ratio
+        /// Gets or sets pitch shift ratio.
         /// </summary>
         public float Shift { get; set; }
 
         /// <summary>
-        /// Frequency resolution
+        /// Frequency resolution.
         /// </summary>
         private readonly float _freqResolution;
 
         /// <summary>
-        /// Array of spectrum magnitudes (at current step)
+        /// Array of spectrum magnitudes (at the current step).
         /// </summary>
         private readonly float[] _mag;
 
         /// <summary>
-        /// Array of spectrum phases (at current step)
+        /// Array of spectrum phases (at the current step).
         /// </summary>
         private readonly float[] _phase;
 
         /// <summary>
-        /// Array of phases computed at previous step
+        /// Array of phases computed at the previous step.
         /// </summary>
         private readonly float[] _prevPhase;
 
         /// <summary>
-        /// Array of new synthesized phases
+        /// Array of new synthesized phases (at the current step).
         /// </summary>
         private readonly float[] _phaseTotal;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="PitchShiftVocoderEffect"/>.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="shift"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="hopSize"></param>
-        public PitchShiftVocoderEffect(int samplingRate, double shift, int fftSize = 1024, int hopSize = 64)
-            : base(hopSize, fftSize)
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="shift">Pitch shift ratio</param>
+        /// <param name="fftSize">FFT size</param>
+        /// <param name="hopSize">Hop length</param>
+        public PitchShiftVocoderEffect(int samplingRate, double shift, int fftSize = 1024, int hopSize = 64) : base(hopSize, fftSize)
         {
             Shift = (float)shift;
 
@@ -63,13 +63,13 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one spectrum at each STFT step
+        /// Process one spectrum at each Overlap-Add STFT step.
         /// </summary>
         /// <param name="re">Real parts of input spectrum</param>
         /// <param name="im">Imaginary parts of input spectrum</param>
         /// <param name="filteredRe">Real parts of output spectrum</param>
         /// <param name="filteredIm">Imaginary parts of output spectrum</param>
-        public override void ProcessSpectrum(float[] re, float[] im, float[] filteredRe, float[] filteredIm)
+        protected override void ProcessSpectrum(float[] re, float[] im, float[] filteredRe, float[] filteredIm)
         {
             var nextPhase = (float)(2 * Math.PI * _hopSize / _fftSize);
 
@@ -115,7 +115,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset filter internals
+        /// Reset effect.
         /// </summary>
         public override void Reset()
         {

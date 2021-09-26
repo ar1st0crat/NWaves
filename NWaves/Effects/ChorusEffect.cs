@@ -1,22 +1,20 @@
 ﻿using NWaves.Effects.Base;
-using NWaves.Signals.Builders;
 using NWaves.Signals.Builders.Base;
 using NWaves.Utils;
 using System.Linq;
 
 namespace NWaves.Effects
 {
+    // Currently, the implementation is not very efficient:
+    // it's just a set of vibrato effects.
+ 
     /// <summary>
-    /// Chorus effect.
-    /// 
-    /// Currently the implementation is not very efficient:
-    /// it's just a set of vibrato effects.
-    /// 
+    /// Class representing Chorus audio effect.
     /// </summary>
     public class ChorusEffect : AudioEffect
     {
         /// <summary>
-        /// Widths for each voice (max delays in seconds)
+        /// Gets or sets widths for each voice (max delays in seconds).
         /// </summary>
         public float[] Widths
         {
@@ -31,9 +29,8 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// LFO frequencies
+        /// Gets or sets LFO frequencies for each voice.
         /// </summary>
-        private float[] _lfoFrequencies;
         public float[] LfoFrequencies
         {
             get => _lfoFrequencies;
@@ -47,19 +44,19 @@ namespace NWaves.Effects
                 }
             }
         }
+        private float[] _lfoFrequencies;
 
         /// <summary>
-        /// Chorus voices
+        /// Chorus voices.
         /// </summary>
         private readonly VibratoEffect[] _voices;
 
-
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="ChorusEffect"/>.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="lfoFrequencies"></param>
-        /// <param name="widths"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="lfoFrequencies">LFO frequencies for each voice</param>
+        /// <param name="widths">Widths (max delays, in seconds) for each voice</param>
         public ChorusEffect(int samplingRate, float[] lfoFrequencies, float[] widths)
         {
             Guard.AgainstInequality(lfoFrequencies.Length, widths.Length, "Size of frequency array", "size of widths array");
@@ -75,11 +72,11 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Constructor with LFOs
+        /// Construct <see cref="ChorusEffect"/> from <paramref name="lfos"/>.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="lfos"></param>
-        /// <param name="widths"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="lfos">LFOs (in the form of signal builders)</param>
+        /// <param name="widths">Widths (max delays, in seconds) for each voice</param>
         public ChorusEffect(int samplingRate, SignalBuilder[] lfos, float[] widths)
         {
             Guard.AgainstInequality(lfos.Length, widths.Length, "Size of frequency array", "number of LFOs");
@@ -93,10 +90,9 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process sample
+        /// Process one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var chorus = _voices.Sum(v => v.Process(sample)) / _voices.Length;
@@ -105,7 +101,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect
+        /// Reset effect.
         /// </summary>
         public override void Reset()
         {

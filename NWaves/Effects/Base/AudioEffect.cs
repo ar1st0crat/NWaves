@@ -4,28 +4,26 @@ using NWaves.Signals;
 namespace NWaves.Effects.Base
 {
     /// <summary>
-    /// Audio effect
+    /// Abstract class for audio effects.
     /// </summary>
     public abstract class AudioEffect : WetDryMixer, IFilter, IOnlineFilter
     {
         /// <summary>
-        /// Online processing
+        /// Process one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public abstract float Process(float sample);
 
         /// <summary>
-        /// Reset effect
+        /// Reset effect.
         /// </summary>
         public abstract void Reset();
 
         /// <summary>
-        /// Offline processing
+        /// Process entire signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="method">Filtering method</param>
         public virtual DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
     }
 }

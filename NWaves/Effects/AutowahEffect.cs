@@ -5,27 +5,28 @@ using System;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class for AutoWah effect.
+    /// Class representing AutoWah audio effect. 
+    /// Autowah means: envelope follower + wahwah effect.
     /// </summary>
     public class AutowahEffect : AudioEffect
     {
         /// <summary>
-        /// Q
+        /// Gets or sets Q factor (a.k.a. Quality Factor, resonance).
         /// </summary>
         public float Q { get; set; }
 
         /// <summary>
-        /// Min LFO frequency
+        /// Gets or sets minimal LFO frequency (in Hz).
         /// </summary>
         public float MinFrequency { get; set; }
 
         /// <summary>
-        /// Max LFO frequency
+        /// Gets or sets maximal LFO frequency (in Hz).
         /// </summary>
         public float MaxFrequency { get; set; }
 
         /// <summary>
-        /// Attack time
+        /// Gets or sets attack time (in seconds).
         /// </summary>
         public float AttackTime
         {
@@ -34,7 +35,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Release time
+        /// Gets or sets release time (in seconds).
         /// </summary>
         public float ReleaseTime
         {
@@ -43,25 +44,24 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Sampling rate
+        /// Sampling rate.
         /// </summary>
         private readonly int _fs;
 
         /// <summary>
-        /// Envelope follower
+        /// Internal envelope follower.
         /// </summary>
         private readonly EnvelopeFollower _envelopeFollower;
 
-
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="AutowahEffect"/>.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="minFrequency"></param>
-        /// <param name="maxFrequency"></param>
-        /// <param name="q"></param>
-        /// <param name="attackTime"></param>
-        /// <param name="releaseTime"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="minFrequency">Minimal LFO frequency (in Hz)</param>
+        /// <param name="maxFrequency">Maximal LFO frequency (in Hz)</param>
+        /// <param name="q">Q factor (a.k.a. Quality Factor, resonance)</param>
+        /// <param name="attackTime">Attack time (in seconds)</param>
+        /// <param name="releaseTime">Release time (in seconds)</param>
         public AutowahEffect(int samplingRate,
                              float minFrequency = 30,
                              float maxFrequency = 2000,
@@ -80,10 +80,9 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Autowah means: 1) envelope follower + 2) wahwah effect
+        /// Process one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var filt = _envelopeFollower.Process(sample) * Math.Sqrt(Q);
@@ -103,7 +102,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect
+        /// Reset effect.
         /// </summary>
         public override void Reset()
         {

@@ -4,24 +4,23 @@ using NWaves.Utils;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Delay effect
+    /// Class representing Delay audio effect.
     /// </summary>
     public class DelayEffect : AudioEffect
     {
         /// <summary>
-        /// Delay line
+        /// Internal fractional delay line.
         /// </summary>
         private readonly FractionalDelayLine _delayLine;
 
         /// <summary>
-        /// Sampling rate
+        /// Sampling rate.
         /// </summary>
         private readonly int _fs;
 
         /// <summary>
-        /// Delay (in seconds)
+        /// Gets or sets delay (in seconds).
         /// </summary>
-        private float _delay;
         public float Delay
         {
             get => _delay / _fs;
@@ -31,18 +30,21 @@ namespace NWaves.Effects
                 _delay = _fs * value;
             }
         }
+        private float _delay;
 
         /// <summary>
-        /// Feedback coefficient
+        /// Gets or sets feedback parameter.
         /// </summary>
         public float Feedback { get; set; }
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="DelayEffect"/>.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="delay"></param>
-        /// <param name="feedback"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="delay">Delay (in seconds)</param>
+        /// <param name="feedback">Feedback</param>
+        /// <param name="interpolationMode">Interpolation mode for fractional delay line</param>
+        /// <param name="reserveDelay">Max delay for reserving the size of delay line</param>
         public DelayEffect(int samplingRate,
                            float delay,
                            float feedback = 0.5f,
@@ -64,6 +66,10 @@ namespace NWaves.Effects
             Feedback = feedback;
         }
 
+        /// <summary>
+        /// Process one sample.
+        /// </summary>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var delayed = _delayLine.Read(_delay);
@@ -75,6 +81,9 @@ namespace NWaves.Effects
             return sample * Dry + output * Wet;
         }
 
+        /// <summary>
+        /// Reset effect.
+        /// </summary>
         public override void Reset()
         {
             _delayLine.Reset();

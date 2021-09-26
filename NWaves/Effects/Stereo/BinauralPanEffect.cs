@@ -7,69 +7,69 @@ using System.Linq;
 namespace NWaves.Effects.Stereo
 {
     /// <summary>
-    /// Binaural panning (HRIR/BRIR + crossover filter (optional))
+    /// Class representing binaural panning audio effect 
+    /// (HRIR/BRIR interpolation + crossover filter (optional)).
     /// </summary>
     public class BinauralPanEffect : StereoEffect
     {
         /// <summary>
-        /// Left ear HRIR
+        /// Left ear HRIR.
         /// </summary>
         private readonly float[] _leftEarHrir;
 
         /// <summary>
-        /// Right ear HRIR
+        /// Right ear HRIR.
         /// </summary>
         private readonly float[] _rightEarHrir;
 
         /// <summary>
-        /// HRIRs table (left ear)
+        /// HRIRs table (left ear).
         /// </summary>
         private readonly float[][][] _leftHrirTable;
 
         /// <summary>
-        /// HRIRs table (right ear)
+        /// HRIRs table (right ear).
         /// </summary>
         private readonly float[][][] _rightHrirTable;
 
         /// <summary>
-        /// Azimuths (thetas)
+        /// Azimuths (thetas).
         /// </summary>
         private readonly float[] _azimuths;
 
         /// <summary>
-        /// Elevations (phis)
+        /// Elevations (phis).
         /// </summary>
         private readonly float[] _elevations;
 
         /// <summary>
-        /// Left ear HRIR convolver
+        /// Left ear HRIR convolver.
         /// </summary>
         private readonly OlsBlockConvolver _leftEarConvolver;
 
         /// <summary>
-        /// Right ear HRIR convolver
+        /// Right ear HRIR convolver.
         /// </summary>
         private readonly OlsBlockConvolver _rightEarConvolver;
 
         /// <summary>
-        /// Turn on/off crossover filtering
+        /// Turn on/off crossover filtering.
         /// </summary>
         private bool _useCrossover;
 
         /// <summary>
-        /// Crossover filters (low-pass part)
+        /// Crossover filters (low-pass part).
         /// </summary>
         private IOnlineFilter _crossoverLpFilterLeft, _crossoverLpFilterRight;
         
         /// <summary>
-        /// Crossover filters (high-pass part)
+        /// Crossover filters (high-pass part).
         /// </summary>
         private IOnlineFilter _crossoverHpFilterLeft, _crossoverHpFilterRight;
 
         /// <summary>
-        /// Azimuth
+        /// Gets or sets azimuth.
         /// </summary>
-        private float _azimuth;
         public float Azimuth
         {
             get => _azimuth;
@@ -79,11 +79,11 @@ namespace NWaves.Effects.Stereo
                 UpdateHrir(_azimuth, _elevation);
             }
         }
+        private float _azimuth;
 
         /// <summary>
-        /// Elevation
+        /// Gets or sets elevation.
         /// </summary>
-        private float _elevation;
         public float Elevation
         {
             get => _elevation;
@@ -93,27 +93,26 @@ namespace NWaves.Effects.Stereo
                 UpdateHrir(_azimuth, _elevation);
             }
         }
-
+        private float _elevation;
 
         /// <summary>
-        /// Constructor
-        /// 
-        /// For example, CIPIC:
-        /// 
-        ///   25 azimuths (theta):
-        ///     [-80 -65 -55 -45 -40 -35 -30 -25 -20 -15 -10 -5 0 5 10 15 20 25 30 35 40 45 55 65 80]  
-        /// 
-        ///   50 elevations (phi):
-        ///     [-45 -39 -34 -28 -23 -17 -11 -6 0 6 11 17 23 28 34 39 45 51 56 62 68 73 79 84 90 96 
-        ///       101 107 113 118 124 129 135 141 146 152 158 163 169 174 180 186 191 197 203 208 214 219 225 231]
-        /// 
+        /// <para>Construct <see cref="BinauralPanEffect"/>.</para>
+        /// <para>
+        /// For example (CIPIC):
+        /// <code>
+        ///   25 azimuths (theta): <br/>
+        ///     [-80 -65 -55 -45 -40 -35 -30 -25 -20 -15 -10 -5 0 5 10 15 20 25 30 35 40 45 55 65 80]  <br/>
+        /// <br/> 
+        ///   50 elevations (phi): <br/>
+        ///     [-45 -39 -34 -28 -23 -17 -11 -6 0 6 11 17 23 28 34 39 45 51 56 62 68 73 79 84 90 96  <br/>
+        ///       101 107 113 118 124 129 135 141 146 152 158 163 169 174 180 186 191 197 203 208 214 219 225 231] <br/>
+        /// </code>
+        /// </para>
         /// </summary>
         /// <param name="azimuths">Azimuths (thetas) - must be sorted in ascending order</param>
         /// <param name="elevations">Elevations (phis) - must be sorted in ascending order</param>
         /// <param name="leftHrirs">HRIR collection (left ear)</param>
         /// <param name="rightHrirs">HRIR collection (right ear)</param>
-        /// <param name="crossoverLpFilter">Crossover filter (low-pass part)</param>
-        /// <param name="crossoverHpFilter">Crossover filter (high-pass part)</param>
         public BinauralPanEffect(float[] azimuths,
                                  float[] elevations,
                                  float[][][] leftHrirs,
@@ -164,7 +163,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Turn on/off crossover filtering
+        /// Turn on/off crossover filtering.
         /// </summary>
         public void UseCrossover(bool useCrossover)
         {
@@ -172,7 +171,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Update frequency of the crossover filter (only for BiQuadFilters).
+        /// Update frequency of the crossover filter (works only for BiQuadFilters). 
         /// Filters of other types / parameters can be passed to constructor.
         /// </summary>
         /// <param name="freq">Frequency</param>
@@ -201,12 +200,12 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Set custom crossover filters
+        /// Set custom crossover filters.
         /// </summary>
-        /// <param name="lowpassLeft"></param>
-        /// <param name="highpassLeft"></param>
-        /// <param name="lowpassRight"></param>
-        /// <param name="highpassRight"></param>
+        /// <param name="lowpassLeft">Crossover filter (low-pass part) for left channel</param>
+        /// <param name="highpassLeft">Crossover filter (high-pass part) for left channel</param>
+        /// <param name="lowpassRight">Crossover filter (low-pass part) for right channel</param>
+        /// <param name="highpassRight">Crossover filter (high-pass part) for right channel</param>
         public void SetCrossoverFilters(IOnlineFilter lowpassLeft,
                                         IOnlineFilter highpassLeft,
                                         IOnlineFilter lowpassRight,
@@ -219,7 +218,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Update HRIR (interpolate it using HRIR tables)
+        /// Update HRIR (interpolate it using HRIR tables).
         /// </summary>
         /// <param name="azimuth">Azimuth (theta)</param>
         /// <param name="elevation">Elevation (phi)</param>
@@ -321,10 +320,10 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Process current sample in each channel
+        /// Process one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
         /// </summary>
-        /// <param name="left">Sample from left channel</param>
-        /// <param name="right">Sample from right channel</param>
+        /// <param name="left">Input sample in left channel</param>
+        /// <param name="right">Input sample in right channel</param>
         public override void Process(ref float left, ref float right)
         {
             var leftIn = left;
@@ -367,7 +366,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Reset binaural pan effect
+        /// Reset binaural pan effect.
         /// </summary>
         public override void Reset()
         {

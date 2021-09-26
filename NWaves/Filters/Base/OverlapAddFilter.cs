@@ -8,82 +8,82 @@ using NWaves.Windows;
 
 namespace NWaves.Filters.Base
 {
+    // OverlapAddFilter is the base class for all filters working by the STFT overlap-add scheme.
+    //
+    // Subclasses must implement ProcessSpectrum() method that corresponds to the second stage.
+    // 
+    // Also, it inherits from WetDryMixer implementing IMixable interface,
+    // since audio effects can be built based on this class.
+    //
+
     /// <summary>
-    /// The base class for all filters working by the STFT overlap-add scheme:
-    /// 
-    /// - short-time frame analysis
-    /// - short-time frame processing
-    /// - short-time frame synthesis (overlap-add)
-    /// 
-    /// Subclasses must implement ProcessSpectrum() method
-    /// that corresponds to the second stage.
-    /// 
-    /// Also, it implements IMixable interface,
-    /// since audio effects can be built based on this class.
-    /// 
+    /// Abstract class for all filters working by the STFT overlap-add scheme:
+    /// <list type="number">
+    ///     <item>short-time frame analysis</item>
+    ///     <item>short-time frame processing</item>
+    ///     <item>short-time frame synthesis (overlap-add)</item>
+    /// </list>
     /// </summary>
     public abstract class OverlapAddFilter : WetDryMixer, IFilter, IOnlineFilter
     {
         /// <summary>
-        /// Hop size
+        /// STFT hop length.
         /// </summary>
         protected readonly int _hopSize;
 
         /// <summary>
-        /// Size of FFT for analysis and synthesis
+        /// Size of FFT for analysis and synthesis.
         /// </summary>
         protected readonly int _fftSize;
 
         /// <summary>
-        /// ISTFT normalization gain
+        /// ISTFT normalization gain.
         /// </summary>
         protected float _gain;
 
         /// <summary>
-        /// Size of frame overlap
+        /// Size of frame overlap.
         /// </summary>
         protected readonly int _overlapSize;
 
         /// <summary>
-        /// Internal FFT transformer
+        /// Internal FFT transformer.
         /// </summary>
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// Window coefficients
+        /// Window coefficients.
         /// </summary>
         protected readonly float[] _window;
 
         /// <summary>
-        /// Delay line
+        /// Delay line.
         /// </summary>
         private readonly float[] _dl;
 
         /// <summary>
-        /// Offset in the input delay line
+        /// Offset in the input delay line.
         /// </summary>
         private int _inOffset;
 
         /// <summary>
-        /// Offset in the output buffer
+        /// Offset in the output buffer.
         /// </summary>
         private int _outOffset;
 
-        /// <summary>
-        /// Internal buffers
-        /// </summary>
+        // Internal buffers
+
         private readonly float[] _re;
         private readonly float[] _im;
         private readonly float[] _filteredRe;
         private readonly float[] _filteredIm;
         private readonly float[] _lastSaved;
 
-
         /// <summary>
-        /// Constuctor
+        /// Construct <see cref="OverlapAddFilter"/>.
         /// </summary>
-        /// <param name="hopSize"></param>
-        /// <param name="fftSize"></param>
+        /// <param name="hopSize">Hop size (hop length, number of samples)</param>
+        /// <param name="fftSize">FFT size</param>
         public OverlapAddFilter(int hopSize, int fftSize = 0)
         {
             _hopSize = hopSize;
@@ -109,10 +109,9 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Online processing (sample after sample)
+        /// Process one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public virtual float Process(float sample)
         {
             _dl[_inOffset++] = sample;
@@ -126,9 +125,9 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process one frame (FFT block)
+        /// Process one frame (FFT block).
         /// </summary>
-        public virtual void ProcessFrame()
+        protected virtual void ProcessFrame()
         {
             // analysis =========================================================
 
@@ -165,19 +164,19 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process one spectrum at each STFT step
+        /// Process one spectrum at each Overlap-Add STFT step.
         /// </summary>
         /// <param name="re">Real parts of input spectrum</param>
         /// <param name="im">Imaginary parts of input spectrum</param>
         /// <param name="filteredRe">Real parts of output spectrum</param>
         /// <param name="filteredIm">Imaginary parts of output spectrum</param>
-        public abstract void ProcessSpectrum(float[] re,
-                                             float[] im,
-                                             float[] filteredRe,
-                                             float[] filteredIm);
+        protected abstract void ProcessSpectrum(float[] re,
+                                                float[] im,
+                                                float[] filteredRe,
+                                                float[] filteredIm);
 
         /// <summary>
-        /// Reset filter internals
+        /// Reset filter internals.
         /// </summary>
         public virtual void Reset()
         {
@@ -193,11 +192,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Offline processing
+        /// Process entire signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="method">Filtering method</param>
         public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
     }
 }

@@ -6,14 +6,13 @@ using NWaves.Signals.Builders.Base;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class for wah-wah effect
+    /// Class representing Wah-Wah audio effect.
     /// </summary>
     public class WahwahEffect : AudioEffect
     {
         /// <summary>
-        /// LFO frequency
+        /// Gets or sets LFO frequency (in Hz).
         /// </summary>
-        private float _lfoFrequency;
         public float LfoFrequency
         {
             get => _lfoFrequency;
@@ -23,11 +22,11 @@ namespace NWaves.Effects
                 Lfo.SetParameter("freq", value);
             }
         }
+        private float _lfoFrequency;
 
         /// <summary>
-        /// Min LFO frequency
+        /// Gets or sets minimal LFO frequency (in Hz).
         /// </summary>
-        private float _minFrequency;
         public float MinFrequency
         {
             get => _minFrequency;
@@ -37,11 +36,11 @@ namespace NWaves.Effects
                 Lfo.SetParameter("min", value);
             }
         }
+        private float _minFrequency;
 
         /// <summary>
-        /// Max LFO frequency
+        /// Gets or sets maximal LFO frequency (in Hz).
         /// </summary>
-        private float _maxFrequency;
         public float MaxFrequency
         {
             get => _maxFrequency;
@@ -51,31 +50,31 @@ namespace NWaves.Effects
                 Lfo.SetParameter("max", value);
             }
         }
+        private float _maxFrequency;
 
         /// <summary>
-        /// Q
+        /// Gets or sets Q factor (a.k.a. Quality Factor, resonance).
         /// </summary>
         public float Q { get; set; }
 
         /// <summary>
-        /// LFO object
+        /// Gets or sets LFO signal generator.
         /// </summary>
         public SignalBuilder Lfo { get; set; }
 
         /// <summary>
-        /// Sampling rate
+        /// Sampling rate.
         /// </summary>
         private readonly int _fs;
 
-
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="WahwahEffect"/>.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="lfoFrequency"></param>
-        /// <param name="minFrequency"></param>
-        /// <param name="maxFrequency"></param>
-        /// <param name="q"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="lfoFrequency">LFO frequency (in Hz)</param>
+        /// <param name="minFrequency">Minimal LFO frequency (in Hz)</param>
+        /// <param name="maxFrequency">Maximal LFO frequency (in Hz)</param>
+        /// <param name="q">Q factor (a.k.a. Quality Factor, resonance)</param>
         public WahwahEffect(int samplingRate,
                             float lfoFrequency = 1.0f,
                             float minFrequency = 300,
@@ -93,11 +92,11 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="WahwahEffect"/> from <paramref name="lfo"/>.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="lfo"></param>
-        /// <param name="q"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="lfo">LFO signal generator</param>
+        /// <param name="q">Q factor (a.k.a. Quality Factor, resonance)</param>
         public WahwahEffect(int samplingRate, SignalBuilder lfo, float q = 0.5f)
         {
             _fs = samplingRate;
@@ -106,10 +105,9 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Method implements simple wah-wah effect
+        /// Process one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var fs2pi = 2 * Math.PI / _fs;
@@ -124,7 +122,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect
+        /// Reset effect.
         /// </summary>
         public override void Reset()
         {

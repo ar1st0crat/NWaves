@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NWaves.Effects.Base;
 using NWaves.Filters.Base;
 using NWaves.Operations;
@@ -9,59 +10,61 @@ using NWaves.Utils;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Pitch Shift effect based on one of the available TSM algorithms and linear interpolation
+    /// Class representing offline Pitch Shift audio effect 
+    /// based on one of the available TSM algorithms and linear interpolation. 
+    /// <see cref="PitchShiftEffect"/> does not implement online processing (method <see cref="Process(float)"/>).
     /// </summary>
     public class PitchShiftEffect : AudioEffect
     {
         /// <summary>
-        /// Shift ratio
+        /// Gets or sets pitch shift ratio.
         /// </summary>
-        private readonly double _shift;
+        public double Shift { get; set; }
 
         /// <summary>
-        /// Size of FFT
+        /// Gets or sets time-scale modification algorithm.
         /// </summary>
-        private readonly int _fftSize;
+        public TsmAlgorithm Tsm { get; set; }
 
         /// <summary>
-        /// Hop size
+        /// Gets or sets window size (frame length).
         /// </summary>
-        private readonly int _hopSize;
+        public int WindowSize { get; set; }
 
         /// <summary>
-        /// Algorithm of time-scale modification
+        /// Gets or sets hop length.
         /// </summary>
-        private readonly TsmAlgorithm _tsm;
+        public int HopSize { get; set; }
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="PitchShiftEffect"/>.
         /// </summary>
-        /// <param name="shift"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="tsm"></param>
+        /// <param name="shift">Pitch shift ratio</param>
+        /// <param name="windowSize">Window size (frame length)</param>
+        /// <param name="hopSize">Hop length</param>
+        /// <param name="tsm">Time-scale modification algorithm</param>
         public PitchShiftEffect(double shift,
-                                int fftSize = 1024,
+                                int windowSize = 1024,
                                 int hopSize = 128,
                                 TsmAlgorithm tsm = TsmAlgorithm.PhaseVocoderPhaseLocking)
         {
-            _shift = shift;
-            _fftSize = fftSize;
-            _hopSize = hopSize;
-            _tsm = tsm;
+            Shift = shift;
+            WindowSize = windowSize;
+            HopSize = hopSize;
+            Tsm = tsm;
         }
 
         /// <summary>
-        /// Algorithm is essentially: 1) TSM; 2) linear interpolation
+        /// Process entire <paramref name="signal"/> offline and return new pitch-shifted signal.
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="method">Filtering method</param>
-        /// <returns>Pitch shifted signal</returns>
         public override DiscreteSignal ApplyTo(DiscreteSignal signal,
                                                FilteringMethod method = FilteringMethod.Auto)
         {
-            // 1) just stretch
+            // 1) just stretch (TSM)
 
-            var stretched = Operation.TimeStretch(signal, _shift, _fftSize, _hopSize, algorithm: _tsm);
+            var stretched = Operation.TimeStretch(signal, Shift, WindowSize, HopSize, algorithm: Tsm);
 
             // 2) and interpolate
 
@@ -70,7 +73,7 @@ namespace NWaves.Effects
                               .ToArray();
 
             var xresampled = Enumerable.Range(0, signal.Length)
-                                       .Select(s => (float)(_shift * s))    // [0.0, _shift, 2*_shift, ...]
+                                       .Select(s => (float)(Shift * s))    // [0.0, _shift, 2*_shift, ...]
                                        .ToArray();
 
             var resampled = new float[xresampled.Length];
@@ -85,11 +88,18 @@ namespace NWaves.Effects
             return new DiscreteSignal(signal.SamplingRate, resampled);
         }
 
+        /// <summary>
+        /// Process on sample. This method is not implemented in <see cref="PitchShiftEffect"/> class.
+        /// </summary>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Reset effect.
+        /// </summary>
         public override void Reset()
         {
         }

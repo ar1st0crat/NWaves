@@ -5,55 +5,55 @@ using System;
 namespace NWaves.Effects.Stereo
 {
     /// <summary>
-    /// Stereo pan effect based on ITD-ILD (Interaural Time Difference - Interaural Level Difference)
+    /// Class representing stereo pan audio effect based on ITD-ILD 
+    /// (Interaural Time Difference - Interaural Level Difference).
     /// </summary>
     public class ItdIldPanEffect : StereoEffect
     {
         /// <summary>
-        /// Speed of sound
+        /// Speed of sound.
         /// </summary>
         const float SpeedOfSound = 340;
 
         /// <summary>
-        /// Constant pi/2
+        /// Constant pi/2.
         /// </summary>
         const double Pi2 = Math.PI / 2;
 
         /// <summary>
-        /// Head radius
+        /// Head radius.
         /// </summary>
-        private readonly float _headRadius;
         public float HeadRadius => _headRadius;
+        private readonly float _headRadius;
 
         /// <summary>
-        /// Sampling rate
+        /// Sampling rate.
         /// </summary>
         private readonly int _samplingRate;
 
         /// <summary>
-        /// Head factor
+        /// Head factor.
         /// </summary>
         private readonly float _headFactor;
 
         /// <summary>
-        /// ITD delay lines
+        /// ITD delay lines.
         /// </summary>
         private readonly FractionalDelayLine _itdDelayLeft, _itdDelayRight;
 
         /// <summary>
-        /// ILD filters
+        /// ILD filters.
         /// </summary>
         private readonly BiQuadFilter _ildFilterLeft, _ildFilterRight;
 
         /// <summary>
-        /// Time delays
+        /// Time delays (in seconds).
         /// </summary>
         private double _delayLeft, _delayRight;
 
         /// <summary>
-        /// Pan
+        /// Gets or sets pan.
         /// </summary>
-        private float _pan;
         public float Pan 
         {
             get => _pan;
@@ -77,13 +77,13 @@ namespace NWaves.Effects.Stereo
                 _ildFilterRight.Change(_headFactor + alphaR, _headFactor - alphaR, 0, _headFactor + 1, _headFactor - 1, 0);
             }
         }
+        private float _pan;
 
         /// <summary>
-        /// Interaural Time Difference
+        /// Interaural Time Difference.
         /// </summary>
-        /// <param name="angle"></param>
-        /// <returns></returns>
-        double Itd(double angle)
+        /// <param name="angle">Angle</param>
+        private double Itd(double angle)
         {
             if (Math.Abs(angle) < Pi2)
             {
@@ -96,25 +96,25 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="ItdIldPanEffect"/>.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="pan"></param>
-        /// <param name="interpolationMode"></param>
-        /// <param name="maxDelaySeconds"></param>
-        /// <param name="headRadius"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="pan">Pan</param>
+        /// <param name="interpolationMode">Interpolation mode for fractional delay line</param>
+        /// <param name="reserveDelay">Max delay (in seconds) for reserving the size of delay line</param>
+        /// <param name="headRadius">Head radius</param>
         public ItdIldPanEffect(int samplingRate,
                                float pan,
                                InterpolationMode interpolationMode = InterpolationMode.Linear,
-                               double maxDelaySeconds = 0.001,
+                               double reserveDelay = 0.005/*seconds*/,
                                float headRadius = 8.5e-2f)
         {
             _samplingRate = samplingRate;
             _headRadius = headRadius;
             _headFactor = _headRadius / SpeedOfSound;
 
-            _itdDelayLeft = new FractionalDelayLine(samplingRate, maxDelaySeconds, interpolationMode);
-            _itdDelayRight = new FractionalDelayLine(samplingRate, maxDelaySeconds, interpolationMode);
+            _itdDelayLeft = new FractionalDelayLine(samplingRate, reserveDelay, interpolationMode);
+            _itdDelayRight = new FractionalDelayLine(samplingRate, reserveDelay, interpolationMode);
 
             _ildFilterLeft = new BiQuadFilter(1, 0, 0, 0, 0, 0);
             _ildFilterRight = new BiQuadFilter(1, 0, 0, 0, 0, 0);
@@ -123,10 +123,10 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Process current sample in each channel
+        /// Process one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
         /// </summary>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
+        /// <param name="left">Input sample in left channel</param>
+        /// <param name="right">Input sample in right channel</param>
         public override void Process(ref float left, ref float right)
         {
             var leftIn = left;
@@ -152,7 +152,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Reset effect
+        /// Reset effect.
         /// </summary>
         public override void Reset()
         {

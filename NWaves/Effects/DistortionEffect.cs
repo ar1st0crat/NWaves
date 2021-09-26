@@ -5,60 +5,59 @@ using System;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class for distortion effect
+    /// Class representing Distortion audio effect.
     /// </summary>
     public class DistortionEffect : AudioEffect
     {
         /// <summary>
-        /// Distortion mode
+        /// Gets or sets distortion mode (soft/hard clipping, exponential, full/half-wave rectify).
         /// </summary>
-        private readonly DistortionMode _mode;
+        public DistortionMode Mode { get; set; }
 
         /// <summary>
-        /// Input gain
+        /// Gets or sets input gain (in dB).
         /// </summary>
-        private float _inputGain;
         public float InputGain
         {
             get => (float)Scale.ToDecibel(_inputGain);
             set => _inputGain = (float)Scale.FromDecibel(value);
         }
+        private float _inputGain;
 
         /// <summary>
-        /// Output gain
+        /// Gets or sets output gain (in dB).
         /// </summary>
-        private float _outputGain;
         public float OutputGain
         {
             get => (float)Scale.ToDecibel(_outputGain);
             set => _outputGain = (float)Scale.FromDecibel(value);
         }
+        private float _outputGain;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="DistortionEffect"/>.
         /// </summary>
-        /// <param name="mode"></param>
-        /// <param name="inputGain"></param>
-        /// <param name="outputGain"></param>
+        /// <param name="mode">Distortion mode</param>
+        /// <param name="inputGain">Input gain (in dB)</param>
+        /// <param name="outputGain">Output gain (in dB)</param>
         public DistortionEffect(DistortionMode mode, float inputGain = 12/*dB*/, float outputGain = -12/*dB*/)
         {
-            _mode = mode;
+            Mode = mode;
             InputGain = inputGain;
             OutputGain = outputGain;
         }
 
         /// <summary>
-        /// Method implements simple distortion effect
+        /// Process one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
-        /// <returns>Output sample</returns>
         public override float Process(float sample)
         {
             sample *= _inputGain;
 
             float output;
 
-            switch (_mode)
+            switch (Mode)
             {
                 case DistortionMode.HardClipping:
 
@@ -146,6 +145,9 @@ namespace NWaves.Effects
             return output * Wet + sample * Dry;
         }
 
+        /// <summary>
+        /// Reset effect.
+        /// </summary>
         public override void Reset()
         {
         }

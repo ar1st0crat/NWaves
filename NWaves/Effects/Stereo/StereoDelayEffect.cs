@@ -3,22 +3,22 @@
 namespace NWaves.Effects.Stereo
 {
     /// <summary>
-    /// Stereo delay effect
+    /// Class representing stereo delay audio effect.
     /// </summary>
     public class StereoDelayEffect : StereoEffect
     {
         /// <summary>
-        /// Left channel delay effect
+        /// Left channel delay effect.
         /// </summary>
         private readonly DelayEffect _delayEffectLeft;
 
         /// <summary>
-        /// Right channel delay effect
+        /// Right channel delay effect.
         /// </summary>
         private readonly DelayEffect _delayEffectRight;
 
         /// <summary>
-        /// Left channel delay (in seconds)
+        /// Gets or sets left channel delay (in seconds).
         /// </summary>
         public float DelayLeft
         {
@@ -27,7 +27,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Right channel delay (in seconds)
+        /// Gets or sets right channel delay (in seconds).
         /// </summary>
         public float DelayRight
         {
@@ -36,7 +36,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Left channel feedback
+        /// Gets or sets left channel feedback.
         /// </summary>
         public float FeedbackLeft
         {
@@ -45,7 +45,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Right channel feedback
+        /// Gets or sets right channel feedback.
         /// </summary>
         public float FeedbackRight
         {
@@ -54,21 +54,21 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Pan
+        /// Gets or sets pan.
         /// </summary>
         public float Pan { get; set; }
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="StereoDelayEffect"/>.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="pan"></param>
-        /// <param name="delayLeft"></param>
-        /// <param name="feedbackLeft"></param>
-        /// <param name="delayRight"></param>
-        /// <param name="feedbackRight"></param>
-        /// <param name="interpolationMode"></param>
-        /// <param name="reserveDelay"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="pan">Pan</param>
+        /// <param name="delayLeft">Left channel delay (in seconds)</param>
+        /// <param name="feedbackLeft">Left channel feedback</param>
+        /// <param name="delayRight">Right channel delay (in seconds)</param>
+        /// <param name="feedbackRight">Right channel feedback</param>
+        /// <param name="interpolationMode">Interpolation mode for fractional delay line</param>
+        /// <param name="reserveDelay">Max delay for reserving the size of delay line</param>
         public StereoDelayEffect(int samplingRate,
                                  float pan,
                                  float delayLeft,
@@ -84,6 +84,11 @@ namespace NWaves.Effects.Stereo
             Pan = pan;
         }
 
+        /// <summary>
+        /// Process one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
+        /// </summary>
+        /// <param name="left">Input sample in left channel</param>
+        /// <param name="right">Input sample in right channel</param>
         public override void Process(ref float left, ref float right)
         {
             var delayedLeft = _delayEffectLeft.Process(left);
@@ -96,6 +101,9 @@ namespace NWaves.Effects.Stereo
             right = right * Dry + delayedRight * Wet;
         }
 
+        /// <summary>
+        /// Reset stereo delay effect.
+        /// </summary>
         public override void Reset()
         {
             _delayEffectLeft.Reset();

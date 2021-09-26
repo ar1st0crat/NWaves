@@ -5,23 +5,23 @@ using System;
 namespace NWaves.Effects.Stereo
 {
     /// <summary>
-    /// Base class for stereo effects
+    /// Abstract class for stereo audio effects.
     /// </summary>
     public abstract class StereoEffect : WetDryMixer
     {
         /// <summary>
-        /// Process two channels : [ input left , input right ] -> [ output left , output right ]
+        /// Process one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
         /// </summary>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
+        /// <param name="left">Input sample in left channel</param>
+        /// <param name="right">Input sample in right channel</param>
         public abstract void Process(ref float left, ref float right);
 
         /// <summary>
-        /// Process mono channel : input sample -> [ output left , output right ]
+        /// Process one sample in mono channel : input sample -> [ output left , output right ].
         /// </summary>
-        /// <param name="sample"></param>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
+        /// <param name="sample">Input sample in mono channel</param>
+        /// <param name="left">Output sample for left channel</param>
+        /// <param name="right">Output sample for right channel</param>
         public virtual void Process(float sample, out float left, out float right)
         {
             left = right = sample;
@@ -30,15 +30,15 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Process two channels (in blocks) : [ input left , input right ] -> [ output left , output right ]
+        /// Process blocks of samples in each of two channels : [ input left , input right ] -> [ output left , output right ].
         /// </summary>
         /// <param name="inputLeft">Input block of samples (left channel)</param>
         /// <param name="inputRight">Input block of samples (right channel)</param>
-        /// <param name="outputLeft">Block of filtered samples (left channel)</param>
-        /// <param name="outputRight">Block of filtered samples (right channel)</param>
-        /// <param name="count">Number of samples to filter</param>
-        /// <param name="inputPos">Input starting position</param>
-        /// <param name="outputPos">Output starting position</param>
+        /// <param name="outputLeft">Output block of samples (left channel)</param>
+        /// <param name="outputRight">Output block of samples (right channel)</param>
+        /// <param name="count">Number of samples to process</param>
+        /// <param name="inputPos">Input starting index</param>
+        /// <param name="outputPos">Output starting index</param>
         public virtual void Process(float[] inputLeft,
                                     float[] inputRight,
                                     float[] outputLeft,
@@ -64,14 +64,14 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Process mono channel (in blocks) : [ input ] -> [ output left , output right ]
+        /// Process block of samples in mono channel : [ input ] -> [ output left , output right ].
         /// </summary>
         /// <param name="input">Input block of samples (mono channel)</param>
-        /// <param name="outputLeft">Block of filtered samples (left channel)</param>
-        /// <param name="outputRight">Block of filtered samples (right channel)</param>
-        /// <param name="count">Number of samples to filter</param>
-        /// <param name="inputPos">Input starting position</param>
-        /// <param name="outputPos">Output starting position</param>
+        /// <param name="outputLeft">Output block of samples (left channel)</param>
+        /// <param name="outputRight">Output block of samples (right channel)</param>
+        /// <param name="count">Number of samples to process</param>
+        /// <param name="inputPos">Input starting index</param>
+        /// <param name="outputPos">Output starting index</param>
         public virtual void Process(float[] input,
                                     float[] outputLeft,
                                     float[] outputRight,
@@ -95,10 +95,9 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Offline processing
+        /// Process entire <paramref name="signal"/> and return tuple of output signals [left signal, right signal].
         /// </summary>
         /// <param name="signal">Input signal</param>
-        /// <returns>Tuple [left signal, right signal]</returns>
         public virtual (DiscreteSignal, DiscreteSignal) ApplyTo(DiscreteSignal signal)
         {
             var sr = signal.SamplingRate;
@@ -112,11 +111,11 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Offline processing
+        /// Process entire signals (in left and right channels) 
+        /// and return tuple of output signals [left signal, right signal].
         /// </summary>
-        /// <param name="leftSignal">Input signal (left)</param>
-        /// <param name="rightSignal">Input signal (right)</param>
-        /// <returns>Tuple [left signal, right signal]</returns>
+        /// <param name="leftSignal">Input signal (left channel)</param>
+        /// <param name="rightSignal">Input signal (right channel)</param>
         public virtual (DiscreteSignal, DiscreteSignal) ApplyTo(DiscreteSignal leftSignal, DiscreteSignal rightSignal)
         {
             var srl = leftSignal.SamplingRate;
@@ -131,7 +130,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Reset effect
+        /// Reset effect.
         /// </summary>
         public abstract void Reset();
     }

@@ -6,24 +6,23 @@ using NWaves.Utils;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Flanger effect
+    /// Class representing Flanger audio effect.
     /// </summary>
     public class FlangerEffect : AudioEffect
     {
         /// <summary>
-        /// Fractional delay line
+        /// Internal fractional delay line.
         /// </summary>
         private readonly FractionalDelayLine _delayLine;
 
         /// <summary>
-        /// Sampling rate
+        /// Sampling rate.
         /// </summary>
         private readonly int _fs;
 
         /// <summary>
-        /// Width (in seconds)
+        /// Gets or sets width (in seconds).
         /// </summary>
-        private float _width;
         public float Width
         {
             get => _width;
@@ -33,11 +32,11 @@ namespace NWaves.Effects
                 _width = value;
             }
         }
+        private float _width;
 
         /// <summary>
-        /// LFO frequency
+        /// Gets or sets LFO frequency (in Hz).
         /// </summary>
-        private float _lfoFrequency;
         public float LfoFrequency
         {
             get => _lfoFrequency;
@@ -47,11 +46,11 @@ namespace NWaves.Effects
                 _lfo.SetParameter("freq", value);
             }
         }
+        private float _lfoFrequency;
 
         /// <summary>
-        /// LFO
+        /// Gets or sets LFO signal generator.
         /// </summary>
-        private SignalBuilder _lfo;
         public SignalBuilder Lfo
         {
             get => _lfo;
@@ -61,24 +60,25 @@ namespace NWaves.Effects
                 _lfo.SetParameter("min", 0.0).SetParameter("max", 1.0);
             }
         }
+        private SignalBuilder _lfo;
 
         /// <summary>
-        /// Depth
+        /// Gets or sets depth.
         /// </summary>
         public float Depth { get; set; }
 
         /// <summary>
-        /// Feedback coefficient
+        /// Gets or sets feedback parameter.
         /// </summary>
         public float Feedback { get; set; }
 
         /// <summary>
-        /// Inverted mode
+        /// Gets or sets Inverted mode flag.
         /// </summary>
         public bool Inverted { get; set; }
 
         /// <summary>
-        /// Interpolation mode
+        /// Gets or sets interpolation mode.
         /// </summary>
         public InterpolationMode InterpolationMode
         {
@@ -87,51 +87,16 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Constructor with LFO
+        /// Construct <see cref="FlangerEffect"/>.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="lfo"></param>
-        /// <param name="width"></param>
-        /// <param name="lfoFrequency"></param>
-        /// <param name="depth"></param>
-        /// <param name="feedback"></param>
-        /// <param name="inverted"></param>
-        public FlangerEffect(int samplingRate,
-                             SignalBuilder lfo,
-                             float width = 0.003f/*sec*/,
-                             float depth = 0.5f,
-                             float feedback = 0,
-                             bool inverted = false,
-                             InterpolationMode interpolationMode = InterpolationMode.Linear,
-                             float reserveWidth = 0/*sec*/)
-        {
-            _fs = samplingRate;
-            _width = width;
-            Depth = depth;
-            Feedback = feedback;
-            Inverted = inverted;
-            
-            Lfo = lfo;
-
-            if (reserveWidth < width)
-            {
-                _delayLine = new FractionalDelayLine(samplingRate, width, interpolationMode);
-            }
-            else
-            {
-                _delayLine = new FractionalDelayLine(samplingRate, reserveWidth, interpolationMode);
-            }
-        }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="lfoFrequency"></param>
-        /// <param name="width"></param>
-        /// <param name="depth"></param>
-        /// <param name="feedback"></param>
-        /// <param name="inverted"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="lfoFrequency">LFO frequency (in Hz)</param>
+        /// <param name="width">Width (in seconds)</param>
+        /// <param name="depth">Depth</param>
+        /// <param name="feedback">Feedback</param>
+        /// <param name="inverted">Inverted mode</param>
+        /// <param name="interpolationMode">Interpolation mode for fractional delay line</param>
+        /// <param name="reserveWidth">Max width (in seconds) for reserving the size of delay line</param>
         public FlangerEffect(int samplingRate,
                              float lfoFrequency = 1/*Hz*/,
                              float width = 0.003f/*sec*/,
@@ -147,10 +112,47 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Simple flanger effect
+        /// Construct <see cref="FlangerEffect"/> from <paramref name="lfo"/>.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="lfo">LFO signal generator</param>
+        /// <param name="width">Width (in seconds)</param>
+        /// <param name="depth">Depth</param>
+        /// <param name="feedback">Feedback</param>
+        /// <param name="inverted">Inverted mode</param>
+        /// <param name="interpolationMode">Interpolation mode for fractional delay line</param>
+        /// <param name="reserveWidth">Max width (in seconds) for reserving the size of delay line</param>
+        public FlangerEffect(int samplingRate,
+                             SignalBuilder lfo,
+                             float width = 0.003f/*sec*/,
+                             float depth = 0.5f,
+                             float feedback = 0,
+                             bool inverted = false,
+                             InterpolationMode interpolationMode = InterpolationMode.Linear,
+                             float reserveWidth = 0/*sec*/)
+        {
+            _fs = samplingRate;
+            _width = width;
+            Depth = depth;
+            Feedback = feedback;
+            Inverted = inverted;
+
+            Lfo = lfo;
+
+            if (reserveWidth < width)
+            {
+                _delayLine = new FractionalDelayLine(samplingRate, width, interpolationMode);
+            }
+            else
+            {
+                _delayLine = new FractionalDelayLine(samplingRate, reserveWidth, interpolationMode);
+            }
+        }
+
+        /// <summary>
+        /// Process one sample.
+        /// </summary>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var delay = _lfo.NextSample() * _width * _fs;
@@ -164,7 +166,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect
+        /// Reset effect.
         /// </summary>
         public override void Reset()
         {

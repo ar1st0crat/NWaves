@@ -3,29 +3,33 @@
 namespace NWaves.Effects.Stereo
 {
     /// <summary>
-    /// Stereo ping pong delay effect
+    /// Class representing stereo ping-pong delay audio effect.
     /// </summary>
     public class PingPongDelayEffect : StereoEffect
     {
         /// <summary>
-        /// Left channel delay line
+        /// Left channel delay line.
         /// </summary>
         private readonly FractionalDelayLine _delayLineLeft;
 
         /// <summary>
-        /// Righ channel delay line
+        /// Righ channel delay line.
         /// </summary>
         private readonly FractionalDelayLine _delayLineRight;
 
         /// <summary>
-        /// Sampling rate
+        /// Sampling rate.
         /// </summary>
         private readonly int _fs;
 
         /// <summary>
-        /// Delay (in seconds)
+        /// Gets or sets pan.
         /// </summary>
-        private float _delay;
+        public float Pan { get; set; }
+
+        /// <summary>
+        /// Gets or sets delay (in seconds).
+        /// </summary>
         public float Delay
         {
             get => _delay / _fs;
@@ -36,25 +40,22 @@ namespace NWaves.Effects.Stereo
                 _delay = _fs * value;
             }
         }
+        private float _delay;
 
         /// <summary>
-        /// Feedback coefficient
+        /// Gets or sets feedback coefficient.
         /// </summary>
         public float Feedback { get; set; }
 
         /// <summary>
-        /// Pan
+        /// Construct <see cref="PingPongDelayEffect"/>.
         /// </summary>
-        public float Pan { get; set; }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="delay"></param>
-        /// <param name="feedback"></param>
-        /// <param name="balance"></param>
-        /// <param name="reserveDelay"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="pan">Pan</param>
+        /// <param name="delay">Delay (in seconds)</param>
+        /// <param name="feedback">Feedback</param>
+        /// <param name="interpolationMode">Interpolation mode for fractional delay line</param>
+        /// <param name="reserveDelay">Max delay for reserving the size of delay line</param>
         public PingPongDelayEffect(int samplingRate,
                                    float pan,
                                    float delay,
@@ -80,6 +81,11 @@ namespace NWaves.Effects.Stereo
             Pan = pan;
         }
 
+        /// <summary>
+        /// Process one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
+        /// </summary>
+        /// <param name="left">Input sample in left channel</param>
+        /// <param name="right">Input sample in right channel</param>
         public override void Process(ref float left, ref float right)
         {
             var delayedLeft = _delayLineLeft.Read(_delay);
@@ -95,6 +101,9 @@ namespace NWaves.Effects.Stereo
             right = right * Dry + processedRight * Wet;
         }
 
+        /// <summary>
+        /// Reset effect.
+        /// </summary>
         public override void Reset()
         {
             _delayLineLeft.Reset();

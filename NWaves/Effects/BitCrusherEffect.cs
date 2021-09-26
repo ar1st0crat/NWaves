@@ -4,19 +4,18 @@ using System;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Bit crusher effect
+    /// Class representing Bitcrusher (distortion) audio effect.
     /// </summary>
     public class BitCrusherEffect : AudioEffect
     {
         /// <summary>
-        /// Step is calculated from bit depth
+        /// Step is calculated from bit depth.
         /// </summary>
         private float _step;
 
         /// <summary>
-        /// Number of bits
+        /// Gets or sets the bit depth (number of bits).
         /// </summary>
-        private int _bitDepth;
         public int BitDepth 
         {
             get => _bitDepth;
@@ -26,16 +25,21 @@ namespace NWaves.Effects
                 _step = 2 * (float)Math.Pow(0.5, _bitDepth);
             }
         }
+        private int _bitDepth;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="BitCrusherEffect"/> with given <paramref name="bitDepth"/>.
         /// </summary>
-        /// <param name="bitDepth"></param>
+        /// <param name="bitDepth">Bit depth (number of bits)</param>
         public BitCrusherEffect(int bitDepth)
         {
             BitDepth = bitDepth;
         }
 
+        /// <summary>
+        /// Process one sample.
+        /// </summary>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var output = (float)(_step * Math.Floor(sample / _step + 0.5));
@@ -43,6 +47,9 @@ namespace NWaves.Effects
             return output * Wet + sample * Dry;
         }
 
+        /// <summary>
+        /// Reset effect.
+        /// </summary>
         public override void Reset()
         {
         }

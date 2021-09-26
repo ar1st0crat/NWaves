@@ -67,8 +67,10 @@ namespace NWaves.Operations
         /// <param name="im">Imaginary parts of input spectrum</param>
         /// <param name="filteredRe">Real parts of output spectrum</param>
         /// <param name="filteredIm">Imaginary parts of output spectrum</param>
-        public override void ProcessSpectrum(float[] re, float[] im,
-                                             float[] filteredRe, float[] filteredIm)
+        protected override void ProcessSpectrum(float[] re,
+                                                float[] im,
+                                                float[] filteredRe,
+                                                float[] filteredIm)
         {
             float k = (AlphaMin - AlphaMax) / (SnrMax - SnrMin);
             float b = AlphaMax - k * SnrMin;

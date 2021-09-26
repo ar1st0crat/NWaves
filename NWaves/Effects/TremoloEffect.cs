@@ -5,19 +5,18 @@ using NWaves.Signals.Builders.Base;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class for tremolo effect
+    /// Class representing Tremolo audio effect.
     /// </summary>
     public class TremoloEffect : AudioEffect
     {
         /// <summary>
-        /// Depth
+        /// Gets or sets depth.
         /// </summary>
         public float Depth { get; set; }
-        
+
         /// <summary>
-        /// Modulation frequency
+        /// Gets or sets tremolo frequency (modulation frequency) (in Hz).
         /// </summary>
-        private float _frequency;
         public float Frequency
         {
             get => _frequency;
@@ -27,11 +26,11 @@ namespace NWaves.Effects
                 Lfo.SetParameter("freq", value);
             }
         }
+        private float _frequency;
 
         /// <summary>
-        /// Tremolo index (modulation index)
+        /// Gets or sets tremolo index (modulation index).
         /// </summary>
-        private float _index;
         public float Index
         {
             get => _index;
@@ -41,20 +40,20 @@ namespace NWaves.Effects
                 Lfo.SetParameter("min", 0).SetParameter("max", value * 2);
             }
         }
+        private float _index;
 
         /// <summary>
-        /// LFO
+        /// Gets or sets LFO signal generator.
         /// </summary>
         public SignalBuilder Lfo { get; set; }
 
-
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="TremoloEffect"/>.
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="depth"></param>
-        /// <param name="frequency"></param>
-        /// <param name="tremoloIndex"></param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="depth">Depth</param>
+        /// <param name="frequency">Tremolo frequency (modulation frequency) (in Hz)</param>
+        /// <param name="tremoloIndex">Tremolo index (modulation index)</param>
         public TremoloEffect(int samplingRate, float depth = 0.5f, float frequency = 10/*Hz*/, float tremoloIndex = 0.5f)
         {
             Lfo = new CosineBuilder().SampledAt(samplingRate);
@@ -65,10 +64,10 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="TremoloEffect"/> from <paramref name="lfo"/>.
         /// </summary>
-        /// <param name="lfo"></param>
-        /// <param name="depth"></param>
+        /// <param name="lfo">LFO signal generator</param>
+        /// <param name="depth">Depth</param>
         public TremoloEffect(SignalBuilder lfo, float depth = 0.5f)
         {
             Lfo = lfo;
@@ -76,11 +75,9 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Method implements simple tremolo effect
+        /// Process one sample.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var output = sample * (1 - Depth + Depth * Lfo.NextSample());
@@ -89,7 +86,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect
+        /// Reset effect.
         /// </summary>
         public override void Reset()
         {

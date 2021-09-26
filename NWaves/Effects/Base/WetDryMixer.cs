@@ -3,22 +3,22 @@
 namespace NWaves.Effects.Base
 {
     /// <summary>
-    /// Class responsible for wet/dry mixing logic
+    /// Base class implementing wet/dry mixing logic.
     /// </summary>
     public class WetDryMixer : IMixable
     {
         /// <summary>
-        /// Wet gain
+        /// Gets or sets wet gain (by default, 1).
         /// </summary>
         public float Wet { get; set; } = 1f;
 
         /// <summary>
-        /// Dry gain
+        /// Gets or sets dry gain (by default, 0).
         /// </summary>
         public float Dry { get; set; } = 0f;
 
         /// <summary>
-        /// Set wet/dry mix (in range [0.0, 1.0])
+        /// Set wet/dry mix (in range [0.0, 1.0]).
         /// </summary>
         /// <param name="mix">Wet/dry mix</param>
         /// <param name="mixingRule">Mixing rule</param>
@@ -89,10 +89,10 @@ namespace NWaves.Effects.Base
         }
 
         /// <summary>
-        /// Set wet/dry values in decibels (linear mix rule)
+        /// Set wet/dry gains in decibels and apply linear mix rule.
         /// </summary>
-        /// <param name="wetDb"></param>
-        /// <param name="dryDb"></param>
+        /// <param name="wetDb">Wet gain in decibels</param>
+        /// <param name="dryDb">Dry gain in decibels</param>
         public void WetDryDb(double wetDb, double dryDb)
         {
             var w = Math.Pow(10, wetDb / 20);

@@ -8,64 +8,65 @@ using System;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Effect of morphing two sound signals
+    /// Class representing effect of morphing (blending) two sound signals.
     /// </summary>
     public class MorphEffect : AudioEffect
     {
         /// <summary>
-        /// Hop size
+        /// Hop length.
         /// </summary>
         private readonly int _hopSize;
 
         /// <summary>
-        /// Size of FFT for analysis and synthesis
+        /// Size of FFT for analysis and synthesis.
         /// </summary>
         private readonly int _fftSize;
 
         /// <summary>
-        /// Size of frame overlap
+        /// Size of frame overlap.
         /// </summary>
         private readonly int _overlapSize;
 
         /// <summary>
-        /// Internal FFT transformer
+        /// Internal FFT transformer.
         /// </summary>
         private readonly RealFft _fft;
 
         /// <summary>
-        /// Window coefficients
+        /// Window coefficients.
         /// </summary>
         private readonly float[] _window;
 
-        /// <summary>
-        /// Delay lines
-        /// </summary>
-        private float[] _dl1, _dl2;
+        // Delay lines
+
+        private readonly float[] _dl1;
+        private readonly float[] _dl2;
 
         /// <summary>
-        /// Offset in the input delay line
+        /// Offset in the input delay line.
         /// </summary>
         private int _inOffset;
 
         /// <summary>
-        /// Offset in the output buffer
+        /// Offset in the output buffer.
         /// </summary>
         private int _outOffset;
 
-        /// <summary>
-        /// Internal buffers
-        /// </summary>
-        private float[] _re1, _re2;
-        private float[] _im1, _im2;
-        private float[] _filteredRe;
-        private float[] _filteredIm;
-        private float[] _lastSaved;
+        // Internal buffers
+
+        private readonly float[] _re1;
+        private readonly float[] _re2;
+        private readonly float[] _im1;
+        private readonly float[] _im2;
+        private readonly float[] _filteredRe;
+        private readonly float[] _filteredIm;
+        private readonly float[] _lastSaved;
 
         /// <summary>
-        /// Constuctor
+        /// Constuct <see cref="MorphEffect"/>.
         /// </summary>
-        /// <param name="hopSize"></param>
-        /// <param name="fftSize"></param>
+        /// <param name="hopSize">Hop size (hop length, number of samples)</param>
+        /// <param name="fftSize">FFT size</param>
         public MorphEffect(int hopSize, int fftSize = 0)
         {
             _hopSize = hopSize;
@@ -89,11 +90,10 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Online processing (sample-by-sample)
+        /// Process one sample of input signal.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <param name="mix"></param>
-        /// <returns></returns>
+        /// <param name="sample">Sample of input signal</param>
+        /// <param name="mix">Sample of the signal to mix with input signal</param>
         public float Process(float sample, float mix)
         {
             _dl1[_inOffset] = sample;
@@ -109,9 +109,9 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one frame (block)
+        /// Process one frame (block).
         /// </summary>
-        public void ProcessFrame()
+        protected void ProcessFrame()
         {
             _dl1.FastCopyTo(_re1, _fftSize);
             _dl2.FastCopyTo(_re2, _fftSize);
@@ -156,7 +156,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset filter internals
+        /// Reset effect.
         /// </summary>
         public override void Reset()
         {
@@ -175,30 +175,33 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Offline processing
+        /// Blend (mix) entire input <paramref name="signal"/> with entire <paramref name="mix"/> signal.
         /// </summary>
-        /// <param name="signal1"></param>
-        /// <param name="signal2"></param>
-        /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal1, DiscreteSignal signal2)
+        /// <param name="signal">Input signal</param>
+        /// <param name="mix">Signal to mix with input signal</param>
+        public DiscreteSignal ApplyTo(DiscreteSignal signal, DiscreteSignal mix)
         {
-            Guard.AgainstInequality(signal1.SamplingRate, signal2.SamplingRate, "1st signal sampling rate", "2nd signal sampling rate");
+            Guard.AgainstInequality(signal.SamplingRate, mix.SamplingRate, "Input signal sampling rate", "Mix signal sampling rate");
 
-            var filtered = new float[signal1.Length];
+            var filtered = new float[signal.Length];
 
             for (int i = 0, j = 0; i < filtered.Length; i++, j++)
             {
-                if (j == signal2.Length)
+                if (j == mix.Length)
                 {
                     j = 0;
                 }
 
-                filtered[i] = Process(signal1[i], signal2[j]);
+                filtered[i] = Process(signal[i], mix[j]);
             }
 
-            return new DiscreteSignal(signal1.SamplingRate, filtered);
+            return new DiscreteSignal(signal.SamplingRate, filtered);
         }
 
+        /// <summary>
+        /// Process one sample. This method is not implemented in <see cref="MorphEffect"/> class.
+        /// </summary>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             throw new NotImplementedException();
