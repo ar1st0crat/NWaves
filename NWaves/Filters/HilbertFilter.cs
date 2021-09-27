@@ -5,30 +5,29 @@ using System.Collections.Generic;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Hilbert filter
+    /// Class representing Hilbert filter.
     /// </summary>
     public class HilbertFilter : FirFilter
     {
         /// <summary>
-        /// Size of the filter
+        /// Gets size of the filter.
         /// </summary>
         public int Size { get; }
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="HilbertFilter"/>.
         /// </summary>
-        /// <param name="size">size of the filter</param>
+        /// <param name="size">Size of the filter</param>
         public HilbertFilter(int size = 128) : base(MakeKernel(size))
         {
             Size = size;
         }
 
         /// <summary>
-        /// Kernel generator
+        /// Generate kernel of given <paramref name="size"/>.
         /// </summary>
-        /// <param name="size"></param>
-        /// <returns></returns>
-        public static IEnumerable<double> MakeKernel(int size)
+        /// <param name="size">Kernel size</param>
+        private static IEnumerable<double> MakeKernel(int size)
         {
             var kernel = new double[size];
 

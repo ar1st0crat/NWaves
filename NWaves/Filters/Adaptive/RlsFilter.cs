@@ -1,44 +1,44 @@
 ﻿namespace NWaves.Filters.Adaptive
 {
     /// <summary>
-    /// Adaptive filter (Recursive-Least-Squares algorithm)
+    /// Class representing Adaptive RLS filter (Recursive-Least-Squares algorithm).
     /// </summary>
     public class RlsFilter : AdaptiveFilter
     {
         /// <summary>
-        /// Lambda
+        /// Lambda.
         /// </summary>
         private readonly float _lambda;
 
         /// <summary>
-        /// Inverse corr matrix
+        /// Inverse corr matrix.
         /// </summary>
         private readonly float[,] _p;
 
         /// <summary>
-        /// Matrix of gain coefficients
+        /// Matrix of gain coefficients.
         /// </summary>
         private readonly float[] _gains;
 
         /// <summary>
-        /// Temporary matrices for calculations
+        /// Temporary matrices for calculations.
         /// </summary>
         private readonly float[,] _dp, _tmp;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="RlsFilter"/> of given <paramref name="order"/>.
         /// </summary>
-        /// <param name="order"></param>
-        /// <param name="lambda"></param>
-        /// <param name="initCoeff"></param>
-        public RlsFilter(int order, float lambda = 0.99f, float initCoeff = 1e2f) : base(order)
+        /// <param name="order">Order</param>
+        /// <param name="lambda">Lambda</param>
+        /// <param name="initCorrMatrix">Value to initialize inverse corr matrix</param>
+        public RlsFilter(int order, float lambda = 0.99f, float initCorrMatrix = 1e2f) : base(order)
         {
             _lambda = lambda;
 
             _p = new float[_kernelSize, _kernelSize];
             for (var i = 0; i < _kernelSize; i++)
             {
-                _p[i, i] = initCoeff;
+                _p[i, i] = initCorrMatrix;
             }
 
             _gains = new float[_kernelSize];
@@ -47,11 +47,10 @@
         }
 
         /// <summary>
-        /// Process input and desired samples
+        /// Process one sample of input signal and one sample of desired signal.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="desired"></param>
-        /// <returns></returns>
+        /// <param name="input">Sample of input signal</param>
+        /// <param name="desired">Sample of desired signal</param>
         public override float Process(float input, float desired)
         {
             var offset = _delayLineOffset;

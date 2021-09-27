@@ -4,20 +4,20 @@ using NWaves.Signals;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Feedforward comb filter:
-    /// 
+    /// Class representing feedforward comb filter:
+    /// <code>
     ///     y[n] = b0 * x[n] + bm * x[n - m]
-    /// 
+    /// </code>
     /// </summary>
     public class CombFeedforwardFilter : FirFilter
     {
         /// <summary>
-        /// Delay (m)
+        /// Delay (m).
         /// </summary>
         private readonly int _delay;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="CombFeedforwardFilter"/>.
         /// </summary>
         /// <param name="m">Delay</param>
         /// <param name="b0">Coefficient b0</param>
@@ -30,12 +30,12 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Kernel generator
+        /// Generate kernel.
         /// </summary>
         /// <param name="m">Delay</param>
         /// <param name="b0">Coefficient b0</param>
         /// <param name="bm">Coefficient bm</param>
-        /// <param name="normalize"></param>
+        /// <param name="normalize">Normalize freq response to unit gain</param>
         private static float[] MakeKernel(int m, double b0, double bm, bool normalize)
         {
             var kernel = new float[m + 1];
@@ -51,12 +51,11 @@ namespace NWaves.Filters
 
             return kernel;
         }
-        
+
         /// <summary>
-        /// Online filtering (sample-by-sample)
+        /// Process one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var b0 = _b[0];
@@ -75,11 +74,10 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Apply filter
+        /// Process entire <paramref name="signal"/> and return new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public override DiscreteSignal ApplyTo(DiscreteSignal signal,
                                                FilteringMethod method = FilteringMethod.Auto)
         {
@@ -113,10 +111,10 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Change coefficients (preserving the state)
+        /// Change coefficients (preserving the state).
         /// </summary>
-        /// <param name="b0"></param>
-        /// <param name="bm"></param>
+        /// <param name="b0">Coefficient b0</param>
+        /// <param name="bm">Coefficient bm</param>
         public void Change(double b0, double bm)
         {
             _b[0] = (float)b0;

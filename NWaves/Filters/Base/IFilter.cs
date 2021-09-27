@@ -3,17 +3,15 @@
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Interface for any kind of filter:
-    /// a filter can be applied to any signal transforming it to some output signal.
+    /// Interface for offline filters.
     /// </summary>
     public interface IFilter
     {
         /// <summary>
-        /// Method implements offline filtering algorithm
+        /// Process entire <paramref name="signal"/> and return new filtered signal.
         /// </summary>
-        /// <param name="signal">Signal for filtering</param>
-        /// <param name="method">General filtering strategy</param>
-        /// <returns>Filtered signal</returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto);
     }
 }

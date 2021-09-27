@@ -4,39 +4,42 @@ using NWaves.Signals;
 namespace NWaves.Filters.Polyphase
 {
     /// <summary>
-    /// System of polyphase filters
+    /// Class representing the system of polyphase filters.
     /// </summary>
     public class PolyphaseSystem : IFilter, IOnlineFilter
     {
         /// <summary>
-        /// Polyphase filters with transfer function E(z^k).
-        /// 
-        /// Example:
-        /// h = [1, 2, 3, 4, 3, 2, 1],  k = 3
-        /// 
-        /// e0 = [1, 0, 0, 4, 0, 0, 1]
-        /// e1 = [0, 2, 0, 0, 3, 0, 0]
-        /// e2 = [0, 0, 3, 0, 0, 2, 0]
+        /// <para>Gets polyphase filters with transfer function E(z^k).</para>
+        /// <code>
+        /// Example: <br/>
+        /// <br/>
+        /// h = [1, 2, 3, 4, 3, 2, 1],  k = 3 <br/>
+        /// <br/>
+        /// e0 = [1, 0, 0, 4, 0, 0, 1] <br/>
+        /// e1 = [0, 2, 0, 0, 3, 0, 0] <br/>
+        /// e2 = [0, 0, 3, 0, 0, 2, 0] <br/>
+        /// </code>
         /// </summary>
         public FirFilter[] Filters { get; private set; }
 
         /// <summary>
-        /// Polyphase filters with transfer function E(z) used for multi-rate processing.
-        /// 
-        /// h = [1, 2, 3, 4, 3, 2, 1],  k = 3
-        /// 
-        /// e0 = [1, 4, 1]
-        /// e1 = [2, 3, 0]
-        /// e2 = [3, 2, 0]
+        /// <para>Gets polyphase filters with transfer function E(z) used for multi-rate processing.</para>
+        /// <code>
+        /// h = [1, 2, 3, 4, 3, 2, 1],  k = 3 <br/>
+        /// <br/>
+        /// e0 = [1, 4, 1] <br/>
+        /// e1 = [2, 3, 0] <br/>
+        /// e2 = [3, 2, 0] <br/>
+        /// </code>
         /// </summary>
         public FirFilter[] MultirateFilters { get; private set; }
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="PolyphaseSystem"/>.
         /// </summary>
-        /// <param name="kernel"></param>
-        /// <param name="filterCount"></param>
-        /// <param name="type">1 or 2</param>
+        /// <param name="kernel">Filter kernel</param>
+        /// <param name="filterCount">Number of polyphase filters</param>
+        /// <param name="type">Polyphase system type (1 or 2)</param>
         public PolyphaseSystem(double[] kernel, int filterCount, int type = 1)
         {
             Filters = new FirFilter[filterCount];
@@ -82,10 +85,9 @@ namespace NWaves.Filters.Polyphase
         }
 
         /// <summary>
-        /// Polyphase decimation (for type-I systems)
+        /// Do polyphase decimation (for type-I systems).
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
         public DiscreteSignal Decimate(DiscreteSignal signal)
         {
             var resampledRate = signal.SamplingRate / MultirateFilters.Length;
@@ -122,10 +124,9 @@ namespace NWaves.Filters.Polyphase
         }
 
         /// <summary>
-        /// Polyphase interpolation (for type-II systems)
+        /// Do polyphase interpolation (for type-II systems).
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
         public DiscreteSignal Interpolate(DiscreteSignal signal)
         {
             var k = MultirateFilters.Length;
@@ -149,13 +150,13 @@ namespace NWaves.Filters.Polyphase
         #region FIR Filtering (for educational purposes)
 
         /// <summary>
-        /// Online processing.
-        /// Inefficient, but helps understanding how polyphase filters work
+        /// Process one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public float Process(float sample)
         {
+            // Inefficient, but helps understanding how polyphase filters work
+
             var output = 0f;
 
             foreach (var filter in Filters)
@@ -167,7 +168,7 @@ namespace NWaves.Filters.Polyphase
         }
 
         /// <summary>
-        /// Reset
+        /// Reset polyphase filters.
         /// </summary>
         public void Reset()
         {
@@ -183,10 +184,10 @@ namespace NWaves.Filters.Polyphase
         }
 
         /// <summary>
-        /// Offline processing
+        /// Process entire <paramref name="signal"/> and return new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
 
         #endregion

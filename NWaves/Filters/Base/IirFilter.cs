@@ -8,79 +8,85 @@ using NWaves.Utils;
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Class representing Infinite Impulse Response filters
+    /// Class representing Infinite Impulse Response (IIR) filter.
     /// </summary>
     public class IirFilter : LtiFilter
     {
         /// <summary>
         /// Numerator part coefficients in filter's transfer function 
-        /// (non-recursive part in difference equations)
-        /// 
-        /// These coefficients have single precision since they are used for filtering!
-        /// For filter design & analysis specify transfer function (Tf property).
-        /// 
-        /// Note.
-        /// This array is created from duplicated coefficients:
-        /// 
-        ///  numerator              _b
-        /// [1 2 3 4 5] -> [1 2 3 4 5 1 2 3 4 5]
-        /// 
-        /// Such memory layout leads to speed-up of online filtering.
+        /// (non-recursive part in difference equations).
         /// </summary>
         protected readonly float[] _b;
+
+        // Note.
+        // This array is created from duplicated B coefficients:
+        //      b                 _b
+        // [1 2 3 4 5] -> [1 2 3 4 5 1 2 3 4 5]
+        // 
+        // Such memory layout leads to speed-up of online filtering.
+        //
 
         /// <summary>
         /// Denominator part coefficients in filter's transfer function 
         /// (recursive part in difference equations).
-        /// 
-        /// These coefficients have single precision since they are used for filtering!
-        /// For filter design & analysis specify transfer function (Tf property).
-        ///
         /// </summary>
         protected readonly float[] _a;
 
         /// <summary>
-        /// Number of numerator coefficients
+        /// Number of numerator coefficients.
         /// </summary>
         protected readonly int _numeratorSize;
 
         /// <summary>
-        /// Number of denominator (feedback) coefficients
+        /// Number of denominator (feedback) coefficients.
         /// </summary>
         protected readonly int _denominatorSize;
 
         /// <summary>
-        /// Transfer function (created lazily or set specifically if needed)
+        /// Transfer function.
         /// </summary>
         protected TransferFunction _tf;
+
+        /// <summary>
+        /// Gets transfer function.
+        /// </summary>
         public override TransferFunction Tf
         {
+            // created lazily or set specifically if needed
             get => _tf ?? new TransferFunction(_b.Take(_numeratorSize).ToDoubles(), _a.ToDoubles());
             protected set => _tf = value;
         }
        
         /// <summary>
-        /// Default length of truncated impulse response
+        /// Gets or sets default length of truncated impulse response.
         /// </summary>
         public int DefaultImpulseResponseLength { get; set; } = 512;
 
         /// <summary>
-        /// Internal buffers for delay lines
+        /// Internal delay line (recursive part).
         /// </summary>
         protected float[] _delayLineA;
+
+        /// <summary>
+        /// Internal delay line (non-recursive part).
+        /// </summary>
         protected float[] _delayLineB;
 
         /// <summary>
-        /// Current offsets in delay lines
+        /// Current offset in delay line (recursive part).
         /// </summary>
         protected int _delayLineOffsetA;
+
+        /// <summary>
+        /// Current offset in delay line (non-recursive part).
+        /// </summary>
         protected int _delayLineOffsetB;
 
         /// <summary>
-        /// Parameterized constructor (from arrays of 32-bit coefficients)
+        /// Construct <see cref="IirFilter"/> from numerator <paramref name="b"/> and denominator <paramref name="a"/>.
         /// </summary>
-        /// <param name="b">TF numerator coefficients</param>
-        /// <param name="a">TF denominator coefficients</param>
+        /// <param name="b">Numerator of transfer function</param>
+        /// <param name="a">Denominator of transfer function</param>
         public IirFilter(IEnumerable<float> b, IEnumerable<float> a)
         {
             _numeratorSize = b.Count();
@@ -102,25 +108,23 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Parameterized constructor (from arrays of 64-bit coefficients)
-        /// 
-        /// NOTE.
-        /// It will simply cast values to floats!
-        /// If you need to preserve precision for filter design & analysis, use constructor with TransferFunction!
-        /// 
+        /// <para>
+        /// Construct <see cref="IirFilter"/> from numerator <paramref name="b"/> and denominator <paramref name="a"/> (double precision).
+        /// </para>
+        /// <para>
+        /// NOTE. 
+        /// It will simply cast values to floats. 
+        /// If you need to preserve precision for filter design and analysis, use constructor <see cref="IirFilter(TransferFunction)"/>.
+        /// </para>
         /// </summary>
-        /// <param name="b">TF numerator coefficients</param>
-        /// <param name="a">TF denominator coefficients</param>
+        /// <param name="b">Numerator of transfer function</param>
+        /// <param name="a">Denominator of transfer function</param>
         public IirFilter(IEnumerable<double> b, IEnumerable<double> a) : this(b.ToFloats(), a.ToFloats())
         {
         }
 
         /// <summary>
-        /// Parameterized constructor (from transfer function).
-        /// 
-        /// Coefficients (used for filtering) will be cast to floats anyway,
-        /// but filter will store the reference to TransferFunction object for FDA.
-        /// 
+        /// Construct <see cref="ZiFilter"/> from transfer function <paramref name="tf"/>.
         /// </summary>
         /// <param name="tf">Transfer function</param>
         public IirFilter(TransferFunction tf) : this(tf.Numerator, tf.Denominator)
@@ -129,11 +133,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Apply filter to entire signal (offline)
+        /// Process entire <paramref name="signal"/> and return new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public override DiscreteSignal ApplyTo(DiscreteSignal signal,
                                                FilteringMethod method = FilteringMethod.Auto)
         {
@@ -159,10 +162,9 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// IIR online filtering (sample-by-sample)
+        /// Process one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var output = 0f;
@@ -200,11 +202,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// The most straightforward implementation of the difference equation:
-        /// code the difference equation as it is
+        /// The most straightforward implementation of the difference equation: 
+        /// code the difference equation as it is.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
         protected DiscreteSignal ApplyFilterDirectly(DiscreteSignal signal)
         {
             var input = signal.Samples;
@@ -227,7 +228,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Change filter coefficients online (numerator part)
+        /// Change filter coefficients online (numerator / non-recursive part).
         /// </summary>
         /// <param name="b">New coefficients</param>
         public void ChangeNumeratorCoeffs(float[] b)
@@ -242,7 +243,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Change filter coefficients online (denominator / recursive part)
+        /// Change filter coefficients online (denominator / recursive part).
         /// </summary>
         /// <param name="a">New coefficients</param>
         public void ChangeDenominatorCoeffs(float[] a)
@@ -254,9 +255,9 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Change filter coefficients online (transfer function)
+        /// Change filter coefficients online (from transfer function <paramref name="tf"/>).
         /// </summary>
-        /// <param name="tf"></param>
+        /// <param name="tf">Transfer function</param>
         public void Change(TransferFunction tf)
         {
             var b = tf.Numerator;
@@ -278,7 +279,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Reset filter
+        /// Reset filter.
         /// </summary>
         public override void Reset()
         {
@@ -290,7 +291,8 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Divide all filter coefficients by _a[0] and normalize TF
+        /// Normalize transfer function 
+        /// (divide all filter coefficients by the first coefficient of TF denominator).
         /// </summary>
         public void Normalize()
         {
@@ -313,11 +315,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Sequential combination of an IIR filter and any LTI filter.
+        /// Create <see cref="IirFilter"/> from sequential connection of IIR <paramref name="filter1"/> and any LTI <paramref name="filter2"/>.
         /// </summary>
-        /// <param name="filter1"></param>
-        /// <param name="filter2"></param>
-        /// <returns></returns>
+        /// <param name="filter1">IIR filter</param>
+        /// <param name="filter2">LTI filter</param>
         public static IirFilter operator *(IirFilter filter1, LtiFilter filter2)
         {
             var tf = filter1.Tf * filter2.Tf;
@@ -326,11 +327,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Parallel combination of an IIR and any LTI filter.
+        /// Create <see cref="IirFilter"/> from parallel connection of IIR <paramref name="filter1"/> and any LTI <paramref name="filter2"/>.
         /// </summary>
-        /// <param name="filter1"></param>
-        /// <param name="filter2"></param>
-        /// <returns></returns>
+        /// <param name="filter1">IIR filter</param>
+        /// <param name="filter2">LTI filter</param>
         public static IirFilter operator +(IirFilter filter1, LtiFilter filter2)
         {
             var tf = filter1.Tf + filter2.Tf;

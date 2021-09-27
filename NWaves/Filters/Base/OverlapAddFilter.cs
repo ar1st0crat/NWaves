@@ -13,7 +13,7 @@ namespace NWaves.Filters.Base
     // Subclasses must implement ProcessSpectrum() method that corresponds to the second stage.
     // 
     // Also, it inherits from WetDryMixer implementing IMixable interface,
-    // since audio effects can be built based on this class.
+    // since audio effects with wet-dry mixing functionality can be built based on this class.
     //
 
     /// <summary>

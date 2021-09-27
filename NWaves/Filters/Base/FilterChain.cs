@@ -5,29 +5,29 @@ using NWaves.Signals;
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Chain of filters
+    /// Class representing the chain of sequentially connected filters.
     /// </summary>
     public class FilterChain : IFilter, IOnlineFilter
     {
         /// <summary>
-        /// List of filters in the chain
+        /// List of filters in the chain.
         /// </summary>
         private readonly List<IOnlineFilter> _filters;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="FilterChain"/> from collection of <paramref name="filters"/>.
         /// </summary>
-        /// <param name="filters"></param>
+        /// <param name="filters">Collection of online filters</param>
         public FilterChain(IEnumerable<IOnlineFilter> filters = null)
         {
             _filters = filters?.ToList() ?? new List<IOnlineFilter>();
         }
 
         /// <summary>
-        /// Constructor from collection of transfer functions (e.g., SOS sections).
-        /// This constructor will create IIR (!) filters.
+        /// Construct <see cref="FilterChain"/> from collection of transfer functions (e.g., SOS sections). 
+        /// This constructor will create objects of <see cref="IirFilter"/> under the hood.
         /// </summary>
-        /// <param name="tfs"></param>
+        /// <param name="tfs">Collection of transfer functions</param>
         public FilterChain(IEnumerable<TransferFunction> tfs)
         {
             _filters = new List<IOnlineFilter>();
@@ -39,43 +39,42 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Add filter to the chain
+        /// Add <paramref name="filter"/> to the chain.
         /// </summary>
-        /// <param name="filter"></param>
+        /// <param name="filter">Online filter</param>
         public void Add(IOnlineFilter filter) => _filters.Add(filter);
 
         /// <summary>
-        /// Insert filter at specified index into the chain
+        /// Insert <paramref name="filter"/> at specified <paramref name="index"/> in the chain.
         /// </summary>
-        /// <param name="idx"></param>
-        /// <param name="filter"></param>
-        public void Insert(int idx, IOnlineFilter filter) => _filters.Insert(idx, filter);
+        /// <param name="index">Index of the filter in chain</param>
+        /// <param name="filter">Online filter</param>
+        public void Insert(int index, IOnlineFilter filter) => _filters.Insert(index, filter);
 
         /// <summary>
-        /// Remove filter at specified index from the chain
+        /// Remove filter at specified <paramref name="index"/> from the chain.
         /// </summary>
-        /// <param name="idx"></param>
-        public void RemoveAt(int idx) => _filters.RemoveAt(idx);
+        /// <param name="index">Index of the filter in chain</param>
+        public void RemoveAt(int index) => _filters.RemoveAt(index);
 
         /// <summary>
-        /// Process sample by the chain of filters
+        /// Process one sample by the chain of filters.
         /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public float Process(float input)
+        /// <param name="sample">Input sample</param>
+        public float Process(float sample)
         {
-            var sample = input;
+            var output = sample;
 
             foreach (var filter in _filters)
             {
-                sample = filter.Process(sample);
+                output = filter.Process(output);
             }
 
-            return sample;
+            return output;
         }
 
         /// <summary>
-        /// Reset state of all filters
+        /// Reset all filters in the chain.
         /// </summary>
         public void Reset()
         {
@@ -86,11 +85,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Offline filtering
+        /// Filter entire signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="method">Filtering method</param>
         public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
     }
 }

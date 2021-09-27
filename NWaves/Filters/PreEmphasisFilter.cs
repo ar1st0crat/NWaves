@@ -4,17 +4,17 @@ using NWaves.Signals;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Standard pre-emphasis FIR filter
+    /// Class representing pre-emphasis FIR filter.
     /// </summary>
     public class PreEmphasisFilter : FirFilter
     {
         /// <summary>
-        /// Delay line
+        /// Delay line (consisting of one sample).
         /// </summary>
         private float _prevSample;
 
         /// <summary>
-        /// Constructor computes simple 1st order kernel
+        /// Construct <see cref="PreEmphasisFilter"/>.
         /// </summary>
         /// <param name="a">Pre-emphasis coefficient</param>
         /// <param name="normalize">Normalize freq response to unit gain</param>
@@ -29,10 +29,9 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Online filtering (sample-by-sample)
+        /// Process one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var output = _b[0] * sample + _b[1] * _prevSample;
@@ -42,11 +41,10 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Offline filtering
+        /// Process entire <paramref name="signal"/> and return new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public override DiscreteSignal ApplyTo(DiscreteSignal signal,
                                                FilteringMethod method = FilteringMethod.Auto)
         {
@@ -76,7 +74,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Reset
+        /// Reset filter.
         /// </summary>
         public override void Reset()
         {

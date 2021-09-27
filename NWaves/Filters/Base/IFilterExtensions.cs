@@ -6,16 +6,20 @@ using System.Linq;
 
 namespace NWaves.Filters.Base
 {
+    /// <summary>
+    /// Class providing extension methods for online filters.
+    /// </summary>
     public static class IFilterExtensions
     {
         /// <summary>
-        /// Method implements online filtering (frame-by-frame)
+        /// Filter data frame-wise.
         /// </summary>
+        /// <param name="filter">Online filter</param>
         /// <param name="input">Input block of samples</param>
         /// <param name="output">Block of filtered samples</param>
         /// <param name="count">Number of samples to filter</param>
-        /// <param name="inputPos">Input starting position</param>
-        /// <param name="outputPos">Output starting position</param>
+        /// <param name="inputPos">Input starting index</param>
+        /// <param name="outputPos">Output starting index</param>
         public static void Process(this IOnlineFilter filter,
                                    float[] input,
                                    float[] output,
@@ -37,11 +41,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Offline filtering of the entire signal based on online filtering of each sample
+        /// Filter entire <paramref name="signal"/> by processing each signal sample in a loop.
         /// </summary>
-        /// <param name="filter"></param>
-        /// <param name="signal"></param>
-        /// <returns></returns>
+        /// <param name="filter">Online filter</param>
+        /// <param name="signal">Input signal</param>
         public static DiscreteSignal FilterOnline(this IOnlineFilter filter, DiscreteSignal signal)
         {
             var output = new float[signal.Length];
@@ -56,11 +59,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Offline filtering of the entire signal based on online filtering of each sample
+        /// Filter entire <paramref name="signal"/> by processing each signal sample in a loop.
         /// </summary>
-        /// <param name="filter"></param>
-        /// <param name="signal"></param>
-        /// <returns></returns>
+        /// <param name="filter">Online filter</param>
+        /// <param name="signal">Input signal</param>
         public static double[] FilterOnline(this IOnlineFilter64 filter, double[] signal)
         {
             var output = new double[signal.Length];
@@ -74,11 +76,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Calculate filtering gain so that frequency response is normalized onto [0, 1] range.
+        /// Calculate extra gain for filtering so that frequency response is normalized onto [0, 1] range.
         /// </summary>
-        /// <param name="filter"></param>
-        /// <param name="fftSize"></param>
-        /// <returns>Gain for filtering operations</returns>
+        /// <param name="filter">Online filter</param>
+        /// <param name="fftSize">FFT size (for evaluating frequency response)</param>
         public static float EstimateGain(this IOnlineFilter filter, int fftSize = 512)
         {
             var unit = DiscreteSignal.Unit(fftSize);
@@ -97,27 +98,25 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Filter signal with additional gain
+        /// Filter entire <paramref name="signal"/> with extra <paramref name="gain"/>.
         /// </summary>
         /// <param name="filter">Online filter</param>
-        /// <param name="input">Input signal</param>
+        /// <param name="signal">Input signal</param>
         /// <param name="gain">Gain</param>
-        /// <returns>Filtered signal</returns>
         public static DiscreteSignal ApplyTo(this IOnlineFilter filter,
-                                             DiscreteSignal input,
+                                             DiscreteSignal signal,
                                              float gain)
         {
-            var output = input.Samples.Select(s => gain * filter.Process(s));
-            return new DiscreteSignal(input.SamplingRate, output);
+            var output = signal.Samples.Select(s => gain * filter.Process(s));
+            return new DiscreteSignal(signal.SamplingRate, output);
         }
 
         /// <summary>
-        /// Process one sample of a signal with additional gain
+        /// Process one <paramref name="sample"/> of a signal with extra <paramref name="gain"/>.
         /// </summary>
         /// <param name="filter">Online filter</param>
         /// <param name="sample">Input sample</param>
         /// <param name="gain">Gain</param>
-        /// <returns></returns>
         public static float Process(this IOnlineFilter filter, float sample, float gain)
         {
             return gain * filter.Process(sample);
@@ -130,10 +129,6 @@ namespace NWaves.Filters.Base
         /// Implementation of offline filtering in time domain frame-by-frame.
         /// 
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="frameSize"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>        
         public static DiscreteSignal ProcessChunks(this IOnlineFilter filter,
                                                         DiscreteSignal signal,
                                                         int frameSize = 4096)

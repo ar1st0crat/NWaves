@@ -5,31 +5,30 @@ using System;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Savitzky-Golay filter
+    /// Class representing Savitzky-Golay filter.
     /// </summary>
     public class SavitzkyGolayFilter : FirFilter
     {
         /// <summary>
-        /// Size
+        /// Gets size of the filter.
         /// </summary>
         public int Size { get; }
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="SavitzkyGolayFilter"/>.
         /// </summary>
-        /// <param name="size">Size of the filter, window length (must be odd number)</param>
-        /// <param name="deriv"></param>
+        /// <param name="size">Size of the filter (must be odd number in range [5..31])</param>
+        /// <param name="deriv">Derivative (must be 0, 1 or 2)</param>
         public SavitzkyGolayFilter(int size, int deriv = 0) : base(MakeKernel(size, deriv))
         {
             Size = size;
         }
 
         /// <summary>
-        /// Kernel generator.
-        /// It simply gives coefficient from precomputed arrays
+        /// Kernel generator. Kernels are precomputed.
         /// </summary>
-        /// <param name="size"></param>
-        /// <returns></returns>
+        /// <param name="size">Size of the filter (must be odd number in range [5..31])</param>
+        /// <param name="deriv">Derivative (must be 0, 1 or 2)</param>
         private static double[] MakeKernel(int size, int deriv = 0)
         {
             Guard.AgainstEvenNumber(size, "The size of the filter");

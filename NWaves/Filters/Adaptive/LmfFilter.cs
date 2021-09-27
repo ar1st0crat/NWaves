@@ -1,26 +1,19 @@
 ﻿namespace NWaves.Filters.Adaptive
 {
     /// <summary>
-    /// Adaptive filter (Least-Mean-Fourth algorithm)
+    /// Class representing LMF Adaptive filter (Least-Mean-Fourth algorithm).
     /// </summary>
     public class LmfFilter : AdaptiveFilter
     {
-        /// <summary>
-        /// Mu
-        /// </summary>
         private readonly float _mu;
-
-        /// <summary>
-        /// Leakage
-        /// </summary>
         private readonly float _leakage;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="LmfFilter"/> of given <paramref name="order"/>.
         /// </summary>
-        /// <param name="order"></param>
-        /// <param name="mu"></param>
-        /// <param name="leakage"></param>
+        /// <param name="order">Filter order</param>
+        /// <param name="mu">Mu</param>
+        /// <param name="leakage">Leakage</param>
         public LmfFilter(int order, float mu = 0.75f, float leakage = 0) : base(order)
         {
             _mu = mu;
@@ -28,11 +21,10 @@
         }
 
         /// <summary>
-        /// Process input and desired samples
+        /// Process one sample of input signal and one sample of desired signal.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="desired"></param>
-        /// <returns></returns>
+        /// <param name="input">Sample of input signal</param>
+        /// <param name="desired">Sample of desired signal</param>
         public override float Process(float input, float desired)
         {
             var offset = _delayLineOffset;

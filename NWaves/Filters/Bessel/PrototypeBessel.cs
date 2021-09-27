@@ -5,14 +5,16 @@ using System.Numerics;
 
 namespace NWaves.Filters.Bessel
 {
+    /// <summary>
+    /// Bessel filter prototype.
+    /// </summary>
     public static class PrototypeBessel
     {
         /// <summary>
-        /// k-th coefficient of n-th order Bessel polynomial
+        /// Get <paramref name="k"/>-th coefficient of <paramref name="n"/>-th order Bessel polynomial.
         /// </summary>
-        /// <param name="k"></param>
-        /// <param name="n"></param>
-        /// <returns></returns>
+        /// <param name="k">k</param>
+        /// <param name="n">n</param>
         public static double Reverse(int k, int n)
         {
             return MathUtils.Factorial(2 * n - k) /
@@ -20,10 +22,9 @@ namespace NWaves.Filters.Bessel
         }
 
         /// <summary>
-        /// Analog poles of Bessel filter
+        /// Evaluate analog poles of Bessel filter of given <paramref name="order"/>.
         /// </summary>
-        /// <param name="order"></param>
-        /// <returns></returns>
+        /// <param name="order">Filter order</param>
         public static Complex[] Poles(int order)
         {
             var a = Enumerable.Range(0, order + 1)

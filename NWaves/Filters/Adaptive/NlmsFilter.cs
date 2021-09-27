@@ -3,32 +3,21 @@
 namespace NWaves.Filters.Adaptive
 {
     /// <summary>
-    /// Adaptive filter (Normalized Least-Mean-Squares algorithm + Epsilon)
+    /// Class representing NLMS Adaptive filter (Normalized Least-Mean-Squares algorithm + Epsilon).
     /// </summary>
     public class NlmsFilter : AdaptiveFilter
     {
-        /// <summary>
-        /// Mu
-        /// </summary>
         private readonly float _mu;
-
-        /// <summary>
-        /// Epsilon
-        /// </summary>
         private readonly float _eps;
-
-        /// <summary>
-        /// Leakage
-        /// </summary>
         private readonly float _leakage;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="NlmsFilter"/> of given <paramref name="order"/>.
         /// </summary>
-        /// <param name="order"></param>
-        /// <param name="mu"></param>
-        /// <param name="eps"></param>
-        /// <param name="leakage"></param>
+        /// <param name="order">Filter order</param>
+        /// <param name="mu">Mu</param>
+        /// <param name="eps">Epsilon</param>
+        /// <param name="leakage">Leakage</param>
         public NlmsFilter(int order, float mu = 0.75f, float eps = 1, float leakage = 0) : base(order)
         {
             _mu = mu;
@@ -37,11 +26,10 @@ namespace NWaves.Filters.Adaptive
         }
 
         /// <summary>
-        /// Process input and desired samples
+        /// Process one sample of input signal and one sample of desired signal.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="desired"></param>
-        /// <returns></returns>
+        /// <param name="input">Sample of input signal</param>
+        /// <param name="desired">Sample of desired signal</param>
         public override float Process(float input, float desired)
         {
             var offset = _delayLineOffset;

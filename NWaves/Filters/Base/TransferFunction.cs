@@ -12,47 +12,55 @@ using NWaves.Utils;
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Class providing methods related to the transfer function of an LTI filter
+    /// Class representing the transfer function of an LTI filter.
     /// </summary>
     public class TransferFunction
     {
         /// <summary>
-        /// Numerator of transfer function
+        /// Gets numerator of transfer function.
         /// </summary>
         public double[] Numerator { get; protected set; }
 
         /// <summary>
-        /// Denominator of transfer function
+        /// Gets denominator of transfer function.
         /// </summary>
         public double[] Denominator { get; protected set; }
 
         /// <summary>
-        /// Max iterations for calculating zeros/poles (roots of polynomials): 25000 by default
+        /// Gets or sets max number of iterations for calculating zeros/poles (roots of polynomials). By default, 25000.
         /// </summary>
         public int CalculateZpIterations { get; set; } = MathUtils.PolyRootsIterations;
 
         /// <summary>
-        /// Zeros of TF
+        /// Zeros.
         /// </summary>
         protected Complex[] _zeros;
+
+        /// <summary>
+        /// Poles.
+        /// </summary>
+        protected Complex[] _poles;
+
+        /// <summary>
+        /// Gets zeros ('z' in 'zpk' notation).
+        /// </summary>
         public Complex[] Zeros => _zeros ?? TfToZp(Numerator, CalculateZpIterations);
 
         /// <summary>
-        /// Poles of TF
+        /// Gets poles ('p' in 'zpk' notation).
         /// </summary>
-        protected Complex[] _poles;
         public Complex[] Poles => _poles ?? TfToZp(Denominator, CalculateZpIterations);
 
         /// <summary>
-        /// Gain ('k' in 'zpk' notation)
+        /// Gets gain ('k' in 'zpk' notation).
         /// </summary>
         public double Gain => Numerator[0];
 
         /// <summary>
-        /// TF constructor from numerator/denominator
+        /// Construct <see cref="TransferFunction"/> from <paramref name="numerator"/> and <paramref name="denominator"/>.
         /// </summary>
-        /// <param name="numerator"></param>
-        /// <param name="denominator"></param>
+        /// <param name="numerator">Numerator of transfer function</param>
+        /// <param name="denominator">Denominator of transfer function</param>
         public TransferFunction(double[] numerator, double[] denominator = null)
         {
             Numerator = numerator;
@@ -60,7 +68,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// TF constructor from zeros/poles
+        /// Construct <see cref="TransferFunction"/> from <paramref name="zeros"/>, <paramref name="poles"/> and <paramref name="gain"/>.
         /// </summary>
         /// <param name="zeros">Zeros</param>
         /// <param name="poles">Poles</param>
@@ -80,7 +88,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// TF constructor from zeros/poles
+        /// Construct <see cref="TransferFunction"/> from <paramref name="zeros"/>, <paramref name="poles"/> and <paramref name="gain"/>.
         /// </summary>
         /// <param name="zeros">Zeros</param>
         /// <param name="poles">Poles</param>
@@ -91,9 +99,9 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// TF constructor from state space
+        /// Construct <see cref="TransferFunction"/> from <paramref name="stateSpace"/> representation.
         /// </summary>
-        /// <param name="stateSpace"></param>
+        /// <param name="stateSpace">State space representation</param>
         public TransferFunction(StateSpace stateSpace)
         {
             var a = stateSpace.A;
@@ -141,9 +149,8 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Get state-space representation
+        /// Gets state-space representation.
         /// </summary>
-        /// <returns></returns>
         public StateSpace StateSpace
         {
             get
@@ -209,9 +216,8 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Initial state 'zi' for filtering that corresponds to the steady state of the step response
+        /// Gets initial state for <see cref="ZiFilter"/> that corresponds to the steady state of the step response.
         /// </summary>
-        /// <returns>Initial state</returns>
         public double[] Zi
         {
             get
@@ -259,12 +265,11 @@ namespace NWaves.Filters.Base
             }
         }
 
-
         /// <summary>
-        /// Evaluate impulse response
+        /// Evaluate impulse response of given <paramref name="length"/>. 
+        /// In case of FIR filters method returns full copy of numerator.
         /// </summary>
-        /// <param name="length">Ignored for FIR filters (where IR is full copy of numerator)</param>
-        /// <returns></returns>
+        /// <param name="length">Length of the impulse response</param>
         public double[] ImpulseResponse(int length = 512)
         {
             if (Denominator.Length == 1)
@@ -291,10 +296,9 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Evaluate frequency response
+        /// Evaluate frequency response of given <paramref name="length"/>.
         /// </summary>
-        /// <param name="length"></param>
-        /// <returns></returns>
+        /// <param name="length">Length of the frequency response</param>
         public ComplexDiscreteSignal FrequencyResponse(int length = 512)
         {
             var ir = ImpulseResponse(length);
@@ -312,8 +316,9 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Group delay calculated from TF coefficients
+        /// Evaluate group delay in array of given <paramref name="length"/>.
         /// </summary>
+        /// <param name="length">Length of group delay array</param>
         public double[] GroupDelay(int length = 512)
         {
             var cc = new ComplexConvolver()
@@ -349,8 +354,9 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Phase delay calculated from TF coefficients
+        /// Evaluate phase delay in array of given <paramref name="length"/>.
         /// </summary>
+        /// <param name="length">Length of phase delay array</param>
         public double[] PhaseDelay(int length = 512)
         {
             var gd = GroupDelay(length);
@@ -367,10 +373,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Normalize frequency response at given frequency
-        /// (normalize coefficients to map frequency response onto [0, 1])
+        /// Normalize frequency response at given frequency 
+        /// (normalize numerator to map frequency response onto [0, 1])
         /// </summary>
-        /// <param name="freq"></param>
+        /// <param name="freq">Frequency</param>
         public void NormalizeAt(double freq)
         {
             var w = Complex.FromPolarCoordinates(1, freq);
@@ -385,7 +391,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Normalize numerator and denominator by Denominator[0]
+        /// Normalize numerator and denominator (divide by the first coefficient of denominator).
         /// </summary>
         public void Normalize()
         {
@@ -408,10 +414,9 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Method for converting zeros(poles) to TF numerator(denominator)
+        /// Convert zeros (or poles) to numerator (or denominator) of transfer function.
         /// </summary>
-        /// <param name="zp"></param>
-        /// <returns></returns>
+        /// <param name="zp">Zeros (or poles)</param>
         public static double[] ZpToTf(Complex[] zp)
         {
             var poly = new Complex[] { 1, -zp[0] };
@@ -426,25 +431,23 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Method for converting zeros(poles) to TF numerator(denominator)
+        /// Convert zeros (or poles) to numerator (or denominator) of transfer function.
         /// </summary>
-        /// <param name="zp"></param>
-        /// <returns></returns>
+        /// <param name="zp">Zeros (or poles)</param>
         public static double[] ZpToTf(ComplexDiscreteSignal zp)
         {
             return ZpToTf(zp.ToComplexNumbers().ToArray());
         }
 
         /// <summary>
-        /// Method for converting zeros(poles) to TF numerator(denominator).
-        /// Zeros and poles are given as double arrays of real and imaginary parts of zeros(poles).
+        /// Convert zeros (or poles) to numerator (or denominator) of transfer function. 
+        /// Zeros (poles) are given in the form double arrays of real and imaginary parts.
         /// </summary>
-        /// <param name="re"></param>
-        /// <param name="im"></param>
-        /// <returns></returns>
+        /// <param name="re">Real parts of complex zeros (poles)</param>
+        /// <param name="im">Imaginary parts of complex zeros (poles)</param>
         public static double[] ZpToTf(double[] re, double[] im = null)
         {
-            if (im == null)
+            if (im is null)
             {
                 im = new double[re.Length];
             }
@@ -453,26 +456,25 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Method for converting TF numerator(denominator) to zeros(poles)
+        /// Convert numerator (or denominator) of transfer function to zeros (or poles).
         /// </summary>
-        /// <param name="tf"></param>
-        /// <returns></returns>
-        public static Complex[] TfToZp(double[] tf, int maxIterations = MathUtils.PolyRootsIterations)
+        /// <param name="numeratorOrDenominator">Numerator or denominator (polynomial)</param>
+        /// <param name="maxIterations">Max number of iterations for calculating zeros/poles (roots of polynomials). By default, 25000.</param>
+        public static Complex[] TfToZp(double[] numeratorOrDenominator, int maxIterations = MathUtils.PolyRootsIterations)
         {
-            if (tf.Length <= 1)
+            if (numeratorOrDenominator.Length <= 1)
             {
                 return null;
             }
 
-            return MathUtils.PolynomialRoots(tf, maxIterations);
+            return MathUtils.PolynomialRoots(numeratorOrDenominator, maxIterations);
         }
 
         /// <summary>
-        /// Sequential connection
+        /// Create transfer function from sequential connection of <paramref name="tf1"/> and <paramref name="tf2"/>.
         /// </summary>
-        /// <param name="tf1"></param>
-        /// <param name="tf2"></param>
-        /// <returns></returns>
+        /// <param name="tf1">First transfer function</param>
+        /// <param name="tf2">Second transfer function</param>
         public static TransferFunction operator *(TransferFunction tf1, TransferFunction tf2)
         {
             var num = Operation.Convolve(tf1.Numerator, tf2.Numerator);
@@ -482,11 +484,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Parallel connection
+        /// Create transfer function from parallel connection of <paramref name="tf1"/> and <paramref name="tf2"/>.
         /// </summary>
-        /// <param name="tf1"></param>
-        /// <param name="tf2"></param>
-        /// <returns></returns>
+        /// <param name="tf1">First transfer function</param>
+        /// <param name="tf2">Second transfer function</param>
         public static TransferFunction operator +(TransferFunction tf1, TransferFunction tf2)
         {
             var num1 = Operation.Convolve(tf1.Numerator, tf2.Denominator);
@@ -512,10 +513,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Load TF numerator and denominator from csv file
+        /// Load numerator and denominator of transfer function from csv stream.
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="delimiter"></param>
+        /// <param name="stream">Input stream</param>
+        /// <param name="delimiter">Delimiter</param>
         public static TransferFunction FromCsv(Stream stream, char delimiter = ',')
         {
             using (var reader = new StreamReader(stream))
@@ -535,10 +536,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Serialize TF numerator and denominator to csv file
+        /// Serialize numerator and denominator of transfer function to csv stream.
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="delimiter"></param>
+        /// <param name="stream">Output stream</param>
+        /// <param name="delimiter">Delimiter</param>
         public void ToCsv(Stream stream, char delimiter = ',')
         {
             using (var writer = new StreamWriter(stream))

@@ -8,72 +8,73 @@ using NWaves.Utils;
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Class representing Finite Impulse Response filters
+    /// Class representing Finite Impulse Response (FIR) filter.
     /// </summary>
     public class FirFilter : LtiFilter
     {
         /// <summary>
-        /// Filter kernel (impulse response)
+        /// Gets copy of the filter kernel (impulse response).
         /// </summary>
         public float[] Kernel => _b.Take(_kernelSize).ToArray();
 
         /// <summary>
-        /// 
         /// Numerator part coefficients in filter's transfer function 
         /// (non-recursive part in difference equations).
-        /// 
-        /// Since the number of coefficients can be really big,
-        /// we store ONLY float versions and they are used for filtering.
-        /// 
-        /// For design & analysis use the transfer function (Tf property, set via constructor).
-        /// By default Tf is null, so if you need your FIR filter to do just filtering, you won't waste RAM.
-        /// 
-        /// Note.
-        /// This array is created from duplicated filter kernel:
-        /// 
-        ///   kernel                _b
-        /// [1 2 3 4 5] -> [1 2 3 4 5 1 2 3 4 5]
-        /// 
-        /// Such memory layout leads to significant speed-up of online filtering.
-        /// 
         /// </summary>
         protected readonly float[] _b;
 
+        // 
+        // Since the number of coefficients can be really big,
+        // we store only float versions and they are used for filtering.
+        // 
+        // Note.
+        // This array is created from duplicated filter kernel:
+        // 
+        //   kernel                _b
+        // [1 2 3 4 5] -> [1 2 3 4 5 1 2 3 4 5]
+        // 
+        // Such memory layout leads to significant speed-up of online filtering.
+        //
+
         /// <summary>
-        /// Kernel length
+        /// Kernel length.
         /// </summary>
         protected int _kernelSize;
 
         /// <summary>
-        /// Transfer function (created lazily or set specifically if needed)
+        /// Transfer function.
         /// </summary>
         protected TransferFunction _tf;
+
+        /// <summary>
+        /// Gets transfer function.
+        /// </summary>
         public override TransferFunction Tf
         {
+            // created lazily or set specifically if needed
             get => _tf ?? new TransferFunction(_b.Take(_kernelSize).ToDoubles());
             protected set => _tf = value;
         }
 
         /// <summary>
-        /// If _kernelSize exceeds this value, 
-        /// the filtering code will always call Overlap-Save routine.
+        /// Gets or sets the minimum kernel length for switching to OverlapSave algorithm in auto mode.
         /// </summary>
         public int KernelSizeForBlockConvolution { get; set; } = 64;
 
         /// <summary>
-        /// Internal buffer for delay line
+        /// Internal buffer for delay line.
         /// </summary>
         protected float[] _delayLine;
 
         /// <summary>
-        /// Current offset in delay line
+        /// Current offset in delay line.
         /// </summary>
         protected int _delayLineOffset;
 
         /// <summary>
-        /// Constructor accepting the 32-bit kernel of a filter
+        /// Construct <see cref="FirFilter"/> from <paramref name="kernel"/>.
         /// </summary>
-        /// <param name="kernel"></param>
+        /// <param name="kernel">FIR filter kernel</param>
         public FirFilter(IEnumerable<float> kernel)
         {
             _kernelSize = kernel.Count();
@@ -90,12 +91,12 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Constructor accepting the 64-bit kernel of a filter.
-        /// 
-        /// NOTE.
-        /// This will simply cast values to floats!
-        /// If you need to preserve precision for filter design & analysis, use constructor with TransferFunction!
-        /// 
+        /// <para>Construct <see cref="FirFilter"/> from 64-bit <paramref name="kernel"/>.</para>
+        /// <para>
+        /// NOTE. 
+        /// It will simply cast values to floats. 
+        /// If you need to preserve precision for filter design and analysis, use constructor <see cref="FirFilter(TransferFunction)"/>.
+        /// </para>
         /// </summary>
         /// <param name="kernel"></param>
         public FirFilter(IEnumerable<double> kernel) : this(kernel.ToFloats())
@@ -103,24 +104,23 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Constructor accepting the transfer function.
-        /// 
-        /// Coefficients (used for filtering) will be cast to floats anyway,
+        /// <para>Construct <see cref="FirFilter"/> from transfer function <paramref name="tf"/>.</para>
+        /// <para>
+        /// Coefficients (used for filtering) will be cast to floats anyway, 
         /// but filter will store the reference to TransferFunction object for FDA.
-        /// 
+        /// </para>
         /// </summary>
-        /// <param name="kernel"></param>
+        /// <param name="tf">Transfer function</param>
         public FirFilter(TransferFunction tf) : this(tf.Numerator.ToFloats())
         {
             Tf = tf;
         }
 
         /// <summary>
-        /// Apply filter to entire signal (offline)
+        /// Process entire <paramref name="signal"/> and return new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public override DiscreteSignal ApplyTo(DiscreteSignal signal, 
                                                FilteringMethod method = FilteringMethod.Auto)
         {
@@ -155,10 +155,9 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// FIR online filtering (sample-by-sample)
+        /// Process one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             _delayLine[_delayLineOffset] = sample;
@@ -179,14 +178,14 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process all signal samples in loop.
-        /// The Process() code is inlined in the loop for better performance
-        /// (especially for smaller kernels).
+        /// Process all signal samples in loop. 
         /// </summary>
-        /// <param name="samples"></param>
-        /// <returns></returns>
+        /// <param name="samples">Samples</param>
         public float[] ProcessAllSamples(float[] samples)
         {
+            // The Process() code is inlined here in the loop for better performance
+            // (especially for smaller kernels).
+
             var filtered = new float[samples.Length + _kernelSize - 1];
 
             var k = 0;
@@ -218,11 +217,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// The most straightforward implementation of the difference equation:
-        /// code the difference equation as it is (it's slower than ProcessAllSamples)
+        /// The most straightforward implementation of the difference equation: 
+        /// code the difference equation as it is (it's slower than ProcessAllSamples).
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
         protected DiscreteSignal ApplyFilterDirectly(DiscreteSignal signal)
         {
             var input = signal.Samples;
@@ -244,7 +242,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Change filter kernel online
+        /// Change filter kernel online.
         /// </summary>
         /// <param name="kernel">New kernel</param>
         public void ChangeKernel(float[] kernel)
@@ -258,7 +256,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Reset filter
+        /// Reset filter.
         /// </summary>
         public override void Reset()
         {
@@ -266,13 +264,11 @@ namespace NWaves.Filters.Base
             Array.Clear(_delayLine, 0, _kernelSize);
         }
 
-
         /// <summary>
-        /// Sequential combination of two FIR filters (also an FIR filter)
+        /// Create <see cref="FirFilter"/> from sequential connection of two FIR filters <paramref name="filter1"/> and <paramref name="filter2"/>.
         /// </summary>
-        /// <param name="filter1"></param>
-        /// <param name="filter2"></param>
-        /// <returns></returns>
+        /// <param name="filter1">First FIR filter</param>
+        /// <param name="filter2">Second FIR filter</param>
         public static FirFilter operator *(FirFilter filter1, FirFilter filter2)
         {
             var tf = filter1.Tf * filter2.Tf;
@@ -281,11 +277,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Sequential combination of an FIR and IIR filter
+        /// Create <see cref="IirFilter"/> from sequential connection of FIR <paramref name="filter1"/> and IIR <paramref name="filter2"/>.
         /// </summary>
-        /// <param name="filter1"></param>
-        /// <param name="filter2"></param>
-        /// <returns></returns>
+        /// <param name="filter1">FIR filter</param>
+        /// <param name="filter2">IIR filter</param>
         public static IirFilter operator *(FirFilter filter1, IirFilter filter2)
         {
             var tf = filter1.Tf * filter2.Tf;
@@ -294,11 +289,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Parallel combination of two FIR filters
+        /// Create <see cref="FirFilter"/> from parallel connection of two FIR filters <paramref name="filter1"/> and <paramref name="filter2"/>.
         /// </summary>
-        /// <param name="filter1"></param>
-        /// <param name="filter2"></param>
-        /// <returns></returns>
+        /// <param name="filter1">First FIR filter</param>
+        /// <param name="filter2">Second FIR filter</param>
         public static FirFilter operator +(FirFilter filter1, FirFilter filter2)
         {
             var tf = filter1.Tf + filter2.Tf;
@@ -307,11 +301,10 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Parallel combination of an FIR and IIR filter
+        /// Create <see cref="IirFilter"/> from parallel connection of FIR <paramref name="filter1"/> and IIR <paramref name="filter2"/>.
         /// </summary>
-        /// <param name="filter1"></param>
-        /// <param name="filter2"></param>
-        /// <returns></returns>
+        /// <param name="filter1">FIR filter</param>
+        /// <param name="filter2">IIR filter</param>
         public static IirFilter operator +(FirFilter filter1, IirFilter filter2)
         {
             var tf = filter1.Tf + filter2.Tf;

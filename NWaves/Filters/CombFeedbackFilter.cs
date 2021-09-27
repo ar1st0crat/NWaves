@@ -4,20 +4,20 @@ using NWaves.Signals;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Feedback comb filter:
-    /// 
+    /// Class representing feedback comb filter:
+    /// <code>
     ///     y[n] = b0 * x[n] - am * y[n - m]
-    /// 
+    /// </code>
     /// </summary>
     public class CombFeedbackFilter : IirFilter
     {
         /// <summary>
-        /// Delay (m)
+        /// Delay (m).
         /// </summary>
         private readonly int _delay;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="CombFeedbackFilter"/>.
         /// </summary>
         /// <param name="m">Delay</param>
         /// <param name="b0">Coefficient b0</param>
@@ -32,10 +32,9 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Online filtering (sample-by-sample)
+        /// Process one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var b0 = _b[0];
@@ -54,11 +53,10 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Apply filter
+        /// Process entire <paramref name="signal"/> and return new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public override DiscreteSignal ApplyTo(DiscreteSignal signal,
                                                FilteringMethod method = FilteringMethod.Auto)
         {
@@ -86,10 +84,10 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Change coefficients (preserving the state)
+        /// Change coefficients (preserving the state).
         /// </summary>
-        /// <param name="b0"></param>
-        /// <param name="am"></param>
+        /// <param name="b0">Coefficient b0</param>
+        /// <param name="am">Coefficient am</param>
         public void Change(double b0, double am)
         {
             _b[0] = (float)b0;

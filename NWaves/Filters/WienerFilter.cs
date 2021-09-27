@@ -5,26 +5,26 @@ using NWaves.Utils;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Wiener filter.
+    /// Class representing Wiener filter. 
     /// Implementation is identical to scipy.signal.wiener().
     /// </summary>
     public class WienerFilter : IFilter, IOnlineFilter
     {
         /// <summary>
-        /// Size of the Wiener filter
+        /// Size of the Wiener filter.
         /// </summary>
         private readonly int _size;
 
         /// <summary>
-        /// Estimated noise power
+        /// Estimated noise power.
         /// </summary>
         private readonly double _noise;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="WienerFilter"/>.
         /// </summary>
-        /// <param name="size"></param>
-        /// <param name="noise"></param>
+        /// <param name="size">Size of the Wiener filter</param>
+        /// <param name="noise">Estimated noise power</param>
         public WienerFilter(int size = 3, double noise = 0.0)
         {
             Guard.AgainstEvenNumber(size, "The size of the filter");
@@ -39,6 +39,11 @@ namespace NWaves.Filters
             _n = _size / 2;
         }
 
+        /// <summary>
+        /// Process entire <paramref name="signal"/> and return new filtered signal.
+        /// </summary>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
         {
             var output = new float[signal.Length];
@@ -63,6 +68,10 @@ namespace NWaves.Filters
             return new DiscreteSignal(signal.SamplingRate, output);
         }
 
+        /// <summary>
+        /// Process one sample.
+        /// </summary>
+        /// <param name="sample">Input sample</param>
         public float Process(float sample)
         {
             if (_n == _buf.Length)      // some kind of a circular buffer
@@ -93,6 +102,9 @@ namespace NWaves.Filters
             return sigma < _noise ? mu : (float)(mu + (prevSample - mu) * (1 - _noise / sigma));
         }
 
+        /// <summary>
+        /// Reset filter.
+        /// </summary>
         public void Reset()
         {
             _n = _size / 2;

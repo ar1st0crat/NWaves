@@ -3,49 +3,46 @@
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Base class for all kinds of LTI filters.
-    /// 
-    /// Provides abstract TransferFunction property
-    /// and leaves methods ApplyTo() and Process() abstract.
+    /// Abstract class for Linear Time-Invariant (LTI) filters.
     /// </summary>
     public abstract class LtiFilter : IFilter, IOnlineFilter
     {
         /// <summary>
-        /// Transfer function.
-        /// 
-        /// It's made abstract as of ver.0.9.2 to allow subclasses using memory more efficiently.
-        /// It's supposed that subclasses will generate TransferFunction object on the fly from filter coeffs
-        /// OR aggregate it in internal field (only if it was set specifically from outside).
-        /// 
-        /// The example of the latter case is when we really need double precision for FDA
-        /// or when TF was generated from precomputed poles and zeros.
-        /// 
-        /// The general rule is:
-        /// 
-        /// "Use LtiFilter subclasses for FILTERING;
-        ///  Use TransferFunction class for FILTER DESIGN AND ANALYSIS".
-        ///  
+        /// Gets transfer function of LTI filter.
         /// </summary>
         public abstract TransferFunction Tf { get; protected set; }
 
+        // NOTE.
+        //
+        // TF is made abstract as of ver.0.9.2 to allow subclasses using memory more efficiently.
+        // It's supposed that subclasses will generate TransferFunction object on the fly from filter coeffs
+        // OR aggregate it in internal field (only if it was set specifically from outside).
+        // 
+        // The example of the latter case is when we really need double precision for FDA
+        // or when TF was generated from precomputed poles and zeros.
+        // 
+        // The general rule is:
+        // 
+        //      * Use LtiFilter subclasses for FILTERING;
+        //      * Use TransferFunction class for FILTER DESIGN AND ANALYSIS.
+        //
+
         /// <summary>
-        /// The offline filtering algorithm that should be implemented by particular subclass
+        /// Process entire <paramref name="signal"/> and return new filtered signal.
         /// </summary>
-        /// <param name="signal">Signal for filtering</param>
-        /// <param name="method">General filtering strategy</param>
-        /// <returns>Filtered signal</returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public abstract DiscreteSignal ApplyTo(DiscreteSignal signal,
                                                FilteringMethod method = FilteringMethod.Auto);
 
         /// <summary>
-        /// The online filtering algorithm should be implemented by particular subclass
+        /// Process one sample.
         /// </summary>
-        /// <param name="input">Input sample</param>
-        /// <returns>Output sample</returns>
-        public abstract float Process(float input);
+        /// <param name="sample">Input sample</param>
+        public abstract float Process(float sample);
 
         /// <summary>
-        /// Reset filter (clear all internal buffers)
+        /// Reset LTI filter.
         /// </summary>
         public abstract void Reset();
     }

@@ -5,23 +5,23 @@ using System;
 namespace NWaves.Filters.Adaptive
 {
     /// <summary>
-    /// Base abstract class for adaptive filters
+    /// Abstract class for adaptive filters.
     /// </summary>
     public abstract class AdaptiveFilter : FirFilter
     {
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="AdaptiveFilter"/> of given <paramref name="order"/>.
         /// </summary>
-        /// <param name="order"></param>
+        /// <param name="order">Filter order</param>
         public AdaptiveFilter(int order) : base(new float[order])
         {
             Array.Resize(ref _delayLine, _kernelSize * 2);  // trick for better performance
         }
 
         /// <summary>
-        /// Init weights
+        /// Init weights of adaptive filter.
         /// </summary>
-        /// <param name="weights"></param>
+        /// <param name="weights">Weights (filter kernel)</param>
         public void Init(float[] weights)
         {
             Guard.AgainstInequality(_kernelSize, weights.Length, "Filter order", "Weights array size");
@@ -29,11 +29,10 @@ namespace NWaves.Filters.Adaptive
         }
 
         /// <summary>
-        /// Process one sample of input signal and one sample of desired signal
+        /// Process one sample of input signal and one sample of desired signal.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="desired"></param>
-        /// <returns></returns>
+        /// <param name="input">Sample of input signal</param>
+        /// <param name="desired">Sample of desired signal</param>
         public abstract float Process(float input, float desired);
     }
 }

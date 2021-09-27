@@ -4,26 +4,19 @@ using System.Linq;
 namespace NWaves.Filters.Adaptive
 {
     /// <summary>
-    /// Adaptive filter (Least-Mean-Squares with variable steps)
+    /// Class representing LMS Adaptive filter (Least-Mean-Squares) with variable steps.
     /// </summary>
     public class VariableStepLmsFilter : AdaptiveFilter
     {
-        /// <summary>
-        /// Mu
-        /// </summary>
         private readonly float[] _mu;
-
-        /// <summary>
-        /// Leakage
-        /// </summary>
         private readonly float _leakage;
 
         /// <summary>
-        /// Constructor
+        /// Construct <see cref="VariableStepLmsFilter"/> of given <paramref name="order"/>.
         /// </summary>
-        /// <param name="order"></param>
-        /// <param name="mu"></param>
-        /// <param name="leakage"></param>
+        /// <param name="order">Filter order</param>
+        /// <param name="mu">Mu</param>
+        /// <param name="leakage">Leakage</param>
         public VariableStepLmsFilter(int order, float[] mu = null, float leakage = 0) : base(order)
         {
             _mu = mu ?? Enumerable.Repeat(0.75f, order).ToArray();
@@ -33,11 +26,10 @@ namespace NWaves.Filters.Adaptive
         }
 
         /// <summary>
-        /// Process input and desired samples
+        /// Process one sample of input signal and one sample of desired signal.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="desired"></param>
-        /// <returns></returns>
+        /// <param name="input">Sample of input signal</param>
+        /// <param name="desired">Sample of desired signal</param>
         public override float Process(float input, float desired)
         {
             var offset = _delayLineOffset;

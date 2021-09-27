@@ -1,19 +1,18 @@
 ﻿namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Interface for all objects that support online filtering
+    /// Interface for all signal processors that support online filtering.
     /// </summary>
     public interface IOnlineFilter
     {
         /// <summary>
-        /// Method implements online filtering (sample-by-sample)
+        /// Process one sample.
         /// </summary>
-        /// <param name="input">Input sample</param>
-        /// <returns>Output sample</returns>
-        float Process(float input);
+        /// <param name="sample">Input sample</param>
+        float Process(float sample);
 
         /// <summary>
-        /// Method for resetting state
+        /// Reset filter.
         /// </summary>
         void Reset();
     }
