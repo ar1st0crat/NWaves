@@ -4,34 +4,34 @@ using System;
 namespace NWaves.Filters.BiQuad
 {
     /// <summary>
-    /// BiQuad filter base class
+    /// Represents BiQuad IIR filter.
     /// </summary>
     public class BiQuadFilter : IirFilter
     {
-        /// <summary>
-        /// Delay line
-        /// </summary>
+        // Delay line
+
         private float _in1;
         private float _in2;
         private float _out1;
         private float _out2;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="BiQuadFilter"/>.
         /// </summary>
         protected BiQuadFilter() : base(new[] { 1.0, 0, 0 }, new[] { 1.0, 0, 0 })
         {
         }
 
         /// <summary>
-        /// Constructor for user-defined TF
+        /// Constructs <see cref="BiQuadFilter"/> from filter coefficients 
+        /// (numerator {B0, B1, B2} and denominator {A0, A1, A2}).
         /// </summary>
-        /// <param name="b0"></param>
-        /// <param name="b1"></param>
-        /// <param name="b2"></param>
-        /// <param name="a0"></param>
-        /// <param name="a1"></param>
-        /// <param name="a2"></param>
+        /// <param name="b0">B0</param>
+        /// <param name="b1">B1</param>
+        /// <param name="b2">B2</param>
+        /// <param name="a0">A0</param>
+        /// <param name="a1">A1</param>
+        /// <param name="a2">A2</param>
         public BiQuadFilter(double b0, double b1, double b2,
                             double a0, double a1, double a2) : 
             base(new[] { b0, b1, b2 }, new[] { a0, a1, a2 })
@@ -39,10 +39,9 @@ namespace NWaves.Filters.BiQuad
         }
 
         /// <summary>
-        /// Online filtering (sample-by-sample)
+        /// Processes one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var output = _b[0] * sample + _b[1] * _in1 + _b[2] * _in2 - _a[1] * _out1 - _a[2] * _out2;
@@ -56,7 +55,7 @@ namespace NWaves.Filters.BiQuad
         }
 
         /// <summary>
-        /// Reset filter
+        /// Resets filter.
         /// </summary>
         public override void Reset()
         {
@@ -64,14 +63,14 @@ namespace NWaves.Filters.BiQuad
         }
 
         /// <summary>
-        /// Change filter coefficients (preserving its state)
+        /// Changes filter coefficients online (preserving the state of the filter).
         /// </summary>
-        /// <param name="b0"></param>
-        /// <param name="b1"></param>
-        /// <param name="b2"></param>
-        /// <param name="a0"></param>
-        /// <param name="a1"></param>
-        /// <param name="a2"></param>
+        /// <param name="b0">B0</param>
+        /// <param name="b1">B1</param>
+        /// <param name="b2">B2</param>
+        /// <param name="a0">A0</param>
+        /// <param name="a1">A1</param>
+        /// <param name="a2">A2</param>
         public void Change(float b0, float b1, float b2, float a0, float a1, float a2)
         {
             if (Math.Abs(a0) < 1e-30f)

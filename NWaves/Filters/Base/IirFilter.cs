@@ -8,7 +8,7 @@ using NWaves.Utils;
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Class representing Infinite Impulse Response (IIR) filter.
+    /// Represents Infinite Impulse Response (IIR) filter.
     /// </summary>
     public class IirFilter : LtiFilter
     {
@@ -83,7 +83,7 @@ namespace NWaves.Filters.Base
         protected int _delayLineOffsetB;
 
         /// <summary>
-        /// Construct <see cref="IirFilter"/> from numerator <paramref name="b"/> and denominator <paramref name="a"/>.
+        /// Constructs <see cref="IirFilter"/> from numerator <paramref name="b"/> and denominator <paramref name="a"/>.
         /// </summary>
         /// <param name="b">Numerator of transfer function</param>
         /// <param name="a">Denominator of transfer function</param>
@@ -109,7 +109,7 @@ namespace NWaves.Filters.Base
 
         /// <summary>
         /// <para>
-        /// Construct <see cref="IirFilter"/> from numerator <paramref name="b"/> and denominator <paramref name="a"/> (double precision).
+        /// Constructs <see cref="IirFilter"/> from numerator <paramref name="b"/> and denominator <paramref name="a"/> (double precision).
         /// </para>
         /// <para>
         /// NOTE. 
@@ -124,7 +124,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Construct <see cref="ZiFilter"/> from transfer function <paramref name="tf"/>.
+        /// Constructs <see cref="IirFilter"/> from transfer function <paramref name="tf"/>.
         /// </summary>
         /// <param name="tf">Transfer function</param>
         public IirFilter(TransferFunction tf) : this(tf.Numerator, tf.Denominator)
@@ -133,7 +133,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process entire <paramref name="signal"/> and return new filtered signal.
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="method">Filtering method</param>
@@ -162,7 +162,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
@@ -228,7 +228,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Change filter coefficients online (numerator / non-recursive part).
+        /// Changes filter coefficients online (numerator / non-recursive part).
         /// </summary>
         /// <param name="b">New coefficients</param>
         public void ChangeNumeratorCoeffs(float[] b)
@@ -243,7 +243,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Change filter coefficients online (denominator / recursive part).
+        /// Changes filter coefficients online (denominator / recursive part).
         /// </summary>
         /// <param name="a">New coefficients</param>
         public void ChangeDenominatorCoeffs(float[] a)
@@ -255,7 +255,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Change filter coefficients online (from transfer function <paramref name="tf"/>).
+        /// Changes filter coefficients online (from transfer function <paramref name="tf"/>).
         /// </summary>
         /// <param name="tf">Transfer function</param>
         public void Change(TransferFunction tf)
@@ -279,7 +279,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Reset filter.
+        /// Resets filter.
         /// </summary>
         public override void Reset()
         {
@@ -291,8 +291,8 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Normalize transfer function 
-        /// (divide all filter coefficients by the first coefficient of TF denominator).
+        /// Normalizes transfer function 
+        /// (divides all filter coefficients by the first coefficient of TF denominator).
         /// </summary>
         public void Normalize()
         {
@@ -315,7 +315,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Create <see cref="IirFilter"/> from sequential connection of IIR <paramref name="filter1"/> and any LTI <paramref name="filter2"/>.
+        /// Creates <see cref="IirFilter"/> from sequential connection of IIR <paramref name="filter1"/> and any LTI <paramref name="filter2"/>.
         /// </summary>
         /// <param name="filter1">IIR filter</param>
         /// <param name="filter2">LTI filter</param>
@@ -327,7 +327,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Create <see cref="IirFilter"/> from parallel connection of IIR <paramref name="filter1"/> and any LTI <paramref name="filter2"/>.
+        /// Creates <see cref="IirFilter"/> from parallel connection of IIR <paramref name="filter1"/> and any LTI <paramref name="filter2"/>.
         /// </summary>
         /// <param name="filter1">IIR filter</param>
         /// <param name="filter2">LTI filter</param>

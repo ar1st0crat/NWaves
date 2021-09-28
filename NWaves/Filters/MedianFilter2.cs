@@ -5,19 +5,21 @@ using NWaves.Utils;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Nonlinear median filter
+    /// Provides alternate implementation of median filter. 
+    /// It is slightly faster than <see cref="MedianFilter"/> only for small filter sizes (not exceeding 5, approx.). 
+    /// In other cases <see cref="MedianFilter"/> should be preferred.
     /// </summary>
     public class MedianFilter2 : IFilter, IOnlineFilter
     {
         /// <summary>
-        /// The size of median filter
+        /// Gets the size of median filter.
         /// </summary>
         public int Size { get; }
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="MedianFilter2"/> of given <paramref name="size"/>.
         /// </summary>
-        /// <param name="size"></param>
+        /// <param name="size">Size of the filter</param>
         public MedianFilter2(int size = 9)
         {
             Guard.AgainstEvenNumber(size, "The size of the filter");
@@ -33,13 +35,11 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Method implements median filtering algorithm
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringMethod method = FilteringMethod.Auto)
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
+        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
         {
             var input = signal.Samples;
             var output = new float[input.Length];
@@ -65,10 +65,9 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Online filtering (sample-by-sample)
+        /// Processes one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public float Process(float sample)
         {
             if (_n == _buf.Length)      // some kind of a circular buffer
@@ -84,7 +83,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Reset filter
+        /// Resets filter.
         /// </summary>
         public void Reset()
         {
@@ -98,7 +97,7 @@ namespace NWaves.Filters
 
         private int _n;
 
-        private float[] _buf;
-        private float[] _tmp;
+        private readonly float[] _buf;
+        private readonly float[] _tmp;
     }
 }

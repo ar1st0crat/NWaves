@@ -45,12 +45,13 @@ namespace NWaves.Filters.Base
         /// </summary>
         public override TransferFunction Tf
         {
+            // created lazily or set specifically if needed
             get => _tf ?? new TransferFunction(_b.ToDoubles(), _a.ToDoubles());
             protected set => _tf = value;
         }
 
         /// <summary>
-        /// Construct <see cref="ZiFilter"/> from numerator <paramref name="b"/> and denominator <paramref name="a"/>.
+        /// Constructs <see cref="ZiFilter"/> from numerator <paramref name="b"/> and denominator <paramref name="a"/>.
         /// </summary>
         /// <param name="b">Numerator of transfer function</param>
         /// <param name="a">Denominator of transfer function</param>
@@ -78,7 +79,7 @@ namespace NWaves.Filters.Base
 
         /// <summary>
         /// <para>
-        /// Construct <see cref="ZiFilter"/> from numerator <paramref name="b"/> and denominator <paramref name="a"/> (double precision).
+        /// Constructs <see cref="ZiFilter"/> from numerator <paramref name="b"/> and denominator <paramref name="a"/> (double precision).
         /// </para>
         /// <para>
         /// NOTE. 
@@ -93,7 +94,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Construct <see cref="ZiFilter"/> from transfer function <paramref name="tf"/>.
+        /// Constructs <see cref="ZiFilter"/> from transfer function <paramref name="tf"/>.
         /// </summary>
         /// <param name="tf">Transfer function</param>
         public ZiFilter(TransferFunction tf) : this(tf.Numerator, tf.Denominator)
@@ -102,7 +103,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Init filter with initial conditions <paramref name="zi"/>.
+        /// Initializes filter with initial conditions <paramref name="zi"/>.
         /// </summary>
         /// <param name="zi">Vector of initial conditions</param>
         public virtual void Init(float[] zi)
@@ -111,7 +112,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Init filter with initial conditions <paramref name="zi"/>.
+        /// Initializes filter with initial conditions <paramref name="zi"/>.
         /// </summary>
         /// <param name="zi">Vector of initial conditions</param>
         public virtual void Init(double[] zi)
@@ -120,7 +121,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
@@ -136,7 +137,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Do zero-phase filtering (analog of filtfilt() in MATLAB/sciPy).
+        /// Does zero-phase filtering (analog of filtfilt() in MATLAB/sciPy).
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="padLength">
@@ -212,7 +213,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Change filter coefficients online (numerator / non-recursive part).
+        /// Changes filter coefficients online (numerator / non-recursive part).
         /// </summary>
         /// <param name="b">New coefficients</param>
         public void ChangeNumeratorCoeffs(float[] b)
@@ -224,7 +225,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Change filter coefficients online (denominator / recursive part).
+        /// Changes filter coefficients online (denominator / recursive part).
         /// </summary>
         /// <param name="a">New coefficients</param>
         public void ChangeDenominatorCoeffs(float[] a)
@@ -236,7 +237,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Change filter coefficients online (from transfer function <paramref name="tf"/>).
+        /// Changes filter coefficients online (from transfer function <paramref name="tf"/>).
         /// </summary>
         /// <param name="tf">Transfer function</param>
         public void Change(TransferFunction tf)
@@ -257,7 +258,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Reset filter.
+        /// Resets filter.
         /// </summary>
         public override void Reset()
         {
@@ -265,7 +266,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process entire <paramref name="signal"/> and return new filtered signal.
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="method">Filtering method</param>

@@ -3,8 +3,15 @@ using System.Numerics;
 
 namespace NWaves.Filters.Butterworth
 {
+    /// <summary>
+    /// Butterworth filter prototype.
+    /// </summary>
     public static class PrototypeButterworth
     {
+        /// <summary>
+        /// Evaluates analog poles of Butterworth filter of given <paramref name="order"/>.
+        /// </summary>
+        /// <param name="order">Filter order</param>
         public static Complex[] Poles(int order)
         {
             var poles = new Complex[order];

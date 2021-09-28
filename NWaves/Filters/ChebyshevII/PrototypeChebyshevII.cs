@@ -4,8 +4,16 @@ using System.Numerics;
 
 namespace NWaves.Filters.ChebyshevII
 {
+    /// <summary>
+    /// Chebyshev-II filter prototype.
+    /// </summary>
     public static class PrototypeChebyshevII
     {
+        /// <summary>
+        /// Evaluates analog poles of Chebyshev-II filter of given <paramref name="order"/>.
+        /// </summary>
+        /// <param name="order">Filter order</param>
+        /// <param name="ripple">Ripple (in dB)</param>
         public static Complex[] Poles(int order, double ripple = 0.1)
         {
             var eps = Math.Sqrt(Math.Pow(10, ripple / 10) - 1);
@@ -26,6 +34,10 @@ namespace NWaves.Filters.ChebyshevII
             return poles;
         }
 
+        /// <summary>
+        /// Evaluates analog zeros of Chebyshev-II filter of given <paramref name="order"/>.
+        /// </summary>
+        /// <param name="order">Filter order</param>
         public static Complex[] Zeros(int order)
         {
             var zeros = new Complex[order];

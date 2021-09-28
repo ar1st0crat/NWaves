@@ -11,7 +11,7 @@ namespace NWaves.Filters.Bessel
     public static class PrototypeBessel
     {
         /// <summary>
-        /// Get <paramref name="k"/>-th coefficient of <paramref name="n"/>-th order Bessel polynomial.
+        /// Gets <paramref name="k"/>-th coefficient of <paramref name="n"/>-th order Bessel polynomial.
         /// </summary>
         /// <param name="k">k</param>
         /// <param name="n">n</param>
@@ -22,7 +22,7 @@ namespace NWaves.Filters.Bessel
         }
 
         /// <summary>
-        /// Evaluate analog poles of Bessel filter of given <paramref name="order"/>.
+        /// Evaluates analog poles of Bessel filter of given <paramref name="order"/>.
         /// </summary>
         /// <param name="order">Filter order</param>
         public static Complex[] Poles(int order)

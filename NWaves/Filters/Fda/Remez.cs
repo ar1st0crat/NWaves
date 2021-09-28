@@ -6,106 +6,105 @@ namespace NWaves.Filters.Fda
 {
     /// <summary>
     /// Optimal equiripple filter designer based on Remez (Parks-McClellan) algorithm.
-    /// 
-    /// Example:
-    /// 
-    ///     var order = 57;
-    ///     var freqs = new double[] { 0, 0.15, 0.17, 0.5 };
-    ///     var response = new double[] { 1, 0 };
-    ///     var weights = new double[] { 0.01, 0.1 };
-    ///     
-    ///     var remez = new Remez(order, freqs, response, weights);
-    ///     
-    ///     var kernel = remez.Design();
-    ///     
-    ///     // We can monitor the following properties:
-    /// 
-    ///     remez.Iterations
-    ///     remez.ExtremalFrequencies
-    ///     remez.InterpolatedResponse
-    ///     remez.Error
-    /// 
+    /// <code>
+    /// Example: <br/>
+    /// <br/>
+    ///     var order = 57; <br/>
+    ///     var freqs = new double[] { 0, 0.15, 0.17, 0.5 }; <br/>
+    ///     var response = new double[] { 1, 0 };            <br/>
+    ///     var weights = new double[] { 0.01, 0.1 };        <br/>
+    /// <br/>    
+    ///     var remez = new Remez(order, freqs, response, weights); <br/>
+    /// <br/>    
+    ///     var kernel = remez.Design(); <br/>
+    /// <br/>    
+    ///     // We can monitor the following properties: <br/>
+    /// <br/>
+    ///     remez.Iterations           <br/>
+    ///     remez.ExtremalFrequencies  <br/>
+    ///     remez.InterpolatedResponse <br/>
+    ///     remez.Error                <br/>
+    /// </code>
     /// </summary>
     public class Remez
     {
         /// <summary>
-        /// Filter order
+        /// Gets filter order.
         /// </summary>
         public int Order { get; private set; }
 
         /// <summary>
-        /// Number of iterations
+        /// Gets number of actual iterations.
         /// </summary>
         public int Iterations { get; private set; }
 
         /// <summary>
-        /// Number of extremal frequencies (K = Order/2 + 2)
+        /// Gets number of extremal frequencies (K = Order/2 + 2).
         /// </summary>
         public int K { get; private set; }
 
         /// <summary>
-        /// Interpolated frequency response
+        /// Gets interpolated frequency response.
         /// </summary>
         public double[] InterpolatedResponse { get; private set; }
 
         /// <summary>
-        /// Array of errors
+        /// Gets array of errors.
         /// </summary>
         public double[] Error { get; private set; }
 
         /// <summary>
-        /// Extremal frequencies
+        /// Gets array of extremal frequencies.
         /// </summary>
         public double[] ExtremalFrequencies => _extrs.Select(e => _grid[e]).ToArray();
         
         /// <summary>
-        /// Tolerance (for computing denominators)
+        /// Tolerance (for computing denominators).
         /// </summary>
         private const double Tolerance = 1e-7;
 
         /// <summary>
-        /// Indices of extremal frequencies in the grid
+        /// Indices of extremal frequencies in the grid.
         /// </summary>
-        private int[] _extrs;
+        private readonly int[] _extrs;
 
         /// <summary>
-        /// Grid
+        /// Grid.
         /// </summary>
         private double[] _grid;
 
         /// <summary>
-        /// Band edge frequencies
+        /// Band edge frequencies.
         /// </summary>
         private readonly double[] _freqs;
 
         /// <summary>
-        /// Desired frequency response on entire grid
+        /// Desired frequency response on entire grid.
         /// </summary>
         private double[] _desired;
 
         /// <summary>
-        /// Weights on entire grid
+        /// Weights on entire grid.
         /// </summary>
         private double[] _weights;
 
         /// <summary>
-        /// Points for interpolation
+        /// Points for interpolation.
         /// </summary>
         private readonly double[] _points;
 
         /// <summary>
-        /// Gamma coefficients used in Lagrange interpolation
+        /// Gamma coefficients used in Lagrange interpolation.
         /// </summary>
         private readonly double[] _gammas;
 
         /// <summary>
-        /// Precomputed cosines
+        /// Precomputed cosines.
         /// </summary>
         private readonly double[] _cosTable;
 
-
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="Remez"/> filter designer.
         /// </summary>
         /// <param name="order">Order of filter</param>
         /// <param name="freqs">Array of normalized frequencies</param>
@@ -135,7 +134,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Make grid (uniform in each band)
+        /// Creates grid (uniform in each band).
         /// </summary>
         /// <param name="desired">Array of desired response values</param>
         /// <param name="weights">Array of weights</param>
@@ -176,7 +175,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Uniform initialization of extremal frequencies
+        /// Uniform initialization of extremal frequencies.
         /// </summary>
         private void InitExtrema()
         {
@@ -189,10 +188,9 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Design optimal equiripple filter
+        /// Designs optimal equiripple filter and returns the kernel of designed filter.
         /// </summary>
         /// <param name="maxIterations">Max number of iterations</param>
-        /// <returns>Designed filter kernel</returns>
         public double[] Design(int maxIterations = 100)
         {
             InitExtrema();
@@ -303,7 +301,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Update gamma coefficients, interpolation points and delta
+        /// Updates gamma coefficients, interpolation points and delta.
         /// </summary>
         private void UpdateCoefficients()
         {
@@ -340,9 +338,8 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Reconstruct impulse response from interpolated frequency response
+        /// Reconstructs impulse response from interpolated frequency response.
         /// </summary>
-        /// <returns>Reconstructed impulse response</returns>
         private double[] ImpulseResponse()
         {
             UpdateCoefficients();
@@ -374,10 +371,9 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Compute gamma coefficient
+        /// Computes gamma coefficient.
         /// </summary>
         /// <param name="k">Input value</param>
-        /// <returns>Gamma coefficient</returns>
         private double Gamma(int k)
         {
             var jet = (K - 1) / 15 + 1;     // as in original Rabiner's code; without it there'll be numerical issues 
@@ -397,10 +393,9 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Barycentric Lagrange interpolation
+        /// Barycentric Lagrange interpolation.
         /// </summary>
         /// <param name="freq">Frequency</param>
-        /// <returns>Interpolated value</returns>
         private double Lagrange(double freq)
         {
             var num = 0.0;
@@ -423,30 +418,29 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Convert ripple decibel value to passband weight
+        /// Convert ripple (in dB) to passband weight.
         /// </summary>
-        /// <param name="db">Ripple dB</param>
-        /// <returns>Passband weight</returns>
+        /// <param name="db">Ripple (in dB)</param>
         public static double DbToPassbandWeight(double db) => (Math.Pow(10, db / 20) - 1) / (Math.Pow(10, db / 20) + 1);
 
         /// <summary>
-        /// Convert ripple decibel value to stopband weight
+        /// Converts ripple (in dB) to stopband weight.
         /// </summary>
-        /// <param name="db">Ripple dB</param>
-        /// <returns>Stopband weight</returns>
-        public static double DbToStopbandWeight(double db) => Math.Pow(10, -db / 20);
+        /// <param name="ripple">Ripple (in dB)</param>
+        public static double DbToStopbandWeight(double ripple) => Math.Pow(10, -ripple / 20);
 
         /// <summary>
-        /// Estimate LP filter order according to [Herrman et al., 1973].
-        /// Section 8.2.7 in Proakis and Manolakis book.
+        /// Estimates order of a low-pass filter.
         /// </summary>
         /// <param name="fp">Passband edge frequency</param>
         /// <param name="fa">Stopband edge frequency</param>
         /// <param name="dp">Passband weight</param>
         /// <param name="da">Stopband weight</param>
-        /// <returns>Estimated order of filter</returns>
         public static int EstimateOrder(double fp, double fa, double dp, double da)
         {
+            // Estimates LP filter order according to [Herrman et al., 1973].
+            // Section 8.2.7 in Proakis and Manolakis book.
+            
             if (dp < da)
             {
                 var tmp = dp;
@@ -467,17 +461,17 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Estimate order of a filter with custom bands.
+        /// Estimates order of a filter with custom bands. 
         /// 
-        /// Parameters are give in conventional format. For example:
+        /// Parameters are given in conventional format. For example:
         /// 
-        /// freqs: { 0, 0.2, 0.22, 0.32, 0.33, 0.5 }
-        /// deltas: { 0.01, 0.1, 0.06 }
-        /// 
+        /// <code>
+        ///     freqs: { 0, 0.2, 0.22, 0.32, 0.33, 0.5 }
+        ///     deltas: { 0.01, 0.1, 0.06 }
+        /// </code>
         /// </summary>
         /// <param name="freqs">Array of edge frequencies</param>
         /// <param name="deltas">Array of weights</param>
-        /// <returns></returns>
         public static int EstimateOrder(double[] freqs, double[] deltas)
         {
             var maxOrder = 0;

@@ -5,7 +5,7 @@ using System;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Class representing Savitzky-Golay filter.
+    /// Represents Savitzky-Golay filter.
     /// </summary>
     public class SavitzkyGolayFilter : FirFilter
     {
@@ -15,7 +15,7 @@ namespace NWaves.Filters
         public int Size { get; }
 
         /// <summary>
-        /// Construct <see cref="SavitzkyGolayFilter"/>.
+        /// Constructs <see cref="SavitzkyGolayFilter"/> of given <paramref name="size"/>.
         /// </summary>
         /// <param name="size">Size of the filter (must be odd number in range [5..31])</param>
         /// <param name="deriv">Derivative (must be 0, 1 or 2)</param>
@@ -25,7 +25,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Kernel generator. Kernels are precomputed.
+        /// Generates filter kernel. Kernels are precomputed.
         /// </summary>
         /// <param name="size">Size of the filter (must be odd number in range [5..31])</param>
         /// <param name="deriv">Derivative (must be 0, 1 or 2)</param>

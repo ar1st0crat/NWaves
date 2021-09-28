@@ -9,21 +9,20 @@ using System.Numerics;
 namespace NWaves.Filters.Fda
 {
     /// <summary>
-    /// Static class providing basic methods for filter design and analysis
+    /// Provides methods for filter design and analysis.
     /// </summary>
     public static partial class DesignFilter
     {
         #region Iir(Notch|Peak|Comb) filter design
 
         /// <summary>
-        /// Design IIR notch filter
+        /// Designs IIR notch filter.
         /// </summary>
-        /// <param name="freq">Normalized frequency (must be in range [0, 0.5])</param>
-        /// <param name="q">Quality factor (characterizes notch filter -3dB bandwidth relative to its center frequency)</param>
-        /// <returns>Transfer function</returns>
+        /// <param name="freq">Normalized center frequency (must be in range [0, 0.5])</param>
+        /// <param name="q">Q factor (characterizes notch filter -3dB bandwidth relative to its center frequency)</param>
         public static TransferFunction IirNotch(double freq, double q = 20.0)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
+            Guard.AgainstInvalidRange(freq, 0, 0.5, "Center frequency");
 
             var w0 = 2 * freq * Math.PI;
             var bw = w0 / q;
@@ -40,14 +39,13 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Design IIR peak filter
+        /// Designs IIR peak filter.
         /// </summary>
-        /// <param name="freq">Normalized frequency (must be in range [0, 0.5])</param>
-        /// <param name="q">Quality factor (characterizes peak filter -3dB bandwidth relative to its center frequency)</param>
-        /// <returns>Transfer function</returns>
+        /// <param name="freq">Normalized center frequency (must be in range [0, 0.5])</param>
+        /// <param name="q">Q factor (characterizes peak filter -3dB bandwidth relative to its center frequency)</param>
         public static TransferFunction IirPeak(double freq, double q = 20.0)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
+            Guard.AgainstInvalidRange(freq, 0, 0.5, "Center frequency");
 
             var w0 = 2 * freq * Math.PI;
             var bw = w0 / q;
@@ -64,14 +62,13 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Design IIR comb notch filter
+        /// Designs IIR comb notch filter.
         /// </summary>
-        /// <param name="freq">Normalized frequency (must be in range [0, 0.5])</param>
-        /// <param name="q">Quality factor (characterizes notch filter -3dB bandwidth relative to its center frequency)</param>
-        /// <returns>Transfer function</returns>
+        /// <param name="freq">Normalized center frequency (must be in range [0, 0.5])</param>
+        /// <param name="q">Q factor (characterizes notch filter -3dB bandwidth relative to its center frequency)</param>
         public static TransferFunction IirCombNotch(double freq, double q = 20.0)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
+            Guard.AgainstInvalidRange(freq, 0, 0.5, "Center frequency");
 
             var w0 = 2 * freq * Math.PI;
             var bw = w0 / q;
@@ -94,14 +91,13 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Design IIR comb peak filter
+        /// Designs IIR comb peak filter.
         /// </summary>
-        /// <param name="freq">Normalized frequency (must be in range [0, 0.5])</param>
-        /// <param name="q">Quality factor (characterizes peak filter -3dB bandwidth relative to its center frequency)</param>
-        /// <returns>Transfer function</returns>
+        /// <param name="freq">Normalized center frequency (must be in range [0, 0.5])</param>
+        /// <param name="q">Q factor (characterizes peak filter -3dB bandwidth relative to its center frequency)</param>
         public static TransferFunction IirCombPeak(double freq, double q = 20.0)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
+            Guard.AgainstInvalidRange(freq, 0, 0.5, "Center frequency");
 
             var w0 = 2 * freq * Math.PI;
             var bw = w0 / q;
@@ -129,15 +125,14 @@ namespace NWaves.Filters.Fda
         #region design transfer functions for IIR pole filters (Butterworth, Chebyshev, etc.)
 
         /// <summary>
-        /// Design TF for low-pass pole filter
+        /// Designs lowpass pole filter.
         /// </summary>
-        /// <param name="freq">Cutoff frequency in range [0, 0.5]</param>
+        /// <param name="freq">Normalized cutoff frequency in range [0, 0.5]</param>
         /// <param name="poles">Analog prototype poles</param>
         /// <param name="zeros">Analog prototype zeros</param>
-        /// <returns>Transfer function</returns>
         public static TransferFunction IirLpTf(double freq, Complex[] poles, Complex[] zeros = null)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
+            Guard.AgainstInvalidRange(freq, 0, 0.5, "Cutoff frequency");
 
             var pre = new double[poles.Length];
             var pim = new double[poles.Length];
@@ -196,15 +191,14 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Design TF for high-pass pole filter
+        /// Designs highpass pole filter.
         /// </summary>
-        /// <param name="freq">Cutoff frequency in range [0, 0.5]</param>
+        /// <param name="freq">Normalized cutoff frequency in range [0, 0.5]</param>
         /// <param name="poles">Analog prototype poles</param>
         /// <param name="zeros">Analog prototype zeros</param>
-        /// <returns>Transfer function</returns>
         public static TransferFunction IirHpTf(double freq, Complex[] poles, Complex[] zeros = null)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
+            Guard.AgainstInvalidRange(freq, 0, 0.5, "Cutoff frequency");
 
             var pre = new double[poles.Length];
             var pim = new double[poles.Length];
@@ -263,13 +257,12 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Design TF for band-pass pole filter
+        /// Designs bandpass pole filter.
         /// </summary>
-        /// <param name="freq1">Left cutoff frequency in range [0, 0.5]</param>
-        /// <param name="freq2">Right cutoff frequency in range [0, 0.5]</param>
+        /// <param name="freq1">Normalized left cutoff frequency in range [0, 0.5]</param>
+        /// <param name="freq2">Normalized right cutoff frequency in range [0, 0.5]</param>
         /// <param name="poles">Analog prototype poles</param>
         /// <param name="zeros">Analog prototype zeros</param>
-        /// <returns>Transfer function</returns>
         public static TransferFunction IirBpTf(double freq1, double freq2, Complex[] poles, Complex[] zeros = null)
         {
             Guard.AgainstInvalidRange(freq1, 0, 0.5, "lower frequency");
@@ -355,13 +348,12 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Design TF for band-reject pole filter
+        /// Designs bandstop pole filter.
         /// </summary>
-        /// <param name="freq1">Left cutoff frequency in range [0, 0.5]</param>
-        /// <param name="freq2">Right cutoff frequency in range [0, 0.5]</param>
+        /// <param name="freq1">Normalized left cutoff frequency in range [0, 0.5]</param>
+        /// <param name="freq2">Normalized right cutoff frequency in range [0, 0.5]</param>
         /// <param name="poles">Analog prototype poles</param>
         /// <param name="zeros">Analog prototype zeros</param>
-        /// <returns>Transfer function</returns>
         public static TransferFunction IirBsTf(double freq1, double freq2, Complex[] poles, Complex[] zeros = null)
         {
             Guard.AgainstInvalidRange(freq1, 0, 0.5, "lower frequency");
@@ -465,20 +457,18 @@ namespace NWaves.Filters.Fda
         private static readonly Func<Complex, bool> IsComplex = c => Math.Abs(c.Imaginary) > 1e-10;
 
         /// <summary>
-        /// Convert second-order sections to zpk (TF zeros-poles-gain).
+        /// Converts second-order sections to transfer function (zeros-poles-gain).
         /// </summary>
         /// <param name="sos">Array of SOS transfer functions</param>
-        /// <returns>Transfer function</returns>
         public static TransferFunction SosToTf(TransferFunction[] sos)
         {
             return sos.Aggregate((tf, s) => tf * s);
         }
 
         /// <summary>
-        /// Convert zpk (TF zeros-poles-gain) to second-order sections.
+        /// Converts transfer function (zeros-poles-gain) to second-order sections.
         /// </summary>
         /// <param name="tf">Transfer function</param>
-        /// <returns>Array of SOS transfer functions</returns>
         public static TransferFunction[] TfToSos(TransferFunction tf)
         {
             var zeros = tf.Zeros.ToList();
@@ -629,7 +619,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Leave only one of two conjugated numbers in the list of complex numbers
+        /// Leaves only one of two conjugated numbers in the list of complex numbers.
         /// </summary>
         /// <param name="c">List of complex numbers</param>
         private static void RemoveConjugated(List<Complex> c)

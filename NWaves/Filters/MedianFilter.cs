@@ -8,34 +8,34 @@ using System.Linq;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Nonlinear median filter
+    /// Represents median filter.
     /// </summary>
     public class MedianFilter : IFilter, IOnlineFilter
     {
         /// <summary>
-        /// The size of median filter
+        /// Gets the size of median filter.
         /// </summary>
         public int Size { get; }
 
         /// <summary>
-        /// Delay line (circular buffer)
+        /// Delay line (circular buffer).
         /// </summary>
-        private float[] _delayLine;
+        private readonly float[] _delayLine;
 
         /// <summary>
-        /// Buffer filled with sorted values from delay line
+        /// Buffer filled with sorted values from delay line.
         /// </summary>
-        private List<float> _sortedSamples;
+        private readonly List<float> _sortedSamples;
 
         /// <summary>
-        /// Index of the current sample
+        /// Index of the current sample.
         /// </summary>
         private int _n;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="MedianFilter"/> of given <paramref name="size"/>.
         /// </summary>
-        /// <param name="size"></param>
+        /// <param name="size">Size of the filter</param>
         public MedianFilter(int size = 9)
         {
             Guard.AgainstEvenNumber(size, "The size of the filter");
@@ -47,13 +47,11 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Method implements median filtering algorithm
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringMethod method = FilteringMethod.Auto)
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
+        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
         {
             var input = signal.Samples;
             var output = new float[input.Length];
@@ -81,10 +79,9 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Online filtering
+        /// Processes one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public float Process(float sample)
         {
             if (_n == Size)
@@ -113,7 +110,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Reset filter
+        /// Resets filter.
         /// </summary>
         public void Reset()
         {

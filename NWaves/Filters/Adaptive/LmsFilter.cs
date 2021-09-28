@@ -1,7 +1,7 @@
 ﻿namespace NWaves.Filters.Adaptive
 {
     /// <summary>
-    /// Class representing LMS Adaptive filter (Least-Mean-Squares algorithm).
+    /// Represents LMS Adaptive filter (Least-Mean-Squares algorithm).
     /// </summary>
     public class LmsFilter : AdaptiveFilter
     {
@@ -9,7 +9,7 @@
         private readonly float _leakage;
 
         /// <summary>
-        /// Construct <see cref="LmsFilter"/> of given <paramref name="order"/>.
+        /// Constructs <see cref="LmsFilter"/> of given <paramref name="order"/>.
         /// </summary>
         /// <param name="order">Filter order</param>
         /// <param name="mu">Mu</param>
@@ -21,7 +21,7 @@
         }
 
         /// <summary>
-        /// Process one sample of input signal and one sample of desired signal.
+        /// Processes one sample of input and desired signals and adapts filter coefficients.
         /// </summary>
         /// <param name="input">Sample of input signal</param>
         /// <param name="desired">Sample of desired signal</param>

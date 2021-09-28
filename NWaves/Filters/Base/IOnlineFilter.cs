@@ -6,13 +6,13 @@
     public interface IOnlineFilter
     {
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         float Process(float sample);
 
         /// <summary>
-        /// Reset filter.
+        /// Resets filter.
         /// </summary>
         void Reset();
     }

@@ -8,7 +8,7 @@ using NWaves.Utils;
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Class representing Finite Impulse Response (FIR) filter.
+    /// Represents Finite Impulse Response (FIR) filter.
     /// </summary>
     public class FirFilter : LtiFilter
     {
@@ -72,7 +72,7 @@ namespace NWaves.Filters.Base
         protected int _delayLineOffset;
 
         /// <summary>
-        /// Construct <see cref="FirFilter"/> from <paramref name="kernel"/>.
+        /// Constructs <see cref="FirFilter"/> from <paramref name="kernel"/>.
         /// </summary>
         /// <param name="kernel">FIR filter kernel</param>
         public FirFilter(IEnumerable<float> kernel)
@@ -91,7 +91,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// <para>Construct <see cref="FirFilter"/> from 64-bit <paramref name="kernel"/>.</para>
+        /// <para>Constructs <see cref="FirFilter"/> from 64-bit <paramref name="kernel"/>.</para>
         /// <para>
         /// NOTE. 
         /// It will simply cast values to floats. 
@@ -104,7 +104,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// <para>Construct <see cref="FirFilter"/> from transfer function <paramref name="tf"/>.</para>
+        /// <para>Constructs <see cref="FirFilter"/> from transfer function <paramref name="tf"/>.</para>
         /// <para>
         /// Coefficients (used for filtering) will be cast to floats anyway, 
         /// but filter will store the reference to TransferFunction object for FDA.
@@ -117,7 +117,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process entire <paramref name="signal"/> and return new filtered signal.
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="method">Filtering method</param>
@@ -155,7 +155,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
@@ -178,7 +178,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process all signal samples in loop. 
+        /// Processes all <paramref name="samples"/> in loop.
         /// </summary>
         /// <param name="samples">Samples</param>
         public float[] ProcessAllSamples(float[] samples)
@@ -242,7 +242,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Change filter kernel online.
+        /// Changes filter kernel online.
         /// </summary>
         /// <param name="kernel">New kernel</param>
         public void ChangeKernel(float[] kernel)
@@ -256,7 +256,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Reset filter.
+        /// Resets filter.
         /// </summary>
         public override void Reset()
         {
@@ -265,7 +265,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Create <see cref="FirFilter"/> from sequential connection of two FIR filters <paramref name="filter1"/> and <paramref name="filter2"/>.
+        /// Creates <see cref="FirFilter"/> from sequential connection of two FIR filters <paramref name="filter1"/> and <paramref name="filter2"/>.
         /// </summary>
         /// <param name="filter1">First FIR filter</param>
         /// <param name="filter2">Second FIR filter</param>
@@ -277,7 +277,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Create <see cref="IirFilter"/> from sequential connection of FIR <paramref name="filter1"/> and IIR <paramref name="filter2"/>.
+        /// Creates <see cref="IirFilter"/> from sequential connection of FIR <paramref name="filter1"/> and IIR <paramref name="filter2"/>.
         /// </summary>
         /// <param name="filter1">FIR filter</param>
         /// <param name="filter2">IIR filter</param>
@@ -289,7 +289,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Create <see cref="FirFilter"/> from parallel connection of two FIR filters <paramref name="filter1"/> and <paramref name="filter2"/>.
+        /// Creates <see cref="FirFilter"/> from parallel connection of two FIR filters <paramref name="filter1"/> and <paramref name="filter2"/>.
         /// </summary>
         /// <param name="filter1">First FIR filter</param>
         /// <param name="filter2">Second FIR filter</param>
@@ -301,7 +301,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Create <see cref="IirFilter"/> from parallel connection of FIR <paramref name="filter1"/> and IIR <paramref name="filter2"/>.
+        /// Creates <see cref="IirFilter"/> from parallel connection of FIR <paramref name="filter1"/> and IIR <paramref name="filter2"/>.
         /// </summary>
         /// <param name="filter1">FIR filter</param>
         /// <param name="filter2">IIR filter</param>

@@ -3,30 +3,32 @@
 namespace NWaves.Filters.Base64
 {
     /// <summary>
-    /// Filter for filtering data in interleaved stereo buffers (double precision)
+    /// Represents filter for processing data in interleaved stereo buffers. 
+    /// <see cref="StereoFilter64"/> is wrapped around two separate filters: 
+    /// filter for signal in left channel and filter for signal in right channel.
     /// </summary>
     public class StereoFilter64 : IFilter64, IOnlineFilter64
     {
         /// <summary>
-        /// Filter for signal in left channel
+        /// Filter for signal in left channel.
         /// </summary>
         private readonly IOnlineFilter64 _filterLeft;
 
         /// <summary>
-        /// Filter for signal in right channel
+        /// Filter for signal in right channel.
         /// </summary>
         private readonly IOnlineFilter64 _filterRight;
 
         /// <summary>
-        /// Internal flag for switching between left and right channels
+        /// Internal flag for switching between left and right channels.
         /// </summary>
         private bool _isRight;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="StereoFilter64"/> from two separate filters.
         /// </summary>
-        /// <param name="filterLeft"></param>
-        /// <param name="filterRight"></param>
+        /// <param name="filterLeft">Filter for signal in left channel</param>
+        /// <param name="filterRight">Filter for signal in right channel</param>
         public StereoFilter64(IOnlineFilter64 filterLeft, IOnlineFilter64 filterRight)
         {
             _filterLeft = filterLeft;
@@ -34,26 +36,25 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Online filtering
+        /// Processes one sample.
         /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public double Process(double input)
+        /// <param name="sample">Input sample</param>
+        public double Process(double sample)
         {
             if (_isRight)
             {
                 _isRight = false;
-                return _filterRight.Process(input);
+                return _filterRight.Process(sample);
             }
             else
             {
                 _isRight = true;
-                return _filterLeft.Process(input);
+                return _filterLeft.Process(sample);
             }
         }
 
         /// <summary>
-        /// Reset filters
+        /// Resets filters.
         /// </summary>
         public void Reset()
         {
@@ -62,11 +63,10 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Offline filtering
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
     }
 }

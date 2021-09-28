@@ -7,13 +7,15 @@ using System.Linq;
 namespace NWaves.Filters.Base64
 {
     /// <summary>
-    /// LTI filter based on state space representation (64 bit)
+    /// <see cref="ZiFilter64"/> is the special implementation of an LTI filter based on state vector (instead of delay lines). 
+    /// <see cref="ZiFilter64"/> allows setting initial state (initial conditions for filter delays) and 
+    /// provides additional method for zero-phase filtering <see cref="ZeroPhase(double[], int)"/>.
     /// </summary>
     public class ZiFilter64 : LtiFilter64
     {
         /// <summary>
         /// Numerator part coefficients in filter's transfer function 
-        /// (non-recursive part in difference equations)
+        /// (non-recursive part in difference equations).
         /// </summary>
         protected readonly double[] _b;
 
@@ -24,26 +26,35 @@ namespace NWaves.Filters.Base64
         protected readonly double[] _a;
 
         /// <summary>
-        /// State vector
+        /// State vector.
         /// </summary>
         protected readonly double[] _zi;
+
+        /// <summary>
+        /// Gets state vector.
+        /// </summary>
         public double[] Zi => _zi;
 
         /// <summary>
-        /// Transfer function
+        /// Transfer function.
         /// </summary>
         protected TransferFunction _tf;
+
+        /// <summary>
+        /// Gets transfer function.
+        /// </summary>
         public override TransferFunction Tf
         {
+            // created lazily or set specifically if needed
             get => _tf ?? new TransferFunction(_b, _a);
             protected set => _tf = value;
         }
 
         /// <summary>
-        /// Parameterized constructor (from arrays of 32-bit coefficients)
+        /// Constructs <see cref="ZiFilter64"/> from numerator <paramref name="b"/> and denominator <paramref name="a"/>.
         /// </summary>
-        /// <param name="b">TF numerator coefficients</param>
-        /// <param name="a">TF denominator coefficients</param>
+        /// <param name="b">Numerator of transfer function</param>
+        /// <param name="a">Denominator of transfer function</param>
         public ZiFilter64(IEnumerable<double> b, IEnumerable<double> a)
         {
             _b = b.ToArray();
@@ -67,7 +78,7 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Parameterized constructor (from transfer function).
+        /// Constructs <see cref="ZiFilter64"/> from transfer function <paramref name="tf"/>.
         /// </summary>
         /// <param name="tf">Transfer function</param>
         public ZiFilter64(TransferFunction tf) : this(tf.Numerator, tf.Denominator)
@@ -76,37 +87,38 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Init filter
+        /// Initializes filter with initial conditions <paramref name="zi"/>.
         /// </summary>
-        /// <param name="zi"></param>
+        /// <param name="zi">Vector of initial conditions</param>
         public virtual void Init(double[] zi)
         {
             Array.Copy(zi, 0, _zi, 0, Math.Min(zi.Length, _zi.Length));
         }
 
         /// <summary>
-        /// Online filtering with initial conditions
+        /// Processes one sample.
         /// </summary>
-        /// <param name="input">Input sample</param>
-        /// <returns>Output sample</returns>
-        public override double Process(double input)
+        /// <param name="sample">Input sample</param>
+        public override double Process(double sample)
         {
-            var output = _b[0] * input + _zi[0];
+            var output = _b[0] * sample + _zi[0];
 
             for (var j = 1; j < _zi.Length; j++)
             {
-                _zi[j - 1] = _b[j] * input - _a[j] * output + _zi[j];
+                _zi[j - 1] = _b[j] * sample - _a[j] * output + _zi[j];
             }
 
             return output;
         }
 
         /// <summary>
-        /// Zero-phase filtering (analog of filtfilt() in MATLAB/sciPy)
+        /// Does zero-phase filtering (analog of filtfilt() in MATLAB/sciPy).
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="padLength"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="padLength">
+        /// Number of elements by which to extend <paramref name="signal"/> at both ends before applying the filter. 
+        /// The default value is 3 * (max{len(numerator), len(denominator)} - 1).
+        /// </param>
         public double[] ZeroPhase(double[] signal, int padLength = 0)
         {
             if (padLength <= 0)
@@ -175,7 +187,7 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Change filter coefficients online (numerator / non-recursive part)
+        /// Changes filter coefficients online (numerator / non-recursive part).
         /// </summary>
         /// <param name="b">New coefficients</param>
         public void ChangeNumeratorCoeffs(double[] b)
@@ -187,7 +199,7 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Change filter coefficients online (denominator / recursive part)
+        /// Changes filter coefficients online (denominator / recursive part).
         /// </summary>
         /// <param name="a">New coefficients</param>
         public void ChangeDenominatorCoeffs(double[] a)
@@ -199,9 +211,9 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Change filter coefficients online (transfer function)
+        /// Changes filter coefficients online (from transfer function <paramref name="tf"/>).
         /// </summary>
-        /// <param name="tf"></param>
+        /// <param name="tf">Transfer function</param>
         public void Change(TransferFunction tf)
         {
             var b = tf.Numerator;
@@ -220,7 +232,7 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Reset filter
+        /// Resets filter.
         /// </summary>
         public override void Reset()
         {
@@ -228,11 +240,10 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Apply filter to entire signal (offline)
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public override double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
     }
 }

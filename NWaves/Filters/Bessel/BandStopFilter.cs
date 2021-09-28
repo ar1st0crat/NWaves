@@ -4,37 +4,37 @@ using NWaves.Filters.Fda;
 namespace NWaves.Filters.Bessel
 {
     /// <summary>
-    /// Band-stop Bessel filter
+    /// Represents band-stop Bessel filter.
     /// </summary>
     public class BandStopFilter : ZiFilter
     {
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="BandStopFilter"/> of given <paramref name="order"/> 
+        /// with given cutoff frequencies <paramref name="f1"/> and <paramref name="f2"/>.
         /// </summary>
-        /// <param name="f1"></param>
-        /// <param name="f2"></param>
-        /// <param name="order"></param>
+        /// <param name="f1">First cutoff frequency</param>
+        /// <param name="f2">Second cutoff frequency</param>
+        /// <param name="order">Filter order</param>
         public BandStopFilter(double f1, double f2, int order) : base(MakeTf(f1, f2, order))
         {
         }
 
         /// <summary>
-        /// TF generator
+        /// Generates transfer function.
         /// </summary>
-        /// <param name="f1"></param>
-        /// <param name="f2"></param>
-        /// <param name="order"></param>
-        /// <returns></returns>
+        /// <param name="f1">First cutoff frequency</param>
+        /// <param name="f2">Second cutoff frequency</param>
+        /// <param name="order">Filter order</param>
         private static TransferFunction MakeTf(double f1, double f2, int order)
         {
             return DesignFilter.IirBsTf(f1, f2, PrototypeBessel.Poles(order));
         }
 
         /// <summary>
-        /// Change filter coeffs online
+        /// Changes filter coefficients online (preserving the state of the filter).
         /// </summary>
-        ///<param name="f1"></param>
-        ///<param name="f2"></param>
+        /// <param name="f1">First cutoff frequency</param>
+        /// <param name="f2">Second cutoff frequency</param>
         public void Change(double f1, double f2) => Change(MakeTf(f1, f2, (_a.Length - 1) / 2));
     }
 }

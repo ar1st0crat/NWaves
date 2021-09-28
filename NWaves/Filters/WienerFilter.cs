@@ -5,7 +5,7 @@ using NWaves.Utils;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Class representing Wiener filter. 
+    /// Represents Wiener filter. 
     /// Implementation is identical to scipy.signal.wiener().
     /// </summary>
     public class WienerFilter : IFilter, IOnlineFilter
@@ -21,7 +21,7 @@ namespace NWaves.Filters
         private readonly double _noise;
 
         /// <summary>
-        /// Construct <see cref="WienerFilter"/>.
+        /// Constructs <see cref="WienerFilter"/> of given <paramref name="size"/>.
         /// </summary>
         /// <param name="size">Size of the Wiener filter</param>
         /// <param name="noise">Estimated noise power</param>
@@ -40,7 +40,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Process entire <paramref name="signal"/> and return new filtered signal.
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="method">Filtering method</param>
@@ -69,7 +69,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public float Process(float sample)
@@ -103,7 +103,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Reset filter.
+        /// Resets filter.
         /// </summary>
         public void Reset()
         {

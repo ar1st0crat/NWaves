@@ -3,39 +3,39 @@
 namespace NWaves.Filters.Fda
 {
     /// <summary>
-    /// Vocal Tract Length Normalization (VTLN) similar to Kaldi implementation
+    /// Vocal Tract Length Normalization (VTLN) similar to Kaldi implementation.
     /// </summary>
     public class VtlnWarper
     {
         /// <summary>
-        /// Lower frequency
+        /// Lower frequency.
         /// </summary>
         private readonly double _lowFreq;
 
         /// <summary>
-        /// Upper frequency
+        /// Upper frequency.
         /// </summary>
         private readonly double _highFreq;
 
         /// <summary>
-        /// Lower frequency for VTLN
+        /// Lower frequency for VTLN.
         /// </summary>
         private readonly double _lowVtln;
 
         /// <summary>
-        /// Upper frequency for VTLN
+        /// Upper frequency for VTLN.
         /// </summary>
         private readonly double _highVtln;
 
-        /// <summary>
-        /// Some intermediate parameters for calculations
-        /// </summary>
+        //
+        // Intermediate parameters for calculations
+        //
         private readonly double _scale;
         private readonly double _scaleLeft;
         private readonly double _scaleRight;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="VtlnWarper"/>.
         /// </summary>
         /// <param name="alpha">Warping factor</param>
         /// <param name="lowFreq">Lower frequency</param>
@@ -60,10 +60,8 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Warp frequency
+        /// Warps frequency <paramref name="freq"/>.
         /// </summary>
-        /// <param name="freq">Frequency</param>
-        /// <returns>Warped frequency</returns>
         public double Warp(double freq)
         {
             if (freq < _lowVtln)

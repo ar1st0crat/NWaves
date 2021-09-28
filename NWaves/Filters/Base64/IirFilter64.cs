@@ -8,23 +8,23 @@ using System.Linq;
 namespace NWaves.Filters.Base64
 {
     /// <summary>
-    /// Class representing Infinite Impulse Response filters (64 bit)
+    /// Represents Infinite Impulse Response (IIR) filter (double precision).
     /// </summary>
     public class IirFilter64 : LtiFilter64
     {
         /// <summary>
         /// Numerator part coefficients in filter's transfer function 
-        /// (non-recursive part in difference equations)
-        /// 
-        /// Note.
-        /// This array is created from duplicated coefficients:
-        /// 
-        ///  numerator              _b
-        /// [1 2 3 4 5] -> [1 2 3 4 5 1 2 3 4 5]
-        /// 
-        /// Such memory layout leads to speed-up of online filtering.
+        /// (non-recursive part in difference equations).
         /// </summary>
         protected readonly double[] _b;
+
+        // Note.
+        // This array is created from duplicated B coefficients:
+        //      b                 _b
+        // [1 2 3 4 5] -> [1 2 3 4 5 1 2 3 4 5]
+        // 
+        // Such memory layout leads to speed-up of online filtering.
+        //
 
         /// <summary>
         /// Denominator part coefficients in filter's transfer function 
@@ -33,47 +33,60 @@ namespace NWaves.Filters.Base64
         protected readonly double[] _a;
 
         /// <summary>
-        /// Number of numerator coefficients
+        /// Number of numerator coefficients.
         /// </summary>
         protected readonly int _numeratorSize;
 
         /// <summary>
-        /// Number of denominator (feedback) coefficients
+        /// Number of denominator (feedback) coefficients.
         /// </summary>
         protected readonly int _denominatorSize;
 
         /// <summary>
-        /// Transfer function (created lazily or set specifically if needed)
+        /// Transfer function.
         /// </summary>
         protected TransferFunction _tf;
+
+        /// <summary>
+        /// Gets transfer function.
+        /// </summary>
         public override TransferFunction Tf
         {
+            // created lazily or set specifically if needed
             get => _tf ?? new TransferFunction(_b.Take(_numeratorSize).ToArray(), _a.ToArray());
             protected set => _tf = value;
         }
 
         /// <summary>
-        /// Default length of truncated impulse response
+        /// Gets or sets default length of truncated impulse response.
         /// </summary>
         public int DefaultImpulseResponseLength { get; set; } = 512;
 
         /// <summary>
-        /// Internal buffers for delay lines
+        /// Internal delay line (recursive part).
         /// </summary>
         protected double[] _delayLineA;
+
+        /// <summary>
+        /// Internal delay line (non-recursive part).
+        /// </summary>
         protected double[] _delayLineB;
 
         /// <summary>
-        /// Current offsets in delay lines
+        /// Current offset in delay line (recursive part).
         /// </summary>
         protected int _delayLineOffsetA;
+
+        /// <summary>
+        /// Current offset in delay line (non-recursive part).
+        /// </summary>
         protected int _delayLineOffsetB;
 
         /// <summary>
-        /// Parameterized constructor (from arrays of 64-bit coefficients)
+        /// Constructs <see cref="IirFilter64"/> from numerator <paramref name="b"/> and denominator <paramref name="a"/>.
         /// </summary>
-        /// <param name="b">TF numerator coefficients</param>
-        /// <param name="a">TF denominator coefficients</param>
+        /// <param name="b">Numerator of transfer function</param>
+        /// <param name="a">Denominator of transfer function</param>
         public IirFilter64(IEnumerable<double> b, IEnumerable<double> a)
         {
             _numeratorSize = b.Count();
@@ -95,7 +108,7 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Parameterized constructor (from transfer function).
+        /// Constructs <see cref="IirFilter64"/> from transfer function <paramref name="tf"/>.
         /// </summary>
         /// <param name="tf">Transfer function</param>
         public IirFilter64(TransferFunction tf) : this(tf.Numerator, tf.Denominator)
@@ -104,11 +117,10 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Apply filter to entire signal (offline)
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public override double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto)
         {
             switch (method)
@@ -129,10 +141,9 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// IIR online filtering (sample-by-sample)
+        /// Processes one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override double Process(double sample)
         {
             var output = 0.0;
@@ -170,7 +181,7 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Change filter coefficients online (numerator part)
+        /// Changes filter coefficients online (numerator / non-recursive part).
         /// </summary>
         /// <param name="b">New coefficients</param>
         public void ChangeNumeratorCoeffs(double[] b)
@@ -185,7 +196,7 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Change filter coefficients online (denominator / recursive part)
+        /// Changes filter coefficients online (denominator / recursive part).
         /// </summary>
         /// <param name="a">New coefficients</param>
         public void ChangeDenominatorCoeffs(double[] a)
@@ -197,7 +208,7 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Reset filter
+        /// Resets filter.
         /// </summary>
         public override void Reset()
         {
@@ -209,7 +220,8 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Divide all filter coefficients by _a[0] and normalize TF
+        /// Normalizes transfer function 
+        /// (divides all filter coefficients by the first coefficient of TF denominator).
         /// </summary>
         public void Normalize()
         {

@@ -3,12 +3,12 @@
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Class representing de-emphasis IIR filter.
+    /// Represents de-emphasis IIR filter.
     /// </summary>
     public class DeEmphasisFilter : OnePoleFilter
     {
         /// <summary>
-        /// Construct <see cref="DeEmphasisFilter"/>.
+        /// Constructs <see cref="DeEmphasisFilter"/>.
         /// </summary>
         /// <param name="a">De-emphasis coefficient</param>
         /// <param name="normalize">Normalize freq response to unit gain</param>

@@ -8,66 +8,70 @@ using System.Linq;
 namespace NWaves.Filters.Base64
 {
     /// <summary>
-    /// Class representing Finite Impulse Response filters
+    /// Represents Finite Impulse Response (FIR) filter.
     /// </summary>
     public class FirFilter64 : LtiFilter64
     {
         /// <summary>
-        /// Filter kernel (impulse response)
+        /// Gets copy of the filter kernel (impulse response).
         /// </summary>
         public double[] Kernel => _b.Take(_kernelSize).ToArray();
 
         /// <summary>
-        /// 
         /// Numerator part coefficients in filter's transfer function 
         /// (non-recursive part in difference equations).
-        /// 
-        /// Note.
-        /// This array is created from duplicated filter kernel:
-        /// 
-        ///   kernel                _b
-        /// [1 2 3 4 5] -> [1 2 3 4 5 1 2 3 4 5]
-        /// 
-        /// Such memory layout leads to significant speed-up of online filtering.
-        /// 
         /// </summary>
         protected readonly double[] _b;
 
+        //
+        // Note.
+        // This array is created from duplicated filter kernel:
+        // 
+        //   kernel                _b
+        // [1 2 3 4 5] -> [1 2 3 4 5 1 2 3 4 5]
+        // 
+        // Such memory layout leads to significant speed-up of online filtering.
+        // 
+
         /// <summary>
-        /// Kernel length
+        /// Kernel length.
         /// </summary>
         protected int _kernelSize;
 
         /// <summary>
-        /// Transfer function (created lazily or set specifically if needed)
+        /// Transfer function.
         /// </summary>
         protected TransferFunction _tf;
+
+        /// <summary>
+        /// Gets transfer function.
+        /// </summary>
         public override TransferFunction Tf
         {
+            // created lazily or set specifically if needed
             get => _tf ?? new TransferFunction(_b.Take(_kernelSize).ToArray());
             protected set => _tf = value;
         }
 
         /// <summary>
-        /// If _kernelSize exceeds this value, 
-        /// the filtering code will always call Overlap-Save routine.
+        /// Gets or sets the minimum kernel length for switching to OverlapSave algorithm in auto mode.
         /// </summary>
         public int KernelSizeForBlockConvolution { get; set; } = 64;
 
         /// <summary>
-        /// Internal buffer for delay line
+        /// Internal buffer for delay line.
         /// </summary>
         protected double[] _delayLine;
 
         /// <summary>
-        /// Current offset in delay line
+        /// Current offset in delay line.
         /// </summary>
         protected int _delayLineOffset;
 
         /// <summary>
-        /// Constructor accepting the 64-bit kernel of a filter
+        /// Constructs <see cref="FirFilter64"/> from <paramref name="kernel"/>.
         /// </summary>
-        /// <param name="kernel"></param>
+        /// <param name="kernel">FIR filter kernel</param>
         public FirFilter64(IEnumerable<double> kernel)
         {
             _kernelSize = kernel.Count();
@@ -84,24 +88,23 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Constructor accepting the transfer function.
-        /// 
-        /// Coefficients (used for filtering) will be cast to doubles anyway,
+        /// <para>Constructs <see cref="FirFilter64"/> from transfer function <paramref name="tf"/>.</para>
+        /// <para>
+        /// Coefficients (used for filtering) will be cast to floats anyway, 
         /// but filter will store the reference to TransferFunction object for FDA.
-        /// 
+        /// </para>
         /// </summary>
-        /// <param name="kernel"></param>
+        /// <param name="tf">Transfer function</param>
         public FirFilter64(TransferFunction tf) : this(tf.Numerator)
         {
             Tf = tf;
         }
 
         /// <summary>
-        /// Apply filter to entire signal (offline)
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public override double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto)
         {
             if (_kernelSize >= KernelSizeForBlockConvolution && method == FilteringMethod.Auto)
@@ -131,10 +134,9 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// FIR online filtering (sample-by-sample)
+        /// Processes one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override double Process(double sample)
         {
             _delayLine[_delayLineOffset] = sample;
@@ -155,14 +157,14 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Process all signal samples in loop.
-        /// The Process() code is inlined in the loop for better performance
-        /// (especially for smaller kernels).
+        /// Processes all <paramref name="samples"/> in loop.
         /// </summary>
-        /// <param name="samples"></param>
-        /// <returns></returns>
+        /// <param name="samples">Samples</param>
         public double[] ProcessAllSamples(double[] samples)
         {
+            // The Process() code is inlined here in the loop for better performance
+            // (especially for smaller kernels).
+
             var filtered = new double[samples.Length + _kernelSize - 1];
 
             var k = 0;
@@ -194,7 +196,7 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Change filter kernel online
+        /// Changes filter kernel online.
         /// </summary>
         /// <param name="kernel">New kernel</param>
         public void ChangeKernel(double[] kernel)
@@ -209,7 +211,7 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Reset filter
+        /// Resets filter.
         /// </summary>
         public override void Reset()
         {

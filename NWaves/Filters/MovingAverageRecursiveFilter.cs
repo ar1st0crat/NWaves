@@ -4,41 +4,39 @@ using NWaves.Signals;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Class providing recursive implementation of N-sample MA filter:
-    /// 
-    ///     y[n] = x[n] / N - x[n - N] / N + y[n - 1]
-    /// 
-    /// i.e. 
-    ///     B = [1/N, 0, 0, 0, 0, ... , 0, -1/N]
-    ///     A = [1, -1]
-    /// 
+    /// Provides fast recursive implementation of moving average filter:
+    /// <code>
+    ///     y[n] = x[n] / N - x[n - N] / N + y[n - 1] <br/>
+    /// i.e. <br/>
+    ///     b = [1/N, 0, 0, 0, 0, ... , 0, -1/N] <br/>
+    ///     a = [1, -1] <br/>
+    /// </code>
     /// </summary>
     public class MovingAverageRecursiveFilter : IirFilter
     {
         /// <summary>
-        /// Size of the filter: number of samples for averaging
+        /// Gets size of the filter.
         /// </summary>
         public int Size { get; }
 
         /// <summary>
-        /// Delay line
+        /// Delay line.
         /// </summary>
         private float _out1;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="MovingAverageRecursiveFilter"/> of given <paramref name="size"/>.
         /// </summary>
-        /// <param name="size">size of the filter</param>
+        /// <param name="size">Size of the filter</param>
         public MovingAverageRecursiveFilter(int size = 9) : base(MakeNumerator(size), new[] { 1f, -1 })
         {
             Size = size;
         }
 
         /// <summary>
-        /// TF generator
+        /// Generates numerator of transfer function.
         /// </summary>
-        /// <param name="size"></param>
-        /// <returns></returns>
+        /// <param name="size">Numerator size</param>
         private static float[] MakeNumerator(int size)
         {
             var b = new float[size + 1];
@@ -50,11 +48,10 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Apply filter by fast recursive strategy
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public override DiscreteSignal ApplyTo(DiscreteSignal signal,
                                                FilteringMethod method = FilteringMethod.Auto)
         {
@@ -87,10 +84,9 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Online filtering (sample-by-sample)
+        /// Processes one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var b0 = _b[0];
@@ -110,7 +106,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Reset filter
+        /// Resets filter.
         /// </summary>
         public override void Reset()
         {

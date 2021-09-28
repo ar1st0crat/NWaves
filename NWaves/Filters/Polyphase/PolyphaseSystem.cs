@@ -4,7 +4,7 @@ using NWaves.Signals;
 namespace NWaves.Filters.Polyphase
 {
     /// <summary>
-    /// Class representing the system of polyphase filters.
+    /// Represents the system of polyphase filters.
     /// </summary>
     public class PolyphaseSystem : IFilter, IOnlineFilter
     {
@@ -35,17 +35,17 @@ namespace NWaves.Filters.Polyphase
         public FirFilter[] MultirateFilters { get; private set; }
 
         /// <summary>
-        /// Construct <see cref="PolyphaseSystem"/>.
+        /// Constructs <see cref="PolyphaseSystem"/> with <paramref name="n"/> filters from filter <paramref name="kernel"/>.
         /// </summary>
         /// <param name="kernel">Filter kernel</param>
-        /// <param name="filterCount">Number of polyphase filters</param>
+        /// <param name="n">Number of polyphase filters</param>
         /// <param name="type">Polyphase system type (1 or 2)</param>
-        public PolyphaseSystem(double[] kernel, int filterCount, int type = 1)
+        public PolyphaseSystem(double[] kernel, int n, int type = 1)
         {
-            Filters = new FirFilter[filterCount];
-            MultirateFilters = new FirFilter[filterCount];
+            Filters = new FirFilter[n];
+            MultirateFilters = new FirFilter[n];
 
-            var len = (kernel.Length + 1) / filterCount;
+            var len = (kernel.Length + 1) / n;
 
             for (var i = 0; i < Filters.Length; i++)
             {
@@ -54,7 +54,7 @@ namespace NWaves.Filters.Polyphase
 
                 for (var j = 0; j < len; j++)
                 {
-                    var kernelPos = i + filterCount * j;
+                    var kernelPos = i + n * j;
 
                     if (kernelPos < kernel.Length)
                     {
@@ -74,18 +74,18 @@ namespace NWaves.Filters.Polyphase
                 for (var i = 0; i < Filters.Length / 2; i++)
                 {
                     var tmp = Filters[i];
-                    Filters[i] = Filters[filterCount - 1 - i];
-                    Filters[filterCount - 1 - i] = tmp;
+                    Filters[i] = Filters[n - 1 - i];
+                    Filters[n - 1 - i] = tmp;
 
                     tmp = MultirateFilters[i];
-                    MultirateFilters[i] = MultirateFilters[filterCount - 1 - i];
-                    MultirateFilters[filterCount - 1 - i] = tmp;
+                    MultirateFilters[i] = MultirateFilters[n - 1 - i];
+                    MultirateFilters[n - 1 - i] = tmp;
                 }
             }
         }
 
         /// <summary>
-        /// Do polyphase decimation (for type-I systems).
+        /// Does polyphase decimation (for type-I systems).
         /// </summary>
         /// <param name="signal">Input signal</param>
         public DiscreteSignal Decimate(DiscreteSignal signal)
@@ -124,7 +124,7 @@ namespace NWaves.Filters.Polyphase
         }
 
         /// <summary>
-        /// Do polyphase interpolation (for type-II systems).
+        /// Does polyphase interpolation (for type-II systems).
         /// </summary>
         /// <param name="signal">Input signal</param>
         public DiscreteSignal Interpolate(DiscreteSignal signal)
@@ -150,7 +150,7 @@ namespace NWaves.Filters.Polyphase
         #region FIR Filtering (for educational purposes)
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public float Process(float sample)
@@ -168,7 +168,7 @@ namespace NWaves.Filters.Polyphase
         }
 
         /// <summary>
-        /// Reset polyphase filters.
+        /// Resets polyphase filters.
         /// </summary>
         public void Reset()
         {
@@ -184,7 +184,7 @@ namespace NWaves.Filters.Polyphase
         }
 
         /// <summary>
-        /// Process entire <paramref name="signal"/> and return new filtered signal.
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="method">Filtering method</param>

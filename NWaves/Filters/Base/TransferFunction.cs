@@ -12,7 +12,7 @@ using NWaves.Utils;
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Class representing the transfer function of an LTI filter.
+    /// Represents the transfer function of an LTI filter.
     /// </summary>
     public class TransferFunction
     {
@@ -57,7 +57,7 @@ namespace NWaves.Filters.Base
         public double Gain => Numerator[0];
 
         /// <summary>
-        /// Construct <see cref="TransferFunction"/> from <paramref name="numerator"/> and <paramref name="denominator"/>.
+        /// Constructs <see cref="TransferFunction"/> from <paramref name="numerator"/> and <paramref name="denominator"/>.
         /// </summary>
         /// <param name="numerator">Numerator of transfer function</param>
         /// <param name="denominator">Denominator of transfer function</param>
@@ -68,7 +68,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Construct <see cref="TransferFunction"/> from <paramref name="zeros"/>, <paramref name="poles"/> and <paramref name="gain"/>.
+        /// Constructs <see cref="TransferFunction"/> from <paramref name="zeros"/>, <paramref name="poles"/> and <paramref name="gain"/>.
         /// </summary>
         /// <param name="zeros">Zeros</param>
         /// <param name="poles">Poles</param>
@@ -88,7 +88,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Construct <see cref="TransferFunction"/> from <paramref name="zeros"/>, <paramref name="poles"/> and <paramref name="gain"/>.
+        /// Constructs <see cref="TransferFunction"/> from <paramref name="zeros"/>, <paramref name="poles"/> and <paramref name="gain"/>.
         /// </summary>
         /// <param name="zeros">Zeros</param>
         /// <param name="poles">Poles</param>
@@ -99,7 +99,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Construct <see cref="TransferFunction"/> from <paramref name="stateSpace"/> representation.
+        /// Constructs <see cref="TransferFunction"/> from <paramref name="stateSpace"/> representation.
         /// </summary>
         /// <param name="stateSpace">State space representation</param>
         public TransferFunction(StateSpace stateSpace)
@@ -266,7 +266,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Evaluate impulse response of given <paramref name="length"/>. 
+        /// Evaluates impulse response of given <paramref name="length"/>. 
         /// In case of FIR filters method returns full copy of numerator.
         /// </summary>
         /// <param name="length">Length of the impulse response</param>
@@ -296,7 +296,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Evaluate frequency response of given <paramref name="length"/>.
+        /// Evaluates frequency response of given <paramref name="length"/>.
         /// </summary>
         /// <param name="length">Length of the frequency response</param>
         public ComplexDiscreteSignal FrequencyResponse(int length = 512)
@@ -316,7 +316,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Evaluate group delay in array of given <paramref name="length"/>.
+        /// Evaluates group delay in array of given <paramref name="length"/>.
         /// </summary>
         /// <param name="length">Length of group delay array</param>
         public double[] GroupDelay(int length = 512)
@@ -354,7 +354,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Evaluate phase delay in array of given <paramref name="length"/>.
+        /// Evaluates phase delay in array of given <paramref name="length"/>.
         /// </summary>
         /// <param name="length">Length of phase delay array</param>
         public double[] PhaseDelay(int length = 512)
@@ -373,8 +373,8 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Normalize frequency response at given frequency 
-        /// (normalize numerator to map frequency response onto [0, 1])
+        /// Normalizes frequency response at given frequency 
+        /// (normalizes numerator to map frequency response onto [0, 1])
         /// </summary>
         /// <param name="freq">Frequency</param>
         public void NormalizeAt(double freq)
@@ -391,7 +391,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Normalize numerator and denominator (divide by the first coefficient of denominator).
+        /// Normalizes numerator and denominator (divides them by the first coefficient of denominator).
         /// </summary>
         public void Normalize()
         {
@@ -414,7 +414,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Convert zeros (or poles) to numerator (or denominator) of transfer function.
+        /// Converts zeros (or poles) to numerator (or denominator) of transfer function.
         /// </summary>
         /// <param name="zp">Zeros (or poles)</param>
         public static double[] ZpToTf(Complex[] zp)
@@ -431,7 +431,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Convert zeros (or poles) to numerator (or denominator) of transfer function.
+        /// Converts zeros (or poles) to numerator (or denominator) of transfer function.
         /// </summary>
         /// <param name="zp">Zeros (or poles)</param>
         public static double[] ZpToTf(ComplexDiscreteSignal zp)
@@ -440,7 +440,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Convert zeros (or poles) to numerator (or denominator) of transfer function. 
+        /// Converts zeros (or poles) to numerator (or denominator) of transfer function. 
         /// Zeros (poles) are given in the form double arrays of real and imaginary parts.
         /// </summary>
         /// <param name="re">Real parts of complex zeros (poles)</param>
@@ -456,7 +456,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Convert numerator (or denominator) of transfer function to zeros (or poles).
+        /// Converts numerator (or denominator) of transfer function to zeros (or poles).
         /// </summary>
         /// <param name="numeratorOrDenominator">Numerator or denominator (polynomial)</param>
         /// <param name="maxIterations">Max number of iterations for calculating zeros/poles (roots of polynomials). By default, 25000.</param>
@@ -471,7 +471,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Create transfer function from sequential connection of <paramref name="tf1"/> and <paramref name="tf2"/>.
+        /// Creates transfer function from sequential connection of <paramref name="tf1"/> and <paramref name="tf2"/>.
         /// </summary>
         /// <param name="tf1">First transfer function</param>
         /// <param name="tf2">Second transfer function</param>
@@ -484,7 +484,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Create transfer function from parallel connection of <paramref name="tf1"/> and <paramref name="tf2"/>.
+        /// Creates transfer function from parallel connection of <paramref name="tf1"/> and <paramref name="tf2"/>.
         /// </summary>
         /// <param name="tf1">First transfer function</param>
         /// <param name="tf2">Second transfer function</param>
@@ -513,7 +513,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Load numerator and denominator of transfer function from csv stream.
+        /// Loads numerator and denominator of transfer function from csv stream.
         /// </summary>
         /// <param name="stream">Input stream</param>
         /// <param name="delimiter">Delimiter</param>
@@ -536,7 +536,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Serialize numerator and denominator of transfer function to csv stream.
+        /// Serializes numerator and denominator of transfer function to csv stream.
         /// </summary>
         /// <param name="stream">Output stream</param>
         /// <param name="delimiter">Delimiter</param>

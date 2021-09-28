@@ -7,12 +7,12 @@ using System.Linq;
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Class providing extension methods for online filters.
+    /// Provides extension methods for online filters.
     /// </summary>
     public static class IFilterExtensions
     {
         /// <summary>
-        /// Filter data frame-wise.
+        /// Filters data frame-wise.
         /// </summary>
         /// <param name="filter">Online filter</param>
         /// <param name="input">Input block of samples</param>
@@ -41,7 +41,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Filter entire <paramref name="signal"/> by processing each signal sample in a loop.
+        /// Filters entire <paramref name="signal"/> by processing each signal sample in a loop.
         /// </summary>
         /// <param name="filter">Online filter</param>
         /// <param name="signal">Input signal</param>
@@ -59,7 +59,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Filter entire <paramref name="signal"/> by processing each signal sample in a loop.
+        /// Filters entire <paramref name="signal"/> by processing each signal sample in a loop.
         /// </summary>
         /// <param name="filter">Online filter</param>
         /// <param name="signal">Input signal</param>
@@ -76,7 +76,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Calculate extra gain for filtering so that frequency response is normalized onto [0, 1] range.
+        /// Calculates extra gain for filtering so that frequency response is normalized onto [0, 1] range.
         /// </summary>
         /// <param name="filter">Online filter</param>
         /// <param name="fftSize">FFT size (for evaluating frequency response)</param>
@@ -98,7 +98,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Filter entire <paramref name="signal"/> with extra <paramref name="gain"/>.
+        /// Filters entire <paramref name="signal"/> with extra <paramref name="gain"/>.
         /// </summary>
         /// <param name="filter">Online filter</param>
         /// <param name="signal">Input signal</param>
@@ -112,7 +112,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process one <paramref name="sample"/> of a signal with extra <paramref name="gain"/>.
+        /// Processes one <paramref name="sample"/> of a signal with extra <paramref name="gain"/>.
         /// </summary>
         /// <param name="filter">Online filter</param>
         /// <param name="sample">Input sample</param>

@@ -5,32 +5,28 @@ using NWaves.Filters.Base;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Class providing non-recursive implementation of N-sample MA filter.
-    /// 
-    /// Actually MA filter belongs to FIR filters (so it's inherited from FirFilter);
-    /// however it can be realized also (and more efficiently) as a recursive filter (see below).
+    /// Provides non-recursive implementation of moving-average filter.
     /// </summary>
     public class MovingAverageFilter : FirFilter
     {
         /// <summary>
-        /// Size of the filter: number of samples for averaging
+        /// Gets size of the filter.
         /// </summary>
         public int Size { get; }
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="MovingAverageFilter"/> of given <paramref name="size"/>.
         /// </summary>
-        /// <param name="size">size of the filter</param>
+        /// <param name="size">Size of the filter</param>
         public MovingAverageFilter(int size = 9) : base(MakeKernel(size))
         {
             Size = size;
         }
 
         /// <summary>
-        /// Kernel generator
+        /// Generates filter kernel of given <paramref name="size"/>.
         /// </summary>
-        /// <param name="size"></param>
-        /// <returns></returns>
+        /// <param name="size">Kernel size</param>
         private static IEnumerable<float> MakeKernel(int size)
         {
             return Enumerable.Repeat(1f / size, size);

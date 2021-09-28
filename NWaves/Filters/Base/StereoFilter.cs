@@ -3,7 +3,7 @@
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Filter for processing data in interleaved stereo buffers. 
+    /// Represents filter for processing data in interleaved stereo buffers. 
     /// <see cref="StereoFilter"/> is wrapped around two separate filters: 
     /// filter for signal in left channel and filter for signal in right channel.
     /// </summary>
@@ -25,7 +25,7 @@ namespace NWaves.Filters.Base
         private bool _isRight;
 
         /// <summary>
-        /// Construct <see cref="StereoFilter"/> from two separate filters.
+        /// Constructs <see cref="StereoFilter"/> from two separate filters.
         /// </summary>
         /// <param name="filterLeft">Filter for signal in left channel</param>
         /// <param name="filterRight">Filter for signal in right channel</param>
@@ -36,7 +36,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public float Process(float sample)
@@ -54,7 +54,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Reset filters.
+        /// Resets filters.
         /// </summary>
         public void Reset()
         {
@@ -63,7 +63,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process entire <paramref name="signal"/> and return new filtered signal.
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="method">Filtering method</param>

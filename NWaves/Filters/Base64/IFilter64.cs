@@ -3,17 +3,15 @@
 namespace NWaves.Filters.Base64
 {
     /// <summary>
-    /// Interface for any kind of filter:
-    /// a filter can be applied to any signal transforming it to some output signal.
+    /// Interface for offline filters (double precision).
     /// </summary>
     public interface IFilter64
     {
         /// <summary>
-        /// Method implements offline filtering algorithm
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
-        /// <param name="signal">Signal for filtering</param>
-        /// <param name="method">General filtering strategy</param>
-        /// <returns>Filtered signal</returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto);
     }
 }

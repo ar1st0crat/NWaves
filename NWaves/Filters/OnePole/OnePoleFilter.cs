@@ -3,36 +3,35 @@
 namespace NWaves.Filters.OnePole
 {
     /// <summary>
-    /// One-Pole filter base class
+    /// Represents one-pole IIR filter.
     /// </summary>
     public class OnePoleFilter : IirFilter
     {
         /// <summary>
-        /// Delay line
+        /// Delay line.
         /// </summary>
         private float _prev;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="OnePoleFilter"/>.
         /// </summary>
         protected OnePoleFilter() : base(new[] { 1.0 }, new[] { 1.0, 0 })
         {
         }
 
         /// <summary>
-        /// Constructor for user defined coefficients
+        /// Constructs <see cref="OnePoleFilter"/> from filter coefficients.
         /// </summary>
-        /// <param name="b"></param>
-        /// <param name="a"></param>
+        /// <param name="b">Numerator coefficient</param>
+        /// <param name="a">Pole</param>
         public OnePoleFilter(double b, double a) : base(new[] { b }, new [] { 1.0, a })
         {
         }
 
         /// <summary>
-        /// Online filtering (sample-by-sample)
+        /// Processes one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
             var output = _b[0] * sample - _a[1] * _prev;
@@ -42,7 +41,7 @@ namespace NWaves.Filters.OnePole
         }
 
         /// <summary>
-        /// Reset filter
+        /// Resets filter.
         /// </summary>
         public override void Reset()
         {

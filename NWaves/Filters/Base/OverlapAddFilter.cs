@@ -80,7 +80,7 @@ namespace NWaves.Filters.Base
         private readonly float[] _lastSaved;
 
         /// <summary>
-        /// Construct <see cref="OverlapAddFilter"/>.
+        /// Constructs <see cref="OverlapAddFilter"/>.
         /// </summary>
         /// <param name="hopSize">Hop size (hop length, number of samples)</param>
         /// <param name="fftSize">FFT size</param>
@@ -109,7 +109,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public virtual float Process(float sample)
@@ -125,7 +125,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process one frame (FFT block).
+        /// Processes one frame (FFT block).
         /// </summary>
         protected virtual void ProcessFrame()
         {
@@ -164,7 +164,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process one spectrum at each Overlap-Add STFT step.
+        /// Processes one spectrum at each Overlap-Add STFT step.
         /// </summary>
         /// <param name="re">Real parts of input spectrum</param>
         /// <param name="im">Imaginary parts of input spectrum</param>
@@ -176,7 +176,7 @@ namespace NWaves.Filters.Base
                                                 float[] filteredIm);
 
         /// <summary>
-        /// Reset filter internals.
+        /// Resets filter internals.
         /// </summary>
         public virtual void Reset()
         {
@@ -192,9 +192,9 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Process entire signal.
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
-        /// <param name="signal">Signal</param>
+        /// <param name="signal">Input signal</param>
         /// <param name="method">Filtering method</param>
         public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
     }

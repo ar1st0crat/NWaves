@@ -4,8 +4,16 @@ using System.Numerics;
 
 namespace NWaves.Filters.ChebyshevI
 {
+    /// <summary>
+    /// Chebyshev-I filter prototype.
+    /// </summary>
     public static class PrototypeChebyshevI
     {
+        /// <summary>
+        /// Evaluates analog poles of Chebyshev-I filter of given <paramref name="order"/>.
+        /// </summary>
+        /// <param name="order">Filter order</param>
+        /// <param name="ripple">Ripple (in dB)</param>
         public static Complex[] Poles(int order, double ripple = 0.1)
         {
             var eps = Math.Sqrt(Math.Pow(10, ripple / 10) - 1);

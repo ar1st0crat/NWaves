@@ -3,39 +3,40 @@ using System;
 namespace NWaves.Filters.BiQuad
 {
     /// <summary>
-    /// BiQuad notch filter.
-    /// The coefficients are calculated automatically according to 
-    /// audio-eq-cookbook by R.Bristow-Johnson and WebAudio API.
+    /// Represents BiQuad notch filter.
     /// </summary>
     public class NotchFilter : BiQuadFilter
     {
         /// <summary>
-        /// Frequency
+        /// Gets center frequency.
         /// </summary>
         public double Freq { get; protected set; }
 
         /// <summary>
-        /// Q
+        /// Gets Q factor.
         /// </summary>
         public double Q { get; protected set; }
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="NotchFilter"/>.
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="q"></param>
+        /// <param name="freq">Center frequency</param>
+        /// <param name="q">Q factor</param>
         public NotchFilter(double freq, double q = 1)
         {
             SetCoefficients(freq, q);
         }
 
         /// <summary>
-        /// Set filter coefficients
+        /// Sets filter coefficients.
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="q"></param>
+        /// <param name="freq">Center frequency</param>
+        /// <param name="q">Q factor</param>
         private void SetCoefficients(double freq, double q)
         {
+            // The coefficients are calculated automatically according to 
+            // audio-eq-cookbook by R.Bristow-Johnson and WebAudio API.
+
             Freq = freq;
             Q = q;
 
@@ -55,10 +56,10 @@ namespace NWaves.Filters.BiQuad
         }
 
         /// <summary>
-        /// Change filter parameters (preserving its state)
+        /// Changes filter coefficients online (preserving the state of the filter).
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="q"></param>
+        /// <param name="freq">Center frequency</param>
+        /// <param name="q">Q factor</param>
         public void Change(double freq, double q = 1)
         {
             SetCoefficients(freq, q);

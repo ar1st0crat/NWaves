@@ -4,19 +4,20 @@ using System.Numerics;
 
 namespace NWaves.Filters.Elliptic
 {
+    // Orfanidis, S. J. (2007). Lecture notes on elliptic filter design.
+    // URL: http://www.ece.rutgers.edu/~orfanidi/ece521/notes.pdf
+
     /// <summary>
-    /// Orfanidis, S. J. (2007). Lecture notes on elliptic filter design.
-    /// URL: http://www.ece.rutgers.edu/~orfanidi/ece521/notes.pdf
+    /// Elliptic filter prototype.
     /// </summary>
     public static class PrototypeElliptic
     {
         /// <summary>
-        /// Poles 
+        /// Evaluates analog poles of elliptic filter of given <paramref name="order"/>.
         /// </summary>
-        /// <param name="order"></param>
-        /// <param name="ripplePass"></param>
-        /// <param name="rippleStop"></param>
-        /// <returns></returns>
+        /// <param name="order">Filter order</param>
+        /// <param name="ripplePass">Passband ripple (in dB)</param>
+        /// <param name="rippleStop">Stopband ripple (in dB)</param>
         public static Complex[] Poles(int order, double ripplePass = 1, double rippleStop = 20)
         {
             Guard.AgainstInvalidRange(ripplePass, rippleStop, "ripple in passband", "ripple in stopband");
@@ -53,6 +54,12 @@ namespace NWaves.Filters.Elliptic
             return poles;
         }
 
+        /// <summary>
+        /// Evaluates analog zeros of elliptic filter of given <paramref name="order"/>.
+        /// </summary>
+        /// <param name="order">Filter order</param>
+        /// <param name="ripplePass">Passband ripple (in dB)</param>
+        /// <param name="rippleStop">Stopband ripple (in dB)</param>
         public static Complex[] Zeros(int order, double ripplePass = 1, double rippleStop = 20)
         {
             Guard.AgainstInvalidRange(ripplePass, rippleStop, "ripple in passband", "ripple in stopband");
@@ -88,11 +95,10 @@ namespace NWaves.Filters.Elliptic
         }
 
         /// <summary>
-        /// Landen sequence
+        /// Computes Landen sequence.
         /// </summary>
-        /// <param name="k"></param>
-        /// <param name="iterCount"></param>
-        /// <returns></returns>
+        /// <param name="k">K</param>
+        /// <param name="iterCount">Number of iterations</param>
         public static double[] Landen(double k, int iterCount = 5)
         {
             var coeffs = new double[iterCount];
@@ -108,11 +114,10 @@ namespace NWaves.Filters.Elliptic
         }
 
         /// <summary>
-        /// cde function
+        /// Computes sde.
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="landen"></param>
-        /// <returns></returns>
+        /// <param name="x">X</param>
+        /// <param name="landen">Landen sequence</param>
         public static Complex Cde(Complex x, double[] landen)
         {
             var invX = 1 / Complex.Cos(x * Math.PI / 2);
@@ -126,11 +131,10 @@ namespace NWaves.Filters.Elliptic
         }
 
         /// <summary>
-        /// sne function
+        /// Computes sne.
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="landen"></param>
-        /// <returns></returns>
+        /// <param name="x">X</param>
+        /// <param name="landen">Landen sequence</param>
         public static Complex Sne(Complex x, double[] landen)
         {
             var invX = 1 / Complex.Sin(x * Math.PI / 2);
@@ -144,12 +148,11 @@ namespace NWaves.Filters.Elliptic
         }
 
         /// <summary>
-        /// Inverse sne function
+        /// Computes inverse sne.
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="k"></param>
-        /// <param name="iterCount"></param>
-        /// <returns></returns>
+        /// <param name="x">X</param>
+        /// <param name="k">K</param>
+        /// <param name="iterCount">Number of iterations</param>
         public static Complex Asne(Complex x, double k, int iterCount = 5)
         {
             for (var i = 1; i <= iterCount; i++)

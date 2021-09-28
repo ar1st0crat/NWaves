@@ -1,7 +1,7 @@
 ﻿namespace NWaves.Filters.Adaptive
 {
     /// <summary>
-    /// Class representing Adaptive RLS filter (Recursive-Least-Squares algorithm).
+    /// Represents Adaptive RLS filter (Recursive-Least-Squares algorithm).
     /// </summary>
     public class RlsFilter : AdaptiveFilter
     {
@@ -26,7 +26,7 @@
         private readonly float[,] _dp, _tmp;
 
         /// <summary>
-        /// Construct <see cref="RlsFilter"/> of given <paramref name="order"/>.
+        /// Constructs <see cref="RlsFilter"/> of given <paramref name="order"/>.
         /// </summary>
         /// <param name="order">Order</param>
         /// <param name="lambda">Lambda</param>
@@ -47,7 +47,7 @@
         }
 
         /// <summary>
-        /// Process one sample of input signal and one sample of desired signal.
+        /// Processes one sample of input and desired signals and adapts filter coefficients.
         /// </summary>
         /// <param name="input">Sample of input signal</param>
         /// <param name="desired">Sample of desired signal</param>

@@ -28,7 +28,7 @@ namespace NWaves.Filters.Base
         //
 
         /// <summary>
-        /// Process entire <paramref name="signal"/> and return new filtered signal.
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="method">Filtering method</param>
@@ -36,13 +36,13 @@ namespace NWaves.Filters.Base
                                                FilteringMethod method = FilteringMethod.Auto);
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public abstract float Process(float sample);
 
         /// <summary>
-        /// Reset LTI filter.
+        /// Resets LTI filter.
         /// </summary>
         public abstract void Reset();
     }

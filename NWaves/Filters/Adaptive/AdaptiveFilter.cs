@@ -10,7 +10,7 @@ namespace NWaves.Filters.Adaptive
     public abstract class AdaptiveFilter : FirFilter
     {
         /// <summary>
-        /// Construct <see cref="AdaptiveFilter"/> of given <paramref name="order"/>.
+        /// Constructs <see cref="AdaptiveFilter"/> of given <paramref name="order"/>.
         /// </summary>
         /// <param name="order">Filter order</param>
         public AdaptiveFilter(int order) : base(new float[order])
@@ -19,7 +19,7 @@ namespace NWaves.Filters.Adaptive
         }
 
         /// <summary>
-        /// Init weights of adaptive filter.
+        /// Inits weights of adaptive filter.
         /// </summary>
         /// <param name="weights">Weights (filter kernel)</param>
         public void Init(float[] weights)
@@ -29,7 +29,7 @@ namespace NWaves.Filters.Adaptive
         }
 
         /// <summary>
-        /// Process one sample of input signal and one sample of desired signal.
+        /// Processes one sample of input and desired signals and adapts filter coefficients.
         /// </summary>
         /// <param name="input">Sample of input signal</param>
         /// <param name="desired">Sample of desired signal</param>

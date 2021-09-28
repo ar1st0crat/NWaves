@@ -1,19 +1,18 @@
 ﻿namespace NWaves.Filters.Base64
 {
     /// <summary>
-    /// Interface for all objects that support online filtering
+    /// Interface for all signal processors that support online filtering (double precision).
     /// </summary>
     public interface IOnlineFilter64
     {
         /// <summary>
-        /// Method implements online filtering (sample-by-sample)
+        /// Processes one sample.
         /// </summary>
-        /// <param name="input">Input sample</param>
-        /// <returns>Output sample</returns>
-        double Process(double input);
+        /// <param name="sample">Input sample</param>
+        double Process(double sample);
 
         /// <summary>
-        /// Method for resetting state
+        /// Resets filter.
         /// </summary>
         void Reset();
     }

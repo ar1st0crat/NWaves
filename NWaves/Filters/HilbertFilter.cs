@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Class representing Hilbert filter.
+    /// Represents Hilbert filter.
     /// </summary>
     public class HilbertFilter : FirFilter
     {
@@ -15,7 +15,7 @@ namespace NWaves.Filters
         public int Size { get; }
 
         /// <summary>
-        /// Construct <see cref="HilbertFilter"/>.
+        /// Constructs <see cref="HilbertFilter"/> of given <paramref name="size"/>.
         /// </summary>
         /// <param name="size">Size of the filter</param>
         public HilbertFilter(int size = 128) : base(MakeKernel(size))
@@ -24,7 +24,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Generate kernel of given <paramref name="size"/>.
+        /// Generates filter kernel of given <paramref name="size"/>.
         /// </summary>
         /// <param name="size">Kernel size</param>
         private static IEnumerable<double> MakeKernel(int size)

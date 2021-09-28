@@ -8,23 +8,22 @@ using NWaves.Windows;
 namespace NWaves.Filters.Fda
 {
     /// <summary>
-    /// Static class providing basic methods for filter design & analysis
+    /// Provides methods for filter design and analysis.
     /// </summary>
     public static partial class DesignFilter
     {
         #region fractional delay FIR filter design
 
         /// <summary>
-        /// Method for ideal lowpass fractional-delay FIR filter design using sinc-window method
+        /// Designs ideal lowpass fractional-delay FIR filter using sinc-window method.
         /// </summary>
         /// <param name="order">Filter order</param>
-        /// <param name="freq">Cutoff frequency (normalized: fc = f/fs)</param>
+        /// <param name="freq">Normalized cutoff frequency</param>
         /// <param name="delay">Fractional delay</param>
         /// <param name="window">Window</param>
-        /// <returns>LP filter kernel</returns>
         public static double[] FirWinFdLp(int order, double freq, double delay, WindowType window = WindowType.Blackman)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
+            Guard.AgainstInvalidRange(freq, 0, 0.5, "Cutoff frequency");
 
             var kernel = new double[order];
 
@@ -46,16 +45,15 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method for ideal highpass fractional-delay FIR filter design using sinc-window method
+        /// Designs ideal highpass fractional-delay FIR filter using sinc-window method.
         /// </summary>
         /// <param name="order">Filter order</param>
-        /// <param name="freq">Cutoff frequency (normalized: fc = f/fs)</param>
+        /// <param name="freq">Normalized cutoff frequency</param>
         /// <param name="delay">Fractional delay</param>
         /// <param name="window">Window</param>
-        /// <returns>HP filter kernel</returns>
         public static double[] FirWinFdHp(int order, double freq, double delay, WindowType window = WindowType.Blackman)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Filter frequency");
+            Guard.AgainstInvalidRange(freq, 0, 0.5, "Cutoff frequency");
 
             var kernel = new double[order];
 
@@ -81,14 +79,13 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method for ideal bandpass fractional-delay FIR filter design using sinc-window method
+        /// Designs ideal bandpass fractional-delay FIR filter using sinc-window method.
         /// </summary>
         /// <param name="order">Filter order</param>
-        /// <param name="freq1">Left edge cutoff frequency (normalized: fc1 = f1/fs)</param>
-        /// <param name="freq2">Right edge cutoff frequency (normalized: fc2 = f2/fs)</param>
+        /// <param name="freq1">Left edge normalized cutoff frequency</param>
+        /// <param name="freq2">Right edge normalized cutoff frequency</param>
         /// <param name="delay">Fractional delay</param>
         /// <param name="window">Window</param>
-        /// <returns>BP filter kernel</returns>
         public static double[] FirWinFdBp(int order, double freq1, double freq2, double delay, WindowType window = WindowType.Blackman)
         {
             Guard.AgainstInvalidRange(freq1, 0, 0.5, "lower frequency");
@@ -116,14 +113,13 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method for ideal bandstop fractional-delay FIR filter design using sinc-window method
+        /// Designs ideal bandstop fractional-delay FIR filter using sinc-window method.
         /// </summary>
         /// <param name="order">Filter order</param>
-        /// <param name="freq1">Left edge cutoff frequency (normalized: fc1 = f1/fs)</param>
-        /// <param name="freq2">Right edge cutoff frequency (normalized: fc2 = f2/fs)</param>
+        /// <param name="freq1">Left edge normalized cutoff frequency</param>
+        /// <param name="freq2">Right edge Normalized cutoff frequency</param>
         /// <param name="delay">Fractional delay</param>
         /// <param name="window">Window</param>
-        /// <returns>BS filter kernel</returns>
         public static double[] FirWinFdBs(int order, double freq1, double freq2, double delay, WindowType window = WindowType.Blackman)
         {
             Guard.AgainstInvalidRange(freq1, 0, 0.5, "lower frequency");
@@ -155,12 +151,11 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method for all-pass fractional-delay FIR filter design using sinc-window method
+        /// Designs all-pass fractional-delay FIR filter using sinc-window method.
         /// </summary>
         /// <param name="order">Filter order</param>
         /// <param name="delay">Fractional delay</param>
         /// <param name="window">Window</param>
-        /// <returns>All-pass filter kernel</returns>
         public static double[] FirWinFdAp(int order, double delay, WindowType window = WindowType.Blackman)
         {
             var kernel = new double[order];
@@ -180,8 +175,8 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Normalize frequency response at given frequency
-        /// (normalize kernel coefficients to map frequency response onto [0, 1])
+        /// Normalizes frequency response at given frequency 
+        /// (normalizes kernel coefficients to map frequency response onto [0, 1])
         /// </summary>
         /// <param name="kernel">Kernel</param>
         /// <param name="freq">Frequency</param>
@@ -211,31 +206,29 @@ namespace NWaves.Filters.Fda
         /// 
 
         /// <summary>
-        /// Method for ideal lowpass FIR filter design using sinc-window method.
+        /// Designs ideal lowpass FIR filter using sinc-window method.
         /// </summary>
         /// <param name="order">Filter order</param>
-        /// <param name="freq">Cutoff frequency (normalized: fc = f/fs)</param>
+        /// <param name="freq">Normalized cutoff frequency</param>
         /// <param name="window">Window</param>
-        /// <returns>LP filter kernel</returns>
         public static double[] FirWinLp(int order, double freq, WindowType window = WindowType.Blackman)
         {
             return FirWinFdLp(order, freq, (order + 1) % 2 * 0.5, window);
         }
 
         /// <summary>
-        /// Method for ideal highpass FIR filter design using sinc-window method
+        /// Designs ideal highpass FIR filter using sinc-window method.
         /// </summary>
         /// <param name="order">Filter order</param>
-        /// <param name="freq">Cutoff frequency (normalized: fc = f/fs)</param>
+        /// <param name="freq">Normalized cutoff frequency</param>
         /// <param name="window">Window</param>
-        /// <returns>HP filter kernel</returns>
         public static double[] FirWinHp(int order, double freq, WindowType window = WindowType.Blackman)
         {
             return FirWinFdHp(order, freq, (order + 1) % 2 * 0.5, window);
         }
 
         /// <summary>
-        /// Method for ideal bandpass FIR filter design using sinc-window method
+        /// Designs ideal bandpass FIR filter using sinc-window method.
         /// </summary>
         /// <param name="order">Filter order</param>
         /// <param name="freq1">Left edge cutoff frequency (normalized: fc1 = f1/fs)</param>
@@ -248,7 +241,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method for ideal bandstop FIR filter design using sinc-window method
+        /// Designs ideal bandstop FIR filter using sinc-window method.
         /// </summary>
         /// <param name="order">Filter order</param>
         /// <param name="freq1">Left edge cutoff frequency (normalized: fc1 = f1/fs)</param>
@@ -362,21 +355,20 @@ namespace NWaves.Filters.Fda
         #region equiripple FIR filter
 
         /// <summary>
-        /// Design equiripple LP FIR filter using Remez (Parks-McClellan) algorithm
+        /// Designs equiripple LP FIR filter using Remez (Parks-McClellan) algorithm.
         /// </summary>
         /// <param name="order">Filter order</param>
         /// <param name="fp">Passband edge frequency</param>
         /// <param name="fa">Stopband edge frequency</param>
         /// <param name="wp">Passband weight</param>
         /// <param name="wa">Stopband weight</param>
-        /// <returns>Filter kernel</returns>
         public static double[] FirEquirippleLp(int order, double fp, double fa, double wp, double wa)
         {
             return new Remez(order, new[] { 0, fp, fa, 0.5 }, new[] { 1, 0.0 }, new[] { wp, wa }).Design();
         }
 
         /// <summary>
-        /// Design equiripple HP FIR filter using Remez (Parks-McClellan) algorithm
+        /// Designs equiripple HP FIR filter using Remez (Parks-McClellan) algorithm.
         /// </summary>
         /// <param name="order">Filter order</param>
         /// <param name="fa">Stopband edge frequency</param>
@@ -390,7 +382,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Design equiripple BP FIR filter using Remez (Parks-McClellan) algorithm
+        /// Designs equiripple BP FIR filter using Remez (Parks-McClellan) algorithm.
         /// </summary>
         /// <param name="order">Filter order</param>
         /// <param name="fa1">Left stopband edge frequency</param>
@@ -407,7 +399,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Design equiripple BS FIR filter using Remez (Parks-McClellan) algorithm
+        /// Designs equiripple BS FIR filter using Remez (Parks-McClellan) algorithm.
         /// </summary>
         /// <param name="order">Filter order</param>
         /// <param name="fp1">Left passband edge frequency</param>

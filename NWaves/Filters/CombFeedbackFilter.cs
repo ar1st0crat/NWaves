@@ -4,7 +4,7 @@ using NWaves.Signals;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Class representing feedback comb filter:
+    /// Represents feedback comb filter:
     /// <code>
     ///     y[n] = b0 * x[n] - am * y[n - m]
     /// </code>
@@ -17,7 +17,7 @@ namespace NWaves.Filters
         private readonly int _delay;
 
         /// <summary>
-        /// Construct <see cref="CombFeedbackFilter"/>.
+        /// Constructs <see cref="CombFeedbackFilter"/>.
         /// </summary>
         /// <param name="m">Delay</param>
         /// <param name="b0">Coefficient b0</param>
@@ -32,7 +32,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
@@ -53,12 +53,11 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Process entire <paramref name="signal"/> and return new filtered signal.
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="method">Filtering method</param>
-        public override DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                               FilteringMethod method = FilteringMethod.Auto)
+        public override DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
         {
             if (method != FilteringMethod.Auto)
             {
@@ -84,7 +83,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Change coefficients (preserving the state).
+        /// Changes coefficients (preserving the state of the filter).
         /// </summary>
         /// <param name="b0">Coefficient b0</param>
         /// <param name="am">Coefficient am</param>

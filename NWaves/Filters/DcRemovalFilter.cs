@@ -3,7 +3,7 @@
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Class representing DC removal IIR filter.
+    /// Represents DC removal IIR filter.
     /// </summary>
     public class DcRemovalFilter : IirFilter
     {
@@ -18,7 +18,7 @@ namespace NWaves.Filters
         private float _out1;
 
         /// <summary>
-        /// Construct <see cref="DcRemovalFilter"/>.
+        /// Constructs <see cref="DcRemovalFilter"/>.
         /// </summary>
         /// <param name="r">R coefficient (usually in [0.9, 1] range)</param>
         public DcRemovalFilter(double r = 0.995) : base(new [] { 1.0, -1 }, new [] { 1.0, -r })
@@ -27,7 +27,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
@@ -41,7 +41,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Reset filter.
+        /// Resets filter.
         /// </summary>
         public override void Reset()
         {

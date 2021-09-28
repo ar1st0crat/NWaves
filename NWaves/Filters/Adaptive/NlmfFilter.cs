@@ -3,7 +3,7 @@
 namespace NWaves.Filters.Adaptive
 {
     /// <summary>
-    /// Class representing NLMF Adaptive filter (Normalized Least-Mean-Fourth algorithm + Epsilon).
+    /// Represents NLMF Adaptive filter (Normalized Least-Mean-Fourth algorithm + Epsilon).
     /// </summary>
     public class NlmfFilter : AdaptiveFilter
     {
@@ -12,7 +12,7 @@ namespace NWaves.Filters.Adaptive
         private readonly float _leakage;
 
         /// <summary>
-        /// Construct <see cref="NlmfFilter"/> of given <paramref name="order"/>.
+        /// Constructs <see cref="NlmfFilter"/> of given <paramref name="order"/>.
         /// </summary>
         /// <param name="order">Filter order</param>
         /// <param name="mu">Mu</param>
@@ -26,7 +26,7 @@ namespace NWaves.Filters.Adaptive
         }
 
         /// <summary>
-        /// Process one sample of input signal and one sample of desired signal.
+        /// Processes one sample of input and desired signals and adapts filter coefficients.
         /// </summary>
         /// <param name="input">Sample of input signal</param>
         /// <param name="desired">Sample of desired signal</param>

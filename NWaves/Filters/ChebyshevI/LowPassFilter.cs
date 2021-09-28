@@ -4,36 +4,36 @@ using NWaves.Filters.Fda;
 namespace NWaves.Filters.ChebyshevI
 {
     /// <summary>
-    /// Low-pass Chebyshev-I filter
+    /// Represents low-pass Chebyshev-I filter.
     /// </summary>
     public class LowPassFilter : ZiFilter
     {
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="LowPassFilter"/> of given <paramref name="order"/> with given cutoff <paramref name="freq"/>.
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="order"></param>
-        /// <param name="ripple"></param>
+        /// <param name="freq">Cutoff frequency</param>
+        /// <param name="order">Filter order</param>
+        /// <param name="ripple">Ripple (in dB)</param>
         public LowPassFilter(double freq, int order, double ripple = 0.1) : base(MakeTf(freq, order, ripple))
         {
         }
 
         /// <summary>
-        /// TF generator
+        /// Generates transfer function.
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="order"></param>
-        /// <returns></returns>
+        /// <param name="freq">Cutoff frequency</param>
+        /// <param name="order">Filter order</param>
+        /// <param name="ripple">Ripple (in dB)</param>
         private static TransferFunction MakeTf(double freq, int order, double ripple = 0.1)
         {
             return DesignFilter.IirLpTf(freq, PrototypeChebyshevI.Poles(order, ripple));
         }
 
         /// <summary>
-        /// Change filter coeffs online
+        /// Changes filter coefficients online (preserving the state of the filter).
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="ripple"></param>
+        /// <param name="freq">Cutoff frequency</param>
+        /// <param name="ripple">Ripple (in dB)</param>
         public void Change(double freq, double ripple = 0.1) => Change(MakeTf(freq, _a.Length - 1, ripple));
     }
 }

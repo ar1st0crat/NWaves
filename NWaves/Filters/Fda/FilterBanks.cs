@@ -11,35 +11,36 @@ using NWaves.Utils;
 namespace NWaves.Filters.Fda
 {
     /// <summary>
-    /// Static class with methods providing general shapes of filter banks:
-    /// 
-    ///     - triangular
-    ///     - rectangular
-    ///     - FIR bandpass (close to trapezoidal, slightly overlapping)
-    ///     - BiQuad bandpass
+    /// Contains methods providing general shapes of filter banks:
+    /// <list type="bullet">
+    ///     <item>triangular</item>
+    ///     <item>rectangular</item>
+    ///     <item>FIR bandpass (close to trapezoidal, slightly overlapping)</item>
+    ///     <item>BiQuad bandpass</item>
+    /// </list>
     /// 
     /// ...and methods for obtaining the most widely used frequency bands:
     /// 
-    ///     - Herz bands
-    ///     - Mel bands (HTK and Slaney)
-    ///     - Bark bands (uniform and Slaney)
-    ///     - Critical bands
-    ///     - ERB filterbank
-    ///     - Octaves (from MPEG-7)
-    ///     - Chroma
-    /// 
+    /// <list type="bullet">
+    ///     <item>Herz bands</item>
+    ///     <item>Mel bands (HTK and Slaney)</item>
+    ///     <item>Bark bands (uniform and Slaney)</item>
+    ///     <item>Critical bands</item>
+    ///     <item>ERB filterbank</item>
+    ///     <item>Octaves (from MPEG-7)</item>
+    ///     <item>Chroma</item>
+    /// </list>
     /// </summary>
     public static class FilterBanks
     {
         /// <summary>
-        /// Method returns universal triangular filterbank weights based on given frequencies.
+        /// Generates triangular filterbank weights based on given <paramref name="frequencies"/>.
         /// </summary>
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
         /// <param name="vtln">VTLN frequency warper</param>
         /// <param name="mapper">Frequency scale mapper (e.g. herz-to-mel) used here only for proper weighting</param>
-        /// <returns>Array of triangular filters</returns>
         public static float[][] Triangular(int fftSize,
                                            int samplingRate,
                                            (double, double, double)[] frequencies,
@@ -84,14 +85,13 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method returns universal rectangular filterbank weights based on given frequencies.
+        /// Generates rectangular filterbank weights based on given <paramref name="frequencies"/>.
         /// </summary>
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
         /// <param name="vtln">VTLN frequency warper</param>
         /// <param name="mapper">Frequency scale mapper (e.g. herz-to-mel)</param>
-        /// <returns>Array of rectangular filters</returns>
         public static float[][] Rectangular(int fftSize,
                                            int samplingRate,
                                            (double, double, double)[] frequencies,
@@ -132,14 +132,13 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method returns FIR bandpass (close to trapezoidal) filterbank based on given frequencies.
+        /// Generates FIR bandpass (close to trapezoidal) filterbank based on given <paramref name="frequencies"/>.
         /// </summary>
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
         /// <param name="vtln">VTLN frequency warper</param>
         /// <param name="mapper">Frequency scale mapper (e.g. herz-to-mel)</param>
-        /// <returns>Array of rectangular filters</returns>
         public static float[][] Trapezoidal(int fftSize,
                                            int samplingRate,
                                            (double, double, double)[] frequencies,
@@ -174,12 +173,11 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method returns BiQuad bandpass overlapping filters based on given frequencies.
+        /// Generates BiQuad bandpass overlapping filters based on given <paramref name="frequencies"/>.
         /// </summary>
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
-        /// <returns>Array of BiQuad bandpass filters</returns>
         public static float[][] BiQuad(int fftSize, int samplingRate, (double, double, double)[] frequencies)
         {
             var center = frequencies.Select(f => f.Item2).ToArray();
@@ -199,16 +197,15 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// This general method returns frequency tuples for uniformly spaced frequency bands on any scale.
+        /// Returns frequency tuples for uniformly spaced frequency bands on any scale.
         /// </summary>
         /// <param name="scaleMapper">The function that converts Hz to other frequency scale</param>
-        /// <param name="inverseMapper">The function that converts frequency from alternative scale back to Hz</param>
+        /// <param name="inverseMapper">The function that converts frequency from alternate scale back to Hz</param>
         /// <param name="filterCount">Number of filters</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
-        /// <returns>Array of frequency tuples for each filter</returns>
         private static (double, double, double)[] UniformBands(
                                                      Func<double, double> scaleMapper,
                                                      Func<double, double> inverseMapper,
@@ -262,14 +259,13 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method returns frequency tuples for uniformly spaced frequency bands on Herz scale.
+        /// Returns frequency tuples for uniformly spaced frequency bands on Herz scale.
         /// </summary>
         /// <param name="combFilterCount">Number of filters</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
-        /// <returns>Array of frequency tuples for each Herz filter</returns>
         public static (double, double, double)[] HerzBands(
             int combFilterCount, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = false)
         {
@@ -278,14 +274,13 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method returns frequency tuples for uniformly spaced frequency bands on Mel scale.
+        /// Returns frequency tuples for uniformly spaced frequency bands on Mel scale.
         /// </summary>
         /// <param name="melFilterCount">Number of mel filters to create</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
-        /// <returns>Array of frequency tuples for each Mel filter</returns>
         public static (double, double, double)[] MelBands(
             int melFilterCount, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
         {
@@ -293,7 +288,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method returns frequency tuples for uniformly spaced frequency bands on Mel scale
+        /// Returns frequency tuples for uniformly spaced frequency bands on Mel scale 
         /// (according to M.Slaney's formula).
         /// </summary>
         /// <param name="melFilterCount">Number of mel filters to create</param>
@@ -301,7 +296,6 @@ namespace NWaves.Filters.Fda
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
-        /// <returns>Array of frequency tuples for each Mel filter</returns>
         public static (double, double, double)[] MelBandsSlaney(
             int melFilterCount, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
         {
@@ -309,14 +303,13 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method returns frequency tuples for uniformly spaced frequency bands on Bark scale (Traunmueller, 1990).
+        /// Returns frequency tuples for uniformly spaced frequency bands on Bark scale (Traunmueller, 1990).
         /// </summary>
         /// <param name="barkFilterCount">Number of bark filters to create</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
-        /// <returns>Array of frequency tuples for each Bark filter</returns>
         public static (double, double, double)[] BarkBands(
             int barkFilterCount, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
         {
@@ -324,14 +317,13 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method returns frequency tuples for uniformly spaced frequency bands on Bark scale (Wang, 1992).
+        /// Returns frequency tuples for uniformly spaced frequency bands on Bark scale (Wang, 1992).
         /// </summary>
         /// <param name="barkFilterCount">Number of bark filters to create</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
-        /// <returns>Array of frequency tuples for each Bark filter</returns>
         public static (double, double, double)[] BarkBandsSlaney(
             int barkFilterCount, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = true)
         {
@@ -339,13 +331,12 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method returns frequency tuples for critical bands.
+        /// Returns frequency tuples for critical bands.
         /// </summary>
         /// <param name="filterCount">Number of filters to create</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
-        /// <returns>Array of frequency tuples for each Critical Band filter</returns>
         public static (double, double, double)[] CriticalBands(
             int filterCount, int samplingRate, double lowFreq = 0, double highFreq = 0)
         {
@@ -401,14 +392,13 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method returns frequency tuples for octave bands.
+        /// Returns frequency tuples for octave bands.
         /// </summary>
         /// <param name="octaveCount">Number of octave filters to create</param>
         /// <param name="samplingRate">Assumed sampling rate of a signal</param>
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="overlap">Flag indicating that bands should overlap</param>
-        /// <returns>Array of frequency tuples for each octave filter</returns>
         public static (double, double, double)[] OctaveBands(
             int octaveCount, int samplingRate, double lowFreq = 0, double highFreq = 0, bool overlap = false)
         {
@@ -453,7 +443,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Chroma feature filter bank (slightly over-complicated to match librosa analog)
+        /// Generates chroma feature filter bank (slightly over-complicated to match librosa analog).
         /// </summary>
         /// <param name="fftSize">Assumed size of FFT</param>
         /// <param name="samplingRate">Assumed sampling rate</param>
@@ -463,7 +453,6 @@ namespace NWaves.Filters.Fda
         /// <param name="octaveWidth">If octaveWidth=0, the shape is rectangular. Otherwise, it's the width of Gaussian window</param>
         /// <param name="norm">Norm: 0 - no normalization, 1 - apply L1-norm, 2 - apply L2-norm</param>
         /// <param name="baseC">If baseC=true, the filter bank will start at 'C'. Otherwise, the filter bank will start at 'A'.</param>
-        /// <returns>Chroma feature filterbank</returns>
         public static float[][] Chroma(int fftSize,
                                        int samplingRate,
                                        int chromaCount = 12,
@@ -568,7 +557,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method creates overlapping triangular mel filters (as suggested by Malcolm Slaney).
+        /// Creates overlapping triangular mel filters (as suggested by Malcolm Slaney).
         /// </summary>
         /// <param name="filterCount">Number of mel filters</param>
         /// <param name="fftSize">Assumed size of FFT</param>
@@ -577,7 +566,6 @@ namespace NWaves.Filters.Fda
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="normalizeGain">True if gain should be normalized; false if all filters should have same height 1.0</param>
         /// <param name="vtln">VTLN frequency warper</param>
-        /// <returns>Array of mel filters</returns>
         public static float[][] MelBankSlaney(
             int filterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool normalizeGain = true, VtlnWarper vtln = null)
         {
@@ -603,7 +591,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method creates overlapping trapezoidal bark filters (as suggested by Malcolm Slaney).
+        /// Creates overlapping trapezoidal bark filters (as suggested by Malcolm Slaney).
         /// </summary>
         /// <param name="filterCount">Number of bark filters</param>
         /// <param name="fftSize">Assumed size of FFT</param>
@@ -611,7 +599,6 @@ namespace NWaves.Filters.Fda
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="width">Constant width of each band in Bark</param>
-        /// <returns></returns>
         public static float[][] BarkBankSlaney(
             int filterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, double width = 1)
         {
@@ -655,7 +642,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method creates overlapping ERB filters (ported from Malcolm Slaney's MATLAB code).
+        /// Creates overlapping ERB filters.
         /// </summary>
         /// <param name="erbFilterCount">Number of ERB filters</param>
         /// <param name="fftSize">Assumed size of FFT</param>
@@ -663,7 +650,6 @@ namespace NWaves.Filters.Fda
         /// <param name="lowFreq">Lower bound of the frequency range</param>
         /// <param name="highFreq">Upper bound of the frequency range</param>
         /// <param name="normalizeGain">True if gain should be normalized; false if all filters should have same height 1.0</param>
-        /// <returns>Array of ERB filters</returns>
         public static float[][] Erb(
             int erbFilterCount, int fftSize, int samplingRate, double lowFreq = 0, double highFreq = 0, bool normalizeGain = true)
         {
@@ -675,6 +661,8 @@ namespace NWaves.Filters.Fda
             {
                 highFreq = samplingRate / 2.0;
             }
+
+            // ported from Malcolm Slaney's MATLAB code:
 
             const double earQ = 9.26449;
             const double minBw = 24.7;
@@ -781,7 +769,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Normalize weights (so that energies in each band are approx. equal)
+        /// Normalizes weights (so that energies in each band are approx. equal).
         /// </summary>
         /// <param name="filterCount">Number of filters</param>
         /// <param name="frequencies">Array of frequency tuples (left, center, right) for each filter</param>
@@ -800,7 +788,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method applies filters to spectrum and fills resulting filtered spectrum.
+        /// Applies filters to spectrum and fills resulting filtered spectrum.
         /// </summary>
         /// <param name="filterbank">Filter bank</param>
         /// <param name="spectrum">Spectrum</param>
@@ -821,7 +809,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method applies filters to all spectra in given sequence
+        /// Applies filters to all spectra in given sequence.
         /// </summary>
         /// <param name="filterbank">Filter bank</param>
         /// <param name="spectrogram">Output spectra of filtered signal</param>
@@ -853,7 +841,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method applies filters to spectrum and then does Ln() on resulting spectrum.
+        /// Applies filters to spectrum and then does Ln() on resulting spectrum.
         /// </summary>
         /// <param name="filterbank">Filter bank</param>
         /// <param name="spectrum">Spectrum</param>
@@ -875,7 +863,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method applies filters to spectrum and then does Log10() on resulting spectrum.
+        /// Applies filters to spectrum and then does Log10() on resulting spectrum.
         /// </summary>
         /// <param name="filterbank">Filter bank</param>
         /// <param name="spectrum">Spectrum</param>
@@ -897,8 +885,8 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method applies filters to spectrum and then does 10*Log10() on resulting spectrum
-        /// (added to compare MFCC coefficients with librosa results)
+        /// Applies filters to spectrum and then does 10*Log10() on resulting spectrum 
+        /// (added to compare MFCC coefficients with librosa results).
         /// </summary>
         /// <param name="filterbank">Filter bank</param>
         /// <param name="spectrum">Spectrum</param>
@@ -920,7 +908,7 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Method applies filters to spectrum and then does Pow(x, power) on resulting spectrum.
+        /// Applies filters to spectrum and then does Pow(x, power) on resulting spectrum. 
         /// For example, in PLP: power=1/3 (cubic root).
         /// </summary>
         /// <param name="filterbank">Filter bank</param>

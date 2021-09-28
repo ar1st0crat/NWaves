@@ -3,30 +3,33 @@ using NWaves.Filters.Fda;
 
 namespace NWaves.Filters.Elliptic
 {
+    /// <summary>
+    /// Represents band-stop elliptic filter.
+    /// </summary>
     public class BandStopFilter : ZiFilter
     {
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="BandStopFilter"/> of given <paramref name="order"/> 
+        /// with given cutoff frequencies <paramref name="freq1"/> and <paramref name="freq2"/>.
         /// </summary>
-        /// <param name="freq1"></param>
-        /// <param name="freq2"></param>
-        /// <param name="order"></param>
-        /// <param name="ripplePass"></param>
-        /// <param name="rippleStop"></param>
+        /// <param name="freq1">First cutoff frequency</param>
+        /// <param name="freq2">Second cutoff frequency</param>
+        /// <param name="order">Filter order</param>
+        /// <param name="ripplePass">Passband ripple (in dB)</param>
+        /// <param name="rippleStop">Stopband ripple (in dB)</param>
         public BandStopFilter(double freq1, double freq2, int order, double ripplePass = 1, double rippleStop = 20) :
             base(MakeTf(freq1, freq2, order, ripplePass, rippleStop))
         {
         }
 
         /// <summary>
-        /// TF generator
+        /// Generates transfer function.
         /// </summary>
-        /// <param name="freq1"></param>
-        /// <param name="freq2"></param>
-        /// <param name="order"></param>
-        /// <param name="ripplePass"></param>
-        /// <param name="rippleStop"></param>
-        /// <returns></returns>
+        /// <param name="freq1">First cutoff frequency</param>
+        /// <param name="freq2">Second cutoff frequency</param>
+        /// <param name="order">Filter order</param>
+        /// <param name="ripplePass">Passband ripple (in dB)</param>
+        /// <param name="rippleStop">Stopband ripple (in dB)</param>
         private static TransferFunction MakeTf(double freq1, double freq2, int order, double ripplePass = 1, double rippleStop = 20)
         {
             return DesignFilter.IirBsTf(freq1, freq2,
@@ -35,12 +38,12 @@ namespace NWaves.Filters.Elliptic
         }
 
         /// <summary>
-        /// Change filter coeffs online
+        /// Changes filter coefficients online (preserving the state of the filter).
         /// </summary>
-        /// <param name="freq1"></param>
-        /// <param name="freq2"></param>
-        /// <param name="ripplePass"></param>
-        /// <param name="rippleStop"></param>
+        /// <param name="freq1">First cutoff frequency</param>
+        /// <param name="freq2">Second cutoff frequency</param>
+        /// <param name="ripplePass">Passband ripple (in dB)</param>
+        /// <param name="rippleStop">Stopband ripple (in dB)</param>
         public void Change(double freq1, double freq2, double ripplePass = 1, double rippleStop = 20)
         {
             Change(MakeTf(freq1, freq2, (_a.Length - 1) / 2, ripplePass, rippleStop));

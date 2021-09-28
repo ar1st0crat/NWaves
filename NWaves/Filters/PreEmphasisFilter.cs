@@ -4,7 +4,7 @@ using NWaves.Signals;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Class representing pre-emphasis FIR filter.
+    /// Represents pre-emphasis FIR filter.
     /// </summary>
     public class PreEmphasisFilter : FirFilter
     {
@@ -14,7 +14,7 @@ namespace NWaves.Filters
         private float _prevSample;
 
         /// <summary>
-        /// Construct <see cref="PreEmphasisFilter"/>.
+        /// Constructs <see cref="PreEmphasisFilter"/>.
         /// </summary>
         /// <param name="a">Pre-emphasis coefficient</param>
         /// <param name="normalize">Normalize freq response to unit gain</param>
@@ -29,7 +29,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
@@ -41,7 +41,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Process entire <paramref name="signal"/> and return new filtered signal.
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="method">Filtering method</param>
@@ -74,7 +74,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Reset filter.
+        /// Resets filter.
         /// </summary>
         public override void Reset()
         {

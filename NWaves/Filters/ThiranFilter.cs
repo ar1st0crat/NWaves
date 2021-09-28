@@ -6,7 +6,7 @@ using System.Linq;
 namespace NWaves.Filters
 {
     /// <summary>
-    /// Class representing N-th order Thiran allpass interpolation filter for Delta delay samples.
+    /// Represents N-th order Thiran allpass interpolation filter for Delta delay samples.
     /// <code>
     /// Example:
     /// <br/>
@@ -17,16 +17,16 @@ namespace NWaves.Filters
     public class ThiranFilter : IirFilter
     {
         /// <summary>
-        /// Construct <see cref="ThiranFilter"/> of given <paramref name="order"/>.
+        /// Constructs <see cref="ThiranFilter"/> of given <paramref name="order"/>.
         /// </summary>
-        /// <param name="order"></param>
-        /// <param name="delta"></param>
+        /// <param name="order">Filter order</param>
+        /// <param name="delta">Delta (fractional delay)</param>
         public ThiranFilter(int order, double delta) : base(MakeTf(order, delta))
         {
         }
 
         /// <summary>
-        /// Generate transfer function.
+        /// Generates transfer function.
         /// </summary>
         /// <param name="order">Filter order</param>
         /// <param name="delta">Delta (fractional delay)</param>
@@ -39,7 +39,7 @@ namespace NWaves.Filters
         }
 
         /// <summary>
-        /// Get <paramref name="k"/>-th coefficient in denominator of transfer function.
+        /// Computes <paramref name="k"/>-th coefficient of denominator of transfer function.
         /// </summary>
         /// <param name="k">k</param>
         /// <param name="n">n</param>

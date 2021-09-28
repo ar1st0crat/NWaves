@@ -4,34 +4,45 @@ using NWaves.Filters.Fda;
 namespace NWaves.Filters.Butterworth
 {
     /// <summary>
-    /// Class for Butterworth IIR LP filter.
+    /// Represents low-pass Butterworth filter.
     /// </summary>
     public class LowPassFilter : ZiFilter
     {
         /// <summary>
-        /// Constructor
+        /// Gets cutoff frequency.
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="order"></param>
+        public double Freq { get; private set; }
+
+        /// <summary>
+        /// Gets filter order.
+        /// </summary>
+        public int Order { get; private set; }
+
+        /// <summary>
+        /// Constructs <see cref="LowPassFilter"/> of given <paramref name="order"/> with given cutoff <paramref name="freq"/>.
+        /// </summary>
+        /// <param name="freq">Cutoff frequency</param>
+        /// <param name="order">Filter order</param>
         public LowPassFilter(double freq, int order) : base(MakeTf(freq, order))
         {
+            Freq = freq;
+            Order = order;
         }
 
         /// <summary>
-        /// TF generator
+        /// Generates transfer function.
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="order"></param>
-        /// <returns></returns>
+        /// <param name="freq">Cutoff frequency</param>
+        /// <param name="order">Filter order</param>
         private static TransferFunction MakeTf(double freq, int order)
         {
             return DesignFilter.IirLpTf(freq, PrototypeButterworth.Poles(order));
         }
 
         /// <summary>
-        /// Change filter coeffs online
+        /// Changes filter coefficients online (preserving the state of the filter).
         /// </summary>
-        /// <param name="freq"></param>
+        /// <param name="freq">Cutoff frequency</param>
         public void Change(double freq) => Change(MakeTf(freq, _a.Length - 1));
     }
 }

@@ -5,7 +5,7 @@ using NWaves.Signals;
 namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// Class representing the chain of sequentially connected filters.
+    /// Represents the chain of sequentially connected filters.
     /// </summary>
     public class FilterChain : IFilter, IOnlineFilter
     {
@@ -15,7 +15,7 @@ namespace NWaves.Filters.Base
         private readonly List<IOnlineFilter> _filters;
 
         /// <summary>
-        /// Construct <see cref="FilterChain"/> from collection of <paramref name="filters"/>.
+        /// Constructs <see cref="FilterChain"/> from collection of <paramref name="filters"/>.
         /// </summary>
         /// <param name="filters">Collection of online filters</param>
         public FilterChain(IEnumerable<IOnlineFilter> filters = null)
@@ -24,8 +24,8 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Construct <see cref="FilterChain"/> from collection of transfer functions (e.g., SOS sections). 
-        /// This constructor will create objects of <see cref="IirFilter"/> under the hood.
+        /// Constructs <see cref="FilterChain"/> from collection of transfer functions (e.g., SOS sections). 
+        /// This constructor creates objects of <see cref="IirFilter"/> under the hood.
         /// </summary>
         /// <param name="tfs">Collection of transfer functions</param>
         public FilterChain(IEnumerable<TransferFunction> tfs)
@@ -39,26 +39,26 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Add <paramref name="filter"/> to the chain.
+        /// Adds <paramref name="filter"/> to the chain.
         /// </summary>
         /// <param name="filter">Online filter</param>
         public void Add(IOnlineFilter filter) => _filters.Add(filter);
 
         /// <summary>
-        /// Insert <paramref name="filter"/> at specified <paramref name="index"/> in the chain.
+        /// Inserts <paramref name="filter"/> at specified <paramref name="index"/> in the chain.
         /// </summary>
         /// <param name="index">Index of the filter in chain</param>
         /// <param name="filter">Online filter</param>
         public void Insert(int index, IOnlineFilter filter) => _filters.Insert(index, filter);
 
         /// <summary>
-        /// Remove filter at specified <paramref name="index"/> from the chain.
+        /// Removes filter at specified <paramref name="index"/> from the chain.
         /// </summary>
         /// <param name="index">Index of the filter in chain</param>
         public void RemoveAt(int index) => _filters.RemoveAt(index);
 
         /// <summary>
-        /// Process one sample by the chain of filters.
+        /// Processes one sample by the chain of filters.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public float Process(float sample)
@@ -74,7 +74,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Reset all filters in the chain.
+        /// Resets all filters in the chain.
         /// </summary>
         public void Reset()
         {
@@ -85,7 +85,7 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Filter entire signal.
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="method">Filtering method</param>

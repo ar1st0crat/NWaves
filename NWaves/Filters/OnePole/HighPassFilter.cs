@@ -3,44 +3,43 @@ using System;
 namespace NWaves.Filters.OnePole
 {
     /// <summary>
-    /// Class for one-pole high-pass filter
+    /// Represents one-pole high-pass filter.
     /// </summary>
     public class HighPassFilter : OnePoleFilter
     {
         /// <summary>
-        /// Frequency
+        /// Gets cutoff frequency.
         /// </summary>
         public double Freq { get; protected set; }
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="HighPassFilter"/> with given cutoff <paramref name="frequency"/>.
         /// </summary>
-        /// <param name="freq"></param>
-        public HighPassFilter(double freq)
+        /// <param name="frequency">Cutoff frequency</param>
+        public HighPassFilter(double frequency)
         {
-            SetCoefficients(freq);
+            SetCoefficients(frequency);
         }
 
         /// <summary>
-        /// Set filter coefficients
+        /// Sets filter coefficients based on given cutoff <paramref name="frequency"/>.
         /// </summary>
-        /// <param name="freq"></param>
-        private void SetCoefficients(double freq)
+        /// <param name="frequency">Cutoff frequency</param>
+        private void SetCoefficients(double frequency)
         {
             _a[0] = 1;
-            _a[1] = (float)(Math.Exp(-2 * Math.PI * (0.5 - freq)));
+            _a[1] = (float)(Math.Exp(-2 * Math.PI * (0.5 - frequency)));
 
             _b[0] = 1 - _a[1];
         }
 
         /// <summary>
-        /// Change filter parameters (preserving its state)
+        /// Changes filter coefficients (preserving the state of the filter).
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="q"></param>
-        public void Change(double freq)
+        /// <param name="frequency">Cutoff frequency</param>
+        public void Change(double frequency)
         {
-            SetCoefficients(freq);
+            SetCoefficients(frequency);
         }
     }
 }

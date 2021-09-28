@@ -1,7 +1,7 @@
 ﻿namespace NWaves.Filters.Adaptive
 {
     /// <summary>
-    /// Class representing LMF Adaptive filter (Least-Mean-Fourth algorithm).
+    /// Represents LMF Adaptive filter (Least-Mean-Fourth algorithm).
     /// </summary>
     public class LmfFilter : AdaptiveFilter
     {
@@ -9,7 +9,7 @@
         private readonly float _leakage;
 
         /// <summary>
-        /// Construct <see cref="LmfFilter"/> of given <paramref name="order"/>.
+        /// Constructs <see cref="LmfFilter"/> of given <paramref name="order"/>.
         /// </summary>
         /// <param name="order">Filter order</param>
         /// <param name="mu">Mu</param>
@@ -21,7 +21,7 @@
         }
 
         /// <summary>
-        /// Process one sample of input signal and one sample of desired signal.
+        /// Processes one sample of input and desired signals and adapts filter coefficients.
         /// </summary>
         /// <param name="input">Sample of input signal</param>
         /// <param name="desired">Sample of desired signal</param>

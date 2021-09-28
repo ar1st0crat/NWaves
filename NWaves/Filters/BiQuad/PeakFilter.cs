@@ -3,47 +3,47 @@ using System;
 namespace NWaves.Filters.BiQuad
 {
     /// <summary>
-    /// BiQuad peaking EQ filter.
-    /// 
-    /// The coefficients are calculated automatically according to 
-    /// audio-eq-cookbook by R.Bristow-Johnson and WebAudio API.
+    /// Represents BiQuad peaking EQ filter.
     /// </summary>
     public class PeakFilter : BiQuadFilter
     {
         /// <summary>
-        /// Frequency
+        /// Gets center frequency.
         /// </summary>
         public double Freq { get; protected set; }
 
         /// <summary>
-        /// Q
+        /// Gets Q factor.
         /// </summary>
         public double Q { get; protected set; }
 
         /// <summary>
-        /// Gain
+        /// Gets gain (in dB).
         /// </summary>
         public double Gain { get; protected set; }
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="PeakFilter"/>.
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="q"></param>
-        /// <param name="gain"></param>
+        /// <param name="freq">Center frequency</param>
+        /// <param name="q">Q factor</param>
+        /// <param name="gain">Gain (in dB)</param>
         public PeakFilter(double freq, double q = 1, double gain = 1.0)
         {
             SetCoefficients(freq, q, gain);
         }
 
         /// <summary>
-        /// Set filter coefficients
+        /// Sets filter coefficients.
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="q"></param>
-        /// <param name="gain"></param>
+        /// <param name="freq">Center frequency</param>
+        /// <param name="q">Q factor</param>
+        /// <param name="gain">Gain (in dB)</param>
         private void SetCoefficients(double freq, double q, double gain)
         {
+            // The coefficients are calculated automatically according to 
+            // audio-eq-cookbook by R.Bristow-Johnson and WebAudio API.
+
             Freq = freq;
             Q = q;
             Gain = gain;
@@ -65,11 +65,11 @@ namespace NWaves.Filters.BiQuad
         }
 
         /// <summary>
-        /// Change filter parameters (preserving its state)
+        /// Changes filter coefficients online (preserving the state of the filter).
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="q"></param>
-        /// <param name="gain"></param>
+        /// <param name="freq">Center frequency</param>
+        /// <param name="q">Q factor</param>
+        /// <param name="gain">Gain (in dB)</param>
         public void Change(double freq, double q = 1, double gain = 1.0)
         {
             SetCoefficients(freq, q, gain);
