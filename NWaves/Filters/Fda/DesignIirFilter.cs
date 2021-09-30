@@ -18,13 +18,13 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Designs IIR notch filter.
         /// </summary>
-        /// <param name="freq">Normalized center frequency (must be in range [0, 0.5])</param>
+        /// <param name="frequency">Normalized center frequency in range [0..0.5]</param>
         /// <param name="q">Q factor (characterizes notch filter -3dB bandwidth relative to its center frequency)</param>
-        public static TransferFunction IirNotch(double freq, double q = 20.0)
+        public static TransferFunction IirNotch(double frequency, double q = 20.0)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Center frequency");
+            Guard.AgainstInvalidRange(frequency, 0, 0.5, "Center frequency");
 
-            var w0 = 2 * freq * Math.PI;
+            var w0 = 2 * frequency * Math.PI;
             var bw = w0 / q;
             var gb = 1 / Math.Sqrt(2);
 
@@ -41,13 +41,13 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Designs IIR peak filter.
         /// </summary>
-        /// <param name="freq">Normalized center frequency (must be in range [0, 0.5])</param>
+        /// <param name="frequency">Normalized center frequency in range [0..0.5]</param>
         /// <param name="q">Q factor (characterizes peak filter -3dB bandwidth relative to its center frequency)</param>
-        public static TransferFunction IirPeak(double freq, double q = 20.0)
+        public static TransferFunction IirPeak(double frequency, double q = 20.0)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Center frequency");
+            Guard.AgainstInvalidRange(frequency, 0, 0.5, "Center frequency");
 
-            var w0 = 2 * freq * Math.PI;
+            var w0 = 2 * frequency * Math.PI;
             var bw = w0 / q;
             var gb = 1 / Math.Sqrt(2);
 
@@ -64,17 +64,17 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Designs IIR comb notch filter.
         /// </summary>
-        /// <param name="freq">Normalized center frequency (must be in range [0, 0.5])</param>
+        /// <param name="frequency">Normalized center frequency in range [0..0.5]</param>
         /// <param name="q">Q factor (characterizes notch filter -3dB bandwidth relative to its center frequency)</param>
-        public static TransferFunction IirCombNotch(double freq, double q = 20.0)
+        public static TransferFunction IirCombNotch(double frequency, double q = 20.0)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Center frequency");
+            Guard.AgainstInvalidRange(frequency, 0, 0.5, "Center frequency");
 
-            var w0 = 2 * freq * Math.PI;
+            var w0 = 2 * frequency * Math.PI;
             var bw = w0 / q;
             var gb = 1 / Math.Sqrt(2);
 
-            var N = (int)(1 / freq);
+            var N = (int)(1 / frequency);
 
             var beta = Math.Sqrt((1 - gb * gb) / (gb * gb)) * Math.Tan(N * bw / 4);
 
@@ -93,17 +93,17 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Designs IIR comb peak filter.
         /// </summary>
-        /// <param name="freq">Normalized center frequency (must be in range [0, 0.5])</param>
+        /// <param name="frequency">Normalized center frequency in range [0..0.5]</param>
         /// <param name="q">Q factor (characterizes peak filter -3dB bandwidth relative to its center frequency)</param>
-        public static TransferFunction IirCombPeak(double freq, double q = 20.0)
+        public static TransferFunction IirCombPeak(double frequency, double q = 20.0)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Center frequency");
+            Guard.AgainstInvalidRange(frequency, 0, 0.5, "Center frequency");
 
-            var w0 = 2 * freq * Math.PI;
+            var w0 = 2 * frequency * Math.PI;
             var bw = w0 / q;
             var gb = 1 / Math.Sqrt(2);
 
-            var N = (int)(1 / freq);
+            var N = (int)(1 / frequency);
 
             var beta = Math.Sqrt(gb * gb / (1 - gb * gb)) * Math.Tan(N * bw / 4);
 
@@ -127,17 +127,17 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Designs lowpass pole filter.
         /// </summary>
-        /// <param name="freq">Normalized cutoff frequency in range [0, 0.5]</param>
+        /// <param name="frequency">Normalized cutoff frequency in range [0..0.5]</param>
         /// <param name="poles">Analog prototype poles</param>
         /// <param name="zeros">Analog prototype zeros</param>
-        public static TransferFunction IirLpTf(double freq, Complex[] poles, Complex[] zeros = null)
+        public static TransferFunction IirLpTf(double frequency, Complex[] poles, Complex[] zeros = null)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Cutoff frequency");
+            Guard.AgainstInvalidRange(frequency, 0, 0.5, "Cutoff frequency");
 
             var pre = new double[poles.Length];
             var pim = new double[poles.Length];
 
-            var warpedFreq = Math.Tan(Math.PI * freq);
+            var warpedFreq = Math.Tan(Math.PI * frequency);
 
             // 1) poles of analog filter (scaled)
 
@@ -193,17 +193,17 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Designs highpass pole filter.
         /// </summary>
-        /// <param name="freq">Normalized cutoff frequency in range [0, 0.5]</param>
+        /// <param name="frequency">Normalized cutoff frequency in range [0..0.5]</param>
         /// <param name="poles">Analog prototype poles</param>
         /// <param name="zeros">Analog prototype zeros</param>
-        public static TransferFunction IirHpTf(double freq, Complex[] poles, Complex[] zeros = null)
+        public static TransferFunction IirHpTf(double frequency, Complex[] poles, Complex[] zeros = null)
         {
-            Guard.AgainstInvalidRange(freq, 0, 0.5, "Cutoff frequency");
+            Guard.AgainstInvalidRange(frequency, 0, 0.5, "Cutoff frequency");
 
             var pre = new double[poles.Length];
             var pim = new double[poles.Length];
 
-            var warpedFreq = Math.Tan(Math.PI * freq);
+            var warpedFreq = Math.Tan(Math.PI * frequency);
 
             // 1) poles of analog filter (scaled)
 
@@ -259,23 +259,23 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Designs bandpass pole filter.
         /// </summary>
-        /// <param name="freq1">Normalized left cutoff frequency in range [0, 0.5]</param>
-        /// <param name="freq2">Normalized right cutoff frequency in range [0, 0.5]</param>
+        /// <param name="frequencyLow">Normalized low cutoff frequency in range [0..0.5]</param>
+        /// <param name="frequencyHigh">Normalized high cutoff frequency in range [0..0.5]</param>
         /// <param name="poles">Analog prototype poles</param>
         /// <param name="zeros">Analog prototype zeros</param>
-        public static TransferFunction IirBpTf(double freq1, double freq2, Complex[] poles, Complex[] zeros = null)
+        public static TransferFunction IirBpTf(double frequencyLow, double frequencyHigh, Complex[] poles, Complex[] zeros = null)
         {
-            Guard.AgainstInvalidRange(freq1, 0, 0.5, "lower frequency");
-            Guard.AgainstInvalidRange(freq2, 0, 0.5, "upper frequency");
-            Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
+            Guard.AgainstInvalidRange(frequencyLow, 0, 0.5, "lower frequency");
+            Guard.AgainstInvalidRange(frequencyHigh, 0, 0.5, "upper frequency");
+            Guard.AgainstInvalidRange(frequencyLow, frequencyHigh, "lower frequency", "upper frequency");
 
             var pre = new double[poles.Length * 2];
             var pim = new double[poles.Length * 2];
 
-            var centerFreq = 2 * Math.PI * (freq1 + freq2) / 2;
+            var centerFreq = 2 * Math.PI * (frequencyLow + frequencyHigh) / 2;
 
-            var warpedFreq1 = Math.Tan(Math.PI * freq1);
-            var warpedFreq2 = Math.Tan(Math.PI * freq2);
+            var warpedFreq1 = Math.Tan(Math.PI * frequencyLow);
+            var warpedFreq2 = Math.Tan(Math.PI * frequencyHigh);
 
             var f0 = Math.Sqrt(warpedFreq1 * warpedFreq2);
             var bw = warpedFreq2 - warpedFreq1;
@@ -350,15 +350,15 @@ namespace NWaves.Filters.Fda
         /// <summary>
         /// Designs bandstop pole filter.
         /// </summary>
-        /// <param name="freq1">Normalized left cutoff frequency in range [0, 0.5]</param>
-        /// <param name="freq2">Normalized right cutoff frequency in range [0, 0.5]</param>
+        /// <param name="frequencyLow">Normalized low cutoff frequency in range [0..0.5]</param>
+        /// <param name="frequencyHigh">Normalized high cutoff frequency in range [0..0.5]</param>
         /// <param name="poles">Analog prototype poles</param>
         /// <param name="zeros">Analog prototype zeros</param>
-        public static TransferFunction IirBsTf(double freq1, double freq2, Complex[] poles, Complex[] zeros = null)
+        public static TransferFunction IirBsTf(double frequencyLow, double frequencyHigh, Complex[] poles, Complex[] zeros = null)
         {
-            Guard.AgainstInvalidRange(freq1, 0, 0.5, "lower frequency");
-            Guard.AgainstInvalidRange(freq2, 0, 0.5, "upper frequency");
-            Guard.AgainstInvalidRange(freq1, freq2, "lower frequency", "upper frequency");
+            Guard.AgainstInvalidRange(frequencyLow, 0, 0.5, "lower frequency");
+            Guard.AgainstInvalidRange(frequencyHigh, 0, 0.5, "upper frequency");
+            Guard.AgainstInvalidRange(frequencyLow, frequencyHigh, "lower frequency", "upper frequency");
 
             // Calculation of filter coefficients is based on Neil Robertson's post:
             // https://www.dsprelated.com/showarticle/1131.php
@@ -366,8 +366,8 @@ namespace NWaves.Filters.Fda
             var pre = new double[poles.Length * 2];
             var pim = new double[poles.Length * 2];
 
-            var f1 = Math.Tan(Math.PI * freq1);
-            var f2 = Math.Tan(Math.PI * freq2);
+            var f1 = Math.Tan(Math.PI * frequencyLow);
+            var f2 = Math.Tan(Math.PI * frequencyHigh);
             var f0 = Math.Sqrt(f1 * f2);
             var bw = f2 - f1;
 

@@ -17,7 +17,8 @@ namespace NWaves.Filters.Fda
     ///     var remez = new Remez(order, freqs, response, weights); <br/>
     /// <br/>    
     ///     var kernel = remez.Design(); <br/>
-    /// <br/>    
+    /// <br/>
+    /// <br/>
     ///     // We can monitor the following properties: <br/>
     /// <br/>
     ///     remez.Iterations           <br/>
@@ -107,20 +108,20 @@ namespace NWaves.Filters.Fda
         /// Constructs <see cref="Remez"/> filter designer.
         /// </summary>
         /// <param name="order">Order of filter</param>
-        /// <param name="freqs">Array of normalized frequencies</param>
+        /// <param name="frequencies">Array of normalized frequencies</param>
         /// <param name="desired">Array of desired response values at given frequencies</param>
         /// <param name="weights">Array of weights at given frequencies</param>
         /// <param name="gridDensity">Grid density</param>
-        public Remez(int order, double[] freqs, double[] desired, double[] weights, int gridDensity = 16)
+        public Remez(int order, double[] frequencies, double[] desired, double[] weights, int gridDensity = 16)
         {
             Guard.AgainstEvenNumber(order, "The order of the filter");
-            Guard.AgainstIncorrectFilterParams(freqs, desired, weights);
+            Guard.AgainstIncorrectFilterParams(frequencies, desired, weights);
 
             Order = order;
 
             K = Order / 2 + 2;
 
-            _freqs = freqs;
+            _freqs = frequencies;
 
             MakeGrid(desired, weights, gridDensity);
 
@@ -418,10 +419,10 @@ namespace NWaves.Filters.Fda
         }
 
         /// <summary>
-        /// Convert ripple (in dB) to passband weight.
+        /// Converts ripple (in dB) to passband weight.
         /// </summary>
-        /// <param name="db">Ripple (in dB)</param>
-        public static double DbToPassbandWeight(double db) => (Math.Pow(10, db / 20) - 1) / (Math.Pow(10, db / 20) + 1);
+        /// <param name="ripple">Ripple (in dB)</param>
+        public static double DbToPassbandWeight(double ripple) => (Math.Pow(10, ripple / 20) - 1) / (Math.Pow(10, ripple / 20) + 1);
 
         /// <summary>
         /// Converts ripple (in dB) to stopband weight.
@@ -466,19 +467,20 @@ namespace NWaves.Filters.Fda
         /// Parameters are given in conventional format. For example:
         /// 
         /// <code>
-        ///     freqs: { 0, 0.2, 0.22, 0.32, 0.33, 0.5 }
+        ///     frequencies: { 0, 0.2, 0.22, 0.32, 0.33, 0.5 }
+        /// <br/>
         ///     deltas: { 0.01, 0.1, 0.06 }
         /// </code>
         /// </summary>
-        /// <param name="freqs">Array of edge frequencies</param>
+        /// <param name="frequencies">Array of edge frequencies</param>
         /// <param name="deltas">Array of weights</param>
-        public static int EstimateOrder(double[] freqs, double[] deltas)
+        public static int EstimateOrder(double[] frequencies, double[] deltas)
         {
             var maxOrder = 0;
 
             for (int fi = 1, di = 0; di < deltas.Length - 1; fi += 2, di++)
             {
-                var order = EstimateOrder(freqs[fi], freqs[fi + 1], deltas[di], deltas[di + 1]);
+                var order = EstimateOrder(frequencies[fi], frequencies[fi + 1], deltas[di], deltas[di + 1]);
 
                 if (order > maxOrder)
                 {

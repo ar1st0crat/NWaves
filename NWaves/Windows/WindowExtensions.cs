@@ -4,14 +4,14 @@ using NWaves.Utils;
 namespace NWaves.Windows
 {
     /// <summary>
-    /// Class providing extension methods for applying windows to signals and arrays of samples.
+    /// Provides extension methods for applying windows to signals and arrays of samples.
     /// </summary>
     public static class WindowExtensions
     {
         /// <summary>
-        /// Apply window to array of <paramref name="samples"/>.
+        /// Applies window to array of <paramref name="samples"/>.
         /// </summary>
-        /// <param name="samples">Signal samples</param>
+        /// <param name="samples">Samples</param>
         /// <param name="windowSamples">Window coefficients</param>
         public static void ApplyWindow(this float[] samples, float[] windowSamples)
         {
@@ -22,9 +22,9 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Apply window to array of <paramref name="samples"/>.
+        /// Applies window to array of <paramref name="samples"/>.
         /// </summary>
-        /// <param name="samples">Signal samples</param>
+        /// <param name="samples">Samples</param>
         /// <param name="windowSamples">Window coefficients</param>
         public static void ApplyWindow(this double[] samples, double[] windowSamples)
         {
@@ -35,7 +35,7 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Apply window to <paramref name="signal"/>.
+        /// Applies window to <paramref name="signal"/>.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="windowSamples">Window coefficients</param>
@@ -45,9 +45,9 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Apply window with optional <paramref name="parameters"/> to array of <paramref name="samples"/>.
+        /// Applies window with optional <paramref name="parameters"/> to array of <paramref name="samples"/>.
         /// </summary>
-        /// <param name="samples">Signal samples</param>
+        /// <param name="samples">Samples</param>
         /// <param name="window">Window type</param>
         /// <param name="parameters">Window parameters</param>
         public static void ApplyWindow(this float[] samples, WindowType window, params object[] parameters)
@@ -57,9 +57,9 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Apply window with optional <paramref name="parameters"/> to array of <paramref name="samples"/>.
+        /// Applies window with optional <paramref name="parameters"/> to array of <paramref name="samples"/>.
         /// </summary>
-        /// <param name="samples">Signal samples</param>
+        /// <param name="samples">Samples</param>
         /// <param name="window">Window type</param>
         /// <param name="parameters">Window parameters</param>
         public static void ApplyWindow(this double[] samples, WindowType window, params object[] parameters)
@@ -69,7 +69,7 @@ namespace NWaves.Windows
         }
 
         /// <summary>
-        /// Apply window with optional <paramref name="parameters"/> to <paramref name="signal"/>.
+        /// Applies window with optional <paramref name="parameters"/> to <paramref name="signal"/>.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="window">Window type</param>

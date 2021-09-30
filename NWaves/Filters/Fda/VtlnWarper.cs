@@ -38,42 +38,42 @@ namespace NWaves.Filters.Fda
         /// Constructs <see cref="VtlnWarper"/>.
         /// </summary>
         /// <param name="alpha">Warping factor</param>
-        /// <param name="lowFreq">Lower frequency</param>
-        /// <param name="highFreq">Upper frequency</param>
+        /// <param name="lowFrequency">Lower frequency</param>
+        /// <param name="highFrequency">Upper frequency</param>
         /// <param name="lowVtln">Lower frequency for VTLN</param>
         /// <param name="highVtln">Upper frequency for VTLN</param>
         public VtlnWarper(double alpha,
-                          double lowFreq,
-                          double highFreq,
+                          double lowFrequency,
+                          double highFrequency,
                           double lowVtln,
                           double highVtln)
         {
-            _lowFreq = lowFreq;
-            _highFreq = highFreq;
+            _lowFreq = lowFrequency;
+            _highFreq = highFrequency;
 
             _lowVtln = lowVtln * Math.Max(1, alpha);
             _highVtln = highVtln * Math.Min(1, alpha);
 
             _scale = 1 / alpha;
-            _scaleLeft = (_scale * _lowVtln - lowFreq) / (_lowVtln - lowFreq);
-            _scaleRight = (highFreq - _scale * _highVtln) / (highFreq - _highVtln);
+            _scaleLeft = (_scale * _lowVtln - lowFrequency) / (_lowVtln - lowFrequency);
+            _scaleRight = (highFrequency - _scale * _highVtln) / (highFrequency - _highVtln);
         }
 
         /// <summary>
-        /// Warps frequency <paramref name="freq"/>.
+        /// Warps <paramref name="frequency"/>.
         /// </summary>
-        public double Warp(double freq)
+        public double Warp(double frequency)
         {
-            if (freq < _lowVtln)
+            if (frequency < _lowVtln)
             {
-                return _lowFreq + _scaleLeft * (freq - _lowFreq);
+                return _lowFreq + _scaleLeft * (frequency - _lowFreq);
             }
-            else if (freq < _highVtln)
+            else if (frequency < _highVtln)
             {
-                return _scale * freq;
+                return _scale * frequency;
             }
 
-            return _highFreq + _scaleRight * (freq - _highFreq);
+            return _highFreq + _scaleRight * (frequency - _highFreq);
         }
     }
 }

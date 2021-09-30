@@ -10,7 +10,7 @@ namespace NWaves.Filters.BiQuad
         /// <summary>
         /// Gets center frequency.
         /// </summary>
-        public double Freq { get; protected set; }
+        public double Frequency { get; protected set; }
 
         /// <summary>
         /// Gets Q factor.
@@ -25,31 +25,31 @@ namespace NWaves.Filters.BiQuad
         /// <summary>
         /// Constructs <see cref="PeakFilter"/>.
         /// </summary>
-        /// <param name="freq">Center frequency</param>
+        /// <param name="frequency">Normalized center frequency in range [0..0.5]</param>
         /// <param name="q">Q factor</param>
         /// <param name="gain">Gain (in dB)</param>
-        public PeakFilter(double freq, double q = 1, double gain = 1.0)
+        public PeakFilter(double frequency, double q = 1, double gain = 1.0)
         {
-            SetCoefficients(freq, q, gain);
+            SetCoefficients(frequency, q, gain);
         }
 
         /// <summary>
         /// Sets filter coefficients.
         /// </summary>
-        /// <param name="freq">Center frequency</param>
+        /// <param name="frequency">Normalized center frequency in range [0..0.5]</param>
         /// <param name="q">Q factor</param>
         /// <param name="gain">Gain (in dB)</param>
-        private void SetCoefficients(double freq, double q, double gain)
+        private void SetCoefficients(double frequency, double q, double gain)
         {
             // The coefficients are calculated automatically according to 
             // audio-eq-cookbook by R.Bristow-Johnson and WebAudio API.
 
-            Freq = freq;
+            Frequency = frequency;
             Q = q;
             Gain = gain;
 
             var ga = Math.Pow(10, gain / 40);
-            var omega = 2 * Math.PI * freq;
+            var omega = 2 * Math.PI * frequency;
             var alpha = Math.Sin(omega) / (2 * q);
             var cosw = Math.Cos(omega);
 
@@ -67,12 +67,12 @@ namespace NWaves.Filters.BiQuad
         /// <summary>
         /// Changes filter coefficients online (preserving the state of the filter).
         /// </summary>
-        /// <param name="freq">Center frequency</param>
+        /// <param name="frequency">Normalized center frequency in range [0..0.5]</param>
         /// <param name="q">Q factor</param>
         /// <param name="gain">Gain (in dB)</param>
-        public void Change(double freq, double q = 1, double gain = 1.0)
+        public void Change(double frequency, double q = 1, double gain = 1.0)
         {
-            SetCoefficients(freq, q, gain);
+            SetCoefficients(frequency, q, gain);
         }
     }
 }

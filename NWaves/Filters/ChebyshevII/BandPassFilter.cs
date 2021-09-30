@@ -4,40 +4,74 @@ using NWaves.Filters.Fda;
 namespace NWaves.Filters.ChebyshevII
 {
     /// <summary>
-    /// Band-pass Chebyshev-II filter
+    /// Represents bandpass Chebyshev-II filter.
     /// </summary>
     public class BandPassFilter : ZiFilter
     {
         /// <summary>
-        /// Constructor
+        /// Gets low cutoff frequency.
         /// </summary>
-        /// <param name="f1"></param>
-        /// <param name="f2"></param>
-        /// <param name="order"></param>
-        public BandPassFilter(double f1, double f2, int order, double ripple = 0.1) : base(MakeTf(f1, f2, order, ripple))
+        public double FrequencyLow { get; private set; }
+
+        /// <summary>
+        /// Gets high cutoff frequency.
+        /// </summary>
+        public double FrequencyHigh { get; private set; }
+
+        /// <summary>
+        /// Gets ripple (in dB).
+        /// </summary>
+        public double Ripple { get; private set; }
+
+        /// <summary>
+        /// Gets filter order.
+        /// </summary>
+        public int Order => (_a.Length - 1) / 2;
+
+        /// <summary>
+        /// Constructs <see cref="BandPassFilter"/> of given <paramref name="order"/> 
+        /// with given cutoff frequencies <paramref name="frequencyLow"/> and <paramref name="frequencyHigh"/>.
+        /// </summary>
+        /// <param name="frequencyLow">Normalized low cutoff frequency in range [0..0.5]</param>
+        /// <param name="frequencyHigh">Normalized high cutoff frequency in range [0..0.5]</param>
+        /// <param name="order">Filter order</param>
+        /// <param name="ripple">Ripple (in dB)</param>
+        public BandPassFilter(double frequencyLow, double frequencyHigh, int order, double ripple = 0.1) 
+            : base(MakeTf(frequencyLow, frequencyHigh, order, ripple))
         {
+            FrequencyLow = frequencyLow;
+            FrequencyHigh = frequencyHigh;
+            Ripple = ripple;
         }
 
         /// <summary>
-        /// TF generator
+        /// Generates transfer function.
         /// </summary>
-        /// <param name="f1"></param>
-        /// <param name="f2"></param>
-        /// <param name="order"></param>
-        /// <returns></returns>
-        private static TransferFunction MakeTf(double freq1, double freq2, int order, double ripple = 0.1)
+        /// <param name="frequencyLow">Normalized low cutoff frequency in range [0..0.5]</param>
+        /// <param name="frequencyHigh">Normalized high cutoff frequency in range [0..0.5]</param>
+        /// <param name="order">Filter order</param>
+        /// <param name="ripple">Ripple (in dB)</param>
+        private static TransferFunction MakeTf(double frequencyLow, double frequencyHigh, int order, double ripple = 0.1)
         {
-            return DesignFilter.IirBpTf(freq1, freq2,
+            return DesignFilter.IirBpTf(frequencyLow,
+                                        frequencyHigh,
                                         PrototypeChebyshevII.Poles(order, ripple),
                                         PrototypeChebyshevII.Zeros(order));
         }
 
         /// <summary>
-        /// Change filter coeffs online
+        /// Changes filter coefficients online (preserving the state of the filter).
         /// </summary>
-        /// <param name="f1"></param>
-        /// <param name="f2"></param>
-        /// <param name="ripple"></param>
-        public void Change(double f1, double f2, double ripple = 0.1) => Change(MakeTf(f1, f2, (_a.Length - 1) / 2, ripple));
+        /// <param name="frequencyLow">Normalized low cutoff frequency in range [0..0.5]</param>
+        /// <param name="frequencyHigh">Normalized high cutoff frequency in range [0..0.5]</param>
+        /// <param name="ripple">Ripple (in dB)</param>
+        public void Change(double frequencyLow, double frequencyHigh, double ripple = 0.1)
+        {
+            FrequencyLow = frequencyLow;
+            FrequencyHigh = frequencyHigh;
+            Ripple = ripple;
+
+            Change(MakeTf(frequencyLow, frequencyHigh, (_a.Length - 1) / 2, ripple));
+        }
     }
 }

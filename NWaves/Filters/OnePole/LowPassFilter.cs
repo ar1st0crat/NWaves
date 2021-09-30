@@ -3,14 +3,14 @@
 namespace NWaves.Filters.OnePole
 {
     /// <summary>
-    /// Represents one-pole low-pass filter.
+    /// Represents one-pole lowpass filter.
     /// </summary>
     public class LowPassFilter : OnePoleFilter
     {
         /// <summary>
         /// Gets cutoff frequency.
         /// </summary>
-        public double Freq { get; protected set; }
+        public double Frequency { get; protected set; }
 
         /// <summary>
         /// Constructs <see cref="LowPassFilter"/> with given cutoff <paramref name="frequency"/>.
@@ -27,7 +27,7 @@ namespace NWaves.Filters.OnePole
         /// <param name="frequency">Cutoff frequency</param>
         private void SetCoefficients(double frequency)
         {
-            Freq = frequency;
+            Frequency = frequency;
 
             _a[0] = 1;
             _a[1] = (float)(-Math.Exp(-2 * Math.PI * frequency));

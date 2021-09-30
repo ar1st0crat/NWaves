@@ -4,35 +4,65 @@ using NWaves.Filters.Fda;
 namespace NWaves.Filters.Elliptic
 {
     /// <summary>
-    /// Represents band-stop elliptic filter.
+    /// Represents bandstop elliptic filter.
     /// </summary>
     public class BandStopFilter : ZiFilter
     {
         /// <summary>
-        /// Constructs <see cref="BandStopFilter"/> of given <paramref name="order"/> 
-        /// with given cutoff frequencies <paramref name="freq1"/> and <paramref name="freq2"/>.
+        /// Gets low cutoff frequency.
         /// </summary>
-        /// <param name="freq1">First cutoff frequency</param>
-        /// <param name="freq2">Second cutoff frequency</param>
+        public double FrequencyLow { get; private set; }
+
+        /// <summary>
+        /// Gets high cutoff frequency.
+        /// </summary>
+        public double FrequencyHigh { get; private set; }
+
+        /// <summary>
+        /// Gets passband ripple (in dB).
+        /// </summary>
+        public double RipplePassband { get; private set; }
+
+        /// <summary>
+        /// Gets stopband ripple (in dB).
+        /// </summary>
+        public double RippleStopband { get; private set; }
+
+        /// <summary>
+        /// Gets filter order.
+        /// </summary>
+        public int Order => (_a.Length - 1) / 2;
+
+        /// <summary>
+        /// Constructs <see cref="BandStopFilter"/> of given <paramref name="order"/> 
+        /// with given cutoff frequencies <paramref name="frequencyLow"/> and <paramref name="frequencyHigh"/>.
+        /// </summary>
+        /// <param name="frequencyLow">Normalized low cutoff frequency in range [0..0.5]</param>
+        /// <param name="frequencyHigh">Normalized high cutoff frequency in range [0..0.5]</param>
         /// <param name="order">Filter order</param>
         /// <param name="ripplePass">Passband ripple (in dB)</param>
         /// <param name="rippleStop">Stopband ripple (in dB)</param>
-        public BandStopFilter(double freq1, double freq2, int order, double ripplePass = 1, double rippleStop = 20) :
-            base(MakeTf(freq1, freq2, order, ripplePass, rippleStop))
+        public BandStopFilter(double frequencyLow, double frequencyHigh, int order, double ripplePass = 1, double rippleStop = 20)
+            : base(MakeTf(frequencyLow, frequencyHigh, order, ripplePass, rippleStop))
         {
+            FrequencyLow = frequencyLow;
+            FrequencyHigh = frequencyHigh;
+            RipplePassband = ripplePass;
+            RippleStopband = rippleStop;
         }
 
         /// <summary>
         /// Generates transfer function.
         /// </summary>
-        /// <param name="freq1">First cutoff frequency</param>
-        /// <param name="freq2">Second cutoff frequency</param>
+        /// <param name="frequencyLow">Normalized low cutoff frequency in range [0..0.5]</param>
+        /// <param name="frequencyHigh">Normalized high cutoff frequency in range [0..0.5]</param>
         /// <param name="order">Filter order</param>
         /// <param name="ripplePass">Passband ripple (in dB)</param>
         /// <param name="rippleStop">Stopband ripple (in dB)</param>
-        private static TransferFunction MakeTf(double freq1, double freq2, int order, double ripplePass = 1, double rippleStop = 20)
+        private static TransferFunction MakeTf(double frequencyLow, double frequencyHigh, int order, double ripplePass = 1, double rippleStop = 20)
         {
-            return DesignFilter.IirBsTf(freq1, freq2,
+            return DesignFilter.IirBsTf(frequencyLow,
+                                        frequencyHigh,
                                         PrototypeElliptic.Poles(order, ripplePass, rippleStop),
                                         PrototypeElliptic.Zeros(order, ripplePass, rippleStop));
         }
@@ -40,13 +70,18 @@ namespace NWaves.Filters.Elliptic
         /// <summary>
         /// Changes filter coefficients online (preserving the state of the filter).
         /// </summary>
-        /// <param name="freq1">First cutoff frequency</param>
-        /// <param name="freq2">Second cutoff frequency</param>
+        /// <param name="frequencyLow">Normalized low cutoff frequency in range [0..0.5]</param>
+        /// <param name="frequencyHigh">Normalized high cutoff frequency in range [0..0.5]</param>
         /// <param name="ripplePass">Passband ripple (in dB)</param>
         /// <param name="rippleStop">Stopband ripple (in dB)</param>
-        public void Change(double freq1, double freq2, double ripplePass = 1, double rippleStop = 20)
+        public void Change(double frequencyLow, double frequencyHigh, double ripplePass = 1, double rippleStop = 20)
         {
-            Change(MakeTf(freq1, freq2, (_a.Length - 1) / 2, ripplePass, rippleStop));
+            FrequencyLow = frequencyLow;
+            FrequencyHigh = frequencyHigh;
+            RipplePassband = ripplePass;
+            RippleStopband = rippleStop;
+
+            Change(MakeTf(frequencyLow, frequencyHigh, (_a.Length - 1) / 2, ripplePass, rippleStop));
         }
     }
 }

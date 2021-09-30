@@ -4,36 +4,59 @@ using NWaves.Filters.Fda;
 namespace NWaves.Filters.ChebyshevI
 {
     /// <summary>
-    /// Represents low-pass Chebyshev-I filter.
+    /// Represents lowpass Chebyshev-I filter.
     /// </summary>
     public class LowPassFilter : ZiFilter
     {
         /// <summary>
-        /// Constructs <see cref="LowPassFilter"/> of given <paramref name="order"/> with given cutoff <paramref name="freq"/>.
+        /// Gets cutoff frequency.
         /// </summary>
-        /// <param name="freq">Cutoff frequency</param>
+        public double Frequency { get; private set; }
+
+        /// <summary>
+        /// Gets ripple (in dB).
+        /// </summary>
+        public double Ripple { get; private set; }
+
+        /// <summary>
+        /// Gets filter order.
+        /// </summary>
+        public int Order => _a.Length - 1;
+
+        /// <summary>
+        /// Constructs <see cref="LowPassFilter"/> of given <paramref name="order"/> with given cutoff <paramref name="frequency"/>.
+        /// </summary>
+        /// <param name="frequency">Normalized cutoff frequency in range [0..0.5]</param>
         /// <param name="order">Filter order</param>
         /// <param name="ripple">Ripple (in dB)</param>
-        public LowPassFilter(double freq, int order, double ripple = 0.1) : base(MakeTf(freq, order, ripple))
+        public LowPassFilter(double frequency, int order, double ripple = 0.1) : base(MakeTf(frequency, order, ripple))
         {
+            Frequency = frequency;
+            Ripple = ripple;
         }
 
         /// <summary>
         /// Generates transfer function.
         /// </summary>
-        /// <param name="freq">Cutoff frequency</param>
+        /// <param name="frequency">Normalized cutoff frequency in range [0..0.5]</param>
         /// <param name="order">Filter order</param>
         /// <param name="ripple">Ripple (in dB)</param>
-        private static TransferFunction MakeTf(double freq, int order, double ripple = 0.1)
+        private static TransferFunction MakeTf(double frequency, int order, double ripple = 0.1)
         {
-            return DesignFilter.IirLpTf(freq, PrototypeChebyshevI.Poles(order, ripple));
+            return DesignFilter.IirLpTf(frequency, PrototypeChebyshevI.Poles(order, ripple));
         }
 
         /// <summary>
         /// Changes filter coefficients online (preserving the state of the filter).
         /// </summary>
-        /// <param name="freq">Cutoff frequency</param>
+        /// <param name="frequency">Normalized cutoff frequency in range [0..0.5]</param>
         /// <param name="ripple">Ripple (in dB)</param>
-        public void Change(double freq, double ripple = 0.1) => Change(MakeTf(freq, _a.Length - 1, ripple));
+        public void Change(double frequency, double ripple = 0.1)
+        {
+            Frequency = frequency;
+            Ripple = ripple;
+
+            Change(MakeTf(frequency, _a.Length - 1, ripple));
+        }
     }
 }
