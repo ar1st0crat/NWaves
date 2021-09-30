@@ -3,44 +3,44 @@
 namespace NWaves.Utils
 {
     /// <summary>
-    /// Fractional delay line
+    /// Represents fractional delay line.
     /// </summary>
     public partial class FractionalDelayLine
     {
         /// <summary>
-        /// Interpolation mode
+        /// Gets or sets interpolation mode.
         /// </summary>
         public InterpolationMode InterpolationMode { get; set; }
 
         /// <summary>
-        /// Delay line
+        /// Gets the size of delay line (number of samples).
+        /// </summary>
+        public int Size => _delayLineSize;
+        private int _delayLineSize;
+
+        /// <summary>
+        /// Delay line.
         /// </summary>
         private float[] _delayLine;
 
         /// <summary>
-        /// Delay line size
-        /// </summary>
-        private int _delayLineSize;
-        public int Size => _delayLineSize;
-
-        /// <summary>
-        /// Current write position
+        /// Current write position.
         /// </summary>
         private int _n;
 
         /// <summary>
-        /// Used in InterpolationMode.Thiran
+        /// Previously interpolated sample (used with InterpolationMode.Thiran).
         /// </summary>
         private float _prevInterpolated;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="FractionalDelayLine"/> and reserves given <paramref name="size"/> for its samples.
         /// </summary>
-        /// <param name="maxDelayInSamples">Max delay in samples</param>
+        /// <param name="size">Delay line size (number of samples)</param>
         /// <param name="interpolationMode">Interpolation mode</param>
-        public FractionalDelayLine(int maxDelayInSamples, InterpolationMode interpolationMode = InterpolationMode.Linear)
+        public FractionalDelayLine(int size, InterpolationMode interpolationMode = InterpolationMode.Linear)
         {
-            _delayLineSize = Math.Max(4, maxDelayInSamples);
+            _delayLineSize = Math.Max(4, size);
             _delayLine = new float[_delayLineSize];
             _n = 0;
 
@@ -48,10 +48,11 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="FractionalDelayLine"/> and reserves the size 
+        /// corresponding to <paramref name="maxDelay"/> seconds.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
-        /// <param name="maxDelay">Max delay in seconds</param>
+        /// <param name="maxDelay">Max delay (in seconds)</param>
         /// <param name="interpolationMode">Interpolation mode</param>
         public FractionalDelayLine(int samplingRate,
                                    double maxDelay,
@@ -61,9 +62,8 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Write (put) sample in the delay line
+        /// Writes (puts) <paramref name="sample"/> to the delay line.
         /// </summary>
-        /// <param name="sample"></param>
         public void Write(float sample)
         {
             _delayLine[_n] = sample;
@@ -75,10 +75,8 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Read (get) sample from the delay line corresponding to given time delay (in seconds)
+        /// Reads (gets) sample from the delay line corresponding to given time <paramref name="delay"/> (in seconds).
         /// </summary>
-        /// <param name="delay"></param>
-        /// <returns></returns>
         public float Read(double delay)
         {
             var precisePosition = (float)(_n - delay + _delayLineSize) % _delayLineSize;
@@ -153,7 +151,7 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Reset delay line
+        /// Resets delay line.
         /// </summary>
         public void Reset()
         {
@@ -163,23 +161,27 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Resize delay line to ensure new size
+        /// Resizes delay line to ensure new <paramref name="size"/>. 
+        /// If <paramref name="size"/> does not exceed current size of the delay line then nothing happens.
         /// </summary>
-        public void Ensure(int maxDelayInSamples)
+        public void Ensure(int size)
         {
-            if (maxDelayInSamples <= _delayLineSize)
+            if (size <= _delayLineSize)
             {
                 return;
             }
 
-            Array.Resize(ref _delayLine, maxDelayInSamples);
+            Array.Resize(ref _delayLine, size);
 
-            _delayLineSize = maxDelayInSamples;
+            _delayLineSize = size;
         }
 
         /// <summary>
-        /// Resize delay line to ensure new size
+        /// Resizes delay line to ensure new size corresponding to <paramref name="maxDelay"/> seconds. 
+        /// If the new size does not exceed current size of the delay line then nothing happens.
         /// </summary>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="maxDelay">Max delay (in seconds)</param>
         public void Ensure(int samplingRate, double maxDelay)
         {
             Ensure((int)(samplingRate * maxDelay) + 1);

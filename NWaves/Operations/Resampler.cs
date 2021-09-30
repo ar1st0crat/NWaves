@@ -7,23 +7,23 @@ using NWaves.Utils;
 namespace NWaves.Operations
 {
     /// <summary>
-    /// Class responsible for sampling rate conversion
+    /// Represents signal resampler (sampling rate converter).
     /// </summary>
     public class Resampler
     {
         /// <summary>
-        /// The order of FIR LP resampling filter (minimally required).
-        /// This constant should be used for simple up/down ratios.
+        /// Gets or sets the order of lowpass anti-aliasing FIR filter 
+        /// that will be created automatically if the filter is not specified explicitly. 
+        /// By default, 101.
         /// </summary>
-        private const int MinResamplingFilterOrder = 101;
+        public int MinResamplingFilterOrder { get; set; } = 101;
 
         /// <summary>
-        /// Interpolation followed by low-pass filtering
+        /// Does interpolation of <paramref name="signal"/> followed by lowpass filtering.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="factor"></param>
-        /// <param name="filter"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="factor">Interpolation factor (e.g. factor=2 if 8000 Hz -> 16000 Hz)</param>
+        /// <param name="filter">Lowpass anti-aliasing filter</param>
         public DiscreteSignal Interpolate(DiscreteSignal signal, int factor, FirFilter filter = null)
         {
             if (factor == 1)
@@ -42,7 +42,7 @@ namespace NWaves.Operations
 
             var lpFilter = filter;
 
-            if (filter == null)
+            if (filter is null)
             {
                 var filterSize = factor > MinResamplingFilterOrder / 2 ?
                                  2 * factor + 1 :
@@ -55,12 +55,11 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Decimation preceded by low-pass filtering
+        /// Does decimation of <paramref name="signal"/> preceded by lowpass filtering.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="factor"></param>
-        /// <param name="filter"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="factor">Decimation factor (e.g. factor=2 if 16000 Hz -> 8000 Hz)</param>
+        /// <param name="filter">Lowpass anti-aliasing filter</param>
         public DiscreteSignal Decimate(DiscreteSignal signal, int factor, FirFilter filter = null)
         {
             if (factor == 1)
@@ -72,11 +71,9 @@ namespace NWaves.Operations
                              2 * factor + 1 :
                              MinResamplingFilterOrder;
 
-            var lpFilter = filter;
-
-            if (filter == null)
+            if (filter is null)
             {
-                lpFilter = new FirFilter(DesignFilter.FirWinLp(filterSize, 0.5f / factor));
+                var lpFilter = new FirFilter(DesignFilter.FirWinLp(filterSize, 0.5f / factor));
 
                 signal = lpFilter.ApplyTo(signal);
             }
@@ -94,13 +91,12 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Band-limited resampling
+        /// Does band-limited resampling of <paramref name="signal"/>.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="newSamplingRate"></param>
-        /// <param name="filter"></param>
-        /// <param name="order"></param>
-        /// <returns></returns>
+        /// <param name="signal">Signal</param>
+        /// <param name="newSamplingRate">Desired sampling rate</param>
+        /// <param name="filter">Lowpass anti-aliasing filter</param>
+        /// <param name="order">Order</param>
         public DiscreteSignal Resample(DiscreteSignal signal,
                                        int newSamplingRate,
                                        FirFilter filter = null,
@@ -116,7 +112,7 @@ namespace NWaves.Operations
             var input = signal.Samples;
             var output = new float[(int)(input.Length * g)];
 
-            if (g < 1 && filter == null)
+            if (g < 1 && filter is null)
             {
                 filter = new FirFilter(DesignFilter.FirWinLp(MinResamplingFilterOrder, g / 2));
 
@@ -149,13 +145,12 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Simple resampling as the combination of interpolation and decimation.
+        /// Does simple resampling of <paramref name="signal"/> (as the combination of interpolation and decimation).
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="up"></param>
-        /// <param name="down"></param>
-        /// <param name="filter"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="up">Interpolation factor</param>
+        /// <param name="down">Decimation factor</param>
+        /// <param name="filter">Lowpass anti-aliasing filter</param>
         public DiscreteSignal ResampleUpDown(DiscreteSignal signal, int up, int down, FirFilter filter = null)
         {
             if (up == down)
@@ -181,7 +176,7 @@ namespace NWaves.Operations
 
             var lpFilter = filter;
 
-            if (filter == null)
+            if (filter is null)
             {
                 var factor = Math.Max(up, down);
                 var filterSize = factor > MinResamplingFilterOrder / 2 ?

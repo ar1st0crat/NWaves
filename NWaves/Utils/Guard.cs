@@ -4,13 +4,13 @@ using System.Diagnostics;
 namespace NWaves.Utils
 {
     /// <summary>
-    /// Static class containing the most widely used contracts / guard clauses
+    /// Contains the most widely used contracts / guard clauses.
     /// </summary>
     [DebuggerStepThrough]
     public static class Guard
     {
         /// <summary>
-        /// Guard against negative number or zero
+        /// Guards against negative number or zero.
         /// </summary>
         /// <param name="arg">Argument (number)</param>
         /// <param name="argName">Argument name</param>
@@ -23,7 +23,7 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Guard against inequality of two arguments
+        /// Guards against inequality of two arguments.
         /// </summary>
         /// <param name="arg1">The first argument</param>
         /// <param name="arg2">The second argument</param>
@@ -38,7 +38,7 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Guard against the number being not in the given range
+        /// Guards against the number being not in the given range.
         /// </summary>
         /// <param name="value">Argument (number)</param>
         /// <param name="low">Lower boundary of the range</param>
@@ -53,7 +53,7 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Guard against the case when the first and the second arguments are not valid boundaries of a range
+        /// Guards against the case when the first and the second arguments are not valid boundaries of a range.
         /// </summary>
         /// <param name="low">The first argument</param>
         /// <param name="high">The second argument</param>
@@ -68,7 +68,7 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Guard against the first argument exceeding the second argument
+        /// Guards against the first argument exceeding the second argument.
         /// </summary>
         /// <param name="low">The first argument</param>
         /// <param name="high">The second argument</param>
@@ -83,7 +83,7 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Guard against integer number being not power of 2 (e.g. 8, 16, 128, etc.)
+        /// Guards against integer number being not power of 2 (e.g. 8, 16, 128, etc.)
         /// </summary>
         /// <param name="n">Argument (number)</param>
         /// <param name="argName">Argument name</param>
@@ -98,7 +98,7 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Guard against even integer number
+        /// Guards against even integer number.
         /// </summary>
         /// <param name="n">Argument (number)</param>
         /// <param name="argName">Argument name</param>
@@ -111,7 +111,7 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Guard against not ordered and not unique array
+        /// Guards against not ordered and not unique array.
         /// </summary>
         /// <param name="values">Argument (array of values)</param>
         /// <param name="argName">Argument name</param>
@@ -127,7 +127,7 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Guard against incorrect parameters for (equiripple) filter design
+        /// Guards against incorrect parameters for (equiripple) filter design.
         /// </summary>
         /// <param name="freqs">Frequencies</param>
         /// <param name="desired">Desired magnitude response (gains)</param>

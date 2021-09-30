@@ -9,57 +9,58 @@ using System.Linq;
 namespace NWaves.Operations.Tsm
 {
     /// <summary>
-    /// Waveform-Synchronized Overlap-Add
+    /// Represents TSM processor based on Waveform-Synchronized Overlap-Add (WSOLA) technique.
     /// </summary>
     public class Wsola : IFilter
     {
         /// <summary>
-        /// Stretch ratio
+        /// Stretch ratio.
         /// </summary>
         protected readonly double _stretch;
 
         /// <summary>
-        /// Window size
+        /// Window size.
         /// </summary>
         private int _windowSize;
 
         /// <summary>
-        /// Hop size at analysis stage (STFT decomposition)
+        /// Hop size at analysis stage (STFT decomposition).
         /// </summary>
         private int _hopAnalysis;
 
         /// <summary>
-        /// Hop size at synthesis stage (STFT merging)
+        /// Hop size at synthesis stage (STFT merging).
         /// </summary>
         private int _hopSynthesis;
 
         /// <summary>
-        /// Maximum length of the fragment for search of the most similar waveform
+        /// Maximum length of the fragment for search of the most similar waveform.
         /// </summary>
         private int _maxDelta;
 
         /// <summary>
-        /// True if parameters were set by user (not by default)
+        /// True if parameters were set by user (not by default).
         /// </summary>
         private readonly bool _userParameters;
 
         /// <summary>
         /// Internal convolver
-        /// (will be used for evaluating auto-correlation if the window size is too big)
+        /// (will be used for evaluating auto-correlation if the window size is too big).
         /// </summary>
         private Convolver _convolver;
 
         /// <summary>
-        /// Cross-correlation signal
+        /// Cross-correlation signal.
         /// </summary>
         private float[] _cc;
 
-
         /// <summary>
-        /// Constructor with detailed WSOLA settings
+        /// Constructs <see cref="Wsola"/> TSM processor.
         /// </summary>
         /// <param name="stretch">Stretch ratio</param>
-        /// <param name="windowSize"></param>
+        /// <param name="windowSize">Window size</param>
+        /// <param name="hopAnalysis">Hop size at analysis stage</param>
+        /// <param name="maxDelta">Max delta in WSOLA algorithm</param>
         public Wsola(double stretch, int windowSize, int hopAnalysis, int maxDelta = 0)
         {
             _stretch = stretch;
@@ -74,9 +75,9 @@ namespace NWaves.Operations.Tsm
         }
 
         /// <summary>
-        /// Constructor with smart parameter autoderivation 
+        /// Constructs <see cref="Wsola"/> TSM processor and auto-derives WSOLA parameters for given <paramref name="stretch"/> ratio.
         /// </summary>
-        /// <param name="stretch"></param>
+        /// <param name="stretch">Stretch ratio</param>
         public Wsola(double stretch)
         {
             _stretch = stretch;
@@ -111,7 +112,7 @@ namespace NWaves.Operations.Tsm
         }
 
         /// <summary>
-        /// For large window sizes prepare the internal convolver
+        /// Prepares the internal convolver (for large window sizes).
         /// </summary>
         private void PrepareConvolver()
         {
@@ -125,13 +126,9 @@ namespace NWaves.Operations.Tsm
         }
 
         /// <summary>
-        /// WSOLA algorithm
+        /// Processes entire <paramref name="signal"/> and returns new time-stretched signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringMethod method = FilteringMethod.Auto)
+        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
         {
             // adjust default parameters for a new sampling rate
 
@@ -197,20 +194,19 @@ namespace NWaves.Operations.Tsm
         }
 
         /// <summary>
-        /// Position of the best found waveform similarity
+        /// Finds position of the best waveform similarity.
         /// </summary>
-        /// <param name="current"></param>
-        /// <param name="prev"></param>
-        /// <param name="maxDelta"></param>
-        /// <returns></returns>
-        public int WaveformSimilarityPos(float[] current, float[] prev, int maxDelta)
+        /// <param name="current">Current window</param>
+        /// <param name="prev">Previous window</param>
+        /// <param name="maxDelta">Max delta</param>
+        protected int WaveformSimilarityPos(float[] current, float[] prev, int maxDelta)
         {
             var optimalShift = 0;
             var maxCorrelation = 0.0f;
 
             // for small window sizes cross-correlate directly:
 
-            if (_convolver == null)
+            if (_convolver is null)
             {
                 for (var i = 0; i < maxDelta; i++)
                 {

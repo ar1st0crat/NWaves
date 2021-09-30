@@ -3,30 +3,29 @@
 namespace NWaves.Operations.Tsm
 {
     /// <summary>
-    /// TSM processor based on Paul stretch algorithm
+    /// Represents TSM processor based on Paul stretch algorithm.
     /// </summary>
     class PaulStretch : PhaseVocoder
     {
         /// <summary>
-        /// Randomizer for phases
+        /// Randomizer for phases.
         /// </summary>
         private readonly Random _rand = new Random();
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="PaulStretch"/>.
         /// </summary>
-        /// <param name="stretch"></param>
-        /// <param name="hopAnalysis"></param>
-        /// <param name="fftSize"></param>
-        public PaulStretch(double stretch, int hopAnalysis, int fftSize = 0)
-            : base(stretch, hopAnalysis, fftSize)
+        /// <param name="stretch">Stretch ratio</param>
+        /// <param name="hopAnalysis">Hop length at analysis stage</param>
+        /// <param name="fftSize">FFT size</param>
+        public PaulStretch(double stretch, int hopAnalysis, int fftSize = 0) : base(stretch, hopAnalysis, fftSize)
         {
         }
 
         /// <summary>
-        /// Process spectrum at each STFT step: simply randomize phases
+        /// Processes spectrum at each STFT step: simply randomizes phases.
         /// </summary>
-        public override void ProcessSpectrum()
+        protected override void ProcessSpectrum()
         {
             for (var j = 1; j <= _fftSize / 2; j++)
             {
@@ -39,7 +38,7 @@ namespace NWaves.Operations.Tsm
         }
 
         /// <summary>
-        /// Reset (nothing to do here)
+        /// Resets TSM processor.
         /// </summary>
         public override void Reset()
         {

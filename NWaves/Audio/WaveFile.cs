@@ -11,9 +11,9 @@ namespace NWaves.Audio
     /// <summary>
     /// <para>PCM WAV container.</para>
     /// <para>
-    /// <see cref="WaveFile"/> is not intended to be a "wrapper around the stream", or to acquire any resource 
-    /// (it doesn't affect the underlying stream). It's more like a "constructor of signals in memory based on data 
-    /// from the stream" and its lifetime is not synchronized with the stream whatsoever. 
+    /// <see cref="WaveFile"/> is not intended to be a wrapper around the stream, or to acquire any resource 
+    /// (it doesn't affect the underlying stream). It's more like a constructor of signals in memory based on data 
+    /// from the stream, and its lifetime is not synchronized with the stream whatsoever. 
     /// The synonym name of this class could be also "WaveContainer".
     /// </para>
     /// </summary>
@@ -25,7 +25,7 @@ namespace NWaves.Audio
         public List<DiscreteSignal> Signals { get; protected set; }
 
         /// <summary>
-        /// WAV header (WAVE format).
+        /// Gets WAV header (WAVE format).
         /// </summary>
         public WaveFormat WaveFmt { get; protected set; }
 
@@ -33,6 +33,16 @@ namespace NWaves.Audio
         /// Supported bit depths.
         /// </summary>
         public short[] SupportedBitDepths = { 8, 16, 24, 32 };
+
+        /// <summary>
+        /// Constructs WAV container by loading signals from <paramref name="waveStream"/>.
+        /// </summary>
+        /// <param name="waveStream">Input stream</param>
+        /// <param name="normalized">Normalize samples</param>
+        public WaveFile(Stream waveStream, bool normalized = true)
+        {
+            ReadWaveStream(waveStream, normalized);
+        }
 
         /// <summary>
         /// Constructs WAV container by loading signals from a byte array (i.e. byte content of WAV file).
@@ -62,17 +72,7 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// Constructs WAV container by loading signals from <paramref name="waveStream"/>.
-        /// </summary>
-        /// <param name="waveStream">Input stream</param>
-        /// <param name="normalized">Normalize samples</param>
-        public WaveFile(Stream waveStream, bool normalized = true)
-        {
-            ReadWaveStream(waveStream, normalized);
-        }
-
-        /// <summary>
-        /// Read PCM WAV binary data and fill <see cref="Signals"/> and <see cref="WaveFmt"/> structure.
+        /// Reads PCM WAV binary data and fills <see cref="Signals"/> and <see cref="WaveFmt"/> structure.
         /// </summary>
         /// <param name="waveStream">Input stream of PCM WAV binary data</param>
         /// <param name="normalized">Normalize samples</param>
@@ -241,13 +241,13 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// Construct WAV container by loading into it collection of <paramref name="signals"/> with given <paramref name="bitsPerSample"/>.
+        /// Constructs WAV container by loading into it collection of <paramref name="signals"/> with given <paramref name="bitsPerSample"/>.
         /// </summary>
         /// <param name="signals">Signals to be loaded into container</param>
         /// <param name="bitsPerSample">Bit depth</param>
         public WaveFile(IList<DiscreteSignal> signals, short bitsPerSample = 16)
         {
-            if (signals == null || !signals.Any())
+            if (signals is null || !signals.Any())
             {
                 throw new ArgumentException("At least one signal must be provided");
             }
@@ -285,7 +285,7 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// Construct WAV container by loading into it one <paramref name="signal"/> with given <paramref name="bitsPerSample"/>.
+        /// Constructs WAV container by loading into it one <paramref name="signal"/> with given <paramref name="bitsPerSample"/>.
         /// </summary>
         /// <param name="signal">Signal to be loaded into container</param>
         /// <param name="bitsPerSample">Bit depth</param>
@@ -294,7 +294,7 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// Return the contents of PCM WAV container as array of bytes.
+        /// Returns the contents of PCM WAV container as array of bytes.
         /// </summary>
         /// <param name="normalized">True if samples are normalized</param>
         public byte[] GetBytes(bool normalized = true)
@@ -307,7 +307,7 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// Save the contents of PCM WAV container to <paramref name="waveStream"/>.
+        /// Saves the contents of PCM WAV container to <paramref name="waveStream"/>.
         /// </summary>
         /// <param name="waveStream">Output stream</param>
         /// <param name="normalized">True if samples are normalized</param>
@@ -400,7 +400,7 @@ namespace NWaves.Audio
         }
 
         /// <summary>
-        /// <para>Return container's signal using indexing based on channel type. Examples</para>
+        /// <para>Gets the signal from container using indexing scheme based on channel type. Examples</para>
         /// <code>
         ///     waveFile[Channels.Left]  -> waveFile.Signals[0]
         ///     <br/>

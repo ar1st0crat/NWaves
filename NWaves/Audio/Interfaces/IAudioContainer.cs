@@ -9,12 +9,12 @@ namespace NWaves.Audio.Interfaces
     public interface IAudioContainer
     {
         /// <summary>
-        /// Get the list of discrete signals in container.
+        /// Gets the list of discrete signals in container.
         /// </summary>
         List<DiscreteSignal> Signals { get; }
 
         /// <summary>
-        /// Return container's signal using indexing based on channel type.
+        /// Gets the signal from container using indexing scheme based on channel type.
         /// </summary>
         /// <param name="channel">Channel (left, right, interleave, sum, average, or ordinary index)</param>
         DiscreteSignal this[Channels channel] { get; }

@@ -4,39 +4,37 @@ using System;
 namespace NWaves.Operations.Tsm
 {
     /// <summary>
-    /// Phase vocoder with identity phase locking [Puckette].
+    /// Represents Phase Vocoder with identity phase locking [Puckette].
     /// </summary>
     public class PhaseLockingVocoder : PhaseVocoder
     {
         /// <summary>
-        /// Array of spectrum magnitudes (at current step)
+        /// Array of spectrum magnitudes (at current step).
         /// </summary>
         private readonly double[] _mag;
 
         /// <summary>
-        /// Array of spectrum phases (at current step)
+        /// Array of spectrum phases (at current step).
         /// </summary>
         private readonly double[] _phase;
 
         /// <summary>
-        /// Array of phase deltas
+        /// Array of phase deltas.
         /// </summary>
         private readonly double[] _delta;
 
         /// <summary>
-        /// Array of peak positions (indices)
+        /// Array of peak positions (indices).
         /// </summary>
         private readonly int[] _peaks;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="PhaseLockingVocoder"/>.
         /// </summary>
-        /// <param name="stretch"></param>
-        /// <param name="hopAnalysis"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="phaseLocking"></param>
-        public PhaseLockingVocoder(double stretch, int hopAnalysis, int fftSize = 0)
-            : base(stretch, hopAnalysis, fftSize)
+        /// <param name="stretch">Stretch ratio</param>
+        /// <param name="hopAnalysis">Hop length at analysis stage</param>
+        /// <param name="fftSize">FFT size</param>
+        public PhaseLockingVocoder(double stretch, int hopAnalysis, int fftSize = 0) : base(stretch, hopAnalysis, fftSize)
         {
             _mag = new double[_fftSize / 2 + 1];
             _phase = new double[_fftSize / 2 + 1];
@@ -45,9 +43,9 @@ namespace NWaves.Operations.Tsm
         }
 
         /// <summary>
-        /// Process spectrum with phase-locking at each STFT step
+        /// Processes spectrum with phase-locking at each STFT step.
         /// </summary>
-        public override void ProcessSpectrum()
+        protected override void ProcessSpectrum()
         {
             for (var j = 0; j < _mag.Length; j++)
             {

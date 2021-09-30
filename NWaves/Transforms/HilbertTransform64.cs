@@ -5,7 +5,7 @@ using System;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class representing Fast Hilbert Transform (for 64-bit data).
+    /// Represents Fast Hilbert Transform (for 64-bit data).
     /// </summary>
     public class HilbertTransform64
     {
@@ -30,9 +30,8 @@ namespace NWaves.Transforms
         private readonly double[] _im;
 
         /// <summary>
-        /// Construct Hilbert transformer. Transform <paramref name="size"/> must be a power of 2.
+        /// Constructs Hilbert transformer. Transform <paramref name="size"/> must be a power of 2.
         /// </summary>
-        /// <param name="size">Size of Hilbert Transform</param>
         public HilbertTransform64(int size = 512)
         {
             Size = size;
@@ -42,7 +41,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Compute complex analytic signal (real and imaginary parts) from <paramref name="input"/>.
+        /// Computes complex analytic signal (real and imaginary parts) from <paramref name="input"/>.
         /// </summary>
         /// <param name="input">Input data</param>
         public ComplexDiscreteSignal AnalyticSignal(double[] input)
@@ -59,7 +58,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Fast Hilbert Transform.
+        /// Does Fast Hilbert Transform.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -91,7 +90,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Fast Hilbert Transform.
+        /// Does normalized Fast Hilbert Transform.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -106,7 +105,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Inverse Fast Hilbert Transform.
+        /// Does Inverse Fast Hilbert Transform.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -121,7 +120,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Inverse Fast Hilbert Transform.
+        /// Does normalized Inverse Fast Hilbert Transform.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>

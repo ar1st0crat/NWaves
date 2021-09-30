@@ -3,20 +3,25 @@
 namespace NWaves.Utils
 {
     /// <summary>
-    /// Class representing 2d matrix
+    /// Represents 2D matrix.
     /// </summary>
     public class Matrix
     {
         private readonly double[][] _matrix;
 
+        /// <summary>
+        /// Gets or sets number of rows.
+        /// </summary>
         public int Rows { get; set; }
+
+        /// <summary>
+        /// Gets or sets number of columns.
+        /// </summary>
         public int Columns { get; set; }
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="Matrix"/> with given number of <paramref name="rows"/> and <paramref name="columns"/>.
         /// </summary>
-        /// <param name="rows"></param>
-        /// <param name="columns"></param>
         public Matrix(int rows, int columns = 0)
         {
             if (columns == 0) columns = rows;
@@ -36,13 +41,12 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Get 2d array reference
+        /// Gets reference to underlying 2D array.
         /// </summary>
-        /// <returns></returns>
         public double[][] As2dArray() => _matrix;
 
         /// <summary>
-        /// Transposed matrix
+        /// Gets transposed matrix.
         /// </summary>
         public Matrix T
         {
@@ -63,10 +67,9 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Companion matrix
+        /// Returns companion matrix.
         /// </summary>
         /// <param name="a">Input array</param>
-        /// <returns>Companion matrix</returns>
         public static Matrix Companion(double[] a)
         {
             if (a.Length < 2)
@@ -97,10 +100,8 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Identity matrix
+        /// Returns identity matrix of given <paramref name="size"/>.
         /// </summary>
-        /// <param name="size"></param>
-        /// <returns></returns>
         public static Matrix Eye(int size)
         {
             var eye = new Matrix(size);
@@ -113,6 +114,9 @@ namespace NWaves.Utils
             return eye;
         }
 
+        /// <summary>
+        /// Returns sum of matrices <paramref name="m1"/> and <paramref name="m2"/>.
+        /// </summary>
         public static Matrix operator +(Matrix m1, Matrix m2)
         {
             Guard.AgainstInequality(m1.Rows, m2.Rows, "Number of rows in first matrix", "number of rows in second matrix");
@@ -131,6 +135,9 @@ namespace NWaves.Utils
             return result;
         }
 
+        /// <summary>
+        /// Subtracts matrix <paramref name="m2"/> from matrix <paramref name="m1"/>.
+        /// </summary>
         public static Matrix operator -(Matrix m1, Matrix m2)
         {
             Guard.AgainstInequality(m1.Rows, m2.Rows, "Number of rows in first matrix", "number of rows in second matrix");
@@ -149,6 +156,10 @@ namespace NWaves.Utils
             return result;
         }
 
+        /// <summary>
+        /// Gets row by its index.
+        /// </summary>
+        /// <param name="i">Row index</param>
         public double[] this[int i] => _matrix[i];
     }
 }

@@ -4,23 +4,22 @@ using System.Linq;
 
 namespace NWaves.Utils
 {
+    /// <summary>
+    /// Provides extension methods implementing fast operations with memory buffers.
+    /// </summary>
     public static class MemoryOperationExtensions
     {
         /// <summary>
-        /// Convert array of doubles to array of floats
+        /// Creates array of single-precision values from enumerable of double-precision values.
         /// </summary>
-        /// <param name="values"></param>
-        /// <returns></returns>
         public static float[] ToFloats(this IEnumerable<double> values)
         {
             return values.Select(v => (float)v).ToArray();
         }
 
         /// <summary>
-        /// Convert array of floats to array of doubles
+        /// Creates array of double-precision values from enumerable of single-precision values.
         /// </summary>
-        /// <param name="values"></param>
-        /// <returns></returns>
         public static double[] ToDoubles(this IEnumerable<float> values)
         {
             return values.Select(v => (double)v).ToArray();
@@ -31,10 +30,8 @@ namespace NWaves.Utils
         private const byte _32Bits = sizeof(float);
 
         /// <summary>
-        /// Method simply copies source array to desination
+        /// Creates fast copy of array.
         /// </summary>
-        /// <param name="source">Source array</param>
-        /// <returns>Source array copy</returns>
         public static float[] FastCopy(this float[] source)
         {
             var destination = new float[source.Length];
@@ -43,26 +40,25 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Method copies an array (or its fragment) to existing array (or its part)
+        /// Makes fast copy of array (or its part) to existing <paramref name="destination"/> array (or its part).
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="destination"></param>
-        /// <param name="size"></param>
-        /// <param name="sourceOffset"></param>
-        /// <param name="destinationOffset"></param>
+        /// <param name="source">Source array</param>
+        /// <param name="destination">Destination array</param>
+        /// <param name="size">Number of elements to copy</param>
+        /// <param name="sourceOffset">Offset in source array</param>
+        /// <param name="destinationOffset">Offset in destination array</param>
         public static void FastCopyTo(this float[] source, float[] destination, int size, int sourceOffset = 0, int destinationOffset = 0)
         {
             Buffer.BlockCopy(source, sourceOffset * _32Bits, destination, destinationOffset * _32Bits, size * _32Bits);
         }
 
         /// <summary>
-        /// Method copies some fragment of the source array starting at specified offset
+        /// Makes fast copy of array fragment starting at specified offset.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="size"></param>
-        /// <param name="sourceOffset"></param>
-        /// <param name="destinationOffset"></param>
-        /// <returns>The copy of source array part</returns>
+        /// <param name="source">Source array</param>
+        /// <param name="size">Number of elements to copy</param>
+        /// <param name="sourceOffset">Offset in source array</param>
+        /// <param name="destinationOffset">Offset in destination array</param>
         public static float[] FastCopyFragment(this float[] source, int size, int sourceOffset = 0, int destinationOffset = 0)
         {
             var totalSize = size + destinationOffset;
@@ -72,31 +68,25 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Method does fast in-memory merge of two arrays
+        /// Performs fast merging of array with <paramref name="another"/> array.
         /// </summary>
-        /// <param name="source1">The first array for merging</param>
-        /// <param name="source2">The second array for merging</param>
-        /// <returns>Merged array</returns>
-        public static float[] MergeWithArray(this float[] source1, float[] source2)
+        public static float[] MergeWithArray(this float[] source, float[] another)
         {
-            var merged = new float[source1.Length + source2.Length];
-            Buffer.BlockCopy(source1, 0, merged, 0, source1.Length * _32Bits);
-            Buffer.BlockCopy(source2, 0, merged, source1.Length * _32Bits, source2.Length * _32Bits);
+            var merged = new float[source.Length + another.Length];
+            Buffer.BlockCopy(source, 0, merged, 0, source.Length * _32Bits);
+            Buffer.BlockCopy(another, 0, merged, source.Length * _32Bits, another.Length * _32Bits);
             return merged;
         }
 
         /// <summary>
-        /// Method repeats given array N times
+        /// Creates new array containing given array repeated <paramref name="n"/> times.
         /// </summary>
-        /// <param name="source">Source array</param>
-        /// <param name="times">Number of times to repeat array</param>
-        /// <returns>Array repeated N times</returns>
-        public static float[] RepeatArray(this float[] source, int times)
+        public static float[] RepeatArray(this float[] source, int n)
         {
-            var repeated = new float[source.Length * times];
+            var repeated = new float[source.Length * n];
 
             var offset = 0;
-            for (var i = 0; i < times; i++)
+            for (var i = 0; i < n; i++)
             {
                 Buffer.BlockCopy(source, 0, repeated, offset * _32Bits, source.Length * _32Bits);
                 offset += source.Length;
@@ -106,12 +96,9 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Method creates new zero-padded array from source array.
+        /// Creates new zero-padded array of given <paramref name="size"/> from given array.
         /// </summary>
-        /// <param name="source">Source array</param>
-        /// <param name="size">The size of a zero-padded array</param>
-        /// <returns>Zero-padded array</returns>
-        public static float[] PadZeros(this float[] source, int size = 0)
+        public static float[] PadZeros(this float[] source, int size)
         {
             var zeroPadded = new float[size];
             Buffer.BlockCopy(source, 0, zeroPadded, 0, source.Length * _32Bits);
@@ -123,40 +110,37 @@ namespace NWaves.Utils
         #region double precision
 
         private const byte _64Bits = sizeof(double);
-        
+
         /// <summary>
-        /// Method simply copies source array to desination
+        /// Creates fast copy of array.
         /// </summary>
-        /// <param name="source">Source array</param>
-        /// <returns>Source array copy</returns>
         public static double[] FastCopy(this double[] source)
         {
             var destination = new double[source.Length];
             Buffer.BlockCopy(source, 0, destination, 0, source.Length * _64Bits);
             return destination;
         }
-        
+
         /// <summary>
-        /// Method copies an array (or its fragment) to existing array (or its part)
+        /// Makes fast copy of array (or its part) to existing <paramref name="destination"/> array (or its part).
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="destination"></param>
-        /// <param name="size"></param>
-        /// <param name="sourceOffset"></param>
-        /// <param name="destinationOffset"></param>
+        /// <param name="source">Source array</param>
+        /// <param name="destination">Destination array</param>
+        /// <param name="size">Number of elements to copy</param>
+        /// <param name="sourceOffset">Offset in source array</param>
+        /// <param name="destinationOffset">Offset in destination array</param>
         public static void FastCopyTo(this double[] source, double[] destination, int size, int sourceOffset = 0, int destinationOffset = 0)
         {
             Buffer.BlockCopy(source, sourceOffset * _64Bits, destination, destinationOffset * _64Bits, size * _64Bits);
         }
-        
+
         /// <summary>
-        /// Method copies some fragment of the source array starting at specified offset
+        /// Makes fast copy of array fragment starting at specified offset.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="size"></param>
-        /// <param name="sourceOffset"></param>
-        /// <param name="destinationOffset"></param>
-        /// <returns>The copy of source array part</returns>
+        /// <param name="source">Source array</param>
+        /// <param name="size">Number of elements to copy</param>
+        /// <param name="sourceOffset">Offset in source array</param>
+        /// <param name="destinationOffset">Offset in destination array</param>
         public static double[] FastCopyFragment(this double[] source, int size, int sourceOffset = 0, int destinationOffset = 0)
         {
             var totalSize = size + destinationOffset;
@@ -164,33 +148,27 @@ namespace NWaves.Utils
             Buffer.BlockCopy(source, sourceOffset * _64Bits, destination, destinationOffset * _64Bits, size * _64Bits);
             return destination;
         }
-        
+
         /// <summary>
-        /// Method does fast in-memory merge of two arrays
+        /// Performs fast merging of array with <paramref name="another"/> array.
         /// </summary>
-        /// <param name="source1">The first array for merging</param>
-        /// <param name="source2">The second array for merging</param>
-        /// <returns>Merged array</returns>
-        public static double[] MergeWithArray(this double[] source1, double[] source2)
+        public static double[] MergeWithArray(this double[] source, double[] another)
         {
-            var merged = new double[source1.Length + source2.Length];
-            Buffer.BlockCopy(source1, 0, merged, 0, source1.Length * _64Bits);
-            Buffer.BlockCopy(source2, 0, merged, source1.Length * _64Bits, source2.Length * _64Bits);
+            var merged = new double[source.Length + another.Length];
+            Buffer.BlockCopy(source, 0, merged, 0, source.Length * _64Bits);
+            Buffer.BlockCopy(another, 0, merged, source.Length * _64Bits, another.Length * _64Bits);
             return merged;
         }
-        
+
         /// <summary>
-        /// Method repeats given array N times
+        /// Creates new array containing given array repeated <paramref name="n"/> times.
         /// </summary>
-        /// <param name="source">Source array</param>
-        /// <param name="times">Number of times to repeat array</param>
-        /// <returns>Array repeated N times</returns>
-        public static double[] RepeatArray(this double[] source, int times)
+        public static double[] RepeatArray(this double[] source, int n)
         {
-            var repeated = new double[source.Length * times];
+            var repeated = new double[source.Length * n];
 
             var offset = 0;
-            for (var i = 0; i < times; i++)
+            for (var i = 0; i < n; i++)
             {
                 Buffer.BlockCopy(source, 0, repeated, offset * _64Bits, source.Length * _64Bits);
                 offset += source.Length;
@@ -198,14 +176,11 @@ namespace NWaves.Utils
 
             return repeated;
         }
-        
+
         /// <summary>
-        /// Method creates new zero-padded array from source array.
+        /// Creates new zero-padded array of given <paramref name="size"/> from given array.
         /// </summary>
-        /// <param name="source">Source array</param>
-        /// <param name="size">The size of a zero-padded array</param>
-        /// <returns>Zero-padded array</returns>
-        public static double[] PadZeros(this double[] source, int size = 0)
+        public static double[] PadZeros(this double[] source, int size)
         {
             var zeroPadded = new double[size];
             Buffer.BlockCopy(source, 0, zeroPadded, 0, source.Length * _64Bits);

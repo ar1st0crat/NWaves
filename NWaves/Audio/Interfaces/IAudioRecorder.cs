@@ -6,7 +6,7 @@
     public interface IAudioRecorder
     {
         /// <summary>
-        /// Start recording audio with specific settings.
+        /// Starts recording audio with specific settings.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="channelCount">Number of channels (1=mono, 2=stereo)</param>
@@ -14,7 +14,7 @@
         void StartRecording(int samplingRate, short channelCount, short bitsPerSample);
 
         /// <summary>
-        /// Stop recording audio and save recorded sound to file or any other destination.
+        /// Stops recording audio and saves recorded sound to file or any other destination.
         /// </summary>
         /// <param name="destination">Path to output file (destination)</param>
         void StopRecording(string destination);

@@ -6,18 +6,18 @@ using System.Linq;
 namespace NWaves.Operations
 {
     /// <summary>
-    /// Class for reconstructing signal from a given power / magnitude spectrogram
+    /// Represents reconstructing signal from a given power / magnitude spectrogram
     /// based on Griffin-Lim iterative algorithm.
     /// </summary>
     public class GriffinLimReconstructor
     {
         /// <summary>
-        /// STFT transformer
+        /// STFT transformer.
         /// </summary>
         private readonly Stft _stft;
 
         /// <summary>
-        /// Magnitude part of the spectrogram
+        /// Magnitude part of the spectrogram.
         /// </summary>
         private readonly List<float[]> _magnitudes;
 
@@ -54,15 +54,14 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// One iteration of reconstruction
+        /// Does one iteration of reconstruction and returns reconstructed signal at current step.
         /// </summary>
         /// <param name="signal">Signal reconstructed at previous iteration</param>
-        /// <returns>Reconstructed signal</returns>
         public float[] Iterate(float[] signal = null)
         {
             var magPhase = new MagnitudePhaseList() { Magnitudes = _magnitudes };
 
-            if (signal == null)
+            if (signal is null)
             {
                 var spectrumSize = _magnitudes[0].Length;
 
@@ -87,10 +86,9 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Reconstruct iteratively
+        /// Reconstructs signal from spectrogram iteratively.
         /// </summary>
-        /// <param name="iterations"></param>
-        /// <returns></returns>
+        /// <param name="iterations">Number of iterations in Griffin-Lim algorithm</param>
         public float[] Reconstruct(int iterations = 20)
         {
             var reconstructed = Iterate();

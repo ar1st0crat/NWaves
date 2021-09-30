@@ -4,32 +4,28 @@ using System.Numerics;
 namespace NWaves.Utils
 {
     /// <summary>
-    /// Static class providing some helpful math functions
+    /// Provides helpful math functions.
     /// </summary>
     public static class MathUtils
     {
         /// <summary>
-        /// Sinc-function
+        /// Returns Sinc of <paramref name="x"/>.
         /// </summary>
-        /// <param name="x">Argument</param>
-        /// <returns>sinc(x)</returns>
         public static double Sinc(double x)
         {
             return Math.Abs(x) > 1e-20 ? Math.Sin(Math.PI * x) / (Math.PI * x) : 1.0;
         }
 
         /// <summary>
-        /// Method for computing next power of 2 (closest to the given number)
+        /// Returns next power of 2 closest to the given number <paramref name="n"/>.
         /// </summary>
-        /// <param name="n">Number</param>
-        /// <returns>Next power of 2 closest to the number</returns>
         public static int NextPowerOfTwo(int n)
         {
             return (int)Math.Pow(2, Math.Ceiling(Math.Log(n, 2)));
         }
 
         /// <summary>
-        /// Greatest Common Divisor
+        /// Finds Greatest Common Divisor.
         /// </summary>
         public static int Gcd(int n, int m)
         {
@@ -41,31 +37,24 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Modulo function that works correctly with negative numbers (as np.mod)
+        /// Modulo function that works correctly with negative numbers (as np.mod).
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
         public static double Mod(double a, double b)
         {
             return ((a % b) + b) % b;
         }
 
         /// <summary>
-        /// Inverse sinh
+        /// Computes Inverse Sinh of <paramref name="x"/>.
         /// </summary>
-        /// <param name="x"></param>
-        /// <returns></returns>
         public static double Asinh(double x)
         {
             return Math.Log(x + Math.Sqrt(x * x + 1));
         }
 
         /// <summary>
-        /// Factorial
+        /// Computes factorial <paramref name="n"/>!.
         /// </summary>
-        /// <param name="n"></param>
-        /// <returns></returns>
         public static double Factorial(int n)
         {
             var f = 1.0;
@@ -76,21 +65,16 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Binomial coefficient
+        /// Evaluates Binomial coefficient.
         /// </summary>
-        /// <param name="k"></param>
-        /// <param name="n"></param>
-        /// <returns></returns>
         public static double BinomialCoefficient(int k, int n)
         {
             return Factorial(n) / (Factorial(k) * Factorial(n - k));
         }
 
         /// <summary>
-        /// Diff signal (1st order derivative)
+        /// Evaluate discrete difference of <paramref name="samples"/> (array of the 1st order derivatives).
         /// </summary>
-        /// <param name="samples"></param>
-        /// <param name="diff"></param>
         public static void Diff(float[] samples, float[] diff)
         {
             diff[0] = samples[0];
@@ -102,13 +86,8 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Linear interpolation (as numpy.interp)
+        /// Does linear interpolation (as numpy.interp).
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="arg"></param>
-        /// <param name="interp"></param>
-        /// <returns></returns>
         public static void InterpolateLinear(float[] x, float[] y, float[] arg, float[] interp)
         {
             var left = 0;
@@ -127,10 +106,10 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Bilinear transform (in-place)
+        /// Does bilinear transform (in-place).
         /// </summary>
-        /// <param name="re"></param>
-        /// <param name="im"></param>
+        /// <param name="re">Real parts of complex values</param>
+        /// <param name="im">Imaginary parts of complex values</param>
         public static void BilinearTransform(double[] re, double[] im)
         {
             for (var k = 0; k < re.Length; k++)
@@ -154,11 +133,10 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Unwrap (phase)
+        /// Unwraps phase.
         /// </summary>
-        /// <param name="phase"></param>
+        /// <param name="phase">Phase array</param>
         /// <param name="tolerance">Jump size</param>
-        /// <returns></returns>
         public static double[] Unwrap(double[] phase, double tolerance = Math.PI)
         {
             var unwrapped = phase.FastCopy();
@@ -185,11 +163,10 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Wrap (phase)
+        /// Wraps phase.
         /// </summary>
-        /// <param name="phase"></param>
+        /// <param name="phase">Phase array</param>
         /// <param name="tolerance">Jump size</param>
-        /// <returns></returns>
         public static double[] Wrap(double[] phase, double tolerance = Math.PI)
         {
             var wrapped = phase.FastCopy();
@@ -214,13 +191,8 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Nth order statistics
+        /// Finds <paramref name="n"/>-th order statistics (n-th smallest value in array <paramref name="a"/>).
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="n"></param>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        /// <returns></returns>
         public static float FindNth(float[] a, int n, int start, int end)
         {
             while (true)
@@ -260,21 +232,19 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Modified Bessel function of the 1st kind (Taylor series, not very precise method)
+        /// Modified Bessel function I0(<paramref name="x"/>) of the 1st kind 
+        /// (using Taylor series, not very precise method).
         /// </summary>
-        /// <param name="x">x</param>
-        /// <returns>I0(x)</returns>
         public static double I0(double x)
         {
-            double y = 1.0;
-            double prev = 1.0;
-            double summand = 0;
+            var y = 1.0;
+            var prev = 1.0;
 
             var i = 1;
 
             while (Math.Abs(prev) > 1e-20)
             {
-                summand = prev * x * x / (4 * i * i);
+                var summand = prev * x * x / (4 * i * i);
                 y += summand;
                 prev = summand;
                 i++;
@@ -286,14 +256,17 @@ namespace NWaves.Utils
 
         #region polynomials
 
+        /// <summary>
+        /// Number of iterations in Durand-Kerner algorithm for evaluating polynomial roots.
+        /// </summary>
         public const int PolyRootsIterations = 25000;
 
         /// <summary>
-        /// Method implementing Durand-Kerner algorithm for finding complex roots of polynomials.
-        /// Works for polynomials of order up to approx. 50. 
+        /// Evaluates complex roots of polynomials using Durand-Kerner algorithm. 
+        /// Works for polynomials of order up to approx. 50.
         /// </summary>
         /// <param name="a">Polynomial coefficients</param>
-        /// <returns></returns>
+        /// <param name="maxIterations">Max number of iterations</param>
         public static Complex[] PolynomialRoots(double[] a, int maxIterations = PolyRootsIterations)
         {
             var n = a.Length;
@@ -345,12 +318,8 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Method checks if two arrays of complex numbers are essentially identical
+        /// Checks if two arrays of complex numbers are essentially identical.
         /// </summary>
-        /// <param name="a">First array</param>
-        /// <param name="b">Second array</param>
-        /// <param name="tolerance">Tolerance level</param>
-        /// <returns>true if arrays are equal</returns>
         private static bool ArraysAreEqual(Complex[] a, Complex[] b, double tolerance = 1e-16)
         {
             for (var i = 0; i < a.Length; i++)
@@ -365,11 +334,10 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Evaluate polynomial according to Horner scheme
+        /// Evaluates polynomial according to Horner scheme.
         /// </summary>
         /// <param name="a">Polynomial coefficients</param>
-        /// <param name="x">x</param>
-        /// <returns>The value of polynomial</returns>
+        /// <param name="x">Argument</param>
         public static Complex EvaluatePolynomial(double[] a, Complex x)
         {
             var res = new Complex(a[0], 0);
@@ -384,11 +352,8 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Multiply polynomials
+        /// Multiplies polynomials.
         /// </summary>
-        /// <param name="poly1"></param>
-        /// <param name="poly2"></param>
-        /// <returns></returns>
         public static Complex[] MultiplyPolynomials(Complex[] poly1, Complex[] poly2)
         {
             var length = poly1.Length + poly2.Length - 1;
@@ -406,11 +371,8 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Divide polynomials
+        /// Divides polynomials.
         /// </summary>
-        /// <param name="dividend">Dividend</param>
-        /// <param name="divisor">Divisor</param>
-        /// <returns></returns>
         public static Complex[][] DividePolynomial(Complex[] dividend, Complex[] divisor)
         {
             var output = (Complex[])dividend.Clone();

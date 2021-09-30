@@ -6,42 +6,42 @@ using System.Collections.Generic;
 
 namespace NWaves.Operations
 {
+    // D.Fitzgerald. Harmonic/percussive separation using median filtering.
+    // 13th International Conference on Digital Audio Effects (DAFX10), Graz, Austria, 2010.
+
     /// <summary>
-    /// HPS based on median filtering.
-    /// 
-    /// D.Fitzgerald. Harmonic/percussive separation using median filtering.
-    /// 13th International Conference on Digital Audio Effects (DAFX10), Graz, Austria, 2010.
+    /// Represents harmonic/percussive separator based on median filtering.
     /// </summary>
     public class HarmonicPercussiveSeparator
     {
         /// <summary>
-        /// Internal STFT transformer
+        /// Internal STFT transformer.
         /// </summary>
         private readonly Stft _stft;
 
         /// <summary>
-        /// Masking function
+        /// Masking function.
         /// </summary>
         private readonly Func<float, float, float> _mask;
 
         /// <summary>
-        /// Median filter for time axis
+        /// Median filter along time axis.
         /// </summary>
         private readonly MedianFilter _medianHarmonic;
 
         /// <summary>
-        /// Median filter for frequency axis
+        /// Median filter along frequency axis.
         /// </summary>
         private readonly MedianFilter _medianPercussive;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="HarmonicPercussiveSeparator"/>.
         /// </summary>
-        /// <param name="fftSize"></param>
-        /// <param name="hopSize"></param>
-        /// <param name="harmonicWinSize"></param>
-        /// <param name="percussiveWinSize"></param>
-        /// <param name="masking"></param>
+        /// <param name="fftSize">FFT size</param>
+        /// <param name="hopSize">Hop length (number of samples)</param>
+        /// <param name="harmonicWinSize">Size of median filter along time axis</param>
+        /// <param name="percussiveWinSize">Size of median filter along frequency axis</param>
+        /// <param name="masking">Masking mode</param>
         public HarmonicPercussiveSeparator(int fftSize = 2048,
                                            int hopSize = 512,
                                            int harmonicWinSize = 17,
@@ -68,11 +68,9 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Evaluate harmonic and percussive mag-phase spectrograms from given signal.
+        /// Evaluates harmonic and percussive mag-phase spectrograms from given <paramref name="signal"/>. 
         /// Both spectrogram objects share the same phase array.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
         public (MagnitudePhaseList, MagnitudePhaseList) EvaluateSpectrograms(DiscreteSignal signal)
         {
             // spectrogram memory will be reused for harmonic magnitudes
@@ -131,10 +129,8 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Evaluate harmonic and percussive signals from given signal
+        /// Extracts harmonic and percussive signals from given <paramref name="signal"/>.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns>Harmonic signal and percussive signal</returns>
         public (DiscreteSignal, DiscreteSignal) EvaluateSignals(DiscreteSignal signal)
         {
             var (harmonicSpectrogram, percussiveSpectrogram) = EvaluateSpectrograms(signal);
@@ -158,7 +154,7 @@ namespace NWaves.Operations
     }
 
     /// <summary>
-    /// Masking mode for HPS algorithm
+    /// Masking modes for HPS algorithm.
     /// </summary>
     public enum HpsMasking
     {

@@ -1,12 +1,12 @@
 ﻿namespace NWaves.Audio
 {
     /// <summary>
-    /// Static class providing methods for conversion between PCM bytes and float[] data.
+    /// Provides methods for conversion between PCM bytes and float[] data.
     /// </summary>
     public static class ByteConverter
     {
         /// <summary>
-        /// Convert Pcm_8bit <paramref name="bytes"/> to arrays of <paramref name="floats"/>.
+        /// Converts Pcm_8bit <paramref name="bytes"/> to arrays of <paramref name="floats"/>.
         /// </summary>
         /// <param name="bytes">Array of bytes</param>
         /// <param name="floats">Arrays of floats</param>
@@ -38,7 +38,7 @@
         }
 
         /// <summary>
-        /// Convert arrays of <paramref name="floats"/> to Pcm_8bit <paramref name="bytes"/>.
+        /// Converts arrays of <paramref name="floats"/> to Pcm_8bit <paramref name="bytes"/>.
         /// </summary>
         /// <param name="bytes">Array of bytes</param>
         /// <param name="floats">Arrays of floats</param>
@@ -70,7 +70,7 @@
         }
 
         /// <summary>
-        /// Convert Pcm_16bit <paramref name="bytes"/> to arrays of <paramref name="floats"/> (little-endian or big-endian).
+        /// Converts Pcm_16bit <paramref name="bytes"/> to arrays of <paramref name="floats"/> (little-endian or big-endian).
         /// </summary>
         /// <param name="bytes">Array of bytes</param>
         /// <param name="floats">Arrays of floats</param>
@@ -130,7 +130,7 @@
         }
 
         /// <summary>
-        /// Convert arrays of <paramref name="floats"/> to Pcm_16bit <paramref name="bytes"/> (little-endian or big-endian).
+        /// Converts arrays of <paramref name="floats"/> to Pcm_16bit <paramref name="bytes"/> (little-endian or big-endian).
         /// </summary>
         /// <param name="bytes">Array of bytes</param>
         /// <param name="floats">Arrays of floats</param>

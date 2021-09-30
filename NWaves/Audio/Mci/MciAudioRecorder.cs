@@ -11,7 +11,7 @@ namespace NWaves.Audio.Mci
     public class MciAudioRecorder : IAudioRecorder
     {
         /// <summary>
-        /// Start recording audio with specific settings.
+        /// Starts recording audio with specific settings.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="channelCount">Number of channels (1=mono, 2=stereo)</param>
@@ -40,7 +40,7 @@ namespace NWaves.Audio.Mci
         }
 
         /// <summary>
-        /// Stop recording audio and save it to WAV file.
+        /// Stops recording audio and save it to WAV file.
         /// </summary>
         /// <param name="destination">Path to output WAV file containing recorded sound</param>
         public void StopRecording(string destination)

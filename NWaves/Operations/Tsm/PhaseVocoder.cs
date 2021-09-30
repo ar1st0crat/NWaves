@@ -9,37 +9,37 @@ using NWaves.Windows;
 namespace NWaves.Operations.Tsm
 {
     /// <summary>
-    /// Conventional Phase Vocoder
+    /// Represents Phase Vocoder.
     /// </summary>
     public class PhaseVocoder : IFilter
     {
         /// <summary>
-        /// Hop size at analysis stage (STFT decomposition)
+        /// Hop size at analysis stage (STFT decomposition).
         /// </summary>
         protected readonly int _hopAnalysis;
 
         /// <summary>
-        /// Hop size at synthesis stage (STFT merging)
+        /// Hop size at synthesis stage (STFT merging).
         /// </summary>
         protected readonly int _hopSynthesis;
 
         /// <summary>
-        /// Size of FFT for analysis and synthesis
+        /// Size of FFT for analysis and synthesis.
         /// </summary>
         protected readonly int _fftSize;
 
         /// <summary>
-        /// Stretch ratio
+        /// Stretch ratio.
         /// </summary>
         protected readonly double _stretch;
 
         /// <summary>
-        /// Internal FFT transformer
+        /// Internal FFT transformer.
         /// </summary>
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// Window coefficients
+        /// Window coefficients.
         /// </summary>
         protected readonly float[] _window;
 
@@ -49,36 +49,36 @@ namespace NWaves.Operations.Tsm
         protected readonly float _gain;
 
         /// <summary>
-        /// Linearly spaced frequencies
+        /// Linearly spaced frequencies.
         /// </summary>
         protected readonly double[] _omega;
 
         /// <summary>
-        /// Internal buffer for real parts of analyzed block
+        /// Internal buffer for real parts of analyzed block.
         /// </summary>
         protected readonly float[] _re;
 
         /// <summary>
-        /// Internal buffer for imaginary parts of analyzed block
+        /// Internal buffer for imaginary parts of analyzed block.
         /// </summary>
         protected readonly float[] _im;
 
         /// <summary>
-        /// Array of phases computed at previous step
+        /// Array of phases computed at previous step.
         /// </summary>
         protected readonly double[] _prevPhase;
 
         /// <summary>
-        /// Array of new synthesized phases
+        /// Array of new synthesized phases.
         /// </summary>
         protected readonly double[] _phaseTotal;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="PhaseVocoder"/>.
         /// </summary>
-        /// <param name="stretch"></param>
-        /// <param name="hopAnalysis"></param>
-        /// <param name="fftSize"></param>
+        /// <param name="stretch">Stretch ratio</param>
+        /// <param name="hopAnalysis">Hop length at analysis stage</param>
+        /// <param name="fftSize">FFT size</param>
         public PhaseVocoder(double stretch, int hopAnalysis, int fftSize = 0)
         {
             _stretch = stretch;
@@ -104,13 +104,9 @@ namespace NWaves.Operations.Tsm
         }
 
         /// <summary>
-        /// Phase Vocoder algorithm
+        /// Processes entire <paramref name="signal"/> and returns new time-stretched signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                      FilteringMethod method = FilteringMethod.Auto)
+        public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
         {
             var input = signal.Samples;
             var output = new float[(int)(input.Length * _stretch) + _fftSize];
@@ -155,10 +151,10 @@ namespace NWaves.Operations.Tsm
         }
 
         /// <summary>
-        /// Process one spectrum at each STFT step.
+        /// Processes one spectrum at each STFT step. 
         /// This routine is different for different PV-based techniques.
         /// </summary>
-        public virtual void ProcessSpectrum()
+        protected virtual void ProcessSpectrum()
         {
             for (var j = 1; j <= _fftSize / 2; j++)
             {
@@ -181,7 +177,7 @@ namespace NWaves.Operations.Tsm
         }
 
         /// <summary>
-        /// Reset phase vocoder
+        /// Resets phase vocoder.
         /// </summary>
         public virtual void Reset()
         {

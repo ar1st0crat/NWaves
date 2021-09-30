@@ -3,120 +3,116 @@
 namespace NWaves.Utils
 {
     /// <summary>
-    /// Static class providing methods for 
-    /// 
+    /// Provides methods for 
+    /// <para>
     /// 1) converting between different scales:
-    ///     - decibel
-    ///     - MIDI pitch
-    ///     - mel (HTK)
-    ///     - mel (Slaney)
-    ///     - bark1 (Traunmueller)
-    ///     - bark2 (Wang)
-    ///     - ERB
-    /// 
+    /// <list type="bullet">
+    ///     <item>decibel</item>
+    ///     <item>MIDI pitch</item>
+    ///     <item>mel (HTK)</item>
+    ///     <item>mel (Slaney)</item>
+    ///     <item>bark1 (Traunmueller)</item>
+    ///     <item>bark2 (Wang)</item>
+    ///     <item>ERB</item>
+    /// </list>
+    /// </para>
+    /// <para>
     /// 2) loudness weighting:
-    ///     - A-weighting
-    ///     - B-weighting
-    ///     - C-weighting
-    /// 
+    /// <list>
+    ///     <item>A-weighting</item>
+    ///     <item>B-weighting</item>
+    ///     <item>C-weighting</item>
+    /// </list>
+    /// </para>
     /// </summary>
     public static class Scale
     {
         /// <summary>
-        /// Method converts magnitude value to dB level
+        /// Converts magnitude value to dB level.
         /// </summary>
         /// <param name="value">Magnitude</param>
         /// <param name="valueReference">Reference magnitude</param>
-        /// <returns>Decibel level</returns>
         public static double ToDecibel(double value, double valueReference)
         {
             return 20 * Math.Log10(value / valueReference + double.Epsilon);
         }
 
         /// <summary>
-        /// Method converts magnitude value to dB level (simplified version for intermediate calculations)
+        /// Converts magnitude value to dB level (simplified version).
         /// </summary>
         /// <param name="value">Magnitude</param>
-        /// <returns>Decibel level</returns>
         public static double ToDecibel(double value)
         {
             return 20 * Math.Log10(value);
         }
 
         /// <summary>
-        /// Method converts power to dB level
+        /// Converts power to dB level.
         /// </summary>
         /// <param name="value">Power</param>
         /// <param name="valueReference">Reference power</param>
-        /// <returns>Decibel level</returns>
         public static double ToDecibelPower(double value, double valueReference = 1.0)
         {
             return 10 * Math.Log10(value / valueReference + double.Epsilon);
         }
 
         /// <summary>
-        /// Method converts dB level to magnitude value
+        /// Converts dB level to magnitude value.
         /// </summary>
-        /// <param name="level">dB level</param>
+        /// <param name="level">Decibel level</param>
         /// <param name="valueReference">Reference magnitude</param>
-        /// <returns>Magnitude value</returns>
         public static double FromDecibel(double level, double valueReference)
         {
             return valueReference * Math.Pow(10, level / 20);
         }
 
         /// <summary>
-        /// Method converts dB level to magnitude value (simplified version for intermediate calculations)
+        /// Converts dB level to magnitude value (simplified version).
         /// </summary>
-        /// <param name="level">dB level</param>
-        /// <returns>Magnitude value</returns>
+        /// <param name="level">Decibel level</param>
         public static double FromDecibel(double level)
         {
             return Math.Pow(10, level / 20);
         }
 
         /// <summary>
-        /// Method converts dB level to power
+        /// Converts dB level to power.
         /// </summary>
-        /// <param name="level">dB level</param>
+        /// <param name="level">Decibel level</param>
         /// <param name="valueReference">Reference power</param>
-        /// <returns>Power</returns>
         public static double FromDecibelPower(double level, double valueReference = 1.0)
         {
             return valueReference * Math.Pow(10, level / 10);
         }
 
         /// <summary>
-        /// Method converts MIDI pitch to frequency
+        /// Converts MIDI pitch to frequency (in Hz).
         /// </summary>
-        /// <param name="pitch"></param>
-        /// <returns></returns>
+        /// <param name="pitch">Pitch</param>
         public static double PitchToFreq(int pitch)
         {
             return 440 * Math.Pow(2, (pitch - 69) / 12.0);
         }
 
         /// <summary>
-        /// Method converts frequency to MIDI pitch
+        /// Converts frequency to MIDI pitch.
         /// </summary>
-        /// <param name="freq"></param>
-        /// <returns></returns>
+        /// <param name="freq">Frequency (in Hz)</param>
         public static int FreqToPitch(double freq)
         {
             return (int)Math.Round(69 + 12 * Math.Log(freq / 440, 2), MidpointRounding.AwayFromZero);
         }
 
         /// <summary>
-        /// Array of notes
+        /// Array of musical notes.
         /// </summary>
         public static string[] Notes = new[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
         /// <summary>
-        /// Method converts note (in format ("G", 3), ("E", 5), etc.) to frequency in Hz
+        /// Converts musical note (in format ("G", 3), ("E", 5), etc.) to frequency in Hz.
         /// </summary>
         /// <param name="note">Note (A-G#)</param>
         /// <param name="octave">Octave (0-8)</param>
-        /// <returns>Frequency in Hz</returns>
         public static double NoteToFreq(string note, int octave)
         {
             var noteIndex = Array.IndexOf(Notes, note);
@@ -135,10 +131,9 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Method converts frequency in Hz to note (in format ("G", 3), ("E", 5), etc.)
+        /// Converts frequency in Hz to note (in tuple format ("G", 3), ("E", 5), etc.).
         /// </summary>
         /// <param name="freq">Frequency in Hz</param>
-        /// <returns>Tuple (note, octave)</returns>
         public static (string, int) FreqToNote(double freq)
         {
             var pitch = FreqToPitch(freq);
@@ -150,30 +145,24 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Method converts herz frequency to corresponding mel frequency
+        /// Converts herz frequency to corresponding mel frequency.
         /// </summary>
-        /// <param name="herz">Herz frequency</param>
-        /// <returns>Mel frequency</returns>
         public static double HerzToMel(double herz)
         {
             return 1127 * Math.Log(herz / 700 + 1); // actually, should be 1127.01048, but HTK and Kaldi seem to use 1127
         }
 
         /// <summary>
-        /// Method converts mel frequency to corresponding herz frequency
+        /// Converts mel frequency to corresponding herz frequency.
         /// </summary>
-        /// <param name="mel">Mel frequency</param>
-        /// <returns>Herz frequency</returns>
         public static double MelToHerz(double mel)
         {
             return (Math.Exp(mel / 1127) - 1) * 700;
         }
 
         /// <summary>
-        /// Method converts herz frequency to mel frequency (suggested by M.Slaney)
+        /// Converts herz frequency to mel frequency (suggested by M.Slaney).
         /// </summary>
-        /// <param name="herz">Herz frequency</param>
-        /// <returns>Mel frequency</returns>
         public static double HerzToMelSlaney(double herz)
         {
             const double minHerz = 0.0;
@@ -187,10 +176,8 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Method converts mel frequency to herz frequency (suggested by M.Slaney)
+        /// Converts mel frequency to herz frequency (suggested by M.Slaney).
         /// </summary>
-        /// <param name="mel">Mel frequency</param>
-        /// <returns>Herz frequency</returns>
         public static double MelToHerzSlaney(double mel)
         {
             const double minHerz = 0.0;
@@ -204,76 +191,58 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Method #1 converts herz frequency to corresponding bark frequency
-        /// (according to Traunmüller (1990))
+        /// Converts herz frequency to corresponding bark frequency (according to Traunmüller (1990)).
         /// </summary>
-        /// <param name="herz">Herz frequency</param>
-        /// <returns>Bark frequency</returns>
         public static double HerzToBark(double herz)
         {
             return (26.81 * herz) / (1960 + herz) - 0.53;
         }
 
         /// <summary>
-        /// Method #1 converts bark frequency to corresponding herz frequency
-        /// (according to Traunmüller (1990))
+        /// Converts bark frequency to corresponding herz frequency (according to Traunmüller (1990)).
         /// </summary>
-        /// <param name="bark">Bark frequency</param>
-        /// <returns>Herz frequency</returns>
         public static double BarkToHerz(double bark)
         {
             return 1960 / (26.81 / (bark + 0.53) - 1);
         }
 
         /// <summary>
-        /// Method #2 converts herz frequency to corresponding bark frequency
-        /// (according to Wang (1992)); used in M.Slaney's auditory toolbox
+        /// Converts herz frequency to corresponding bark frequency (according to Wang (1992)); 
+        /// used in M.Slaney's auditory toolbox.
         /// </summary>
-        /// <param name="herz">Herz frequency</param>
-        /// <returns>Bark frequency</returns>
         public static double HerzToBarkSlaney(double herz)
         {
             return 6 * MathUtils.Asinh(herz / 600);
         }
 
         /// <summary>
-        /// Method #2 converts bark frequency to corresponding herz frequency
-        /// (according to Wang (1992)); used in M.Slaney's auditory toolbox
+        /// Converts bark frequency to corresponding herz frequency (according to Wang (1992)); 
+        /// used in M.Slaney's auditory toolbox.
         /// </summary>
-        /// <param name="bark">Bark frequency</param>
-        /// <returns>Herz frequency</returns>
         public static double BarkToHerzSlaney(double bark)
         {
             return 600 * Math.Sinh(bark / 6);
         }
 
         /// <summary>
-        /// Method converts herz frequency to corresponding ERB frequency
+        /// Converts herz frequency to corresponding ERB frequency.
         /// </summary>
-        /// <param name="herz">Herz frequency</param>
-        /// <returns>ERB frequency</returns>
         public static double HerzToErb(double herz)
         {
             return 9.26449 * Math.Log(1.0 + herz) / (24.7 * 9.26449);
         }
 
         /// <summary>
-        /// Method converts ERB frequency to corresponding herz frequency
+        /// Converts ERB frequency to corresponding herz frequency.
         /// </summary>
-        /// <param name="erb">ERB frequency</param>
-        /// <returns>Herz frequency</returns>
         public static double ErbToHerz(double erb)
         {
             return (Math.Exp(erb / 9.26449) - 1.0) * (24.7 * 9.26449);
         }
 
         /// <summary>
-        /// Method converts Hz frequency to octave (used for constructing librosa-like Chroma filterbanks)
+        /// Converts Hz frequency to octave (used for constructing librosa-like Chroma filterbanks).
         /// </summary>
-        /// <param name="herz"></param>
-        /// <param name="tuning"></param>
-        /// <param name="binsPerOctave"></param>
-        /// <returns></returns>
         public static double HerzToOctave(double herz, double tuning = 0, int binsPerOctave = 12)
         {
             var a440 = 440.0 * Math.Pow(2.0, tuning / binsPerOctave);
@@ -282,20 +251,19 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Method for obtaining a perceptual loudness weight
+        /// Returns perceptual loudness weight (in dB).
         /// </summary>
-        /// <param name="freq">Frequency</param>
+        /// <param name="frequency">Frequency</param>
         /// <param name="weightingType">Weighting type (A, B, C)</param>
-        /// <returns>Weight value in dB</returns>
-        public static double LoudnessWeighting(double freq, string weightingType = "A")
+        public static double LoudnessWeighting(double frequency, string weightingType = "A")
         {
-            var level2 = freq * freq;
+            var level2 = frequency * frequency;
 
             switch (weightingType.ToUpper())
             {
                 case "B":
                 {
-                    var r = (level2 * freq * 148693636) /
+                    var r = (level2 * frequency * 148693636) /
                              (
                                 (level2 + 424.36) *
                                  Math.Sqrt(level2 + 25122.25) *

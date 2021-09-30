@@ -6,52 +6,52 @@ using System;
 namespace NWaves.Operations
 {
     /// <summary>
-    /// Dynamics processor: limiter / compressor / expander / noise gate
+    /// Represents dynamics processor: limiter or compressor or expander or noise gate.
     /// </summary>
     public class DynamicsProcessor : IFilter, IOnlineFilter
     {
         /// <summary>
-        /// Dynamics processor mode
+        /// Dynamics processor mode.
         /// </summary>
         private readonly DynamicsMode _mode;
 
         /// <summary>
-        /// Envelope follower
+        /// Envelope follower.
         /// </summary>
         private readonly EnvelopeFollower _envelopeFollower;
 
         /// <summary>
-        /// Sampling rate
+        /// Sampling rate.
         /// </summary>
         private readonly int _fs;
 
         /// <summary>
-        /// Min threshold for dB amplitude
+        /// Min threshold for dB amplitude.
         /// </summary>
         private readonly float _minAmplitudeDb;
 
         /// <summary>
-        /// Attack/Release time coefficient
+        /// Attack/Release time coefficient.
         /// </summary>
         private readonly float T = 1 / (float)Math.Log(9); // = approx. 2.2
 
         /// <summary>
-        /// Compression threshold
+        /// Gets or sets compression/expansion threshold.
         /// </summary>
         public float Threshold { get; set; }
 
         /// <summary>
-        /// Compression ratio
+        /// Gets or sets compression/expansion ratio.
         /// </summary>
         public float Ratio { get; set; }
         
         /// <summary>
-        /// Makeup gain
+        /// Gets or sets makeup gain.
         /// </summary>
         public float MakeupGain { get; set; }
 
         /// <summary>
-        /// Attack time
+        /// Gets or sets attack time.
         /// </summary>
         public float Attack
         {
@@ -86,7 +86,7 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Release time
+        /// Gets or sets release time.
         /// </summary>
         public float Release
         {
@@ -121,16 +121,16 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="DynamicsProcessor"/> in given <paramref name="mode"/>.
         /// </summary>
-        /// <param name="mode"></param>
-        /// <param name="samplingRate"></param>
-        /// <param name="threshold"></param>
-        /// <param name="ratio"></param>
-        /// <param name="makeupGain"></param>
-        /// <param name="attack"></param>
-        /// <param name="release"></param>
-        /// <param name="minAmplitudeDb"></param>
+        /// <param name="mode">Type (mode) of dynamics processor</param>
+        /// <param name="samplingRate">Sampling rate</param>
+        /// <param name="threshold">Compression/expansion threshold</param>
+        /// <param name="ratio">Compression/expansion ratio</param>
+        /// <param name="makeupGain">Makeup gain</param>
+        /// <param name="attack">Attack time (in seconds)</param>
+        /// <param name="release">Release time (in seconds)</param>
+        /// <param name="minAmplitudeDb">Min threshold for dB amplitude</param>
         public DynamicsProcessor(DynamicsMode mode,
                                  int samplingRate,
                                  float threshold,
@@ -152,6 +152,10 @@ namespace NWaves.Operations
             Release = release;
         }
 
+        /// <summary>
+        /// Processes one sample.
+        /// </summary>
+        /// <param name="sample">Input sample</param>
         public float Process(float sample)
         {
             var abs = Math.Abs(sample);
@@ -183,11 +187,19 @@ namespace NWaves.Operations
             return sample * gain;
         }
 
+        /// <summary>
+        /// Resets dynamics processor.
+        /// </summary>
         public void Reset()
         {
             _envelopeFollower.Reset();
         }
 
+        /// <summary>
+        /// Processes entire <paramref name="signal"/> and returns new signal (dynamics).
+        /// </summary>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
     }
 }

@@ -5,25 +5,44 @@ using NWaves.Utils;
 
 namespace NWaves.Operations
 {
+    // Spectral subtraction algorithm:
+    // 
+    // [1979] M. Berouti, R. Schwartz, J. Makhoul
+    // "Enhancement of Speech Corrupted by Acoustic Noise".
+    //
+
     /// <summary>
-    /// Class that implements Spectral subtraction algorithm according to
-    /// 
-    /// [1979] M. Berouti, R. Schwartz, J. Makhoul
-    /// "Enhancement of Speech Corrupted by Acoustic Noise".
-    /// 
+    /// Represents spectral subtraction filter.
     /// </summary>
     public class SpectralSubtractor : OverlapAddFilter
     {
-        // Algorithm parameters
-
+        /// <summary>
+        /// Gets or sets spectral floor (beta coefficient).
+        /// </summary>
         public float Beta { get; set; } = 0.009f;
+
+        /// <summary>
+        /// Gets or sets min threshold for subtraction factor (alpha).
+        /// </summary>
         public float AlphaMin { get; set; } = 2f;
+
+        /// <summary>
+        /// Gets or sets max threshold for subtraction factor (alpha).
+        /// </summary>
         public float AlphaMax { get; set; } = 5f;
+
+        /// <summary>
+        /// Gets or sets min SNR value (in dB).
+        /// </summary>
         public float SnrMin { get; set; } = -5f;
+
+        /// <summary>
+        /// Gets or sets max SNR value (in dB).
+        /// </summary>
         public float SnrMax { get; set; } = 20f;
 
         /// <summary>
-        /// Noise estimate
+        /// Noise estimate.
         /// </summary>
         private readonly float[] _noiseEstimate;
 
@@ -34,11 +53,11 @@ namespace NWaves.Operations
         private readonly float[] _noiseAcc;
 
         /// <summary>
-        /// Constructor from float[] noise
+        /// Constructs <see cref="SpectralSubtractor"/>.
         /// </summary>
-        /// <param name="noise"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="hopSize"></param>
+        /// <param name="noise">Array of noise samples</param>
+        /// <param name="fftSize">FFT size</param>
+        /// <param name="hopSize">Hop length (number of samples)</param>
         public SpectralSubtractor(float[] noise, int fftSize = 1024, int hopSize = 128) : base(hopSize, fftSize)
         {
             _noiseEstimate = new float[_fftSize / 2 + 1];
@@ -50,18 +69,18 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Constructor from DiscreteSignal noise
+        /// Constructs <see cref="SpectralSubtractor"/>.
         /// </summary>
-        /// <param name="noise"></param>
-        /// <param name="fftSize"></param>
-        /// <param name="hopSize"></param>
+        /// <param name="noise">Noise signal</param>
+        /// <param name="fftSize">FFT size</param>
+        /// <param name="hopSize">Hop length (number of samples)</param>
         public SpectralSubtractor(DiscreteSignal noise, int fftSize = 1024, int hopSize = 128)
             : this(noise.Samples, fftSize, hopSize)
         {
         }
 
         /// <summary>
-        /// Process one spectrum at each STFT step
+        /// Processes one spectrum at each STFT step.
         /// </summary>
         /// <param name="re">Real parts of input spectrum</param>
         /// <param name="im">Imaginary parts of input spectrum</param>
@@ -95,11 +114,11 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Estimate noise power spectrum
+        /// Estimates power spectrum of <paramref name="noise"/>.
         /// </summary>
-        /// <param name="noise"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
+        /// <param name="noise">Array of noise samples</param>
+        /// <param name="startPos">Index of the first sample in array for processing</param>
+        /// <param name="endPos">Index of the last sample in array for processing</param>
         public void EstimateNoise(float[] noise, int startPos = 0, int endPos = -1)
         {
             if (endPos < 0)
@@ -130,11 +149,11 @@ namespace NWaves.Operations
         }
 
         /// <summary>
-        /// Estimate noise power spectrum
+        /// Estimates power spectrum of <paramref name="noise"/> signal.
         /// </summary>
-        /// <param name="noise"></param>
-        /// <param name="startPos"></param>
-        /// <param name="endPos"></param>
+        /// <param name="noise">Noise signal</param>
+        /// <param name="startPos">Index of the first sample in signal</param>
+        /// <param name="endPos">Index of the last sample in signal</param>
         public void EstimateNoise(DiscreteSignal noise, int startPos = 0, int endPos = -1)
         {
             EstimateNoise(noise.Samples, startPos, endPos);

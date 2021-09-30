@@ -40,12 +40,12 @@ namespace NWaves.Audio.Mci
         private bool _isPaused;
 
         /// <summary>
-        /// Gets or sets audio volume (measured in percents from the range [0.0f, 1.0f]).
+        /// Gets or sets audio volume (measured in percents from the range [0..1]).
         /// </summary>
         public float Volume { get; set; }
 
         /// <summary>
-        /// Play audio contained in WAV file asynchronously.
+        /// Plays audio contained in WAV file asynchronously.
         /// </summary>
         /// <param name="source">Path to WAV file to play</param>
         /// <param name="startPos">Index of the first sample to play</param>
@@ -137,7 +137,7 @@ namespace NWaves.Audio.Mci
         }
 
         /// <summary>
-        /// Pause playing audio.
+        /// Pauses playing audio.
         /// </summary>
         public void Pause()
         {
@@ -157,7 +157,7 @@ namespace NWaves.Audio.Mci
         }
 
         /// <summary>
-        /// Resume playing audio.
+        /// Resumes playing audio.
         /// </summary>
         public void Resume()
         {
@@ -176,7 +176,7 @@ namespace NWaves.Audio.Mci
         }
 
         /// <summary>
-        /// Stop playing audio and close MCI device.
+        /// Stops playing audio and close MCI device.
         /// </summary>
         public void Stop()
         {

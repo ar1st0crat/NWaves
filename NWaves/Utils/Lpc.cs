@@ -8,17 +8,17 @@ using System.Numerics;
 namespace NWaves.Utils
 {
     /// <summary>
-    /// Functions related to Linear Predictive Coding
+    /// Provides functions related to Linear Predictive Coding (LPC).
     /// </summary>
     public static class Lpc
     {
         /// <summary>
-        /// Levinson-Durbin algorithm for solving main LPC task
+        /// Evaluates LP coefficients using Levinson-Durbin algorithm and returns prediction error.
         /// </summary>
         /// <param name="input">Auto-correlation vector</param>
         /// <param name="a">LP coefficients</param>
         /// <param name="order">Order of LPC</param>
-        /// <returns>Prediction error</returns>
+        /// <param name="offset">Optional offset in auto-correlation vector</param>
         public static float LevinsonDurbin(float[] input, float[] a, int order, int offset = 0)
         {
             var err = input[offset];
@@ -49,11 +49,11 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Convert LPC coefficients to cepstrum (LPCC)
+        /// Converts LPC coefficients to LPC cepstrum (LPCC).
         /// </summary>
-        /// <param name="lpc"></param>
-        /// <param name="gain"></param>
-        /// <param name="lpcc"></param>
+        /// <param name="lpc">LPC vector</param>
+        /// <param name="gain">Gain</param>
+        /// <param name="lpcc">LPC cepstrum</param>
         public static void ToCepstrum(float[] lpc, float gain, float[] lpcc)
         {
             var n = lpcc.Length;
@@ -83,17 +83,14 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Convert LPCC coefficients to LPC and gain
-        /// 
-        /// Formulae: https://www.mathworks.com/help/dsp/ref/lpctofromcepstralcoefficients.html
-        /// 
+        /// Converts LPC cepstrum to LPC coefficients and returns gain.
         /// </summary>
-        /// <param name="lpcc"></param>
-        /// <param name="lpc"></param>
-        /// <returns></returns>
+        /// <param name="lpcc">LPC cepstrum</param>
+        /// <param name="lpc">LPC vector</param>
         public static float FromCepstrum(float[] lpcc, float[] lpc)
         {
-            var n = lpcc.Length;
+            // Formulae: https://www.mathworks.com/help/dsp/ref/lpctofromcepstralcoefficients.html
+
             var p = lpc.Length;     // must be lpcOrder + 1 (!)
 
             lpc[0] = 1;
@@ -112,21 +109,20 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Method returns LPC order for a given sampling rate 
-        /// according to the best practices.
+        /// Estimates LPC order for a given <paramref name="samplingRate"/> according to the best practices.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
-        /// <returns>LPC order</returns>
         public static int EstimateOrder(int samplingRate)
         {
             return 2 + samplingRate / 1000;
         }
 
         /// <summary>
-        /// Convert LPC coefficients to Line Spectral Frequencies
+        /// Converts LPC coefficients to Line Spectral Frequencies <paramref name="lsf"/>. 
+        /// The length of <paramref name="lsf"/> must be equal to <paramref name="lpc"/> length. Last element will be PI.
         /// </summary>
-        /// <param name="lpc"></param>
-        /// <param name="lsf">The length must be equal to lpc length. Last element will be PI</param>
+        /// <param name="lpc">LPC vector</param>
+        /// <param name="lsf">Line spectral frequencies</param>
         public static void ToLsf(float[] lpc, float[] lsf)
         {
             var first = lpc[0];
@@ -170,10 +166,11 @@ namespace NWaves.Utils
         }
 
         /// <summary>
-        /// Convert Line Spectral Frequencies to LPC coefficients
+        /// Converts Line Spectral Frequencies <paramref name="lsf"/> to LPC coefficients. 
+        /// The length of <paramref name="lsf"/> must be equal to <paramref name="lpc"/> length. Last element must be PI.
         /// </summary>
-        /// <param name="lsf">The length must be equal to lpc length. Last element must be PI</param>
-        /// <param name="lpc"></param>
+        /// <param name="lsf">Line spectral frequencies</param>
+        /// <param name="lpc">LPC vector</param>
         public static void FromLsf(float[] lsf, float[] lpc)
         {
             var n = lsf.Length - 1;

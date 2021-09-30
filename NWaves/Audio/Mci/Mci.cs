@@ -4,7 +4,7 @@ using System.Text;
 namespace NWaves.Audio.Mci
 {
     /// <summary>
-    /// Static class containing MCI functions imported from winmm.dll
+    /// Provides MCI functions imported from winmm.dll.
     /// </summary>
     public static class Mci
     {
