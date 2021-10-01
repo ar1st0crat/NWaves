@@ -32,7 +32,7 @@ namespace NWaves.FeatureExtractors.Options
             {
                 var errors = base.Errors;
 
-                if (FilterBank == null && FilterBankSize <= 0)
+                if (FilterBank is null && FilterBankSize <= 0)
                 {
                     errors.Add("Positive number of filters must be specified");
                 }

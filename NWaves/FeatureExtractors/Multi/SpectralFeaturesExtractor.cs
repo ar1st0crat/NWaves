@@ -162,7 +162,7 @@ namespace NWaves.FeatureExtractors.Multi
             var frequencies = options.Frequencies;
             var resolution = (float)SamplingRate / _blockSize;
 
-            if (frequencies == null)
+            if (frequencies is null)
             {
                 _frequencies = Enumerable.Range(0, _blockSize / 2 + 1)
                                          .Select(f => f * resolution)

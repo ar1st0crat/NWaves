@@ -8,23 +8,19 @@ using NWaves.Utils;
 namespace NWaves.Operations.Convolution
 {
     /// <summary>
-    /// Class responsible for complex-valued convolution.
-    /// 
-    /// ComplexConvolver does not participate in heavy calculations,
-    /// so it does not contain internal buffers.
-    /// 
-    /// Memory is allocated for each operation ad-hoc.
-    /// 
+    /// <para>
+    /// Represents fast (FFT) convolver for complex-valued inputs/outputs.
+    /// </para>
+    /// <para>
+    /// <see cref="ComplexConvolver"/> does not participate in heavy calculations, 
+    /// so it does not contain internal buffers. Memory is allocated for each operation ad-hoc.
+    /// </para>
     /// </summary>
     public class ComplexConvolver
     {
         /// <summary>
-        /// Fast convolution via FFT for general complex-valued case
+        /// Does fast convolution of <paramref name="signal"/> with <paramref name="kernel"/> via FFT. 
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="kernel"></param>
-        /// <param name="fftSize"></param>
-        /// <returns></returns>
         public ComplexDiscreteSignal Convolve(ComplexDiscreteSignal signal, ComplexDiscreteSignal kernel, int fftSize = 0)
         {
             var length = signal.Length + kernel.Length - 1;
@@ -66,12 +62,8 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
-        /// Fast cross-correlation via FFT
+        /// Does fast cross-correlation between <paramref name="signal"/> and <paramref name="kernel"/> via FFT. 
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="kernel"></param>
-        /// <param name="fftSize"></param>
-        /// <returns></returns>
         public ComplexDiscreteSignal CrossCorrelate(ComplexDiscreteSignal signal, ComplexDiscreteSignal kernel, int fftSize = 0)
         {
             var reversedKernel =
@@ -81,18 +73,8 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
-        /// Fast deconvolution via FFT for general complex-valued case.
-        ///  
-        /// NOTE!
-        /// 
-        /// Deconvolution is an experimental feature.
-        /// It's problematic due to division by zero.
-        /// 
+        /// Does fast deconvolution of <paramref name="signal"/> from <paramref name="kernel"/> via polynomial division and FFT.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="kernel"></param>
-        /// <param name="fftSize"></param>
-        /// <returns></returns>
         public ComplexDiscreteSignal Deconvolve(ComplexDiscreteSignal signal, ComplexDiscreteSignal kernel, int fftSize = 0)
         {
             // first, try to divide polynomials

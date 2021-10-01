@@ -1,4 +1,5 @@
 ﻿using NWaves.Transforms;
+using NWaves.Windows;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,8 +7,7 @@ using System.Linq;
 namespace NWaves.Operations
 {
     /// <summary>
-    /// Represents reconstructing signal from a given power / magnitude spectrogram
-    /// based on Griffin-Lim iterative algorithm.
+    /// Reconstructs signal from a power (or magnitude) spectrogram using Griffin-Lim iterative algorithm.
     /// </summary>
     public class GriffinLimReconstructor
     {
@@ -22,11 +22,29 @@ namespace NWaves.Operations
         private readonly List<float[]> _magnitudes;
 
         /// <summary>
-        /// Constructor
+        /// Get or sets magnitude gain factor.
         /// </summary>
-        /// <param name="spectrogram"></param>
-        /// <param name="stft"></param>
-        /// <param name="power"></param>
+        public float Gain { get; set; } = 16;
+
+        /// <summary>
+        /// Constructs <see cref="GriffinLimReconstructor"/> for iterative signal reconstruction from <paramref name="spectrogram"/>.
+        /// </summary>
+        /// <param name="spectrogram">Spectrogram (list of spectra)</param>
+        /// <param name="windowSize">Window size fro STFT</param>
+        /// <param name="hopSize">Hop size for STFT</param>
+        /// <param name="window">Window for STFT</param>
+        /// <param name="power">Power (2 - Power spectra, otherwise - Magnitude spectra)</param>
+        public GriffinLimReconstructor(List<float[]> spectrogram, int windowSize = 1024, int hopSize = 256, WindowType window = WindowType.Hann, int power = 2)
+            : this(spectrogram, new Stft(windowSize, hopSize, window), power)
+        {
+        }
+
+        /// <summary>
+        /// Constructs <see cref="GriffinLimReconstructor"/> for iterative signal reconstruction from <paramref name="spectrogram"/>.
+        /// </summary>
+        /// <param name="spectrogram">Spectrogram (list of spectra)</param>
+        /// <param name="stft">STFT transformer</param>
+        /// <param name="power">Power (2 - Power spectra, otherwise - Magnitude spectra)</param>
         public GriffinLimReconstructor(List<float[]> spectrogram, Stft stft, int power = 2)
         {
             _stft = stft;
@@ -48,7 +66,7 @@ namespace NWaves.Operations
             {
                 for (var j = 0; j < _magnitudes[i].Length; j++)
                 {
-                    _magnitudes[i][j] *= 20; // how to calculate this compensation?
+                    _magnitudes[i][j] *= Gain;
                 }
             }
         }

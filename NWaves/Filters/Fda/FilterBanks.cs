@@ -47,8 +47,9 @@ namespace NWaves.Filters.Fda
                                            VtlnWarper vtln = null,
                                            Func<double, double> mapper = null)
         {
-            if (mapper == null) mapper = x => x;
-            Func<double, double> warp = vtln == null ? mapper : x => mapper(vtln.Warp(x));
+            if (mapper is null) mapper = x => x;
+
+            Func<double, double> warp = vtln is null ? mapper : x => mapper(vtln.Warp(x));
 
             var herzResolution = (double)samplingRate / fftSize;
 
@@ -98,8 +99,9 @@ namespace NWaves.Filters.Fda
                                            VtlnWarper vtln = null,
                                            Func<double, double> mapper = null)
         {
-            if (mapper == null) mapper = x => x;
-            Func<double, double> warp = vtln == null ? mapper : x => mapper(vtln.Warp(x));
+            if (mapper is null) mapper = x => x;
+
+            Func<double, double> warp = vtln is null ? mapper : x => mapper(vtln.Warp(x));
 
             var herzResolution = (double)samplingRate / fftSize;
 

@@ -64,7 +64,7 @@ namespace NWaves.FeatureExtractors.Serializers
                 if (_names != null)
                 {
                     var names = string.Join(comma, _names);
-                    var header = _timeMarkers == null ? $"{names}" : $"time_pos{comma}{names}";
+                    var header = _timeMarkers is null ? $"{names}" : $"time_pos{comma}{names}";
                     await writer.WriteLineAsync(header).ConfigureAwait(false);
                 }
 

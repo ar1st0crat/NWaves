@@ -9,39 +9,38 @@ using System.Linq;
 namespace NWaves.Operations.Convolution
 {
     /// <summary>
-    /// Class responsible for OLS block convolution.
-    /// It can be used as a filter (online filter as well).
+    /// Represents signal processor that implements Overlap-Save algorithm of block convolution.
     /// </summary>
     public class OlsBlockConvolver : IFilter, IOnlineFilter
     {
         /// <summary>
-        /// Filter kernel
+        /// Filter kernel.
         /// </summary>
         private readonly float[] _kernel;
 
         /// <summary>
-        /// FFT size (also the size of one analyzed chunk)
+        /// FFT size.
         /// </summary>
         private readonly int _fftSize;
 
         /// <summary>
-        /// FFT transformer
+        /// Internal FFT transformer.
         /// </summary>
         private readonly RealFft _fft;
 
         /// <summary>
-        /// Offset in the delay line
+        /// Offset in the input delay line.
         /// </summary>
         private int _bufferOffset;
 
         /// <summary>
-        /// Offset in the delay line
+        /// Offset in the delay line.
         /// </summary>
         private int _outputBufferOffset;
 
-        /// <summary>
-        /// internal buffers
-        /// </summary>
+        //
+        // internal buffers
+        //
         private readonly float[] _kernelSpectrumRe;
         private readonly float[] _kernelSpectrumIm;
         private readonly float[] _blockRe;
@@ -51,15 +50,13 @@ namespace NWaves.Operations.Convolution
         private readonly float[] _lastSaved;
 
         /// <summary>
-        /// Hop size
+        /// Gets hop length: FFT size - kernel size + 1.
         /// </summary>
         public int HopSize => _fftSize - _kernel.Length + 1;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="OlsBlockConvolver"/> with given <paramref name="kernel"/> and <paramref name="fftSize"/>.
         /// </summary>
-        /// <param name="kernel"></param>
-        /// <param name="fftSize"></param>
         public OlsBlockConvolver(IEnumerable<float> kernel, int fftSize)
         {
             _kernel = kernel.ToArray();
@@ -84,20 +81,15 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="OlsBlockConvolver"/> with given <paramref name="kernel"/> and <paramref name="fftSize"/>.
         /// </summary>
-        /// <param name="kernel"></param>
-        /// <param name="fftSize"></param>
         public OlsBlockConvolver(IEnumerable<double> kernel, int fftSize) : this(kernel.ToFloats(), fftSize)
         {
         }
 
         /// <summary>
-        /// Construct BlockConvolver from a specific FIR filter
+        /// Constructs <see cref="OlsBlockConvolver"/> with given FIR <paramref name="filter"/> kernel and <paramref name="fftSize"/>.
         /// </summary>
-        /// <param name="filter"></param>
-        /// <param name="fftSize"></param>
-        /// <returns></returns>
         public static OlsBlockConvolver FromFilter(FirFilter filter, int fftSize)
         {
             fftSize = MathUtils.NextPowerOfTwo(fftSize);
@@ -105,9 +97,8 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
-        /// Change kernel coefficients online
+        /// Changes <paramref name="kernel"/> coefficients online.
         /// </summary>
-        /// <param name="kernel"></param>
         public void ChangeKernel(float[] kernel)
         {
             if (kernel.Length != _kernel.Length) return;
@@ -120,10 +111,9 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
-        /// OLS online filtering (sample-by-sample)
+        /// Processes one sample.
         /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <param name="sample">Input sample</param>
         public float Process(float sample)
         {
             var offset = _bufferOffset + _kernel.Length - 1;
@@ -139,9 +129,9 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
-        /// Process one frame (block)
+        /// Process one frame (block).
         /// </summary>
-        public void ProcessFrame()
+        protected void ProcessFrame()
         {
             var M = _kernel.Length;
 
@@ -165,11 +155,10 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
-        /// Offline OLS filtering
+        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
+        /// <param name="signal">Input signal</param>
+        /// <param name="method">Filtering method</param>
         public DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
         {
             var firstCount = Math.Min(HopSize - 1, signal.Length);
@@ -199,7 +188,7 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
-        /// Reset filter internals
+        /// Resets Overlap-Save convolver.
         /// </summary>
         public void Reset()
         {

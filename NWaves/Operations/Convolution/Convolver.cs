@@ -7,17 +7,17 @@ using NWaves.Utils;
 namespace NWaves.Operations.Convolution
 {
     /// <summary>
-    /// Class responsible for real-valued convolution
+    /// Represents fast (FFT) convolver.
     /// </summary>
     public class Convolver
     {
         /// <summary>
-        /// FFT size
+        /// FFT size.
         /// </summary>
         private int _fftSize;
 
         /// <summary>
-        /// FFT transformer
+        /// Internal FFT transformer.
         /// </summary>
         private RealFft _fft;
 
@@ -29,9 +29,11 @@ namespace NWaves.Operations.Convolution
         private float[] _imag2;
 
         /// <summary>
-        /// Constructor
+        /// Constructs <see cref="Convolver"/>. 
+        /// Allocates necessary memory according to <paramref name="fftSize"/>. 
+        /// If <paramref name="fftSize"/> is not set then the memory will be allocated 
+        /// during the first call of Convolve() method based on input signals.
         /// </summary>
-        /// <param name="fftSize">FFT size</param>
         public Convolver(int fftSize = 0)
         {
             if (fftSize > 0)
@@ -41,9 +43,8 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
-        /// Prepare all necessary arrays for calculations
+        /// Prepares all necessary arrays for calculations.
         /// </summary>
-        /// <param name="fftSize"></param>
         private void PrepareMemory(int fftSize)
         {
             _fftSize = fftSize;
@@ -56,16 +57,14 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
-        /// Convolution
+        /// Does fast convolution of <paramref name="signal"/> with <paramref name="kernel"/> via FFT. 
+        /// Returns signal of length: signal.Length + kernel.Length - 1.
         /// </summary>
-        /// <param name="signal">Signal of length N</param>
-        /// <param name="kernel">Kernel of length M</param>
-        /// <returns>Convolution signal of length N + M - 1</returns>
         public DiscreteSignal Convolve(DiscreteSignal signal, DiscreteSignal kernel)
         {
             var length = signal.Length + kernel.Length - 1;
 
-            if (_fft == null)
+            if (_fft is null)
             {
                 PrepareMemory(MathUtils.NextPowerOfTwo(length));
             }
@@ -78,14 +77,12 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
-        /// Fast convolution via FFT for arrays of samples (maximally in-place).
-        /// This version is best suited for block processing when memory needs to be reused.
-        /// Input arrays must have size equal to the size of FFT.
-        /// FFT size MUST be set properly in constructor!
+        /// Does fast convolution of <paramref name="input"/> with <paramref name="kernel"/> via FFT (maximally in-place). 
+        /// The result is stored in <paramref name="output"/> array. 
+        /// This version is best suited for block processing when memory needs to be reused. 
+        /// Input arrays must have size equal to the size of FFT. 
+        /// FFT size MUST be set explicitly and properly in constructor!
         /// </summary>
-        /// <param name="input">Real parts of the 1st signal (zero-padded)</param>
-        /// <param name="kernel">Real parts of the 2nd signal (zero-padded)</param>
-        /// <param name="output">Real parts of resulting convolution (zero-padded)</param>
         public void Convolve(float[] input, float[] kernel, float[] output)
         {
             Array.Clear(_real1, 0, _fftSize);
@@ -115,11 +112,8 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
-        /// Fast cross-correlation via FFT
+        /// Does fast cross-correlation between <paramref name="signal1"/> and <paramref name="signal2"/> via FFT.
         /// </summary>
-        /// <param name="signal1"></param>
-        /// <param name="signal2"></param>
-        /// <returns></returns>
         public DiscreteSignal CrossCorrelate(DiscreteSignal signal1, DiscreteSignal signal2)
         {
             var reversedKernel = new DiscreteSignal(signal2.SamplingRate, signal2.Samples.Reverse());
@@ -128,16 +122,12 @@ namespace NWaves.Operations.Convolution
         }
 
         /// <summary>
-        /// Fast cross-correlation via FFT for arrays of samples (maximally in-place).
-        /// This version is best suited for block processing when memory needs to be reused.
-        /// Input arrays must have size equal to the size of FFT.
-        /// FFT size MUST be set properly in constructor!
+        /// Does fast cross-correlation between <paramref name="input1"/> and <paramref name="input2"/> via FFT (maximally in-place). 
+        /// The result is stored in <paramref name="output"/> array. 
+        /// This version is best suited for block processing when memory needs to be reused. 
+        /// Input arrays must have size equal to the size of FFT. 
+        /// FFT size MUST be set explicitly and properly in constructor!
         /// </summary>
-        /// <param name="input1">Real parts of the 1st signal (zero-padded)</param>
-        /// <param name="input2">Real parts of the 2nd signal (zero-padded)</param>
-        /// <param name="output">Real parts of resulting cross-correlation (zero-padded if center == 0)</param>
-        /// <param name="center">Position of central sample for the case of 2*CENTER-1 cross-correlation 
-        /// (if it is set then resulting array has length of CENTER)</param>
         public void CrossCorrelate(float[] input1, float[] input2, float[] output)
         {
             // reverse second signal
