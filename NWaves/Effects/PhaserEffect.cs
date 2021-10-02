@@ -6,7 +6,7 @@ using NWaves.Signals.Builders.Base;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class representing Phaser audio effect.
+    /// Represents Phaser audio effect.
     /// </summary>
     public class PhaserEffect : AudioEffect
     {
@@ -73,7 +73,7 @@ namespace NWaves.Effects
         private readonly NotchFilter _filter;
 
         /// <summary>
-        /// Construct <see cref="PhaserEffect"/>.
+        /// Constructs <see cref="PhaserEffect"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="lfoFrequency">LFO frequency (in Hz)</param>
@@ -99,7 +99,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Construct <see cref="PhaserEffect"/> from <paramref name="lfo"/>.
+        /// Constructs <see cref="PhaserEffect"/> from <paramref name="lfo"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="lfo">LFO signal generator</param>
@@ -114,7 +114,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
@@ -127,7 +127,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {

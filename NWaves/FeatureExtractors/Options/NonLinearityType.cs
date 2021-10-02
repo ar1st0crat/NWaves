@@ -1,7 +1,7 @@
 ﻿namespace NWaves.FeatureExtractors.Options
 {
     /// <summary>
-    /// Non-linear post-processing schemes
+    /// Defines non-linear post-processing schemes.
     /// </summary>
     public enum NonLinearityType
     {

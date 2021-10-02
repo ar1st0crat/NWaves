@@ -4,9 +4,9 @@ using System;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// <para>Class representing audio effect of speech whisperization.</para>
+    /// <para>Represents audio effect of speech whisperization.</para>
     /// <para>
-    /// Hint. Choose relatively small fft and hop sizes (e.g., 256 and 40).
+    /// Hint. Choose relatively small FFT and hop sizes (e.g., 256 and 40).
     /// </para>
     /// </summary>
     public class WhisperEffect : OverlapAddFilter
@@ -17,7 +17,7 @@ namespace NWaves.Effects
         private readonly Random _rand = new Random();
 
         /// <summary>
-        /// Construct <see cref="WhisperEffect"/>.
+        /// Constructs <see cref="WhisperEffect"/>.
         /// </summary>
         /// <param name="hopSize">Hop size (hop length, number of samples)</param>
         /// <param name="fftSize">FFT size</param>
@@ -27,7 +27,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one spectrum at each Overlap-Add STFT step.
+        /// Processes one spectrum at each Overlap-Add STFT step.
         /// </summary>
         /// <param name="re">Real parts of input spectrum</param>
         /// <param name="im">Imaginary parts of input spectrum</param>

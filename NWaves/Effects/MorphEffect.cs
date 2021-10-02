@@ -8,7 +8,7 @@ using System;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class representing effect of morphing (blending) two sound signals.
+    /// Represents effect of morphing (blending) two sound signals.
     /// </summary>
     public class MorphEffect : AudioEffect
     {
@@ -63,7 +63,7 @@ namespace NWaves.Effects
         private readonly float[] _lastSaved;
 
         /// <summary>
-        /// Constuct <see cref="MorphEffect"/>.
+        /// Constructs <see cref="MorphEffect"/>.
         /// </summary>
         /// <param name="hopSize">Hop size (hop length, number of samples)</param>
         /// <param name="fftSize">FFT size</param>
@@ -90,7 +90,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one sample of input signal.
+        /// Processes one sample of input signal and one sample of the signal to be mixed.
         /// </summary>
         /// <param name="sample">Sample of input signal</param>
         /// <param name="mix">Sample of the signal to mix with input signal</param>
@@ -109,7 +109,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one frame (block).
+        /// Processes one frame (block).
         /// </summary>
         protected void ProcessFrame()
         {
@@ -156,7 +156,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {
@@ -175,7 +175,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Blend (mix) entire input <paramref name="signal"/> with entire <paramref name="mix"/> signal.
+        /// Blends (mixes) entire input <paramref name="signal"/> with entire <paramref name="mix"/> signal.
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="mix">Signal to mix with input signal</param>
@@ -199,7 +199,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one sample. This method is not implemented in <see cref="MorphEffect"/> class.
+        /// Processes one sample. This method is not implemented in <see cref="MorphEffect"/> class.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)

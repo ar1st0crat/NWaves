@@ -8,7 +8,7 @@ namespace NWaves.FeatureExtractors.Base
     public interface IParallelFeatureExtractor
     {
         /// <summary>
-        /// <para>Compute parallelly the feature vectors from <paramref name="samples"/>.</para>
+        /// <para>Computes parallelly the feature vectors from <paramref name="samples"/>.</para>
         /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>
@@ -16,7 +16,7 @@ namespace NWaves.FeatureExtractors.Base
         List<float[]> ParallelComputeFrom(float[] samples, int parallelThreads);
 
         /// <summary>
-        /// <para>Compute parallelly the feature vectors from <paramref name="samples"/>.</para>
+        /// <para>Computes parallelly the feature vectors from <paramref name="samples"/>.</para>
         /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>

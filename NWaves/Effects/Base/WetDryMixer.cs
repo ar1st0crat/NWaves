@@ -18,7 +18,7 @@ namespace NWaves.Effects.Base
         public float Dry { get; set; } = 0f;
 
         /// <summary>
-        /// Set wet/dry mix (in range [0.0, 1.0]).
+        /// Sets wet/dry mix (in range [0..1]).
         /// </summary>
         /// <param name="mix">Wet/dry mix</param>
         /// <param name="mixingRule">Mixing rule</param>
@@ -89,7 +89,7 @@ namespace NWaves.Effects.Base
         }
 
         /// <summary>
-        /// Set wet/dry gains in decibels and apply linear mix rule.
+        /// Sets wet/dry gains in decibels and applies linear mix rule.
         /// </summary>
         /// <param name="wetDb">Wet gain in decibels</param>
         /// <param name="dryDb">Dry gain in decibels</param>

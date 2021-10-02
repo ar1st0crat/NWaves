@@ -3,12 +3,12 @@
 namespace NWaves.Features
 {
     /// <summary>
-    /// Class providing methods for computing harmonic spectral features.
+    /// Provides methods for computing harmonic spectral features.
     /// </summary>
     public static class Harmonic
     {
         /// <summary>
-        /// <para>Evaluate harmonic peaks (peak indices and frequencies) in spectrum.</para>
+        /// <para>Finds harmonic peaks (peak indices and frequencies) in spectrum.</para>
         /// <para>
         /// If <paramref name="pitch"/> is not specified explicitly, 
         /// it will be auto-estimated using method <see cref="Pitch.FromSpectralPeaks(float[], int, float, float)"/>.
@@ -63,7 +63,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute harmonic centroid.
+        /// Computes harmonic centroid.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="peaks">Peak positions (indices in spectrum)</param>
@@ -89,7 +89,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute harmonic spread.
+        /// Computes harmonic spread.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="peaks">Peak positions (indices in spectrum)</param>
@@ -117,7 +117,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute inharmonicity.
+        /// Computes inharmonicity.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="peaks">Peak positions (indices in spectrum)</param>
@@ -147,7 +147,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute harmonic odd-to-even ratio.
+        /// Computes harmonic odd-to-even ratio.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="peaks">Peak positions (indices in spectrum)</param>
@@ -175,7 +175,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute tristimulus (<paramref name="n"/>th component).
+        /// Computes tristimulus (<paramref name="n"/>th component).
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="peaks">Peak positions (indices in spectrum)</param>

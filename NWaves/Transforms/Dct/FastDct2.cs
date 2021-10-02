@@ -3,7 +3,7 @@
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class representing Discrete Cosine Transform of Type-II. 
+    /// Represents Discrete Cosine Transform of Type-II. 
     /// This FFT-based implementation of DCT-II is faster for bigger DCT sizes.
     /// </summary>
     public class FastDct2 : IDct
@@ -19,12 +19,12 @@ namespace NWaves.Transforms
         private readonly float[] _temp;
 
         /// <summary>
-        /// Size of DCT-II.
+        /// Gets size of DCT-II.
         /// </summary>
         public int Size => _fft.Size;
 
         /// <summary>
-        /// Construct <see cref="FastDct2"/> of given <paramref name="dctSize"/>.
+        /// Constructs <see cref="FastDct2"/> of given <paramref name="dctSize"/>.
         /// </summary>
         /// <param name="dctSize">Size of DCT-II</param>
         public FastDct2(int dctSize)
@@ -34,7 +34,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do DCT-II.
+        /// Does DCT-II.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -60,7 +60,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized DCT-II.
+        /// Does normalized DCT-II.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -90,7 +90,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Inverse DCT-II.
+        /// Does Inverse DCT-II.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>

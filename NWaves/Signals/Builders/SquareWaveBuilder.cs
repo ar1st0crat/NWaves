@@ -6,7 +6,7 @@ using NWaves.Utils;
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Builder of square waves. 
+    /// Represents builder of square waves. 
     /// <para>
     /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
     /// <list type="bullet">
@@ -34,7 +34,7 @@ namespace NWaves.Signals.Builders
         private double _frequency;
 
         /// <summary>
-        /// Construct <see cref="SquareWaveBuilder"/>.
+        /// Constructs <see cref="SquareWaveBuilder"/>.
         /// </summary>
         public SquareWaveBuilder()
         {
@@ -56,7 +56,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Generate new sample.
+        /// Generates new sample.
         /// </summary>
         public override float NextSample()
         {
@@ -67,7 +67,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Reset sample generator.
+        /// Resets sample generator.
         /// </summary>
         public override void Reset()
         {
@@ -75,7 +75,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Set the sampling rate of the signal to build.
+        /// Sets the sampling rate of the signal to build.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         public override SignalBuilder SampledAt(int samplingRate)
@@ -85,7 +85,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Generate signal by generating all its samples one-by-one. 
+        /// Generates signal by generating all its samples one-by-one. 
         /// Frequency must be greater than zero. 
         /// Upper amplitude must be greater than lower amplitude.
         /// </summary>

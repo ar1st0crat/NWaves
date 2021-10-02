@@ -85,7 +85,7 @@ namespace NWaves.Filters.Base64
         }
 
         /// <summary>
-        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
+        /// Applies filters to entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="method">Filtering method</param>

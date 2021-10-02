@@ -3,7 +3,7 @@
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Class for generating signals using the "Drum" variation of Karplus-Strong algorithm.
+    /// Represents builder of signals that uses the "Drum" variation of Karplus-Strong algorithm.
     /// <para>
     /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
     /// <list type="bullet">
@@ -41,7 +41,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Generate new sample.
+        /// Generates new sample.
         /// </summary>
         public override float NextSample()
         {

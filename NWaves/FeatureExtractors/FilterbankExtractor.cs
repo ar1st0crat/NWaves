@@ -21,13 +21,13 @@ namespace NWaves.FeatureExtractors
     public class FilterbankExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Feature names (simply "fb0", "fb1", "fb2", etc.)
+        /// Gets feature names (simply "fb0", "fb1", "fb2", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions =>
             Enumerable.Range(0, FeatureCount).Select(i => "fb" + i).ToList();
 
         /// <summary>
-        /// Filterbank matrix of dimension [filterbankSize * (blockSize/2 + 1)].
+        /// Gets filterbank matrix of dimension [filterbankSize * (blockSize/2 + 1)].
         /// </summary>
         public float[][] FilterBank { get; }
 
@@ -72,9 +72,8 @@ namespace NWaves.FeatureExtractors
         protected readonly float[] _bandSpectrum;
 
         /// <summary>
-        /// Construct extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public FilterbankExtractor(FilterbankOptions options) : base(options)
         {
             var filterbankSize = options.FilterBankSize;
@@ -137,7 +136,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Compute vector of filter bank channel outputs in one frame.
+        /// Computes vector of filter bank channel outputs in one frame.
         /// </summary>
         /// <param name="block">Block of data</param>
         /// <param name="features">Features (one feature vector) computed in the block</param>
@@ -157,12 +156,12 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Does the extractor support parallelization. Returns true always.
+        /// Returns true, since <see cref="FilterbankExtractor"/> always supports parallelization.
         /// </summary>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Thread-safe copy of the extractor for parallel computations.
+        /// Creates thread-safe copy of the extractor for parallel computations.
         /// </summary>
         public override FeatureExtractor ParallelCopy() =>
             new FilterbankExtractor(

@@ -5,7 +5,7 @@ using NWaves.Utils;
 namespace NWaves.Signals
 {
     /// <summary>
-    /// Static class providing extension methods for working with <see cref="DiscreteSignal"/> objects.
+    /// Provides extension methods for working with <see cref="DiscreteSignal"/> objects.
     /// </summary>
     public static class DiscreteSignalExtensions
     {
@@ -13,7 +13,7 @@ namespace NWaves.Signals
         // Method implementations are LINQ-less and leverage FastCopy() for better performance.
 
         /// <summary>
-        /// Create the delayed copy of <paramref name="signal"/> 
+        /// Creates the delayed copy of <paramref name="signal"/> 
         /// by shifting it either to the right (positive <paramref name="delay"/>, e.g. Delay(1000)) 
         /// or to the left (negative <paramref name="delay"/>, e.g. Delay(-1000)).
         /// </summary>
@@ -40,7 +40,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Superimpose signals <paramref name="signal1"/> and <paramref name="signal2"/>. 
+        /// Superimposes signals <paramref name="signal1"/> and <paramref name="signal2"/>. 
         /// If sizes are different then the smaller signal is broadcast to fit the size of the larger signal.
         /// </summary>
         /// <param name="signal1">First signal</param>
@@ -75,7 +75,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Superimpose <paramref name="signal2"/> and <paramref name="signal1"/> multiple times at given <paramref name="positions"/>.
+        /// Superimposes <paramref name="signal2"/> and <paramref name="signal1"/> multiple times at given <paramref name="positions"/>.
         /// </summary>
         /// <param name="signal1">First signal</param>
         /// <param name="signal2">Second signal</param>
@@ -104,7 +104,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Method subtracts <paramref name="signal2"/> from <paramref name="signal1"/>. 
+        /// Subtracts <paramref name="signal2"/> from <paramref name="signal1"/>. 
         /// If sizes are different then the smaller signal is broadcast to fit the size of the larger signal.
         /// </summary>
         /// <param name="signal1">First signal</param>
@@ -143,7 +143,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Concatenate <paramref name="signal1"/> and <paramref name="signal2"/>.
+        /// Concatenates <paramref name="signal1"/> and <paramref name="signal2"/>.
         /// </summary>
         /// <param name="signal1">First signal</param>
         /// <param name="signal2">Second signal</param>
@@ -158,7 +158,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create the copy of <paramref name="signal"/> repeated <paramref name="n"/> times.
+        /// Creates the copy of <paramref name="signal"/> repeated <paramref name="n"/> times.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="n">Number of times to repeat <paramref name="signal"/></param>
@@ -172,7 +172,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Amplify <paramref name="signal"/> by <paramref name="coeff"/> in-place.
+        /// Amplifies <paramref name="signal"/> by <paramref name="coeff"/> in-place.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="coeff">Amplification coefficient</param>
@@ -185,7 +185,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Attenuate <paramref name="signal"/> by <paramref name="coeff"/> in-place.
+        /// Attenuates <paramref name="signal"/> by <paramref name="coeff"/> in-place.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="coeff">Attenuation coefficient</param>
@@ -197,9 +197,8 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Reverse <paramref name="signal"/> in-place.
+        /// Reverses <paramref name="signal"/> in-place.
         /// </summary>
-        /// <param name="signal">Signal</param>
         public static void Reverse(this DiscreteSignal signal)
         {
             var samples = signal.Samples;
@@ -213,7 +212,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create new signal from first <paramref name="n"/> samples of <paramref name="signal"/>.
+        /// Creates new signal from first <paramref name="n"/> samples of <paramref name="signal"/>.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="n">Number of samples to copy</param>
@@ -228,7 +227,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create new signal from last <paramref name="n"/> samples of <paramref name="signal"/>.
+        /// Creates new signal from last <paramref name="n"/> samples of <paramref name="signal"/>.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="n">Number of samples to copy</param>
@@ -243,7 +242,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Full-rectify <paramref name="signal"/> in-place.
+        /// Full-rectifies <paramref name="signal"/> in-place.
         /// </summary>
         /// <param name="signal">Signal</param>
         public static void FullRectify(this DiscreteSignal signal)
@@ -258,7 +257,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Half-rectify <paramref name="signal"/> in-place.
+        /// Half-rectifies <paramref name="signal"/> in-place.
         /// </summary>
         /// <param name="signal">Signal</param>
         public static void HalfRectify(this DiscreteSignal signal)
@@ -273,7 +272,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Normalize <paramref name="signal"/> by its max absolute value (to range [-1, 1]).
+        /// Normalizes <paramref name="signal"/> by its max absolute value (to range [-1, 1]).
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="bitsPerSample">Bit depth</param>
@@ -290,7 +289,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create <see cref="ComplexDiscreteSignal"/> from <see cref="DiscreteSignal"/>. 
+        /// Creates <see cref="ComplexDiscreteSignal"/> from <see cref="DiscreteSignal"/>. 
         /// Imaginary parts will be filled with zeros.
         /// </summary>
         /// <param name="signal">Real-valued signal</param>

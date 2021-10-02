@@ -1,7 +1,7 @@
 namespace NWaves.Windows
 {
     /// <summary>
-    /// Most commonly used window functions.
+    /// Defines the most commonly used window functions.
     /// </summary>
     public enum WindowType
     {

@@ -6,7 +6,7 @@ using NWaves.Utils;
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Pink noise builder. 
+    /// Represents pink noise builder. 
     /// <para>
     /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
     /// <list type="bullet">
@@ -28,7 +28,7 @@ namespace NWaves.Signals.Builders
         private double _high;
 
         /// <summary>
-        /// Construct <see cref="PinkNoiseBuilder"/>.
+        /// Constructs <see cref="PinkNoiseBuilder"/>.
         /// </summary>
         public PinkNoiseBuilder()
         {
@@ -43,7 +43,7 @@ namespace NWaves.Signals.Builders
         }
         
         /// <summary>
-        /// Generate new sample.
+        /// Generates new sample.
         /// </summary>
         public override float NextSample()
         {
@@ -68,7 +68,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Reset sample generator.
+        /// Resets sample generator.
         /// </summary>
         public override void Reset()
         {
@@ -76,7 +76,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Generate signal by generating all its samples one-by-one. 
+        /// Generates signal by generating all its samples one-by-one. 
         /// Upper amplitude must be greater than lower amplitude.
         /// </summary>
         protected override DiscreteSignal Generate()

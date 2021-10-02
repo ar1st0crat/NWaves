@@ -1,7 +1,7 @@
 ﻿namespace NWaves.Operations
 {
     /// <summary>
-    /// Types (modes) of dynamics processors.
+    /// Defines types (modes) of dynamics processors.
     /// </summary>
     public enum DynamicsMode
     {

@@ -7,7 +7,8 @@ namespace NWaves.FeatureExtractors.Options
     public class LpcOptions : FeatureExtractorOptions
     {
         /// <summary>
-        /// Order of LPC is required. It has priority over FeatureCount. 
+        /// Gets or sets order of LPC. 
+        /// This property is required. It has priority over FeatureCount. 
         /// FeatureCount will be autocomputed as LpcOrder + 1.
         /// </summary>
         [DataMember]

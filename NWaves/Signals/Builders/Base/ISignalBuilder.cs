@@ -11,7 +11,7 @@
         int Length { get; }
 
         /// <summary>
-        /// Build new signal.
+        /// Builds new signal.
         /// </summary>
         DiscreteSignal Build();
     }

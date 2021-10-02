@@ -6,7 +6,7 @@ using NWaves.Utils;
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// White noise builder.
+    /// Represents white noise builder.
     /// <para>
     /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
     /// <list type="bullet">
@@ -28,7 +28,7 @@ namespace NWaves.Signals.Builders
         private double _high;
         
         /// <summary>
-        /// Construct <see cref="WhiteNoiseBuilder"/>.
+        /// Constructs <see cref="WhiteNoiseBuilder"/>.
         /// </summary>
         public WhiteNoiseBuilder()
         {
@@ -43,21 +43,21 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Generate signal by generating all its samples one-by-one. 
+        /// Generates new sample.
+        /// </summary>
+        public override float NextSample()
+        {
+            return (float)(_rand.NextDouble() * (_high - _low) + _low);
+        }
+
+        /// <summary>
+        /// Generates signal by generating all its samples one-by-one. 
         /// Upper amplitude must be greater than lower amplitude.
         /// </summary>
         protected override DiscreteSignal Generate()
         {
             Guard.AgainstInvalidRange(_low, _high, "Upper amplitude", "Lower amplitude");
             return base.Generate();
-        }
-
-        /// <summary>
-        /// Generate new sample.
-        /// </summary>
-        public override float NextSample()
-        {
-            return (float)(_rand.NextDouble() * (_high - _low) + _low);
         }
 
         private readonly Random _rand = new Random();

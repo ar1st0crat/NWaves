@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NWaves.FeatureExtractors.Base;
+using NWaves.FeatureExtractors.Multi;
 using NWaves.FeatureExtractors.Options;
 using NWaves.Operations.Convolution;
 using NWaves.Utils;
@@ -8,17 +9,18 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
+    /// Represents pitch extractor / tracker.
     /// <para>
     /// Pitch extractor calls autocorrelation method since it's best in terms of universality and quality. 
     /// The feature vector contains 1 component : pitch.
     /// </para>
     /// <para>
     /// If there's a need to create pitch extractor based on other time-domain method (YIN or ZcrSchmitt), 
-    /// then TimeDomainFeatureExtractor can be used.
+    /// then <see cref="TimeDomainFeaturesExtractor"/> can be used.
     /// </para>
     /// <para>
     /// If there's a need to create pitch extractor based on a certain spectral method (HSS or HPS), 
-    /// then SpectralDomainFeatureExtractor can be used.
+    /// then <see cref="SpectralFeaturesExtractor"/> can be used.
     /// </para>
     /// <para>
     /// Example:
@@ -35,7 +37,7 @@ namespace NWaves.FeatureExtractors
     public class PitchExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Names of pitch estimation algorithms.
+        /// Gets names of pitch estimation algorithms.
         /// </summary>
         public override List<string> FeatureDescriptions { get; }
 
@@ -65,9 +67,8 @@ namespace NWaves.FeatureExtractors
         protected readonly float[] _cc;
 
         /// <summary>
-        /// Construct extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public PitchExtractor(PitchOptions options) : base(options)
         {
             _low = (float)options.LowFrequency;
@@ -84,7 +85,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Compute pitch in one frame.
+        /// Computes pitch in one frame.
         /// </summary>
         /// <param name="block">Block of data</param>
         /// <param name="features">Pitch (feature vector containing only pitch) computed in the block</param>
@@ -120,12 +121,12 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Does the extractor support parallelization. Returns true always.
+        /// Returns true, since <see cref="PitchExtractor"/> always supports parallelization.
         /// </summary>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Thread-safe copy of the extractor for parallel computations.
+        /// Creates thread-safe copy of the extractor for parallel computations.
         /// </summary>
         public override FeatureExtractor ParallelCopy() => 
             new PitchExtractor(new PitchOptions

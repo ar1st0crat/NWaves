@@ -8,13 +8,13 @@ namespace NWaves.FeatureExtractors.Options
     public class MfccOptions : FilterbankOptions
     {
         /// <summary>
-        /// Number of liftered coefficients (0, by default, i.e. there will be no liftering).
+        /// Gets or sets number of liftered coefficients (0, by default, i.e. there will be no liftering).
         /// </summary>
         [DataMember]
         public int LifterSize { get; set; }
 
         /// <summary>
-        /// DCT type (by default, it's normalized DCT-II, or "2N").
+        /// Gets or sets DCT type (by default, it's normalized DCT-II, or "2N").
         /// </summary>
         [DataMember]
         public string DctType { get; set; } = "2N";

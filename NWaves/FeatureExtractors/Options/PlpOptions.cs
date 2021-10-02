@@ -8,19 +8,19 @@ namespace NWaves.FeatureExtractors.Options
     public class PlpOptions : FilterbankOptions
     {
         /// <summary>
-        /// Order of LPC (0, by default, i.e. it will be autocomputed as FeatureCount-1).
+        /// Gets or sets order of LPC (0, by default, i.e. it will be autocomputed as FeatureCount-1).
         /// </summary>
         [DataMember]
         public int LpcOrder { get; set; }
 
         /// <summary>
-        /// Coefficient of RASTA-filter (0, by default, i.e. there will be no RASTA-filtering).
+        /// Gets or sets coefficient of RASTA-filter (0, by default, i.e. there will be no RASTA-filtering).
         /// </summary>
         [DataMember]
         public double Rasta { get; set; }
 
         /// <summary>
-        /// Number of liftered coefficients (0, by default, i.e. there will be no liftering).
+        /// Gets or sets number of liftered coefficients (0, by default, i.e. there will be no liftering).
         /// </summary>
         [DataMember]
         public int LifterSize { get; set; }

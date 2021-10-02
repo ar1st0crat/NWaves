@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace NWaves.FeatureExtractors.Serializers
 {
     /// <summary>
-    /// Class for simple CSV serialization of feature vectors.
+    /// Provides functionality of simple CSV serialization of feature vectors.
     /// </summary>
     public class CsvFeatureSerializer
     {
@@ -50,7 +50,7 @@ namespace NWaves.FeatureExtractors.Serializers
         }
 
         /// <summary>
-        /// Serialize feature vectors into <paramref name="stream"/> using <paramref name="format"/> for values.
+        /// Serializes feature vectors into <paramref name="stream"/> using <paramref name="format"/> for values.
         /// </summary>
         /// <param name="stream">Output stream</param>
         /// <param name="format">Format/precision of values</param>

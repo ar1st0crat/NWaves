@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Builder of straight line signals: y[n] = slope * n + intercept. 
+    /// Represents builder of straight line signals: y[n] = slope * n + intercept. 
     /// <para>
     /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
     /// <list type="bullet">
@@ -27,7 +27,7 @@ namespace NWaves.Signals.Builders
         private double _intercept;
 
         /// <summary>
-        /// Construct <see cref="RampBuilder"/>.
+        /// Constructs <see cref="RampBuilder"/>.
         /// </summary>
         public RampBuilder()
         {
@@ -42,7 +42,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Generate new sample.
+        /// Generates new sample.
         /// </summary>
         public override float NextSample()
         {
@@ -52,7 +52,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Reset sample generator.
+        /// Resets sample generator.
         /// </summary>
         public override void Reset()
         {

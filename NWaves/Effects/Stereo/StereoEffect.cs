@@ -10,14 +10,14 @@ namespace NWaves.Effects.Stereo
     public abstract class StereoEffect : WetDryMixer
     {
         /// <summary>
-        /// Process one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
+        /// Processes one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
         /// </summary>
         /// <param name="left">Input sample in left channel</param>
         /// <param name="right">Input sample in right channel</param>
         public abstract void Process(ref float left, ref float right);
 
         /// <summary>
-        /// Process one sample in mono channel : input sample -> [ output left , output right ].
+        /// Processes one sample in mono channel : input sample -> [ output left , output right ].
         /// </summary>
         /// <param name="sample">Input sample in mono channel</param>
         /// <param name="left">Output sample for left channel</param>
@@ -30,7 +30,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Process blocks of samples in each of two channels : [ input left , input right ] -> [ output left , output right ].
+        /// Processes blocks of samples in each of two channels : [ input left , input right ] -> [ output left , output right ].
         /// </summary>
         /// <param name="inputLeft">Input block of samples (left channel)</param>
         /// <param name="inputRight">Input block of samples (right channel)</param>
@@ -64,7 +64,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Process block of samples in mono channel : [ input ] -> [ output left , output right ].
+        /// Processes block of samples in mono channel : [ input ] -> [ output left , output right ].
         /// </summary>
         /// <param name="input">Input block of samples (mono channel)</param>
         /// <param name="outputLeft">Output block of samples (left channel)</param>
@@ -95,7 +95,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Process entire <paramref name="signal"/> and return tuple of output signals [left signal, right signal].
+        /// Applies effect to entire <paramref name="signal"/> and returns tuple of output signals [left signal, right signal].
         /// </summary>
         /// <param name="signal">Input signal</param>
         public virtual (DiscreteSignal, DiscreteSignal) ApplyTo(DiscreteSignal signal)
@@ -111,8 +111,8 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Process entire signals (in left and right channels) 
-        /// and return tuple of output signals [left signal, right signal].
+        /// Applies effect to entire signals (in left and right channels) 
+        /// and returns tuple of output signals [left signal, right signal].
         /// </summary>
         /// <param name="leftSignal">Input signal (left channel)</param>
         /// <param name="rightSignal">Input signal (right channel)</param>
@@ -130,7 +130,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public abstract void Reset();
     }

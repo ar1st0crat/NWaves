@@ -1,7 +1,7 @@
 ﻿namespace NWaves.Filters.Base
 {
     /// <summary>
-    /// General filtering strategies.
+    /// Defines general filtering strategies.
     /// </summary>
     public enum FilteringMethod
     {

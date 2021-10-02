@@ -7,12 +7,12 @@ using System.Threading;
 namespace NWaves.FeatureExtractors.Options
 {
     /// <summary>
-    /// Class providing methods for serializing and casting feature extractor configuration options. 
+    /// Provides methods for serializing and casting feature extractor configuration options. 
     /// </summary>
     public static class FeatureExtractorOptionsExtensions
     {
         /// <summary>
-        /// Serialize feature extractor configuration options to JSON.
+        /// Serializes feature extractor configuration options to JSON.
         /// </summary>
         /// <param name="stream">Output stream for JSON data</param>
         /// <param name="options">Feature extractor configuration options</param>
@@ -37,7 +37,7 @@ namespace NWaves.FeatureExtractors.Options
         }
 
         /// <summary>
-        /// Deserialize feature extractor configuration options from JSON.
+        /// Deserializes feature extractor configuration options from JSON.
         /// </summary>
         /// <typeparam name="T">Options type</typeparam>
         /// <param name="stream">Input stream containing JSON data</param>
@@ -58,7 +58,7 @@ namespace NWaves.FeatureExtractors.Options
         }
 
         /// <summary>
-        /// Cast feature extractor configuration options of one type to options of another type.
+        /// Casts feature extractor configuration options of one type to options of another type.
         /// </summary>
         /// <typeparam name="T">Original options type</typeparam>
         /// <typeparam name="U">Required options type</typeparam>

@@ -6,7 +6,7 @@ using System.Linq;
 namespace NWaves.Transforms.Wavelets
 {
     /// <summary>
-    /// Wavelet.
+    /// Represents wavelet.
     /// </summary>
     public class Wavelet
     {
@@ -41,7 +41,7 @@ namespace NWaves.Transforms.Wavelets
         public float[] HiR { get; protected set; }
 
         /// <summary>
-        /// Construct wavelet from <paramref name="waveletFamily"/> and number of <paramref name="taps"/>.
+        /// Constructs wavelet from <paramref name="waveletFamily"/> and number of <paramref name="taps"/>.
         /// </summary>
         /// <param name="waveletFamily">Wavelet family</param>
         /// <param name="taps">Number of taps</param>
@@ -51,7 +51,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Construct wavelet from <paramref name="name"/>. 
+        /// Constructs wavelet from <paramref name="name"/>. 
         /// Supported names: "haar", "db1".."db20", "sym2".."sym20", "coif1".."coif5".
         /// </summary>
         /// <param name="name">Wavelet name</param>
@@ -110,7 +110,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Construct wavelet from wavelet coefficients (perhaps, calculated in external software).
+        /// Constructs wavelet from wavelet coefficients (perhaps, calculated in external software).
         /// </summary>
         /// <param name="loD">LP coefficients for decomposition</param>
         /// <param name="hiD">HP coefficients for decomposition</param>
@@ -132,7 +132,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Fill wavelet fields: name, length and coefficients.
+        /// Fills wavelet fields: name, length and coefficients.
         /// </summary>
         /// <param name="waveletFamily">Wavelet family</param>
         /// <param name="taps">Number of taps</param>
@@ -158,7 +158,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Compute orthonormal coefficients (from LoD coefficients only).
+        /// Computes orthonormal coefficients (from LoD coefficients only).
         /// </summary>
         public void ComputeOrthonormalCoeffs()
         {
@@ -177,7 +177,7 @@ namespace NWaves.Transforms.Wavelets
         #region wavelet coefficients
 
         /// <summary>
-        /// Setup Haar wavelet.
+        /// Setups Haar wavelet.
         /// </summary>
         protected void MakeHaarWavelet()
         {
@@ -190,7 +190,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Setup Daubechies wavelet.
+        /// Setups Daubechies wavelet.
         /// </summary>
         /// <param name="taps">Number of taps</param>
         protected void MakeDaubechiesWavelet(int taps)
@@ -666,7 +666,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Setup Symlet wavelet.
+        /// Setups Symlet wavelet.
         /// </summary>
         /// <param name="taps">Number of taps</param>
         protected void MakeSymletWavelet(int taps)
@@ -1138,7 +1138,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Setup Coiflet wavelet.
+        /// Setups Coiflet wavelet.
         /// </summary>
         /// <param name="taps">Number of taps</param>
         protected void MakeCoifletWavelet(int taps)

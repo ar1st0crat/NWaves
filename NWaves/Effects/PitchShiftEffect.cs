@@ -10,7 +10,7 @@ using NWaves.Utils;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class representing offline Pitch Shift audio effect 
+    /// Represents offline Pitch Shift audio effect 
     /// based on one of the available TSM algorithms and linear interpolation. 
     /// <see cref="PitchShiftEffect"/> does not implement online processing (method <see cref="Process(float)"/>).
     /// </summary>
@@ -37,7 +37,7 @@ namespace NWaves.Effects
         public int HopSize { get; set; }
 
         /// <summary>
-        /// Construct <see cref="PitchShiftEffect"/>.
+        /// Constructs <see cref="PitchShiftEffect"/>.
         /// </summary>
         /// <param name="shift">Pitch shift ratio</param>
         /// <param name="windowSize">Window size (frame length)</param>
@@ -55,7 +55,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process entire <paramref name="signal"/> offline and return new pitch-shifted signal.
+        /// Applies effect to entire <paramref name="signal"/> and returns new pitch-shifted signal.
         /// </summary>
         /// <param name="signal">Input signal</param>
         /// <param name="method">Filtering method</param>
@@ -89,7 +89,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process on sample. This method is not implemented in <see cref="PitchShiftEffect"/> class.
+        /// Processes one sample. This method is not implemented in <see cref="PitchShiftEffect"/> class.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
@@ -98,7 +98,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {

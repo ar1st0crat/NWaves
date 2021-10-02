@@ -11,7 +11,7 @@ using NWaves.Windows;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// <para>Mel Frequency Cepstral Coefficients (MFCC) extractor.</para>
+    /// <para>Represents Mel Frequency Cepstral Coefficients (MFCC) extractor.</para>
     /// <para>
     /// Since so many variations of MFCC have been developed since 1980, 
     /// this class is very general and allows customizing a lot of parameters:
@@ -27,7 +27,7 @@ namespace NWaves.FeatureExtractors
     public class MfccExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Feature names (simply "mfcc0", "mfcc1", "mfcc2", etc.)
+        /// Gets feature names (simply "mfcc0", "mfcc1", "mfcc2", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions
         {
@@ -40,7 +40,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)]. 
+        /// Gets filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)]. 
         /// By default it's mel filterbank.
         /// </summary>
         public float[][] FilterBank { get; }
@@ -121,9 +121,8 @@ namespace NWaves.FeatureExtractors
         protected readonly float[] _melSpectrum;
 
         /// <summary>
-        /// Construct extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public MfccExtractor(MfccOptions options) : base(options)
         {
             FeatureCount = options.FeatureCount;
@@ -212,7 +211,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// <para>Compute MFCC feature vector in one frame.</para>
+        /// <para>Computes MFCC feature vector in one frame.</para>
         /// <para>
         /// General algorithm:
         /// <list type="number">
@@ -259,12 +258,12 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Does the extractor support parallelization. Returns true always.
+        /// Returns true, since <see cref="MfccExtractor"/> always supports parallelization.
         /// </summary>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Thread-safe copy of the extractor for parallel computations.
+        /// Creates thread-safe copy of the extractor for parallel computations.
         /// </summary>
         public override FeatureExtractor ParallelCopy() =>
             new MfccExtractor(

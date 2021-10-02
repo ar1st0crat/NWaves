@@ -6,7 +6,7 @@ using System.Linq;
 namespace NWaves.Transforms.Wavelets
 {
     /// <summary>
-    /// Class representing Fast Wavelet Transform (FWT).
+    /// Represents Fast Wavelet Transform (FWT).
     /// </summary>
     public class Fwt : ITransform
     {
@@ -46,7 +46,7 @@ namespace NWaves.Transforms.Wavelets
         protected float[] _temp;
 
         /// <summary>
-        /// Construct FWT transformer.
+        /// Constructs FWT transformer.
         /// </summary>
         /// <param name="size">FWT size</param>
         /// <param name="wavelet">Mother wavelet</param>
@@ -72,7 +72,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Do Fast Wavelet Transform (decomposition).
+        /// Does Fast Wavelet Transform (decomposition).
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -82,7 +82,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Do normalized Fast Wavelet Transform (decomposition). 
+        /// Does normalized Fast Wavelet Transform (decomposition). 
         /// Identical to <see cref="Direct(float[], float[])"/>.
         /// </summary>
         /// <param name="input">Input data</param>
@@ -93,7 +93,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Do inverse Fast Wavelet Transform (reconstruction).
+        /// Does inverse Fast Wavelet Transform (reconstruction).
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -103,7 +103,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Do normalized inverse Fast Wavelet Transform (reconstruction). 
+        /// Does normalized inverse Fast Wavelet Transform (reconstruction). 
         /// Identical to <see cref="Inverse(float[], float[])"/>.
         /// </summary>
         /// <param name="input">Input data</param>
@@ -114,7 +114,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Do Fast Wavelet Transform (decomposition).
+        /// Does Fast Wavelet Transform (decomposition).
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -167,7 +167,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Do inverse Fast Wavelet Transform (reconstruction).
+        /// Does inverse Fast Wavelet Transform (reconstruction).
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -216,7 +216,7 @@ namespace NWaves.Transforms.Wavelets
         }
 
         /// <summary>
-        /// Evaluate maximum decomposition level from input <paramref name="length"/>.
+        /// Evaluates maximum decomposition level from input <paramref name="length"/>.
         /// </summary>
         /// <param name="length">Input length</param>
         public int MaxLevel(int length) => (int)Math.Log(length / (_waveletLength - 1), 2);

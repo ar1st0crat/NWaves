@@ -8,9 +8,9 @@ namespace NWaves.Filters.Base64
     public interface IFilter64
     {
         /// <summary>
-        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
+        /// Applies filter to entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
-        /// <param name="signal">Input signal</param>
+        /// <param name="signal">Signal</param>
         /// <param name="method">Filtering method</param>
         double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto);
     }

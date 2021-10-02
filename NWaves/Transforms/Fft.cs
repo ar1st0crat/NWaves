@@ -6,7 +6,7 @@ using System;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// <para>Class representing Complex Fast Fourier Transform:</para>
+    /// <para>Represents Complex Fast Fourier Transform:</para>
     /// <list type="bullet">
     ///     <item>Direct FFT</item>
     ///     <item>Inverse FFT</item>
@@ -17,7 +17,7 @@ namespace NWaves.Transforms
     public class Fft : IComplexTransform
     {
         /// <summary>
-        /// FFT size.
+        /// Gets FFT size.
         /// </summary>
         public int Size => _fftSize;
         private readonly int _fftSize;
@@ -43,7 +43,7 @@ namespace NWaves.Transforms
         private readonly float[] _imagSpectrum;
 
         /// <summary>
-        /// Construct FFT transformer with given <paramref name="fftSize"/>. FFT size must be a power of two.
+        /// Constructs FFT transformer with given <paramref name="fftSize"/>. FFT size must be a power of two.
         /// </summary>
         /// <param name="fftSize">FFT size</param>
         public Fft(int fftSize = 512)
@@ -67,7 +67,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Fast Fourier Transform in-place.
+        /// Does Fast Fourier Transform in-place.
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
@@ -127,7 +127,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Inverse Fast Fourier Transform in-place.
+        /// Does Inverse Fast Fourier Transform in-place.
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
@@ -187,7 +187,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Inverse Fast Fourier Transform in-place.
+        /// Does normalized Inverse Fast Fourier Transform in-place.
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
@@ -203,7 +203,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Fast Fourier Transform: 
+        /// Does Fast Fourier Transform: 
         /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
         /// </summary>
         /// <param name="inRe">Input data (real parts)</param>
@@ -219,7 +219,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Fast Fourier Transform: 
+        /// Does normalized Fast Fourier Transform: 
         /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
         /// </summary>
         /// <param name="inRe">Input data (real parts)</param>
@@ -232,7 +232,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Inverse Fast Fourier Transform: 
+        /// Does Inverse Fast Fourier Transform: 
         /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
         /// </summary>
         /// <param name="inRe">Input data (real parts)</param>
@@ -248,7 +248,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Inverse Fast Fourier Transform: 
+        /// Does normalized Inverse Fast Fourier Transform: 
         /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
         /// </summary>
         /// <param name="inRe">Input data (real parts)</param>
@@ -264,7 +264,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// <para>Compute magnitude spectrum from <paramref name="samples"/>:</para>
+        /// <para>Computes magnitude spectrum from <paramref name="samples"/>:</para>
         /// <code>
         ///     spectrum = sqrt(re * re + im * im)
         /// </code>
@@ -307,7 +307,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// <para>Compute power spectrum from <paramref name="samples"/>:</para>
+        /// <para>Computes power spectrum from <paramref name="samples"/>:</para>
         /// <code>
         ///     spectrum = (re * re + im * im)
         /// </code>
@@ -350,7 +350,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// <para>Compute and return magnitude spectrum from <paramref name="signal"/>:</para>
+        /// <para>Computes and returns magnitude spectrum from <paramref name="signal"/>:</para>
         /// <code>
         ///     spectrum = sqrt(re * re + im * im)
         /// </code>
@@ -365,7 +365,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// <para>Compute and return power spectrum from <paramref name="signal"/>:</para>
+        /// <para>Computes and returns power spectrum from <paramref name="signal"/>:</para>
         /// <code>
         ///     spectrum = (re * re + im * im)
         /// </code>
@@ -403,7 +403,7 @@ namespace NWaves.Transforms
 
 #if NET50
         /// <summary>
-        /// Do Fast Fourier Transform in-place.
+        /// Does Fast Fourier Transform in-place.
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
@@ -463,7 +463,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Inverse Fast Fourier Transform in-place.
+        /// Does Inverse Fast Fourier Transform in-place.
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
@@ -523,7 +523,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Inverse Fast Fourier Transform in-place.
+        /// Does normalized Inverse Fast Fourier Transform in-place.
         /// </summary>
         /// <param name="re">Array of real parts</param>
         /// <param name="im">Array of imaginary parts</param>
@@ -539,7 +539,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Fast Fourier Transform: 
+        /// Does Fast Fourier Transform: 
         /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
         /// </summary>
         /// <param name="inRe">Array of real parts (input)</param>
@@ -555,7 +555,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Inverse Fast Fourier Transform: 
+        /// Does Inverse Fast Fourier Transform: 
         /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
         /// </summary>
         /// <param name="inRe">Array of real parts (input)</param>
@@ -571,7 +571,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Inverse Fast Fourier Transform: 
+        /// Does normalized Inverse Fast Fourier Transform: 
         /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
         /// </summary>
         /// <param name="inRe">Array of real parts (input)</param>

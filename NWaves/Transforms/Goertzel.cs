@@ -5,7 +5,7 @@ using System.Numerics;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class providing implementations of Goertzel algorithm.
+    /// Provides implementation of Goertzel algorithm.
     /// </summary>
     public class Goertzel
     {
@@ -15,7 +15,7 @@ namespace NWaves.Transforms
         private readonly int _fftSize;
 
         /// <summary>
-        /// Construct <see cref="Goertzel"/> object.
+        /// Constructs <see cref="Goertzel"/>.
         /// </summary>
         /// <param name="fftSize">FFT size</param>
         public Goertzel(int fftSize)
@@ -24,7 +24,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Compute <paramref name="n"/>-th component of a spectrum using Goertzel algorithm.
+        /// Computes <paramref name="n"/>-th component of a spectrum using Goertzel algorithm.
         /// </summary>
         /// <param name="input">Input array of samples</param>
         /// <param name="n">Number of the frequency component</param>
@@ -51,7 +51,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Compute <paramref name="n"/>-th component of a spectrum using Goertzel algorithm.
+        /// Computes <paramref name="n"/>-th component of a spectrum using Goertzel algorithm.
         /// </summary>
         /// <param name="input">Input signal</param>
         /// <param name="n">Number of the frequency component</param>

@@ -6,12 +6,12 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors.Base
 {
     /// <summary>
-    /// Class providing methods for additional processing of feature vector sequences.
+    /// Provides methods for post-processing of feature vector sequences.
     /// </summary>
     public static class FeaturePostProcessing
     {
         /// <summary>
-        /// Mean subtraction (in particular, CMN).
+        /// Does mean subtraction (in particular, CMN).
         /// </summary>
         /// <param name="vectors">Sequence of feature vectors</param>
         public static void NormalizeMean(IList<float[]> vectors)
@@ -35,7 +35,7 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Variance normalization (division by estimate of std.deviation (biased or not biased))
+        /// Does variance normalization (division by estimate of std.deviation (biased or not biased)).
         /// </summary>
         /// <param name="vectors">Sequence of feature vectors</param>
         /// <param name="bias">Bias in estimate of variance (1 = not biased, 0 = biased)</param>
@@ -68,7 +68,7 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Extend feature vectors with delta-features (1st and optionally 2nd order derivatives).
+        /// Extends feature vectors with delta-features (1st and optionally 2nd order derivatives).
         /// 
         /// <para>According to formula:</para>
         /// 
@@ -156,8 +156,8 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Join (merge) feature vectors from different collections into one combined feature vector.
-        /// For example, join 12 MFCC and 10 PLP coeffs into one 22-dimensional vector.
+        /// Joins (merges) feature vectors from different collections into one combined feature vector. 
+        /// For example, it can join 12 MFCC and 10 PLP coeffs into one 22-dimensional vector. 
         /// Collections of feature vectors must have the same size and contain at least one vector.
         /// </summary>
         /// <param name="vectors">Sequences of feature vectors</param>

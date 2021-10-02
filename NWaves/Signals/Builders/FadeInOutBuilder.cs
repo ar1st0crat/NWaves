@@ -3,7 +3,7 @@
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// <para>Fade in/out decorator for signal builders.</para>
+    /// <para>Represents fade in/out decorator of signal builders.</para>
     /// <para>Example:</para>
     /// <code>
     ///     var sine = new SineBuilder(...); 
@@ -57,7 +57,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Generate new sample.
+        /// Generates new sample.
         /// </summary>
         public override float NextSample()
         {
@@ -79,7 +79,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Reset sample generator.
+        /// Resets sample generator.
         /// </summary>
         public override void Reset()
         {
@@ -92,7 +92,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Set duration of fade-in section in seconds.
+        /// Sets duration of fade-in section in seconds.
         /// </summary>
         /// <param name="seconds"></param>
         public FadeInOutBuilder In(double seconds)
@@ -102,7 +102,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Set duration of fade-out section in seconds.
+        /// Sets duration of fade-out section in seconds.
         /// </summary>
         /// <param name="seconds"></param>
         public FadeInOutBuilder Out(double seconds)
@@ -113,7 +113,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Start fading out.
+        /// Starts fading out.
         /// </summary>
         public void FadeOut()
         {

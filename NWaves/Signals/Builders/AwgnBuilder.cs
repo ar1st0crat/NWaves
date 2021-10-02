@@ -6,7 +6,7 @@ namespace NWaves.Signals.Builders
 {
     /// <summary>
     /// <para>
-    /// Additive White Gaussian Noise (AWGN) builder. 
+    /// Represents Additive White Gaussian Noise (AWGN) builder. 
     /// Generates additive white gaussian noise using Box-Muller transform.
     /// </para>
     /// <para>
@@ -45,7 +45,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Generate new sample.
+        /// Generates new sample.
         /// </summary>
         public override float NextSample()
         {
@@ -67,7 +67,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Reset sample generator.
+        /// Resets sample generator.
         /// </summary>
         public override void Reset()
         {

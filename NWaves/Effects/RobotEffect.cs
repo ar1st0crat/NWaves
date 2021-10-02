@@ -4,7 +4,7 @@ using System;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// <para>Class representing audio effect of speech robotization.</para>
+    /// <para>Represents audio effect of speech robotization.</para>
     /// <para>Usual settings: 
     /// <list type="bullet">
     ///     <item>fftSize = 512, hopSize = 70 .. 270</item>
@@ -17,7 +17,7 @@ namespace NWaves.Effects
     public class RobotEffect : OverlapAddFilter
     {
         /// <summary>
-        /// Construct <see cref="RobotEffect"/>.
+        /// Constructs <see cref="RobotEffect"/>.
         /// </summary>
         /// <param name="hopSize">Hop size (hop length, number of samples)</param>
         /// <param name="fftSize">FFT size</param>
@@ -27,7 +27,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one spectrum at each Overlap-Add STFT step (simply set phases to 0).
+        /// Processes one spectrum at each Overlap-Add STFT step (simply set phases to 0).
         /// </summary>
         /// <param name="re">Real parts of input spectrum</param>
         /// <param name="im">Imaginary parts of input spectrum</param>

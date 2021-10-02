@@ -10,12 +10,12 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Power-Normalized Cepstral Coefficients (PNCC) extractor
+    /// Represents Power-Normalized Cepstral Coefficients (PNCC) extractor.
     /// </summary>
     public class PnccExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Feature names (simply "pncc0", "pncc1", "pncc2", etc.)
+        /// Gets feature names (simply "pncc0", "pncc1", "pncc2", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions
         {
@@ -28,47 +28,47 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Window length for median-time power (2 * M + 1).
+        /// Gets or sets window length for median-time power (2 * M + 1).
         /// </summary>
         public int M { get; set; } = 2;
 
         /// <summary>
-        /// Window length for spectral smoothing (2 * N + 1).
+        /// Gets or sets window length for spectral smoothing (2 * N + 1).
         /// </summary>
         public int N { get; set; } = 4;
 
         /// <summary>
-        /// Lambda_a used in asymmetric noise suppression formula (4).
+        /// Gets or sets lambda_a used in asymmetric noise suppression formula (4).
         /// </summary>
         public float LambdaA { get; set; } = 0.999f;
 
         /// <summary>
-        /// Lambda_b used in asymmetric noise suppression formula (4).
+        /// Gets or sets lambda_b used in asymmetric noise suppression formula (4).
         /// </summary>
         public float LambdaB { get; set; } = 0.5f;
-        
+
         /// <summary>
-        /// Forgetting factor in temporal masking formula.
+        /// Gets or sets the forgetting factor in temporal masking formula.
         /// </summary>
         public float LambdaT { get; set; } = 0.85f;
 
         /// <summary>
-        /// Forgetting factor in formula (15) in [Kim and Stern, 2016].
+        /// Gets or sets the forgetting factor in formula (15) in [Kim and Stern, 2016].
         /// </summary>
         public float LambdaMu { get; set; } = 0.999f;
 
         /// <summary>
-        /// Threshold for detecting excitation/non-excitation segments.
+        /// Gets or sets threshold for detecting excitation/non-excitation segments.
         /// </summary>
         public float C { get; set; } = 2;
 
         /// <summary>
-        /// Multiplier in formula (12) in [Kim and Stern, 2016].
+        /// Gets or sets the multiplier in formula (12) in [Kim and Stern, 2016].
         /// </summary>
         public float MuT { get; set; } = 0.2f;
 
         /// <summary>
-        /// Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)]. 
+        /// Gets filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)]. 
         /// By default it's gammatone filterbank.
         /// </summary>
         public float[][] FilterBank { get; }
@@ -130,9 +130,8 @@ namespace NWaves.FeatureExtractors
         protected readonly float[] _smoothedSpectrum;
 
         /// <summary>
-        /// Construct extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public PnccExtractor(PnccOptions options) : base(options)
         {
             FeatureCount = options.FeatureCount;
@@ -178,7 +177,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// <para>Compute PNCC vector in one frame according to [Kim and Stern, 2016].</para>
+        /// <para>Computes PNCC vector in one frame according to [Kim and Stern, 2016].</para>
         /// <para>
         /// General algorithm:
         /// <list type="number">
@@ -360,7 +359,7 @@ namespace NWaves.FeatureExtractors
                 features[0] = (float)Math.Log(Math.Max(block.Sum(x => x * x), _logEnergyFloor));
             }
 
-            // wow, who knows, maybe it'll happen!
+            // wow, who knows, maybe it'll happen! (not really)))
 
             if (_step == int.MaxValue - 1)
             {
@@ -369,7 +368,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Reset extractor.
+        /// Resets extractor.
         /// </summary>
         public override void Reset()
         {
@@ -392,6 +391,9 @@ namespace NWaves.FeatureExtractors
             public float[] CentralSpectrum;
             public float[] AverageSpectrum;
 
+            /// <summary>
+            /// Constructs <see cref="SpectraRingBuffer"/> with given <paramref name="capacity"/> and <paramref name="spectrumSize"/>.
+            /// </summary>
             public SpectraRingBuffer(int capacity, int spectrumSize)
             {
                 _spectra = new float[capacity][];
@@ -401,6 +403,9 @@ namespace NWaves.FeatureExtractors
                 AverageSpectrum = new float[spectrumSize];
             }
 
+            /// <summary>
+            /// Adds <paramref name="spectrum"/> to the ring buffer.
+            /// </summary>
             public void Add(float[] spectrum)
             {
                 if (_count < _capacity) _count++;
@@ -422,6 +427,9 @@ namespace NWaves.FeatureExtractors
                 _current = (_current + 1) % _capacity;
             }
 
+            /// <summary>
+            /// Resets ring buffer.
+            /// </summary>
             public void Reset()
             {
                 _count = 0;

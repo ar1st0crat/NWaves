@@ -1,7 +1,7 @@
 ﻿namespace NWaves.Effects.Stereo
 {
     /// <summary>
-    /// Pan rules (pan laws).
+    /// Defines pan rules (pan laws).
     /// </summary>
     public enum PanRule
     {

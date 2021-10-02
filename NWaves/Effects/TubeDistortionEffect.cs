@@ -8,7 +8,7 @@ namespace NWaves.Effects
     // DAFX book [Udo Zoelzer], p.123-124.
 
     /// <summary>
-    /// Class representing Tube Distortion audio effect.
+    /// Represents Tube Distortion audio effect.
     /// </summary>
     public class TubeDistortionEffect : AudioEffect
     {
@@ -64,7 +64,7 @@ namespace NWaves.Effects
         private readonly LtiFilter _outputFilter;
 
         /// <summary>
-        /// Construct <see cref="TubeDistortionEffect"/>.
+        /// Constructs <see cref="TubeDistortionEffect"/>.
         /// </summary>
         /// <param name="inputGain">Input gain (in dB)</param>
         /// <param name="outputGain">Output gain (in dB)</param>
@@ -94,7 +94,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
@@ -120,7 +120,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {

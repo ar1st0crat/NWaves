@@ -5,7 +5,7 @@ using System;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class representing Fast Hartley Transform.
+    /// Represents Fast Hartley Transform.
     /// </summary>
     public class HartleyTransform : ITransform
     {
@@ -25,7 +25,7 @@ namespace NWaves.Transforms
         private readonly float[] _im;
 
         /// <summary>
-        /// Construct Hartley transformer. Transform <paramref name="size"/> must be a power of 2.
+        /// Constructs Hartley transformer. Transform <paramref name="size"/> must be a power of 2.
         /// </summary>
         /// <param name="size">Size of Hartley transform</param>
         public HartleyTransform(int size)
@@ -36,7 +36,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Fast Hartley Transform in-place.
+        /// Does Fast Hartley Transform in-place.
         /// </summary>
         /// <param name="re">Input/output data</param>
         public void Direct(float[] re)
@@ -52,13 +52,13 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do inverse Hartley transform in-place.
+        /// Does inverse Hartley transform in-place.
         /// </summary>
         /// <param name="re">Input/output data</param>
         public void Inverse(float[] re) => Direct(re);
 
         /// <summary>
-        /// Do normalized Inverse Fast Hartley transform in-place.
+        /// Does normalized Inverse Fast Hartley transform in-place.
         /// </summary>
         /// <param name="re">Input/output data</param>
         public void InverseNorm(float[] re)
@@ -72,7 +72,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Fast Hartley Transform.
+        /// Does Fast Hartley Transform.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -83,7 +83,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Fast Hartley Transform. 
+        /// Does normalized Fast Hartley Transform. 
         /// Identical to <see cref="Direct(float[], float[])"/>.
         /// </summary>
         /// <param name="input">Input data</param>
@@ -95,7 +95,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Inverse Fast Hartley Transform.
+        /// Does Inverse Fast Hartley Transform.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -106,7 +106,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Inverse Fast Hartley Transform.
+        /// Does normalized Inverse Fast Hartley Transform.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>

@@ -35,7 +35,7 @@ namespace NWaves.FeatureExtractors.Base
         private float[] _tempBuffer;
 
         /// <summary>
-        /// Construct <see cref="OnlineFeatureExtractor"/> as a wrapper around <paramref name="extractor"/>.
+        /// Constructs <see cref="OnlineFeatureExtractor"/> as a wrapper around <paramref name="extractor"/>.
         /// </summary>
         /// <param name="extractor">Underlying feature extractor</param>
         /// <param name="ignoreLastSamples">Should the last non-processed samples in the current block be ignored in the next block</param>
@@ -49,7 +49,7 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// <para>Maximally possible number of output feature vectors (based on maximally possible online data portion size).</para>
+        /// <para>Returns maximally possible number of output feature vectors (based on maximally possible online data portion size).</para>
         /// <para>This number is intended to be used for pre-allocation of feature vector lists.</para>
         /// </summary>
         /// <param name="dataSize">Maximally possible online data portion size (number of samples)</param>
@@ -59,14 +59,14 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// <para>Maximally possible number of output feature vectors (based on maximally possible duration of online data portion).</para>
+        /// <para>Returns maximally possible number of output feature vectors (based on maximally possible duration of online data portion).</para>
         /// <para>This number is intended to be used for pre-allocation of feature vector lists.</para>
         /// </summary>
         /// <param name="seconds">Maximally possible duration of online data portion (in seconds)</param>
         public int VectorCountFromSeconds(double seconds) => VectorCount((int)(Extractor.SamplingRate * seconds));
 
         /// <summary>
-        /// <para>Ensure the size of internal buffer for accumulated samples.</para>
+        /// <para>Ensures the size of internal buffer for accumulated samples.</para>
         /// <para>If the new size exceeds the buffer size, it will be auto-resized.</para>
         /// </summary>
         /// <param name="dataSize">Required size (measured in sample count)</param>
@@ -79,7 +79,7 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// <para>Ensure the size of internal buffer for accumulated samples based on required duration.</para>
+        /// <para>Ensures the size of internal buffer for accumulated samples based on required duration.</para>
         /// <para>If the new size (computed from duration) exceeds the buffer size, it will be auto-resized.</para>
         /// </summary>
         /// <param name="seconds">Required duration in seconds</param>
@@ -94,7 +94,7 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// <para>Compute feature vectors from <paramref name="data"/> and store them in <paramref name="featureVectors"/>.</para>
+        /// <para>Computes feature vectors from <paramref name="data"/> and stores them in <paramref name="featureVectors"/>.</para>
         /// <para>Returns the number of actually computed feature vectors.</para>
         /// </summary>
         /// <param name="data">Block of data</param>
@@ -124,7 +124,7 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// <para>Compute feature vectors from <paramref name="data"/>.</para>
+        /// <para>Computes feature vectors from <paramref name="data"/>.</para>
         /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="data">Block of data</param>
@@ -160,7 +160,7 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// <para>Compute feature vectors from <paramref name="data"/> and store them in <paramref name="featureVectors"/>.</para>
+        /// <para>Computes feature vectors from <paramref name="data"/> and stores them in <paramref name="featureVectors"/>.</para>
         /// <para>Returns the number of actually computed feature vectors.</para>
         /// </summary>
         /// <param name="data">Block of data</param>
@@ -174,7 +174,7 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// <para>Compute feature vectors from <paramref name="data"/>.</para>
+        /// <para>Computes feature vectors from <paramref name="data"/>.</para>
         /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="data">Block of data</param>
@@ -187,7 +187,7 @@ namespace NWaves.FeatureExtractors.Base
         }
 
         /// <summary>
-        /// Reset online feature extractor.
+        /// Resets online feature extractor.
         /// </summary>
         public void Reset()
         {

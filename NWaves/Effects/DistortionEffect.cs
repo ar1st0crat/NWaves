@@ -5,7 +5,7 @@ using System;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class representing Distortion audio effect.
+    /// Represents Distortion audio effect.
     /// </summary>
     public class DistortionEffect : AudioEffect
     {
@@ -35,7 +35,7 @@ namespace NWaves.Effects
         private float _outputGain;
 
         /// <summary>
-        /// Construct <see cref="DistortionEffect"/>.
+        /// Constructs <see cref="DistortionEffect"/>.
         /// </summary>
         /// <param name="mode">Distortion mode</param>
         /// <param name="inputGain">Input gain (in dB)</param>
@@ -48,7 +48,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
@@ -146,7 +146,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {

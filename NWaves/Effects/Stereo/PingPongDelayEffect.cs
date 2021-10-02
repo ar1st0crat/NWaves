@@ -3,7 +3,7 @@
 namespace NWaves.Effects.Stereo
 {
     /// <summary>
-    /// Class representing stereo ping-pong delay audio effect.
+    /// Represents stereo ping-pong delay audio effect.
     /// </summary>
     public class PingPongDelayEffect : StereoEffect
     {
@@ -48,7 +48,7 @@ namespace NWaves.Effects.Stereo
         public float Feedback { get; set; }
 
         /// <summary>
-        /// Construct <see cref="PingPongDelayEffect"/>.
+        /// Constructs <see cref="PingPongDelayEffect"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="pan">Pan</param>
@@ -82,7 +82,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Process one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
+        /// Processes one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
         /// </summary>
         /// <param name="left">Input sample in left channel</param>
         /// <param name="right">Input sample in right channel</param>
@@ -102,7 +102,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {

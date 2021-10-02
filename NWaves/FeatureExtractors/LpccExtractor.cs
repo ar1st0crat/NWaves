@@ -9,12 +9,12 @@ using NWaves.Windows;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Linear Prediction Cepstral Coefficients (LPCC) extractor
+    /// Represents Linear Prediction Cepstral Coefficients (LPCC) extractor.
     /// </summary>
     public class LpccExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Feature names (simply "lpcc0", "lpcc1", etc.)
+        /// Gets feature names (simply "lpcc0", "lpcc1", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions =>
             Enumerable.Range(0, FeatureCount).Select(i => "lpcc" + i).ToList();
@@ -55,9 +55,8 @@ namespace NWaves.FeatureExtractors
         protected readonly float[] _reversed;
 
         /// <summary>
-        /// Construct extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public LpccExtractor(LpccOptions options) : base(options)
         {
             FeatureCount = options.FeatureCount;
@@ -76,7 +75,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Compute LPCC vector in one frame.
+        /// Computes LPCC vector in one frame.
         /// </summary>
         /// <param name="block">Block of data</param>
         /// <param name="features">Features (one LPCC feature vector) computed in the block</param>
@@ -111,12 +110,12 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Does the extractor support parallelization. Returns true always.
+        /// Returns true, since <see cref="LpccExtractor"/> always supports parallelization.
         /// </summary>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Thread-safe copy of the extractor for parallel computations.
+        /// Creates thread-safe copy of the extractor for parallel computations.
         /// </summary>
         public override FeatureExtractor ParallelCopy() =>
             new LpccExtractor(new LpccOptions

@@ -11,13 +11,13 @@ using NWaves.Windows;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Amplitude modulation spectra (AMS) extractor.
+    /// Represents amplitude modulation spectra (AMS) extractor.
     /// </summary>
     public class AmsExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Feature annotations.
-        /// Initialized in constructor in the following manner (example):
+        /// Gets feature annotations. 
+        /// They are initialized in constructor in the following manner (example):
         /// <code>
         ///     band_1_mf_0.5_Hz   band_1_mf_1.0_Hz   ...    band_1_mf_8.0_Hz  <br/>
         ///     band_2_mf_0.5_Hz   band_2_mf_1.0_Hz   ...    band_2_mf_8.0_Hz  <br/>
@@ -40,7 +40,7 @@ namespace NWaves.FeatureExtractors
         protected readonly float[][] _filterbank;
 
         /// <summary>
-        /// Filterbank matrix of dimension [filterCount * (fftSize/2 + 1)].
+        /// Gets filterbank matrix of dimension [filterCount * (fftSize/2 + 1)].
         /// </summary>
         public float[][] Filterbank => _filterbank;
         
@@ -50,7 +50,7 @@ namespace NWaves.FeatureExtractors
         protected float[][] _envelopes;
 
         /// <summary>
-        /// Signal envelopes in different frequency bands.
+        /// Gets signal envelopes in different frequency bands.
         /// </summary>
         public float[][] Envelopes => _envelopes;
 
@@ -105,9 +105,8 @@ namespace NWaves.FeatureExtractors
         protected readonly float[] _modSpectrum;
 
         /// <summary>
-        /// Construct extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public AmsExtractor(AmsOptions options) : base(options)
         {
             _modulationFftSize = options.ModulationFftSize;
@@ -176,7 +175,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Compute modulation spectra. 
+        /// Computes modulation spectra. 
         /// Each vector representing one modulation spectrum is a flattened version of 2D spectrum.
         /// </summary>
         /// <param name="samples">Array of samples</param>
@@ -321,7 +320,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Create 2D modulation spectrum from its flattened version. 
+        /// Creates 2D modulation spectrum from its flattened version. 
         /// Axes are: [short-time-frequency] x [modulation-frequency].
         /// </summary>
         /// <param name="featureVector">AMS feature vector</param>
@@ -343,7 +342,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Get sequence of short-time spectra corresponding to particular modulation frequency 
+        /// Gets sequence of short-time spectra corresponding to particular modulation frequency 
         /// (by default, the most perceptually important modulation frequency of 4 Hz).
         /// </summary>
         /// <param name="featureVectors">Sequence of AMS feature vectors</param>

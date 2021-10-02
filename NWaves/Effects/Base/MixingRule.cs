@@ -1,7 +1,7 @@
 ﻿namespace NWaves.Effects.Base
 {
     /// <summary>
-    /// Wet/dry mixing rules.
+    /// Defines wet/dry mixing rules.
     /// </summary>
     public enum MixingRule
     {

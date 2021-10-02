@@ -8,14 +8,14 @@ using System;
 namespace NWaves.Features
 {
     /// <summary>
-    /// Class providing methods for pitch estimation and tracking.
+    /// Provides methods for pitch estimation and tracking.
     /// </summary>
     public static class Pitch
     {
         #region time-domain methods
 
         /// <summary>
-        /// Estimate pitch from <paramref name="samples"/> using autocorrelation method.
+        /// Estimates pitch from <paramref name="samples"/> using autocorrelation method.
         /// </summary>
         /// <param name="samples">Array of samples</param>
         /// <param name="samplingRate">Sampling rate</param>
@@ -65,7 +65,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Estimate pitch from <paramref name="signal"/> using autocorrelation method.
+        /// Estimates pitch from <paramref name="signal"/> using autocorrelation method.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="startPos">Index of the first sample in signal for processing</param>
@@ -82,7 +82,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Estimate pitch from <paramref name="samples"/> based on zero crossing rate and Schmitt trigger.
+        /// Estimates pitch from <paramref name="samples"/> based on zero crossing rate and Schmitt trigger.
         /// </summary>
         /// <param name="samples">Array of samples</param>
         /// <param name="samplingRate">Sampling rate</param>
@@ -159,7 +159,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Estimate pitch from <paramref name="signal"/> based on zero crossing rate and Schmitt trigger.
+        /// Estimates pitch from <paramref name="signal"/> based on zero crossing rate and Schmitt trigger.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="startPos">Index of the first sample in array for processing</param>
@@ -181,7 +181,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// <para>Estimate pitch from <paramref name="samples"/> using YIN algorithm:</para>
+        /// <para>Estimates pitch from <paramref name="samples"/> using YIN algorithm:</para>
         /// <para>
         /// De Cheveigne, A., Kawahara, H. YIN, a fundamental frequency estimator for speech and music. 
         /// The Journal of the Acoustical Society of America, 111(4). - 2002.
@@ -282,7 +282,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Estimate pitch from <paramref name="signal"/> using YIN algorithm.
+        /// Estimates pitch from <paramref name="signal"/> using YIN algorithm.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="startPos">Index of the first sample in signal for processing</param>
@@ -305,7 +305,7 @@ namespace NWaves.Features
         #region frequency-domain methods
 
         /// <summary>
-        /// Estimate pitch from <paramref name="signal"/> using Harmonic Sum Spectrum (HSS) method.
+        /// Estimates pitch from <paramref name="signal"/> using Harmonic Sum Spectrum (HSS) method.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="startPos">Index of the first sample in signal for processing</param>
@@ -341,7 +341,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Estimate pitch from <paramref name="spectrum"/> using Harmonic Sum Spectrum (HSS) method.
+        /// Estimates pitch from <paramref name="spectrum"/> using Harmonic Sum Spectrum (HSS) method.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="samplingRate">Sampling rate</param>
@@ -383,7 +383,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Estimate pitch from <paramref name="signal"/> using Harmonic Product Spectrum (HPS) method.
+        /// Estimates pitch from <paramref name="signal"/> using Harmonic Product Spectrum (HPS) method.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="startPos">Index of the first sample in signal for processing</param>
@@ -419,7 +419,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Estimate pitch from <paramref name="spectrum"/> using Harmonic Product Spectrum (HPS) method.
+        /// Estimates pitch from <paramref name="spectrum"/> using Harmonic Product Spectrum (HPS) method.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="samplingRate">Sampling rate</param>
@@ -459,7 +459,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Estimate pitch from <paramref name="signal"/> based on spectral peaks.
+        /// Estimates pitch from <paramref name="signal"/> based on spectral peaks.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="startPos">Index of the first sample in signal for processing</param>
@@ -495,7 +495,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Estimate pitch from <paramref name="spectrum"/> based on spectral peaks.
+        /// Estimates pitch from <paramref name="spectrum"/> based on spectral peaks.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="samplingRate">Sampling rate</param>
@@ -524,7 +524,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Estimate pitch from <paramref name="signal"/> based on its cepstrum.
+        /// Estimates pitch from <paramref name="signal"/> based on its cepstrum.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="startPos">Index of the first sample in signal for processing</param>

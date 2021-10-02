@@ -12,12 +12,12 @@ using NWaves.Windows;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Perceptual Linear Predictive Coefficients extractor (PLP-RASTA).
+    /// Represents Perceptual Linear Predictive Coefficients extractor (PLP-RASTA).
     /// </summary>
     public class PlpExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Feature names (simply "plp0", "plp1", "plp2", etc.)
+        /// Gets feature names (simply "plp0", "plp1", "plp2", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions
         {
@@ -30,10 +30,10 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// <para>Filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)].</para>
+        /// <para>Gets filterbank matrix of dimension [filterbankSize * (fftSize/2 + 1)].</para>
         /// <para>
         /// By default it's bark filterbank like in original H.Hermansky's work 
-        /// (although many people prefer mel bands).
+        /// (although many specialists prefer mel bands).
         /// </para>
         /// </summary>
         public float[][] FilterBank { get; }
@@ -114,9 +114,8 @@ namespace NWaves.FeatureExtractors
         protected readonly float[] _cc;
 
         /// <summary>
-        /// Construct extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public PlpExtractor(PlpOptions options) : base(options)
         {
             FeatureCount = options.FeatureCount;
@@ -247,7 +246,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// <para>Compute PLP-RASTA feature vector in one frame.</para>
+        /// <para>Computes PLP-RASTA feature vector in one frame.</para>
         /// <para>
         /// General algorithm:
         /// <list type="number">
@@ -344,7 +343,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Reset extractor
+        /// Resets extractor.
         /// </summary>
         public override void Reset()
         {
@@ -357,19 +356,24 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// <para>Does the extractor support parallelization.</para>
-        /// <para>
-        /// Returns false in RASTA-filtering mode (i.e. if RASTA-coefficient is not 0). 
+        /// Returns false in RASTA-filtering mode (i.e. if RASTA-coefficient is not 0), 
+        /// since in this case <see cref="PlpExtractor"/> does not support parallelization. 
         /// Returns true in all other cases.
-        /// </para>
         /// </summary>
         public override bool IsParallelizable() => _rasta == 0;
 
         /// <summary>
-        /// Thread-safe copy of the extractor for parallel computations.
+        /// <para>Creates thread-safe copy of the extractor for parallel computations.</para>
+        /// <para>Returns null if the extractor does not support parallelization.</para>
         /// </summary>
-        public override FeatureExtractor ParallelCopy() => 
-            new PlpExtractor(
+        public override FeatureExtractor ParallelCopy()
+        {
+            if (!IsParallelizable())
+            {
+                return null;
+            }
+
+            return new PlpExtractor(
                 new PlpOptions
                 {
                     SamplingRate = SamplingRate,
@@ -388,5 +392,6 @@ namespace NWaves.FeatureExtractors
                     IncludeEnergy = _includeEnergy,
                     LogEnergyFloor = _logEnergyFloor
                 });
+        }
     }
 }

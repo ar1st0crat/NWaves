@@ -5,7 +5,7 @@ using System;
 namespace NWaves.Effects.Stereo
 {
     /// <summary>
-    /// Class representing stereo pan audio effect based on ITD-ILD 
+    /// Represents stereo pan audio effect based on ITD-ILD 
     /// (Interaural Time Difference - Interaural Level Difference).
     /// </summary>
     public class ItdIldPanEffect : StereoEffect
@@ -21,7 +21,7 @@ namespace NWaves.Effects.Stereo
         const double Pi2 = Math.PI / 2;
 
         /// <summary>
-        /// Head radius.
+        /// Gets head radius.
         /// </summary>
         public float HeadRadius => _headRadius;
         private readonly float _headRadius;
@@ -96,7 +96,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Construct <see cref="ItdIldPanEffect"/>.
+        /// Constructs <see cref="ItdIldPanEffect"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="pan">Pan</param>
@@ -123,7 +123,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Process one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
+        /// Processes one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
         /// </summary>
         /// <param name="left">Input sample in left channel</param>
         /// <param name="right">Input sample in right channel</param>
@@ -152,7 +152,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {

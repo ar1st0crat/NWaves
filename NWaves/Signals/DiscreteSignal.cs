@@ -49,7 +49,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Construct signal from collection of <paramref name="samples"/> sampled at <paramref name="samplingRate"/>.
+        /// Constructs signal from collection of <paramref name="samples"/> sampled at <paramref name="samplingRate"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="samples">Collection of samples</param>
@@ -59,7 +59,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Construct signal of given <paramref name="length"/> filled with specified values.
+        /// Constructs signal of given <paramref name="length"/> filled with specified values.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="length">Number of samples</param>
@@ -80,7 +80,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Construct signal from collection of integer <paramref name="samples"/> sampled at given <paramref name="samplingRate"/>.
+        /// Constructs signal from collection of integer <paramref name="samples"/> sampled at given <paramref name="samplingRate"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="samples">Collection of integer samples</param>
@@ -102,7 +102,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Generate unit impulse of given <paramref name="length"/> sampled at given <paramref name="samplingRate"/>.
+        /// Generates unit impulse of given <paramref name="length"/> sampled at given <paramref name="samplingRate"/>.
         /// </summary>
         /// <param name="length">Length of unit impulse</param>
         /// <param name="samplingRate">Sampling rate</param>
@@ -115,7 +115,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Generate constant signal of given <paramref name="length"/> sampled at given <paramref name="samplingRate"/>.
+        /// Generates constant signal of given <paramref name="length"/> sampled at given <paramref name="samplingRate"/>.
         /// </summary>
         /// <param name="constant">Constant value</param>
         /// <param name="length">Length of constant signal</param>
@@ -126,7 +126,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create deep copy of the signal.
+        /// Creates deep copy of the signal.
         /// </summary>
         public DiscreteSignal Copy()
         {
@@ -144,7 +144,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create the slice of the signal: 
+        /// Creates the slice of the signal: 
         /// <code>
         ///     var middle = signal[900, 1200];
         /// </code>
@@ -167,7 +167,7 @@ namespace NWaves.Signals
         #region overloaded operators
 
         /// <summary>
-        /// Create new signal by superimposing signals <paramref name="s1"/> and <paramref name="s2"/>. 
+        /// Creates new signal by superimposing signals <paramref name="s1"/> and <paramref name="s2"/>. 
         /// If sizes are different then the smaller signal is broadcast to fit the size of the larger signal.
         /// </summary>
         /// <param name="s1">First signal</param>
@@ -178,7 +178,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create negated copy of signal <paramref name="s"/>.
+        /// Creates negated copy of signal <paramref name="s"/>.
         /// </summary>
         /// <param name="s">Signal</param>
         public static DiscreteSignal operator -(DiscreteSignal s)
@@ -187,7 +187,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Subtract signal <paramref name="s2"/> from signal <paramref name="s1"/>. 
+        /// Subtracts signal <paramref name="s2"/> from signal <paramref name="s1"/>. 
         /// If sizes are different then the smaller signal is broadcast to fit the size of the larger signal.
         /// </summary>
         /// <param name="s1">First signal</param>
@@ -198,7 +198,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create new signal by adding <paramref name="constant"/> to signal <paramref name="s"/>.
+        /// Creates new signal by adding <paramref name="constant"/> to signal <paramref name="s"/>.
         /// </summary>
         /// <param name="s">Signal</param>
         /// <param name="constant">Constant to add to each sample</param>
@@ -208,7 +208,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create new signal by subtracting <paramref name="constant"/> from signal <paramref name="s"/>.
+        /// Creates new signal by subtracting <paramref name="constant"/> from signal <paramref name="s"/>.
         /// </summary>
         /// <param name="s">Signal</param>
         /// <param name="constant">Constant to subtract from each sample</param>
@@ -218,7 +218,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create new signal by multiplying <paramref name="s"/> by <paramref name="coeff"/> (amplification/attenuation).
+        /// Creates new signal by multiplying <paramref name="s"/> by <paramref name="coeff"/> (amplification/attenuation).
         /// </summary>
         /// <param name="s">Signal</param>
         /// <param name="coeff">Amplification/attenuation coefficient</param>
@@ -234,7 +234,7 @@ namespace NWaves.Signals
         #region time-domain characteristics
 
         /// <summary>
-        /// Compute energy of a signal fragment.
+        /// Computes energy of a signal fragment.
         /// </summary>
         /// <param name="startPos">Index of the first sample (inclusive)</param>
         /// <param name="endPos">Index of the last sample (exclusive)</param>
@@ -250,12 +250,12 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Compute energy of entire signal.
+        /// Computes energy of entire signal.
         /// </summary>
         public float Energy() => Energy(0, Length);
 
         /// <summary>
-        /// Compute RMS of a signal fragment.
+        /// Computes RMS of a signal fragment.
         /// </summary>
         /// <param name="startPos">Index of the first sample (inclusive)</param>
         /// <param name="endPos">Index of the last sample (exclusive)</param>
@@ -265,12 +265,12 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Compute RMS of entire signal.
+        /// Computes RMS of entire signal.
         /// </summary>
         public float Rms() => (float)Math.Sqrt(Energy(0, Length));
 
         /// <summary>
-        /// Compute Zero-crossing rate of a signal fragment.
+        /// Computes Zero-crossing rate of a signal fragment.
         /// </summary>
         /// <param name="startPos">Index of the first sample (inclusive)</param>
         /// <param name="endPos">Index of the last sample (exclusive)</param>
@@ -297,12 +297,12 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Compute Zero-crossing rate of entire signal.
+        /// Computes Zero-crossing rate of entire signal.
         /// </summary>
         public float ZeroCrossingRate() => ZeroCrossingRate(0, Length);
 
         /// <summary>
-        /// Compute Shannon entropy of a signal fragment 
+        /// Computes Shannon entropy of a signal fragment 
         /// (from bins distributed uniformly between the minimum and maximum values of samples).
         /// </summary>
         /// <param name="startPos">Index of the first sample (inclusive)</param>
@@ -362,7 +362,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Compute Shannon entropy of entire signal 
+        /// Computes Shannon entropy of entire signal 
         /// (from bins distributed uniformly between the minimum and maximum values of samples).
         /// </summary>
         /// <param name="binCount">Number of bins</param>

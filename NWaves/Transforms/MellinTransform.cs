@@ -6,7 +6,7 @@ using System.Linq;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class representing Fast Mellin Transform.
+    /// Represents Fast Mellin Transform.
     /// </summary>
     public class MellinTransform : IComplexTransform
     {
@@ -73,7 +73,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Fast Mellin Transform.
+        /// Does Fast Mellin Transform.
         /// </summary>
         /// <param name="input">Input array of samples</param>
         /// <param name="outRe">Output array of real parts</param>
@@ -92,7 +92,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Fast Mellin Transform.
+        /// Does normalized Fast Mellin Transform.
         /// </summary>
         /// <param name="input">Input array of samples</param>
         /// <param name="outRe">Output array of real parts</param>
@@ -111,7 +111,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Fast Mellin Transform.
+        /// Does Fast Mellin Transform.
         /// </summary>
         /// <param name="inRe">Input data (real parts)</param>
         /// <param name="inIm">Input data (imaginary parts)</param>
@@ -123,7 +123,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Fast Mellin Transform.
+        /// Does normalized Fast Mellin Transform.
         /// </summary>
         /// <param name="inRe">Input data (real parts)</param>
         /// <param name="inIm">Input data (imaginary parts)</param>

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Signal builder that uses a wave table. 
+    /// Represents builder of signals that uses a wave table.
     /// <para>
     /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
     /// <list type="bullet">
@@ -32,7 +32,7 @@ namespace NWaves.Signals.Builders
         protected bool _interpolate;
 
         /// <summary>
-        /// Construct <see cref="WaveTableBuilder"/> from <paramref name="samples"/>.
+        /// Constructs <see cref="WaveTableBuilder"/> from <paramref name="samples"/>.
         /// </summary>
         /// <param name="samples">Wave table samples</param>
         public WaveTableBuilder(float[] samples)
@@ -54,7 +54,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Generate new sample (take or interpolate sample from the wave table).
+        /// Generates new sample (take or interpolate sample from the wave table).
         /// </summary>
         public override float NextSample()
         {
@@ -77,7 +77,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Reset sample generator.
+        /// Resets sample generator.
         /// </summary>
         public override void Reset()
         {

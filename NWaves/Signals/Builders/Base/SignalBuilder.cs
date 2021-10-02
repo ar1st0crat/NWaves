@@ -35,22 +35,22 @@ namespace NWaves.Signals.Builders.Base
         protected Dictionary<string, Action<double>> ParameterSetters { get; set; }
 
         /// <summary>
-        /// Sampling rate of the signal.
+        /// Gets the sampling rate of the signal.
         /// </summary>
         public int SamplingRate { get; protected set; } = 1;
 
         /// <summary>
-        /// The length of the signal (number of samples).
+        /// Gets the length of the signal (number of samples).
         /// </summary>
         public int Length { get; protected set; }
 
         /// <summary>
-        /// Duration of signal (in seconds).
+        /// Gets the duration of the signal (in seconds).
         /// </summary>
         public double Duration { get; protected set; }
 
         /// <summary>
-        /// Brief descriptions (or simply names) of parameters.
+        /// Gets brief descriptions (or simply names) of parameters.
         /// </summary>
         public virtual string[] GetParametersInfo()
         {
@@ -58,7 +58,7 @@ namespace NWaves.Signals.Builders.Base
         }
 
         /// <summary>
-        /// Assign value <paramref name="parameterValue"/> to parameter <paramref name="parameterName"/>.
+        /// Assigns value <paramref name="parameterValue"/> to parameter <paramref name="parameterName"/>.
         /// </summary>
         /// <param name="parameterName">Parameter name</param>
         /// <param name="parameterValue">Parameter value</param>
@@ -80,19 +80,19 @@ namespace NWaves.Signals.Builders.Base
         }
 
         /// <summary>
-        /// Generate new sample.
+        /// Generates new sample.
         /// </summary>
         public abstract float NextSample();
 
         /// <summary>
-        /// Reset sample generator.
+        /// Resets sample generator.
         /// </summary>
         public virtual void Reset()
         {
         }
 
         /// <summary>
-        /// Generate signal by generating all its samples one-by-one.
+        /// Generates signal by generating all its samples one-by-one.
         /// </summary>
         protected virtual DiscreteSignal Generate()
         {
@@ -107,7 +107,7 @@ namespace NWaves.Signals.Builders.Base
         }
 
         /// <summary>
-        /// Build new entire signal.
+        /// Builds new entire signal.
         /// </summary>
         public virtual DiscreteSignal Build()
         {
@@ -132,7 +132,7 @@ namespace NWaves.Signals.Builders.Base
         }
 
         /// <summary>
-        /// Set the number of samples of the signal to build.
+        /// Sets the number of samples of the signal to build.
         /// </summary>
         /// <param name="sampleCount">Number of samples</param>
         public virtual SignalBuilder OfLength(int sampleCount)
@@ -143,7 +143,7 @@ namespace NWaves.Signals.Builders.Base
         }
 
         /// <summary>
-        /// Set the duration of the signal to build.
+        /// Sets the duration of the signal to build.
         /// </summary>
         /// <param name="seconds">Duration (in seconds)</param>
         public virtual SignalBuilder OfDuration(double seconds)
@@ -154,7 +154,7 @@ namespace NWaves.Signals.Builders.Base
         }
 
         /// <summary>
-        /// Set the sampling rate of the signal to build.
+        /// Sets the sampling rate of the signal to build.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         public virtual SignalBuilder SampledAt(int samplingRate)
@@ -179,7 +179,7 @@ namespace NWaves.Signals.Builders.Base
         }
 
         /// <summary>
-        /// Set the delay of the signal to build.
+        /// Sets the delay of the signal to build.
         /// </summary>
         /// <param name="delay">Signal delay</param>
         public virtual SignalBuilder DelayedBy(int delay)
@@ -189,7 +189,7 @@ namespace NWaves.Signals.Builders.Base
         }
 
         /// <summary>
-        /// Add another signal to superimpose with the signal to build.
+        /// Adds another one signal to superimpose with the signal to build.
         /// </summary>
         /// <param name="signal">Signal for superimposing</param>
         public virtual SignalBuilder SuperimposedWith(DiscreteSignal signal)
@@ -199,7 +199,7 @@ namespace NWaves.Signals.Builders.Base
         }
 
         /// <summary>
-        /// Set the number of times to repeat the signal to build.
+        /// Sets the number of times to repeat the signal to build.
         /// </summary>
         /// <param name="times">Number of times for repeating</param>
         public virtual SignalBuilder RepeatedTimes(int times)

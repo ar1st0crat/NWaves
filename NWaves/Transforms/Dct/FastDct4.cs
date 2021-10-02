@@ -3,7 +3,7 @@
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class representing Discrete Cosine Transform of Type-IV. 
+    /// Represents Discrete Cosine Transform of Type-IV. 
     /// This FFT-based implementation of DCT-IV is faster for bigger DCT sizes.
     /// </summary>
     public class FastDct4 : IDct
@@ -20,12 +20,12 @@ namespace NWaves.Transforms
         private readonly float[] _tempIm;
 
         /// <summary>
-        /// Size of DCT-IV.
+        /// Gets size of DCT-IV.
         /// </summary>
         public int Size => 2 * _fft.Size;
 
         /// <summary>
-        /// Construct <see cref="FastDct4"/> of given <paramref name="dctSize"/>.
+        /// Constructs <see cref="FastDct4"/> of given <paramref name="dctSize"/>.
         /// </summary>
         /// <param name="dctSize">Size of DCT-IV</param>
         public FastDct4(int dctSize)
@@ -38,7 +38,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do DCT-IV.
+        /// Does DCT-IV.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -87,7 +87,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized DCT-IV.
+        /// Does normalized DCT-IV.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -101,7 +101,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Inverse DCT-IV.
+        /// Does Inverse DCT-IV.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -111,7 +111,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Inverse DCT-IV.
+        /// Does normalized Inverse DCT-IV.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>

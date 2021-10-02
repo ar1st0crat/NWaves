@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Class for generating cosinusoidal signals.
+    /// Represents builder of cosinusoidal signals.
     /// <para>
     /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
     /// <list type="bullet">
@@ -59,7 +59,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Generate new sample.
+        /// Generates new sample.
         /// </summary>
         public override float NextSample()
         {
@@ -74,7 +74,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Reset sample generator.
+        /// Resets sample generator.
         /// </summary>
         public override void Reset()
         {
@@ -82,7 +82,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Generate signal by generating all its samples one-by-one. 
+        /// Generates signal by generating all its samples one-by-one. 
         /// Frequency must be greater than zero.
         /// </summary>
         protected override DiscreteSignal Generate()

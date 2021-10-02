@@ -3,7 +3,7 @@
 namespace NWaves.Effects.Stereo
 {
     /// <summary>
-    /// Class representing stereo delay audio effect.
+    /// Represents stereo delay audio effect.
     /// </summary>
     public class StereoDelayEffect : StereoEffect
     {
@@ -59,7 +59,7 @@ namespace NWaves.Effects.Stereo
         public float Pan { get; set; }
 
         /// <summary>
-        /// Construct <see cref="StereoDelayEffect"/>.
+        /// Constructs <see cref="StereoDelayEffect"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="pan">Pan</param>
@@ -85,7 +85,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Process one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
+        /// Processes one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
         /// </summary>
         /// <param name="left">Input sample in left channel</param>
         /// <param name="right">Input sample in right channel</param>
@@ -102,7 +102,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Reset stereo delay effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {

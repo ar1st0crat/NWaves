@@ -8,12 +8,12 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Linear Predictive Coding (LPC) coefficients extractor.
+    /// Represents Linear Predictive Coding (LPC) coefficients extractor.
     /// </summary>
     public class LpcExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Feature names ("error", "lpc1", "lpc2", etc.)
+        /// Gets feature names ("error", "lpc1", "lpc2", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions => 
             new[] { "error" }.Concat(Enumerable.Range(1, _order).Select(i => "lpc" + i)).ToList();
@@ -39,9 +39,8 @@ namespace NWaves.FeatureExtractors
         protected readonly float[] _cc;
 
         /// <summary>
-        /// Construct extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public LpcExtractor(LpcOptions options) : base(options)
         {
             _order = options.LpcOrder;
@@ -55,7 +54,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// <para>Compute LPC vector in one frame.</para>
+        /// <para>Computes LPC vector in one frame.</para>
         /// <para>
         /// Note:
         ///     The first LP coefficient is always equal to 1.0. 
@@ -80,12 +79,12 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Does the extractor support parallelization. Returns true always.
+        /// Returns true, since <see cref="LpcExtractor"/> always supports parallelization.
         /// </summary>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Thread-safe copy of the extractor for parallel computations.
+        /// Creates thread-safe copy of the extractor for parallel computations.
         /// </summary>
         public override FeatureExtractor ParallelCopy() => 
             new LpcExtractor(new LpcOptions

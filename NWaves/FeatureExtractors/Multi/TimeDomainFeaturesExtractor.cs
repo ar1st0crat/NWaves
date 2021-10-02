@@ -8,7 +8,7 @@ using NWaves.Signals;
 namespace NWaves.FeatureExtractors.Multi
 {
     /// <summary>
-    /// Extractor of time-domain features.
+    /// Represents extractor of time-domain features (energy, rms, ZCR, entropy).
     /// </summary>
     public class TimeDomainFeaturesExtractor : FeatureExtractor
     {
@@ -18,7 +18,7 @@ namespace NWaves.FeatureExtractors.Multi
         public const string FeatureSet = "energy, rms, zcr, entropy";
 
         /// <summary>
-        /// String annotations (or simply names) of features.
+        /// Gets string annotations (or simply names) of features.
         /// </summary>
         public override List<string> FeatureDescriptions { get; }
 
@@ -33,9 +33,8 @@ namespace NWaves.FeatureExtractors.Multi
         protected readonly Dictionary<string, object> _parameters;
 
         /// <summary>
-        /// Construct the extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public TimeDomainFeaturesExtractor(MultiFeatureOptions options) : base(options)
         {
             var featureList = options.FeatureList;
@@ -80,7 +79,7 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Add user-defined feature to extractor's list (and the routine for its calculation).
+        /// Adds user-defined feature to extractor's list (and the routine for its calculation).
         /// </summary>
         /// <param name="name">Feature name/annotation</param>
         /// <param name="algorithm">Routine for calculation of the feature</param>
@@ -92,7 +91,7 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// <para>Compute feature vectors from <paramref name="samples"/> and store them in <paramref name="vectors"/>.</para>
+        /// <para>Computes feature vectors from <paramref name="samples"/> and stores them in <paramref name="vectors"/>.</para>
         /// <para>Returns the number of actually computed feature vectors.</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>
@@ -119,6 +118,7 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
+        /// <para>Processes one frame in block of data at each step.</para>
         /// <para><see cref="TimeDomainFeaturesExtractor"/> does not provide this function.</para>
         /// <para>Call <see cref="ComputeFrom(float[], int, int, IList{float[]})"/> method instead.</para>
         /// </summary>
@@ -130,12 +130,12 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Does the extractor support parallelization. Returns true always.
+        /// Returns true, since <see cref="TimeDomainFeaturesExtractor"/> always supports parallelization.
         /// </summary>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Thread-safe copy of the extractor for parallel computations.
+        /// Creates thread-safe copy of the extractor for parallel computations.
         /// </summary>
         public override FeatureExtractor ParallelCopy()
         {

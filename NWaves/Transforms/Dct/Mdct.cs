@@ -3,7 +3,7 @@
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class representing Modified Discrete Cosine Transform (MDCT).
+    /// Represents Modified Discrete Cosine Transform (MDCT).
     /// </summary>
     public class Mdct : IDct
     {
@@ -18,12 +18,12 @@ namespace NWaves.Transforms
         private readonly float[] _temp;
 
         /// <summary>
-        /// Size of MDCT.
+        /// Gets size of MDCT.
         /// </summary>
         public int Size => _dct.Size;
 
         /// <summary>
-        /// Construct <see cref="Mdct"/> of given <paramref name="dctSize"/>.
+        /// Constructs <see cref="Mdct"/> of given <paramref name="dctSize"/>.
         /// </summary>
         /// <param name="dctSize">Size of MDCT</param>
         /// <param name="dct">Internal DCT transformer (by default, <see cref="Dct4"/>)</param>
@@ -34,7 +34,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do MDCT. 
+        /// Does MDCT. 
         /// Length of <paramref name="input"/> must be equal to 2*<see cref="Mdct.Size"/>. 
         /// Length of <paramref name="output"/> must be equal to <see cref="Mdct.Size"/>. 
         /// </summary>
@@ -57,7 +57,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized MDCT.
+        /// Does normalized MDCT.
         /// Length of <paramref name="input"/> must be equal to 2*<see cref="Mdct.Size"/>. 
         /// Length of <paramref name="output"/> must be equal to <see cref="Mdct.Size"/>. 
         /// </summary>
@@ -72,7 +72,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Inverse MDCT.
+        /// Does Inverse MDCT.
         /// Length of <paramref name="input"/> must be equal to <see cref="Mdct.Size"/>. 
         /// Length of <paramref name="output"/> must be equal to 2*<see cref="Mdct.Size"/>. 
         /// </summary>
@@ -103,7 +103,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Inverse MDCT.
+        /// Does normalized Inverse MDCT.
         /// Length of <paramref name="input"/> must be equal to <see cref="Mdct.Size"/>. 
         /// Length of <paramref name="output"/> must be equal to 2*<see cref="Mdct.Size"/>. 
         /// </summary>

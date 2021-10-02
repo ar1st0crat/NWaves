@@ -4,7 +4,7 @@ using NWaves.Utils;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class representing Echo audio effect.
+    /// Represents Echo audio effect.
     /// </summary>
     public class EchoEffect : AudioEffect
     {
@@ -38,7 +38,7 @@ namespace NWaves.Effects
         public float Feedback { get; set; }
 
         /// <summary>
-        /// Construct <see cref="EchoEffect"/>.
+        /// Constructs <see cref="EchoEffect"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="delay">Delay (in seconds)</param>
@@ -67,7 +67,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
@@ -82,7 +82,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {

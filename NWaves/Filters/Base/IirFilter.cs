@@ -133,12 +133,11 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
+        /// Applies filter to entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
-        /// <param name="signal">Input signal</param>
+        /// <param name="signal">Signal</param>
         /// <param name="method">Filtering method</param>
-        public override DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                               FilteringMethod method = FilteringMethod.Auto)
+        public override DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto)
         {
             switch (method)
             {

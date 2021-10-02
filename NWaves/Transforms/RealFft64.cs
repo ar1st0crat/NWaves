@@ -4,7 +4,7 @@ using System;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// <para>Class representing Complex Fast Fourier Transform (for real-valued input, 64-bit):</para>
+    /// <para>Represents Complex Fast Fourier Transform (for real-valued input, 64-bit):</para>
     /// <list type="bullet">
     ///     <item>Direct FFT for real-valued input</item>
     ///     <item>Inverse FFT with real-valued output</item>
@@ -15,7 +15,7 @@ namespace NWaves.Transforms
     public class RealFft64
     {
         /// <summary>
-        /// FFT size.
+        /// Gets FFT size.
         /// </summary>
         public int Size => _fftSize * 2;
 
@@ -45,7 +45,7 @@ namespace NWaves.Transforms
         private readonly double[] _im;
 
         /// <summary>
-        /// Construct FFT transformer with given <paramref name="size"/>. FFT size must be a power of two.
+        /// Constructs FFT transformer with given <paramref name="size"/>. FFT size must be a power of two.
         /// </summary>
         /// <param name="size">FFT size</param>
         public RealFft64(int size)
@@ -88,7 +88,7 @@ namespace NWaves.Transforms
 
         /// <summary>
         /// <para>
-        /// Do Fast Fourier Transform: 
+        /// Does Fast Fourier Transform: 
         /// real <paramref name="input"/> -> complex (<paramref name="re"/>, <paramref name="im"/>).
         /// </para>
         /// </summary>
@@ -174,7 +174,7 @@ namespace NWaves.Transforms
 
         /// <summary>
         /// <para>
-        /// Do Inverse Fast Fourier Transform: 
+        /// Does Inverse Fast Fourier Transform: 
         /// complex (<paramref name="re"/>, <paramref name="im"/>) -> real <paramref name="output"/>.
         /// </para>
         /// </summary>
@@ -256,7 +256,7 @@ namespace NWaves.Transforms
 
         /// <summary>
         /// <para>
-        /// Do normalized Inverse Fast Fourier Transform: 
+        /// Does normalized Inverse Fast Fourier Transform: 
         /// complex (<paramref name="re"/>, <paramref name="im"/>) -> real <paramref name="output"/>.
         /// </para>
         /// </summary>
@@ -338,7 +338,7 @@ namespace NWaves.Transforms
 
         /// <summary>
         /// <para>
-        /// Do Fast Fourier Transform: 
+        /// Does Fast Fourier Transform: 
         /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
         /// </para>
         /// <para><paramref name="inIm"/> is ignored.</para>
@@ -354,7 +354,7 @@ namespace NWaves.Transforms
 
         /// <summary>
         /// <para>
-        /// Do normalized Fast Fourier Transform: 
+        /// Does normalized Fast Fourier Transform: 
         /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
         /// </para>
         /// <para><paramref name="inIm"/> is ignored.</para>
@@ -370,7 +370,7 @@ namespace NWaves.Transforms
 
         /// <summary>
         /// <para>
-        /// Do Inverse Fast Fourier Transform: 
+        /// Does Inverse Fast Fourier Transform: 
         /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
         /// </para>
         /// <para><paramref name="outIm"/> is ignored.</para>
@@ -386,7 +386,7 @@ namespace NWaves.Transforms
 
         /// <summary>
         /// <para>
-        /// Do normalized Inverse Fast Fourier Transform: 
+        /// Does normalized Inverse Fast Fourier Transform: 
         /// complex (<paramref name="inRe"/>, <paramref name="inIm"/>) -> complex(<paramref name="outRe"/>, <paramref name="outIm"/>).
         /// </para>
         /// <para><paramref name="outIm"/> is ignored.</para>
@@ -403,7 +403,7 @@ namespace NWaves.Transforms
 #if NET50
         /// <summary>
         /// <para>
-        /// Do Fast Fourier Transform: 
+        /// Does Fast Fourier Transform: 
         /// real <paramref name="input"/> -> complex (<paramref name="re"/>, <paramref name="im"/>).
         /// </para>
         /// </summary>
@@ -489,7 +489,7 @@ namespace NWaves.Transforms
 
         /// <summary>
         /// <para>
-        /// Do Inverse Fast Fourier Transform: 
+        /// Does Inverse Fast Fourier Transform: 
         /// complex (<paramref name="re"/>, <paramref name="im"/>) -> real <paramref name="output"/>.
         /// </para>
         /// </summary>
@@ -571,7 +571,7 @@ namespace NWaves.Transforms
 
         /// <summary>
         /// <para>
-        /// Do normalized Inverse Fast Fourier Transform: 
+        /// Does normalized Inverse Fast Fourier Transform: 
         /// complex (<paramref name="re"/>, <paramref name="im"/>) -> real <paramref name="output"/>.
         /// </para>
         /// </summary>

@@ -6,7 +6,7 @@ using NWaves.Utils;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class representing pitch shift audio effect 
+    /// Represents pitch shift audio effect 
     /// based on overlap-add filtering and pitch shifting in frequency domain.
     /// </summary>
     public class PitchShiftVocoderEffect : OverlapAddFilter
@@ -42,7 +42,7 @@ namespace NWaves.Effects
         private readonly float[] _phaseTotal;
 
         /// <summary>
-        /// Construct <see cref="PitchShiftVocoderEffect"/>.
+        /// Constructs <see cref="PitchShiftVocoderEffect"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="shift">Pitch shift ratio</param>
@@ -63,7 +63,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one spectrum at each Overlap-Add STFT step.
+        /// Processes one spectrum at each Overlap-Add STFT step.
         /// </summary>
         /// <param name="re">Real parts of input spectrum</param>
         /// <param name="im">Imaginary parts of input spectrum</param>
@@ -115,7 +115,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {

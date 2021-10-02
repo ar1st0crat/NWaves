@@ -9,12 +9,12 @@ using NWaves.Signals;
 namespace NWaves.Audio
 {
     /// <summary>
-    /// <para>PCM WAV container.</para>
+    /// <para>Represents PCM WAV container.</para>
     /// <para>
-    /// <see cref="WaveFile"/> is not intended to be a wrapper around the stream, or to acquire any resource 
-    /// (it doesn't affect the underlying stream). It's more like a constructor of signals in memory based on data 
-    /// from the stream, and its lifetime is not synchronized with the stream whatsoever. 
-    /// The synonym name of this class could be also "WaveContainer".
+    /// <see cref="WaveFile"/> is essentially a constructor of signals in memory based on data 
+    /// from the WAV stream, and its lifetime is not synchronized with the stream whatsoever. 
+    /// <see cref = "WaveFile" /> is not intended to be a wrapper around the stream, or to acquire any resource
+    /// (it doesn't affect the underlying stream). The synonym name of this class could be also WaveContainer.
     /// </para>
     /// </summary>
     public class WaveFile : IAudioContainer

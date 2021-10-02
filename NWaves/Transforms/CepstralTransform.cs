@@ -5,7 +5,7 @@ using System;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// <para>Class representing Cepstral Transform (CT):</para>
+    /// <para>Represents Cepstral Transform (CT):</para>
     /// <list type="number">
     ///     <item>Direct Complex CT (complex cepstrum)</item>
     ///     <item>Inverse Complex CT</item>
@@ -49,7 +49,7 @@ namespace NWaves.Transforms
         private readonly double[] _unwrapped;
 
         /// <summary>
-        /// Construct cepstral transformer. 
+        /// Constructs cepstral transformer. 
         /// If <paramref name="cepstrumSize"/> exceeds <paramref name="fftSize"/>, 
         /// FFT size will be recalculated as the nearest power of 2 to cepstrum size.
         /// </summary>
@@ -75,7 +75,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Evaluate complex cepstrum as:
+        /// Evaluates complex cepstrum as:
         /// <code>
         ///    Real{IFFT(log(abs(FFT(x)) + unwrapped_phase))}
         /// </code>
@@ -156,7 +156,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Evaluate inverse complex cepstrum of <paramref name="input"/> (removing <paramref name="delay"/> samples).
+        /// Evaluates inverse complex cepstrum of <paramref name="input"/> (removing <paramref name="delay"/> samples).
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="cepstrum">Inverse complex cepstrum</param>
@@ -204,7 +204,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Evaluate real cepstrum as:
+        /// Evaluates real cepstrum as:
         /// <code>
         ///    real{IFFT(log(abs(FFT(x))))}
         /// </code>
@@ -251,7 +251,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Evaluate power cepstrum as: 
+        /// Evaluates power cepstrum as: 
         /// <code>
         ///    power_cepstrum = 4 * real_cepstrum ^ 2
         /// </code>
@@ -272,7 +272,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Evaluate phase cepstrum as: 
+        /// Evaluates phase cepstrum as: 
         /// <code>
         ///     phase_cepstrum = (complex_cepstrum - reversed_complex_cepstrum) ^ 2
         /// </code>
@@ -296,7 +296,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do cepstral transform. 
+        /// Does cepstral transform. 
         /// It simply calls <see cref="ComplexCepstrum(float[], float[], bool)"/> ignoring the delay parameter.
         /// </summary>
         /// <param name="input">Input data</param>
@@ -304,7 +304,7 @@ namespace NWaves.Transforms
         public void Direct(float[] input, float[] output) => ComplexCepstrum(input, output, false);
 
         /// <summary>
-        /// Do normalized cepstral transform. 
+        /// Does normalized cepstral transform. 
         /// It simply calls <see cref="ComplexCepstrum(float[], float[], bool)"/> ignoring the delay parameter.
         /// </summary>
         /// <param name="input">Input data</param>
@@ -312,7 +312,7 @@ namespace NWaves.Transforms
         public void DirectNorm(float[] input, float[] output) => ComplexCepstrum(input, output);
 
         /// <summary>
-        /// Do inverse cepstral transform. 
+        /// Does inverse cepstral transform. 
         /// It simply calls <see cref="InverseComplexCepstrum(float[], float[], bool, double)"/> ignoring the delay parameter.
         /// </summary>
         /// <param name="input">Input data</param>
@@ -320,7 +320,7 @@ namespace NWaves.Transforms
         public void Inverse(float[] input, float[] output) => InverseComplexCepstrum(input, output, false);
 
         /// <summary>
-        /// Do normalized inverse cepstral transform. 
+        /// Does normalized inverse cepstral transform. 
         /// It simply calls <see cref="InverseComplexCepstrum(float[], float[], bool, double)"/> ignoring the delay parameter.
         /// </summary>
         /// <param name="input">Input data</param>

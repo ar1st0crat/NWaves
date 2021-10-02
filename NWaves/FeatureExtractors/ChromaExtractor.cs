@@ -9,12 +9,12 @@ using System.Linq;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Chroma features extractor.
+    /// Represents chroma features extractor.
     /// </summary>
     public class ChromaExtractor : FeatureExtractor
     {
         /// <summary>
-        /// <para>Feature names</para>
+        /// <para>Gets feature names:</para>
         /// <para>"C", "C#", "D", "D#", etc. if chroma count == 12 and baseC == true; </para>
         /// <para>"A", "A#", "B", "C",  etc. if chroma count == 12 and baseC == false; </para>
         /// <para>"chroma1", "chroma2", etc. otherwise.</para>
@@ -37,7 +37,7 @@ namespace NWaves.FeatureExtractors
         protected readonly float[][] _filterBank;
 
         /// <summary>
-        /// Filterbank matrix of dimension [ChromaCount * (blockSize/2 + 1)].
+        /// Gets filterbank matrix of dimension [ChromaCount * (blockSize/2 + 1)].
         /// </summary>
         public float[][] FilterBank => _filterBank;
 
@@ -57,9 +57,8 @@ namespace NWaves.FeatureExtractors
         protected readonly ChromaOptions _options;
 
         /// <summary>
-        /// Construct extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public ChromaExtractor(ChromaOptions options) : base(options)
         {
             _options = options;
@@ -81,7 +80,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Compute chroma feature vector in one frame.
+        /// Computes chroma feature vector in one frame.
         /// </summary>
         /// <param name="block">Block of data</param>
         /// <param name="features">Features (one chroma feature vector) computed in the block</param>
@@ -93,12 +92,12 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Does the extractor support parallelization. Returns true always.
+        /// Returns true, since <see cref="ChromaExtractor"/> always supports parallelization.
         /// </summary>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Thread-safe copy of the extractor for parallel computations.
+        /// Creates thread-safe copy of the extractor for parallel computations.
         /// </summary>
         public override FeatureExtractor ParallelCopy() => new ChromaExtractor(_options);
     }

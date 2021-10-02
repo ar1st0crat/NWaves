@@ -9,7 +9,7 @@ namespace NWaves.Effects
     // it's just a set of vibrato effects.
  
     /// <summary>
-    /// Class representing Chorus audio effect.
+    /// Represents Chorus audio effect.
     /// </summary>
     public class ChorusEffect : AudioEffect
     {
@@ -52,7 +52,7 @@ namespace NWaves.Effects
         private readonly VibratoEffect[] _voices;
 
         /// <summary>
-        /// Construct <see cref="ChorusEffect"/>.
+        /// Constructs <see cref="ChorusEffect"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="lfoFrequencies">LFO frequencies for each voice</param>
@@ -72,7 +72,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Construct <see cref="ChorusEffect"/> from <paramref name="lfos"/>.
+        /// Constructs <see cref="ChorusEffect"/> from <paramref name="lfos"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="lfos">LFOs (in the form of signal builders)</param>
@@ -90,7 +90,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
@@ -101,7 +101,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {

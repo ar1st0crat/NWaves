@@ -23,6 +23,9 @@ namespace NWaves.FeatureExtractors.Multi
     /// is that former calculates spectral features from total energy in frequency BANDS 
     /// while latter analyzes signal energy at particular frequencies (spectral bins).
     /// </para>
+    /// <para>
+    /// Check FeatureSet and HarmonicSet to see the full list of supported features.
+    /// </para>
     /// </summary>
     public class Mpeg7SpectralFeaturesExtractor : FeatureExtractor
     {
@@ -37,7 +40,7 @@ namespace NWaves.FeatureExtractors.Multi
         public const string HarmonicSet = "hcentroid, hspread, inharmonicity, oer, t1+t2+t3";
 
         /// <summary>
-        /// String annotations (or simply names) of features.
+        /// Gets string annotations (or simply names) of features.
         /// </summary>
         public override List<string> FeatureDescriptions { get; }
 
@@ -117,9 +120,8 @@ namespace NWaves.FeatureExtractors.Multi
         protected Action<float[], int[], float[], int, float> _peaksDetector;
 
         /// <summary>
-        /// Construct extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public Mpeg7SpectralFeaturesExtractor(MultiFeatureOptions options) : base(options)
         {
             var featureList = options.FeatureList;
@@ -228,7 +230,7 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// <para>Add set of harmonic features to extractor's list.</para>
+        /// <para>Adds set of harmonic features to extractor's list.</para>
         /// <para>
         /// <paramref name="pitchEstimator"/> is the function that should be used for pitch estimation. 
         /// By default, method <see cref="Pitch.FromSpectralPeaks(float[], int, float, float)"/> is called.
@@ -316,7 +318,7 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Add user-defined harmonic feature to extractor's list (and the routine for its calculation).
+        /// Adds user-defined harmonic feature to extractor's list (and the routine for its calculation).
         /// </summary>
         /// <param name="name">Feature name/annotation</param>
         /// <param name="algorithm">Routine for calculation of the feature</param>
@@ -333,7 +335,7 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Set array of precomputed pitches
+        /// Sets array of precomputed pitches.
         /// </summary>
         /// <param name="pitchTrack">Array of pitches computed elsewhere</param>
         public void SetPitchTrack(float[] pitchTrack)
@@ -342,7 +344,7 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// <para>Compute MPEG-7 feature vectors from <paramref name="samples"/> and store them in <paramref name="vectors"/>.</para>
+        /// <para>Computes MPEG-7 feature vectors from <paramref name="samples"/> and stores them in <paramref name="vectors"/>.</para>
         /// <para>Returns the number of actually computed feature vectors</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>
@@ -357,7 +359,7 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Compute MPEG-7 features in one frame
+        /// Computes MPEG-7 features in one frame.
         /// </summary>
         /// <param name="block">Block of data</param>
         /// <param name="features">Features (one feature vector) computed in the block</param>
@@ -403,19 +405,23 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// <para>Does the extractor support parallelization.</para>
-        /// <para>
-        /// Returns false if array of pitches was set manually. 
+        /// Returns false if array of pitches was set manually, 
+        /// since in this case <see cref="Mpeg7SpectralFeaturesExtractor"/> does not support parallelization. 
         /// Returns true in all other cases.
-        /// </para>
         /// </summary>
         public override bool IsParallelizable() => _pitchTrack is null;
 
         /// <summary>
-        /// Thread-safe copy of the extractor for parallel computations.
+        /// <para>Creates thread-safe copy of the extractor for parallel computations.</para>
+        /// <para>Returns null if the extractor does not support parallelization.</para>
         /// </summary>
         public override FeatureExtractor ParallelCopy()
         {
+            if (!IsParallelizable())
+            {
+                return null;
+            }
+
             var spectralFeatureSet = string.Join(",", FeatureDescriptions.Take(_extractors.Count));
             var options = new MultiFeatureOptions
             {

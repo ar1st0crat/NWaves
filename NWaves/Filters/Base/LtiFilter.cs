@@ -28,12 +28,11 @@ namespace NWaves.Filters.Base
         //
 
         /// <summary>
-        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
+        /// Applies LTI filter to entire <paramref name="signal"/> and returns new filtered signal.
         /// </summary>
-        /// <param name="signal">Input signal</param>
+        /// <param name="signal">Signal</param>
         /// <param name="method">Filtering method</param>
-        public abstract DiscreteSignal ApplyTo(DiscreteSignal signal,
-                                               FilteringMethod method = FilteringMethod.Auto);
+        public abstract DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto);
 
         /// <summary>
         /// Processes one sample.

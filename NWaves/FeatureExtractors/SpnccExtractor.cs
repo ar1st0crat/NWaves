@@ -10,12 +10,12 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Simplified Power-Normalized Cepstral Coefficients (SPNCC) extractor.
+    /// Represents Simplified Power-Normalized Cepstral Coefficients (SPNCC) extractor.
     /// </summary>
     public class SpnccExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Feature names (simply "spncc0", "spncc1", "spncc2", etc.)
+        /// Gets feature names (simply "spncc0", "spncc1", "spncc2", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions
         {
@@ -28,12 +28,12 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Forgetting factor in formula (15) in [Kim, Stern, 2016].
+        /// Gets or sets the forgetting factor in formula (15) in [Kim, Stern, 2016].
         /// </summary>
         public float LambdaMu { get; set; } = 0.999f;
 
         /// <summary>
-        /// Filterbank (gammatone by default).
+        /// Gets filterbank (gammatone by default).
         /// </summary>
         public float[][] FilterBank { get; }
 
@@ -78,9 +78,8 @@ namespace NWaves.FeatureExtractors
         protected float _mean = 4e07f;
 
         /// <summary>
-        /// Construct extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public SpnccExtractor(PnccOptions options) : base(options)
         {
             FeatureCount = options.FeatureCount;
@@ -115,7 +114,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// <para>Compute S(implified)PNCC vector in one frame according to [Kim and Stern, 2016].</para>
+        /// <para>Computes S(implified)PNCC vector in one frame according to [Kim and Stern, 2016].</para>
         /// <para>
         /// General algorithm:
         /// <list type="number">
@@ -189,7 +188,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Reset extractor
+        /// Resets extractor.
         /// </summary>
         public override void Reset()
         {

@@ -3,7 +3,7 @@ using System;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class representing Discrete Cosine Transform of Type-II.
+    /// Represents Discrete Cosine Transform of Type-II.
     /// </summary>
     public class Dct2 : IDct
     {
@@ -18,13 +18,13 @@ namespace NWaves.Transforms
         private readonly float[][] _dctMtxInv;
 
         /// <summary>
-        /// Size of DCT-II.
+        /// Gets size of DCT-II.
         /// </summary>
         public int Size => _dctSize;
         private readonly int _dctSize;
 
         /// <summary>
-        /// Construct <see cref="Dct2"/> of given <paramref name="dctSize"/> and precalculate DCT matrices.
+        /// Constructs <see cref="Dct2"/> of given <paramref name="dctSize"/> and precalculates DCT matrices.
         /// </summary>
         /// <param name="dctSize">Size of DCT-II</param>
         public Dct2(int dctSize)
@@ -59,7 +59,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do DCT-II.
+        /// Does DCT-II.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -77,7 +77,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized DCT-II.
+        /// Does normalized DCT-II.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -102,7 +102,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Inverse DCT-II.
+        /// Does Inverse DCT-II.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
@@ -120,7 +120,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do normalized Inverse DCT-II.
+        /// Does normalized Inverse DCT-II.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>

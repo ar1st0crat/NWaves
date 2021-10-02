@@ -11,7 +11,7 @@
         int Size { get; }
 
         /// <summary>
-        /// Direct transform.
+        /// Does direct transform.
         /// </summary>
         /// <param name="inRe">Input data (real parts)</param>
         /// <param name="inIm">Input data (imaginary parts)</param>
@@ -20,7 +20,7 @@
         void Direct(float[] inRe, float[] inIm, float[] outRe, float[] outIm);
 
         /// <summary>
-        /// Direct normalized transform.
+        /// Does normalized direct transform.
         /// </summary>
         /// <param name="inRe">Input data (real parts)</param>
         /// <param name="inIm">Input data (imaginary parts)</param>
@@ -29,7 +29,7 @@
         void DirectNorm(float[] inRe, float[] inIm, float[] outRe, float[] outIm);
 
         /// <summary>
-        /// Inverse transform.
+        /// Does inverse transform.
         /// </summary>
         /// <param name="inRe">Input data (real parts)</param>
         /// <param name="inIm">Input data (imaginary parts)</param>
@@ -38,7 +38,7 @@
         void Inverse(float[] inRe, float[] inIm, float[] outRe, float[] outIm);
 
         /// <summary>
-        /// Inverse normalized transform.
+        /// Does normalized inverse transform.
         /// </summary>
         /// <param name="inRe">Input data (real parts)</param>
         /// <param name="inIm">Input data (imaginary parts)</param>

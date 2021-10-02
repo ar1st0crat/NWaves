@@ -8,12 +8,12 @@ using NWaves.Windows;
 namespace NWaves.Transforms
 {
     /// <summary>
-    /// Class representing Short-Time Fourier Transform.
+    /// Represents Short-Time Fourier Transform.
     /// </summary>
     public class Stft
     {
         /// <summary>
-        /// FFT size (number of samples).
+        /// Gets FFT size.
         /// </summary>
         public int Size => _fftSize;
         private readonly int _fftSize;
@@ -44,7 +44,7 @@ namespace NWaves.Transforms
         private readonly float[] _windowSamples;
 
         /// <summary>
-        /// Construct STFT transformer.
+        /// Constructs STFT transformer.
         /// </summary>
         /// <param name="windowSize">Size of analysis window</param>
         /// <param name="hopSize">Hop (overlap) size</param>
@@ -62,7 +62,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do STFT of an <paramref name="input"/>. 
+        /// Does STFT of an <paramref name="input"/>. 
         /// Returns list of computed spectra (real and imaginary parts) in time.
         /// </summary>
         /// <param name="input">Input data</param>
@@ -112,7 +112,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do STFT of a <paramref name="signal"/>. 
+        /// Does STFT of a <paramref name="signal"/>. 
         /// Returns list of computed spectra (real and imaginary parts) in time.
         /// </summary>
         /// <param name="signal">Input signal</param>
@@ -122,7 +122,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Do Inverse STFT from list of spectra <paramref name="stft"/>.
+        /// Does Inverse STFT from list of spectra <paramref name="stft"/>.
         /// </summary>
         /// <param name="stft">List of spectra (real and imaginary parts)</param>
         /// <param name="perfectReconstruction">Perfect reconstruction mode</param>
@@ -226,7 +226,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Compute spectrogram. 
+        /// Computes spectrogram. 
         /// The spectrogram is essentially a list of power spectra in time.
         /// </summary>
         /// <param name="input">Input data</param>
@@ -276,7 +276,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Compute spectrogram. 
+        /// Computes spectrogram. 
         /// The spectrogram is essentially a list of power spectra in time.
         /// </summary>
         /// <param name="signal">Input signal</param>
@@ -287,7 +287,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Compute averaged periodogram (used, for example, in Welch method). 
+        /// Computes averaged periodogram (used, for example, in Welch method). 
         /// This method is memory-efficient since it doesn't store all spectra in memory.
         /// </summary>
         /// <param name="input">Input data</param>
@@ -336,7 +336,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Compute spectrogram in the form of list of magnitudes and phases from <paramref name="input"/>.
+        /// Computes spectrogram in the form of list of magnitudes and phases from <paramref name="input"/>.
         /// </summary>
         /// <param name="input">Input data</param>
         public MagnitudePhaseList MagnitudePhaseSpectrogram(float[] input)
@@ -401,7 +401,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Compute spectrogram in the form of list of magnitudes and phases from <paramref name="signal"/>.
+        /// Computes spectrogram in the form of list of magnitudes and phases from <paramref name="signal"/>.
         /// </summary>
         /// <param name="signal">Input signal</param>
         public MagnitudePhaseList MagnitudePhaseSpectrogram(DiscreteSignal signal)
@@ -410,7 +410,7 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Reconstruct samples from <paramref name="spectrogram"/> in the form of list of magnitudes and phases.
+        /// Reconstructs samples from <paramref name="spectrogram"/> in the form of list of magnitudes and phases.
         /// </summary>
         /// <param name="spectrogram">Spectrogram in the form of list of magnitudes and phases</param>
         /// <param name="perfectReconstruction">Perfect reconstruction mode</param>
@@ -504,7 +504,7 @@ namespace NWaves.Transforms
     }
 
     /// <summary>
-    /// Spectrogram in the form of list of magnitudes and phases.
+    /// Represents spectrogram in the form of list of magnitudes and phases.
     /// </summary>
     public struct MagnitudePhaseList
     {

@@ -1,7 +1,7 @@
 ﻿namespace NWaves.Operations.Tsm
 {
     /// <summary>
-    /// Time scale modification algorithms.
+    /// Defines time scale modification algorithms.
     /// </summary>
     public enum TsmAlgorithm
     {

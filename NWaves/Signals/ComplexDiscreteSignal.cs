@@ -65,7 +65,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Construct complex signal from collections of <paramref name="real"/> and <paramref name="imag"/> parts.
+        /// Constructs complex signal from collections of <paramref name="real"/> and <paramref name="imag"/> parts.
         /// </summary>
         /// <param name="samplingRate">Sampling rate of the signal</param>
         /// <param name="real">Array of real parts of the complex-valued signal</param>
@@ -76,7 +76,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Construct signal from collection of <paramref name="samples"/> sampled at <paramref name="samplingRate"/>.
+        /// Constructs signal from collection of <paramref name="samples"/> sampled at <paramref name="samplingRate"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="samples">Collection of complex-valued samples</param>
@@ -86,7 +86,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Construct signal of given <paramref name="length"/> filled with specified values.
+        /// Constructs signal of given <paramref name="length"/> filled with specified values.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="length">Number of samples</param>
@@ -110,7 +110,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Construct signal from collection of integer <paramref name="samples"/> sampled at given <paramref name="samplingRate"/>.
+        /// Constructs signal from collection of integer <paramref name="samples"/> sampled at given <paramref name="samplingRate"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="samples">Collection of integer samples</param>
@@ -134,7 +134,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create deep copy of the signal.
+        /// Creates deep copy of the signal.
         /// </summary>
         public ComplexDiscreteSignal Copy()
         {
@@ -151,7 +151,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create the slice of the signal: 
+        /// Creates the slice of the signal: 
         /// <code>
         ///     var middle = signal[900, 1200];
         /// </code>
@@ -241,7 +241,7 @@ namespace NWaves.Signals
         #region overloaded operators
 
         /// <summary>
-        /// Create new signal by superimposing signals <paramref name="s1"/> and <paramref name="s2"/>. 
+        /// Creates new signal by superimposing signals <paramref name="s1"/> and <paramref name="s2"/>. 
         /// If sizes are different then the smaller signal is broadcast to fit the size of the larger signal.
         /// </summary>
         /// <param name="s1">First signal</param>
@@ -252,7 +252,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create new signal by adding <paramref name="constant"/> to signal <paramref name="s"/>.
+        /// Creates new signal by adding <paramref name="constant"/> to signal <paramref name="s"/>.
         /// </summary>
         /// <param name="s">Signal</param>
         /// <param name="constant">Constant to add to each sample</param>
@@ -262,7 +262,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create new signal by subtracting <paramref name="constant"/> from signal <paramref name="s"/>.
+        /// Creates new signal by subtracting <paramref name="constant"/> from signal <paramref name="s"/>.
         /// </summary>
         /// <param name="s">Signal</param>
         /// <param name="constant">Constant to subtract from each sample</param>
@@ -272,7 +272,7 @@ namespace NWaves.Signals
         }
 
         /// <summary>
-        /// Create new signal by multiplying <paramref name="s"/> by <paramref name="coeff"/> (amplification/attenuation).
+        /// Creates new signal by multiplying <paramref name="s"/> by <paramref name="coeff"/> (amplification/attenuation).
         /// </summary>
         /// <param name="s">Signal</param>
         /// <param name="coeff">Amplification/attenuation coefficient</param>

@@ -13,14 +13,14 @@ namespace NWaves.FeatureExtractors.Base
         int FeatureCount { get; }
 
         /// <summary>
-        /// <para>Compute feature vectors from <paramref name="samples"/>.</para>
+        /// <para>Computes feature vectors from <paramref name="samples"/>.</para>
         /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>
         List<float[]> ComputeFrom(float[] samples);
 
         /// <summary>
-        /// <para>Compute feature vectors from <paramref name="samples"/>.</para>
+        /// <para>Computes feature vectors from <paramref name="samples"/>.</para>
         /// <para>Returns the list of computed feature vectors or empty list, if the number of samples is less than the size of analysis frame.</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>
@@ -29,7 +29,7 @@ namespace NWaves.FeatureExtractors.Base
         List<float[]> ComputeFrom(float[] samples, int startSample, int endSample);
 
         /// <summary>
-        /// <para>Compute feature vectors from <paramref name="samples"/> and store them in <paramref name="vectors"/>.</para>
+        /// <para>Computes feature vectors from <paramref name="samples"/> and stores them in <paramref name="vectors"/>.</para>
         /// <para>Returns the number of actually computed feature vectors</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>
@@ -37,7 +37,7 @@ namespace NWaves.FeatureExtractors.Base
         int ComputeFrom(float[] samples, IList<float[]> vectors);
 
         /// <summary>
-        /// <para>Compute feature vectors from <paramref name="samples"/> and store them in <paramref name="vectors"/>.</para>
+        /// <para>Computes feature vectors from <paramref name="samples"/> and stores them in <paramref name="vectors"/>.</para>
         /// <para>Returns the number of actually computed feature vectors</para>
         /// </summary>
         /// <param name="samples">Array of samples</param>
@@ -47,7 +47,7 @@ namespace NWaves.FeatureExtractors.Base
         int ComputeFrom(float[] samples, int startSample, int endSample, IList<float[]> vectors);
 
         /// <summary>
-        /// Reset feature extractor.
+        /// Resets feature extractor.
         /// </summary>
         void Reset();
     }

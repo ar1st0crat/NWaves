@@ -7,8 +7,8 @@ using System.Linq;
 namespace NWaves.Effects.Stereo
 {
     /// <summary>
-    /// Class representing binaural panning audio effect 
-    /// (HRIR/BRIR interpolation + crossover filter (optional)).
+    /// Represents binaural panning audio effect 
+    /// (HRIR/BRIR interpolation + optional crossover filter).
     /// </summary>
     public class BinauralPanEffect : StereoEffect
     {
@@ -96,7 +96,7 @@ namespace NWaves.Effects.Stereo
         private float _elevation;
 
         /// <summary>
-        /// <para>Construct <see cref="BinauralPanEffect"/>.</para>
+        /// <para>Constructs <see cref="BinauralPanEffect"/>.</para>
         /// <para>
         /// For example (CIPIC):
         /// <code>
@@ -163,7 +163,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Turn on/off crossover filtering.
+        /// Turns on/off crossover filtering.
         /// </summary>
         public void UseCrossover(bool useCrossover)
         {
@@ -171,7 +171,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Update frequency of the crossover filter (works only for BiQuadFilters). 
+        /// Updates frequency of the crossover filter (works only for BiQuadFilters). 
         /// Filters of other types / parameters can be passed to constructor.
         /// </summary>
         /// <param name="freq">Frequency</param>
@@ -200,7 +200,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Set custom crossover filters.
+        /// Sets custom crossover filters.
         /// </summary>
         /// <param name="lowpassLeft">Crossover filter (low-pass part) for left channel</param>
         /// <param name="highpassLeft">Crossover filter (high-pass part) for left channel</param>
@@ -218,7 +218,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Update HRIR (interpolate it using HRIR tables).
+        /// Updates HRIR (interpolates it using HRIR tables).
         /// </summary>
         /// <param name="azimuth">Azimuth (theta)</param>
         /// <param name="elevation">Elevation (phi)</param>
@@ -320,7 +320,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Process one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
+        /// Processes one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
         /// </summary>
         /// <param name="left">Input sample in left channel</param>
         /// <param name="right">Input sample in right channel</param>
@@ -366,7 +366,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Reset binaural pan effect.
+        /// Resets binaural pan effect.
         /// </summary>
         public override void Reset()
         {

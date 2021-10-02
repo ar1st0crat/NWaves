@@ -7,7 +7,7 @@ namespace NWaves.FeatureExtractors.Options
     public class LpccOptions : LpcOptions
     {
         /// <summary>
-        /// Number of liftered coefficients (by default, 22).
+        /// Gets or sets number of liftered coefficients (by default, 22).
         /// </summary>
         [DataMember]
         public int LifterSize { get; set; } = 22;

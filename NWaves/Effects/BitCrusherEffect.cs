@@ -4,7 +4,7 @@ using System;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class representing Bitcrusher (distortion) audio effect.
+    /// Represents Bitcrusher (distortion) audio effect.
     /// </summary>
     public class BitCrusherEffect : AudioEffect
     {
@@ -28,7 +28,7 @@ namespace NWaves.Effects
         private int _bitDepth;
 
         /// <summary>
-        /// Construct <see cref="BitCrusherEffect"/> with given <paramref name="bitDepth"/>.
+        /// Constructs <see cref="BitCrusherEffect"/> with given <paramref name="bitDepth"/>.
         /// </summary>
         /// <param name="bitDepth">Bit depth (number of bits)</param>
         public BitCrusherEffect(int bitDepth)
@@ -37,7 +37,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
@@ -48,7 +48,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {

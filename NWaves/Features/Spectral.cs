@@ -4,12 +4,12 @@ using System.Linq;
 namespace NWaves.Features
 {
     /// <summary>
-    /// Class providing methods for computing spectral features.
+    /// Provides methods for computing spectral features.
     /// </summary>
     public static class Spectral
     {
         /// <summary>
-        /// Compute spectral centroid.
+        /// Computes spectral centroid.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="frequencies">Center frequencies</param>
@@ -28,7 +28,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute spectral spread.
+        /// Computes spectral spread.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="frequencies">Center frequencies</param>
@@ -49,7 +49,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute spectral decrease.
+        /// Computes spectral decrease.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         public static float Decrease(float[] spectrum)
@@ -67,7 +67,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute spectral flatness.
+        /// Computes spectral flatness.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="minLevel">Amplitude threshold</param>
@@ -91,7 +91,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute spectral noiseness.
+        /// Computes spectral noiseness.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="frequencies">Center frequencies</param>
@@ -117,7 +117,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute spectral rolloff frequency.
+        /// Computes spectral rolloff frequency.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="frequencies">Center frequencies</param>
@@ -149,7 +149,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute spectral crest.
+        /// Computes spectral crest.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         public static float Crest(float[] spectrum)
@@ -173,7 +173,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute array of spectral contrasts in spectral bands.
+        /// Computes array of spectral contrasts in spectral bands.
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="frequencies">Center frequencies</param>
@@ -223,7 +223,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute spectral contrast in a spectral band with index <paramref name="bandNo"/>. 
+        /// Computes spectral contrast in a spectral band with index <paramref name="bandNo"/>. 
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         /// <param name="frequencies">Center frequencies</param>
@@ -263,7 +263,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// Compute Shannon entropy of a spectrum (spectrum is treated as p.d.f.)
+        /// Computes Shannon entropy of a spectrum (spectrum is treated as p.d.f.)
         /// </summary>
         /// <param name="spectrum">Spectrum</param>
         public static float Entropy(float[] spectrum)

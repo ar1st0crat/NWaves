@@ -3,27 +3,27 @@
 namespace NWaves.Effects.Stereo
 {
     /// <summary>
-    /// Class representing stereo panning audio effect.
+    /// Represents stereo panning audio effect.
     /// </summary>
     public class PanEffect : StereoEffect
     {
         /// <summary>
-        /// Pan value (must be in range [-1, 1]).
+        /// Pan value (must be in range [-1..1]).
         /// </summary>
         protected float _pan;
 
         /// <summary>
-        /// Pan value for calculations (in range [0, 1]).
+        /// Pan value for calculations (in range [0..1]).
         /// </summary>
         protected float _mappedPan;
 
         /// <summary>
-        /// Pan value for calculations in constant-power mode (in range [0, 1]).
+        /// Pan value for calculations in constant-power mode (in range [0..1]).
         /// </summary>
         protected float _constantPowerPan;
 
         /// <summary>
-        /// Gets or sets pan (in range [-1, 1]).
+        /// Gets or sets pan (in range [-1..1]).
         /// </summary>
         public float Pan
         { 
@@ -45,7 +45,7 @@ namespace NWaves.Effects.Stereo
         public PanRule PanRule { get; set; }
 
         /// <summary>
-        /// Construct <see cref="PanEffect"/>.
+        /// Constructs <see cref="PanEffect"/>.
         /// </summary>
         /// <param name="pan">Pan</param>
         /// <param name="panRule">Pan rule (pan law)</param>
@@ -56,7 +56,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Process one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
+        /// Processes one sample in each of two channels : [ input left , input right ] -> [ output left , output right ].
         /// </summary>
         /// <param name="left">Input sample in left channel</param>
         /// <param name="right">Input sample in right channel</param>
@@ -135,7 +135,7 @@ namespace NWaves.Effects.Stereo
         }
 
         /// <summary>
-        /// Reset stereo panning effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {

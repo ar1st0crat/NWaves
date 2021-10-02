@@ -6,12 +6,12 @@
     public interface ISampleGenerator
     {
         /// <summary>
-        /// Generate new sample.
+        /// Generates new sample.
         /// </summary>
         float NextSample();
 
         /// <summary>
-        /// Reset sample generator.
+        /// Resets sample generator.
         /// </summary>
         void Reset();
     }

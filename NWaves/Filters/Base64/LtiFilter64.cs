@@ -13,13 +13,6 @@ namespace NWaves.Filters.Base64
         public abstract TransferFunction Tf { get; protected set; }
 
         /// <summary>
-        /// Processes entire <paramref name="signal"/> and returns new filtered signal.
-        /// </summary>
-        /// <param name="signal">Input signal</param>
-        /// <param name="method">Filtering method</param>
-        public abstract double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto);
-
-        /// <summary>
         /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
@@ -29,5 +22,12 @@ namespace NWaves.Filters.Base64
         /// Resets LTI filter.
         /// </summary>
         public abstract void Reset();
+
+        /// <summary>
+        /// Applies filter to entire <paramref name="signal"/> and returns new filtered signal.
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="method">Filtering method</param>
+        public abstract double[] ApplyTo(double[] signal, FilteringMethod method = FilteringMethod.Auto);
     }
 }

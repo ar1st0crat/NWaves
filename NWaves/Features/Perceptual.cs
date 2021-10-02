@@ -3,12 +3,12 @@
 namespace NWaves.Features
 {
     /// <summary>
-    /// Class providing methods for computing perceptual audio features.
+    /// Provides methods for computing perceptual audio features.
     /// </summary>
     public static class Perceptual
     {
         /// <summary>
-        /// Compute perceptual loudness (the sum of specific loudnesses: N'(z) = E(z)^0.23).
+        /// Computes perceptual loudness (the sum of specific loudnesses: N'(z) = E(z)^0.23).
         /// </summary>
         /// <param name="spectralBands">Array of energies in given spectral bands</param>
         public static float Loudness(float[] spectralBands)
@@ -24,7 +24,7 @@ namespace NWaves.Features
         }
 
         /// <summary>
-        /// <para>Compute perceptual sharpness (essentially, the equivalent of spectral centroid).</para>
+        /// <para>Computes perceptual sharpness (essentially, the equivalent of spectral centroid).</para>
         /// </summary>
         /// <param name="spectralBands">Array of energies in given spectral bands</param>
         public static float Sharpness(float[] spectralBands)

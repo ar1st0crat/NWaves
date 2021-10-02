@@ -9,18 +9,18 @@ namespace NWaves.Effects.Base
     public abstract class AudioEffect : WetDryMixer, IFilter, IOnlineFilter
     {
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public abstract float Process(float sample);
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public abstract void Reset();
 
         /// <summary>
-        /// Process entire signal.
+        /// Applies effect to entire <paramref name="signal"/> and returns new processed signal.
         /// </summary>
         /// <param name="signal">Signal</param>
         /// <param name="method">Filtering method</param>

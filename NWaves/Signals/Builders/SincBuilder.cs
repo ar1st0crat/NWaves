@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace NWaves.Signals.Builders
 {
     /// <summary>
-    /// Builder of signal Sinc(x).
+    /// Represents builder of signal Sinc(x).
     /// <para>
     /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
     /// <list type="bullet">
@@ -34,7 +34,7 @@ namespace NWaves.Signals.Builders
         private double _frequency;
 
         /// <summary>
-        /// Construct <see cref="SincBuilder"/>.
+        /// Constructs <see cref="SincBuilder"/>.
         /// </summary>
         public SincBuilder()
         {
@@ -51,7 +51,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Generate new sample.
+        /// Generates new sample.
         /// </summary>
         public override float NextSample()
         {
@@ -63,7 +63,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Reset sample generator.
+        /// Resets sample generator.
         /// </summary>
         public override void Reset()
         {
@@ -71,7 +71,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Generate signal by generating all its samples one-by-one. 
+        /// Generates signal by generating all its samples one-by-one. 
         /// Frequency must be greater than zero.
         /// </summary>
         protected override DiscreteSignal Generate()

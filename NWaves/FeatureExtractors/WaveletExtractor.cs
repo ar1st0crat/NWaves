@@ -8,12 +8,12 @@ using System.Linq;
 namespace NWaves.FeatureExtractors
 {
     /// <summary>
-    /// Wavelet extractor.
+    /// Represents wavelet extractor.
     /// </summary>
     public class WaveletExtractor : FeatureExtractor
     {
         /// <summary>
-        /// Feature names (simply "w0", "w1", etc.)
+        /// Gets feature names (simply "w0", "w1", etc.)
         /// </summary>
         public override List<string> FeatureDescriptions =>
             Enumerable.Range(0, FeatureCount).Select(i => "w" + i).ToList();
@@ -39,9 +39,8 @@ namespace NWaves.FeatureExtractors
         protected readonly float[] _coeffs;
 
         /// <summary>
-        /// Construct extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public WaveletExtractor(WaveletOptions options) : base(options)
         {
             _blockSize = options.FwtSize > FrameSize ? options.FwtSize : MathUtils.NextPowerOfTwo(FrameSize);
@@ -56,7 +55,7 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Compute vector of FWT coefficients in one frame.
+        /// Computes vector of FWT coefficients in one frame.
         /// </summary>
         /// <param name="block">Block of data</param>
         /// <param name="features">Features (one FWT feature vector) computed in the block</param>
@@ -68,12 +67,12 @@ namespace NWaves.FeatureExtractors
         }
 
         /// <summary>
-        /// Does the extractor support parallelization. Returns true always.
+        /// Returns true, since <see cref="WaveletExtractor"/> always supports parallelization.
         /// </summary>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Thread-safe copy of the extractor for parallel computations.
+        /// Creates thread-safe copy of the extractor for parallel computations.
         /// </summary>
         public override FeatureExtractor ParallelCopy() =>
             new WaveletExtractor(

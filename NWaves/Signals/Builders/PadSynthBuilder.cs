@@ -11,7 +11,7 @@ namespace NWaves.Signals.Builders
     // 
 
     /// <summary>
-    /// Class for generating cosinusoidal signals.
+    /// Represents builder of signals that uses PadSynth algorithm.
     /// <para>
     /// Parameters that can be set in method <see cref="SignalBuilder.SetParameter(string, double)"/>: 
     /// <list type="bullet">
@@ -67,7 +67,7 @@ namespace NWaves.Signals.Builders
         protected float[] _im;
 
         /// <summary>
-        /// Construct <see cref="PadSynthBuilder"/>.
+        /// Constructs <see cref="PadSynthBuilder"/>.
         /// </summary>
         public PadSynthBuilder() : base(null)
         {
@@ -78,7 +78,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Set frequency of the note.
+        /// Sets frequency of the note.
         /// </summary>
         /// <param name="frequency">Frequency</param>
         protected void SetFrequency(float frequency)
@@ -88,7 +88,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Set FFT size. Must be power of 2.
+        /// Sets FFT size. Must be power of 2.
         /// </summary>
         /// <param name="fftSize">FFT size</param>
         protected void SetFftSize(int fftSize)
@@ -109,7 +109,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Set bandwidth.
+        /// Sets bandwidth.
         /// </summary>
         /// <param name="bw">Bandwidth</param>
         protected void SetBandwidth(float bw)
@@ -119,7 +119,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Set 'bandwidth scale' parameter.
+        /// Sets the bandwidth scale parameter.
         /// </summary>
         /// <param name="bwScale">Bandwidth scale</param>
         protected void SetScale(float bwScale)
@@ -129,17 +129,19 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Set amplitudes of harmonics.
+        /// Sets amplitudes of harmonics.
         /// </summary>
         /// <param name="amplitudes">Array of amplitudes</param>
-        internal void SetAmplitudeArray(float[] amplitudes)
+        public PadSynthBuilder SetAmplitudes(float[] amplitudes)
         {
             _amplitudes = amplitudes;
             GenerateWavetable();
+
+            return this;
         }
 
         /// <summary>
-        /// Generate wave table using PadSynth algorithm.
+        /// Generates wave table using PadSynth algorithm.
         /// </summary>
         protected void GenerateWavetable()
         {
@@ -213,7 +215,7 @@ namespace NWaves.Signals.Builders
         }
 
         /// <summary>
-        /// Set the sampling rate of the signal to build.
+        /// Sets the sampling rate of the signal to build.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         public override SignalBuilder SampledAt(int samplingRate)

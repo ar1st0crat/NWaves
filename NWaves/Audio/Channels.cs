@@ -1,7 +1,7 @@
 ﻿namespace NWaves.Audio
 {
     /// <summary>
-    /// Channel (used for addressing signals inside audio containers).
+    /// Defines channel indexing schemes (used for addressing signals inside audio containers).
     /// </summary>
     public enum Channels
     {

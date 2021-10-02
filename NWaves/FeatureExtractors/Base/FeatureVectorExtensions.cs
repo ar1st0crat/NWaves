@@ -4,12 +4,12 @@ using System.Linq;
 namespace NWaves.FeatureExtractors.Base
 {
     /// <summary>
-    /// Class with extension methods for feature vectors.
+    /// Provides extension methods for feature vectors.
     /// </summary>
     public static class FeatureVectorExtensions
     {
         /// <summary>
-        /// Create dictionary with feature vector statistics (keys: min, max, mean, var).
+        /// Creates dictionary with feature vector statistics (keys are: min, max, mean, var).
         /// </summary>
         /// <param name="vector">Feature vector</param>
         public static Dictionary<string, float> Statistics(this float[] vector)

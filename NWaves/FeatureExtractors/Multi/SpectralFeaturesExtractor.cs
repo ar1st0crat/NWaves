@@ -10,10 +10,13 @@ using NWaves.Utils;
 namespace NWaves.FeatureExtractors.Multi
 {
     /// <summary>
-    /// <para>Extractor of spectral features.</para>
+    /// <para>Represents extractor of spectral features.</para>
     /// <para>
     /// It's a flexible extractor that allows setting frequencies of interest. 
-    /// At least one spectral feature MUST be specified.
+    /// At least one spectral feature must be specified.
+    /// </para>
+    /// <para>
+    /// Check FeatureSet to see the full list of supported features.
     /// </para>
     /// </summary>
     public class SpectralFeaturesExtractor : FeatureExtractor
@@ -24,7 +27,7 @@ namespace NWaves.FeatureExtractors.Multi
         public const string FeatureSet = "centroid, spread, flatness, noiseness, rolloff, crest, entropy, decrease, c1+c2+c3+c4+c5+c6";
 
         /// <summary>
-        /// String annotations (or simply names) of features.
+        /// Gets string annotations (or simply names) of features.
         /// </summary>
         public override List<string> FeatureDescriptions { get; }
 
@@ -64,9 +67,8 @@ namespace NWaves.FeatureExtractors.Multi
         protected readonly int[] _frequencyPositions;
 
         /// <summary>
-        /// Construct the extractor from configuration options.
+        /// Constructs extractor from configuration <paramref name="options"/>.
         /// </summary>
-        /// <param name="options">Extractor configuration options</param>
         public SpectralFeaturesExtractor(MultiFeatureOptions options) : base(options)
         {
             var featureList = options.FeatureList;
@@ -189,7 +191,7 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Add user-defined spectral feature to extractor's list (and the routine for its calculation).
+        /// Adds user-defined spectral feature to extractor's list (and the routine for its calculation).
         /// </summary>
         /// <param name="name">Feature name/annotation</param>
         /// <param name="algorithm">Routine for calculation of the feature</param>
@@ -201,7 +203,7 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Compute spectral features in one frame
+        /// Computes spectral features in one frame.
         /// </summary>
         /// <param name="block">Block of data</param>
         /// <param name="features">Features (one feature vector) computed in the block</param>
@@ -232,12 +234,12 @@ namespace NWaves.FeatureExtractors.Multi
         }
 
         /// <summary>
-        /// Does the extractor support parallelization. Returns true always.
+        /// Returns true, since <see cref="SpectralFeaturesExtractor"/> always supports parallelization.
         /// </summary>
         public override bool IsParallelizable() => true;
 
         /// <summary>
-        /// Thread-safe copy of the extractor for parallel computations.
+        /// Creates thread-safe copy of the extractor for parallel computations.
         /// </summary>
         public override FeatureExtractor ParallelCopy()
         {

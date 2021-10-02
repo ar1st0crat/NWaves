@@ -5,8 +5,7 @@ using System;
 namespace NWaves.Effects
 {
     /// <summary>
-    /// Class representing AutoWah audio effect. 
-    /// Autowah means: envelope follower + wahwah effect.
+    /// Represents AutoWah audio effect (envelope follower + Wah-Wah effect).
     /// </summary>
     public class AutowahEffect : AudioEffect
     {
@@ -54,7 +53,7 @@ namespace NWaves.Effects
         private readonly EnvelopeFollower _envelopeFollower;
 
         /// <summary>
-        /// Construct <see cref="AutowahEffect"/>.
+        /// Constructs <see cref="AutowahEffect"/>.
         /// </summary>
         /// <param name="samplingRate">Sampling rate</param>
         /// <param name="minFrequency">Minimal LFO frequency (in Hz)</param>
@@ -80,17 +79,17 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Process one sample.
+        /// Processes one sample.
         /// </summary>
         /// <param name="sample">Input sample</param>
         public override float Process(float sample)
         {
-            var filt = _envelopeFollower.Process(sample) * Math.Sqrt(Q);
+            var env = _envelopeFollower.Process(sample) * Math.Sqrt(Q);
 
             var frequencyRange = Math.PI * (MaxFrequency - MinFrequency) / _fs;
             var minFreq = Math.PI * MinFrequency / _fs;
 
-            var centerFrequency = filt * frequencyRange + minFreq;
+            var centerFrequency = env * frequencyRange + minFreq;
 
             var f = (float)(2 * Math.Sin(centerFrequency));
 
@@ -102,7 +101,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Reset effect.
+        /// Resets effect.
         /// </summary>
         public override void Reset()
         {
