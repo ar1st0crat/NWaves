@@ -117,13 +117,21 @@ namespace NWaves.Transforms
         }
 
         /// <summary>
-        /// Normalized Inverse DCT-II via FFT is not implemented.
+        /// Does normalized Inverse DCT-II.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
         public void InverseNorm(float[] input, float[] output)
         {
-            throw new NotImplementedException();
+            Inverse(input, output);
+
+            var norm0 = (float)(1 / Math.Sqrt(_fft.Size));
+            var norm = (float)Math.Sqrt(0.5 / _fft.Size);
+
+            for (var i = 0; i < output.Length; i++)
+            {
+                output[i] = (output[i] - input[0]) * norm + input[0] * norm0;
+            }
         }
     }
 }

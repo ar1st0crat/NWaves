@@ -30,7 +30,7 @@
         public void Direct(float[] input, float[] output) => _dct2.Inverse(input, output);
 
         /// <summary>
-        /// Normalized DCT-III via FFT is not implemented.
+        /// Does normalized DCT-III.
         /// </summary>
         /// <param name="input">Input data</param>
         /// <param name="output">Output data</param>
