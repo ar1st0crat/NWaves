@@ -75,7 +75,6 @@ namespace NWaves.Effects
             Q = q;
 
             _envelopeFollower = new EnvelopeFollower(samplingRate, attackTime, releaseTime);
-
         }
 
         /// <summary>

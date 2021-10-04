@@ -145,7 +145,7 @@ namespace NWaves.Signals.Builders
         /// </summary>
         protected void GenerateWavetable()
         {
-            if (_fft is null || _amplitudes is null || _frequency == 0)
+            if (_fft is null || _amplitudes is null || _frequency <= 0)
             {
                 return;
             }

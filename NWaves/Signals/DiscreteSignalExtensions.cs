@@ -297,5 +297,88 @@ namespace NWaves.Signals
         {
             return new ComplexDiscreteSignal(signal.SamplingRate, signal.Samples.ToDoubles());
         }
+
+        /// <summary>
+        /// Fades signal in and out linearly (in-place).
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="fadeInDuration">Fade-in duration</param>
+        /// <param name="fadeOutDuration">Fade-out duration</param>
+        public static void FadeInFadeOut(this DiscreteSignal signal, double fadeInDuration, double fadeOutDuration)
+        {
+            signal.FadeIn(fadeInDuration);
+            signal.FadeOut(fadeOutDuration);
+        }
+
+        /// <summary>
+        /// Fades signal in linearly (in-place).
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="duration">Fade-in duration (in seconds)</param>
+        public static void FadeIn(this DiscreteSignal signal, double duration)
+        {
+            Guard.AgainstNonPositive(duration, "Fade-in duration");
+
+            var fadeSampleCount = Math.Min(signal.Length, (int)(signal.SamplingRate * duration));
+
+            for (var i = 0; i < fadeSampleCount; i++)
+            {
+                signal[i] *= (float)i / fadeSampleCount;
+            }
+        }
+
+        /// <summary>
+        /// Fades signal out linearly (in-place).
+        /// </summary>
+        /// <param name="signal">Signal</param>
+        /// <param name="duration">Fade-out duration (in seconds)</param>
+        public static void FadeOut(this DiscreteSignal signal, double duration)
+        {
+            Guard.AgainstNonPositive(duration, "Fade-out duration");
+
+            var fadeSampleCount = Math.Min(signal.Length, (int)(signal.SamplingRate * duration));
+
+            for (int i = signal.Length - fadeSampleCount, fadeIndex = fadeSampleCount - 1; i < signal.Length; i++, fadeIndex--)
+            {
+                signal[i] *= (float)fadeIndex / fadeSampleCount;
+            }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Crossfades linearly between signals and returns crossfaded signal of length 
+        /// equal to sum of signal lengths minus length of crossfade section.
+        /// </para>
+        /// <para>
+        /// The length of crossfade section will be calculated 
+        /// based on the sampling rate of the first signal.
+        /// </para>
+        /// </summary>
+        /// <param name="signal1">First signal</param>
+        /// <param name="signal2">Second signal</param>
+        /// <param name="duration">Crossfade duration (in seconds)</param>
+        public static DiscreteSignal Crossfade(this DiscreteSignal signal1, DiscreteSignal signal2, double duration)
+        {
+            Guard.AgainstNonPositive(duration, "Crossfade duration");
+
+            var minSignalLength = Math.Min(signal1.Length, signal2.Length);
+            var crossfadeSampleCount = Math.Min((int)(signal1.SamplingRate * duration), minSignalLength); 
+
+            var crossfaded = new DiscreteSignal(signal1.SamplingRate, signal1.Length + signal2.Length - crossfadeSampleCount);
+
+            Array.Copy(signal1.Samples, crossfaded.Samples, signal1.Length - crossfadeSampleCount);
+            Array.Copy(signal2.Samples, crossfadeSampleCount, crossfaded.Samples, signal1.Length, signal2.Length - crossfadeSampleCount);
+
+            var startPos = signal1.Length - crossfadeSampleCount;
+
+            for (int i = startPos, fadeIndex = 0; fadeIndex < crossfadeSampleCount; fadeIndex++, i++)
+            {
+                var frac = (float)fadeIndex / crossfadeSampleCount;
+
+                crossfaded[i] = (1 - frac) * signal1[i] + frac * signal2[fadeIndex];
+            }
+
+            return crossfaded;
+        }
     }
 }

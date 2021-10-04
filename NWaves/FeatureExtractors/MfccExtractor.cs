@@ -61,7 +61,7 @@ namespace NWaves.FeatureExtractors
         protected readonly RealFft _fft;
 
         /// <summary>
-        /// DCT-II transformer.
+        /// DCT transformer.
         /// </summary>
         protected readonly IDct _dct;
 
