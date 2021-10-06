@@ -5,9 +5,9 @@
 ![NuGet](https://img.shields.io/nuget/dt/NWaves.svg?style=flat)
 [![Gitter](https://badges.gitter.im/NWaves/community.svg)](https://gitter.im/NWaves/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-![logo](https://github.com/ar1st0crat/NWaves/blob/master/assets/logo/logo_draft.bmp)
+![logo](https://raw.githubusercontent.com/ar1st0crat/NWaves/master/assets/logo/logo_draft.bmp)
 
-NWaves is a .NET library for 1D signal processing focused on audio processing.
+NWaves is a .NET DSP library with a lot of audio processing functions.
 
 ## Releases
 
@@ -17,7 +17,7 @@ NWaves is [available on NuGet](https://www.nuget.org/packages/NWaves/):
 
 [Read wiki documentation](https://github.com/ar1st0crat/NWaves/wiki)
 
-New version **0.9.5** is out! Faster, smarter, more features. [Read about changes here](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
+New version **0.9.6** is out! Faster, smarter, more features. [Read about changes here](https://github.com/ar1st0crat/NWaves/wiki/Known-bugs-and-changelog)
 
 [Notes for non-experts in DSP](https://github.com/ar1st0crat/NWaves/wiki/Notes-for-non~experts-in-DSP)
 
@@ -35,7 +35,7 @@ New version **0.9.5** is out! Faster, smarter, more features. [Read about change
 - [x] BiQuad filters (low-pass, high-pass, band-pass, notch, all-pass, peaking, shelving)
 - [x] 1-pole filters (low-pass, high-pass)
 - [x] IIR filters (Bessel, Butterworth, Chebyshev I & II, Elliptic, Thiran)
-- [x] basic operations (convolution, cross-correlation, rectification, amplification)
+- [x] basic operations (convolution, cross-correlation, rectification, amplification, fade / crossfade)
 - [x] block convolution (overlap-add / overlap-save offline and online)
 - [x] basic filter design & analysis (group delay, zeros/poles, BP, BR, HP from/to LP, SOS, combining filters)
 - [x] state space representation of LTI filters
@@ -75,7 +75,18 @@ New version **0.9.5** is out! Faster, smarter, more features. [Read about change
 
 ## Philosophy of NWaves
 
-NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. All algorithms are coded in C# as simple as possible and were first designed mostly for offline processing (now many online methods are also available). It doesn't mean, though, that the library could be used only in toy projects; yes, it's not written in C/C++ or Asm, but it's not that *very* slow for many purposes either.
+NWaves was initially intended for research, visualizing and teaching basics of DSP and sound programming. 
+
+Usually, DSP code is quite complicated and difficult to read, because it's full of optimizations (which is actually a very good thing). NWaves project aims in particular at achieving a tradeoff between good understandable code/design and satisfactory performance. Yet, the main purpose of this lib is to offer the DSP codebase that would be:
+
+- easy to read and understand
+- easy to incorporate into existing projects
+- easy to port to other programming languages and frameworks
+- even possibly treated as the DSP/audio textbook.
+
+According to NWaves architecture, there are following general reusable building blocks for all kinds of DSP tasks:
+
+[Transforms](#transforms) | [Filters](#filters-and-effects) | [Signal builders](#signal-builders) | [Feature extractors](#feature-extractors)
 
 
 ## Quickstart
@@ -163,17 +174,17 @@ SignalBuilder lfo =
 
 ```C#
 
-WaveFile waveFile;
+WaveFile waveContainer;
 
 // load
 
 using (var stream = new FileStream("sample.wav", FileMode.Open))
 {
-    waveFile = new WaveFile(stream);
+    waveContainer = new WaveFile(stream);
 }
 
-DiscreteSignal left = waveFile[Channels.Left];
-DiscreteSignal right = waveFile[Channels.Right];
+DiscreteSignal left = waveContainer[Channels.Left];
+DiscreteSignal right = waveContainer[Channels.Right];
 
 
 // save
@@ -293,12 +304,15 @@ var spectrogram = stft.Spectrogram(signal);
 var ct = new CepstralTransform(24, fftSize: 512);
 
 // complex cepstrum
-var cepstrum = ct.Direct(signal);
-// or
 ct.Direct(input, output);
+// or
+var delay = ct.ComplexCepstrum(input, output);
 
 // real cepstrum
 ct.RealCepstrum(input, output);
+
+// inverse complex cepstrum
+ct.InverseComplexCepstrum(output, input, delay: delay);
 
 ```
 
@@ -367,6 +381,11 @@ var fullRect = Operation.FullRectify(signal);
 // spectral subtraction
 
 var clean = Operation.SpectralSubtract(signal, noise);
+
+// crossfade
+
+var crossfaded = song1.Crossfade(song2, 0.05/*sec*/);
+
 ```
 
 
@@ -550,7 +569,7 @@ var blockConvolver = OlaBlockConvolver.FromFilter(filter, 4096);
 
 See also OnlineDemoForm code.
 
-![onlinedemo](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/onlinedemo.gif)
+![onlinedemo](https://raw.githubusercontent.com/ar1st0crat/NWaves/master/assets/screenshots/onlinedemo.gif)
 
 
 ### Feature extractors
@@ -720,18 +739,18 @@ recorder.StopRecording("temp.wav");
 
 ### Samples
 
-![filters](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/Filters.png)
+![filters](https://raw.githubusercontent.com/ar1st0crat/NWaves/master/assets/screenshots/Filters.png)
 
-![pitch](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/pitch.png)
+![pitch](https://raw.githubusercontent.com/ar1st0crat/NWaves/master/assets/screenshots/pitch.png)
 
-![lpc](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/lpc.png)
+![lpc](https://raw.githubusercontent.com/ar1st0crat/NWaves/master/assets/screenshots/lpc.png)
 
-![mfcc](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/mfcc.png)
+![mfcc](https://raw.githubusercontent.com/ar1st0crat/NWaves/master/assets/screenshots/mfcc.png)
 
-![spectral](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/spectral.png)
+![spectral](https://raw.githubusercontent.com/ar1st0crat/NWaves/master/assets/screenshots/spectral.png)
 
-![effects](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/effects.png)
+![effects](https://raw.githubusercontent.com/ar1st0crat/NWaves/master/assets/screenshots/effects.png)
 
-![wavelets](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/wavelets.png)
+![wavelets](https://raw.githubusercontent.com/ar1st0crat/NWaves/master/assets/screenshots/wavelets.png)
 
-![adaptive](https://github.com/ar1st0crat/NWaves/blob/master/assets/screenshots/adaptive.png)
+![adaptive](https://raw.githubusercontent.com/ar1st0crat/NWaves/master/assets/screenshots/adaptive.png)
