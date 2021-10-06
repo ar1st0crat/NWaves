@@ -76,7 +76,8 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Calculates extra gain for filtering so that frequency response is normalized onto [0, 1] range.
+        /// Calculates extra gain for filtering so that frequency response is normalized onto [0..1] range. 
+        /// Call this function if the filter could not be designed with proper frequency response gain due to numerical problems.
         /// </summary>
         /// <param name="filter">Online filter</param>
         /// <param name="fftSize">FFT size (for evaluating frequency response)</param>
@@ -98,7 +99,8 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Filters entire <paramref name="signal"/> with extra <paramref name="gain"/>.
+        /// Filters entire <paramref name="signal"/> with extra <paramref name="gain"/>. 
+        /// Call this function if the filter could not be designed with proper frequency response gain due to numerical problems.
         /// </summary>
         /// <param name="filter">Online filter</param>
         /// <param name="signal">Input signal</param>
@@ -112,7 +114,8 @@ namespace NWaves.Filters.Base
         }
 
         /// <summary>
-        /// Processes one <paramref name="sample"/> of a signal with extra <paramref name="gain"/>.
+        /// Processes one <paramref name="sample"/> of a signal with extra <paramref name="gain"/>. 
+        /// Call this function if the filter could not be designed with proper frequency response gain due to numerical problems.
         /// </summary>
         /// <param name="filter">Online filter</param>
         /// <param name="sample">Input sample</param>
