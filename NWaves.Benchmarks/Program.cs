@@ -1,4 +1,6 @@
-﻿namespace NWaves.Benchmarks
+﻿using BenchmarkDotNet.Running;
+
+namespace NWaves.Benchmarks
 {
     class Program
     {
