@@ -23,7 +23,7 @@ New version **0.9.6** is out! Faster, smarter, more features. [Read about change
 
 [NWaves for MATLAB/sciPy users](https://github.com/ar1st0crat/NWaves/wiki/NWaves-for-MATLAB-and-sciPy-users)
 
-[Watch survey video](https://www.youtube.com/watch?v=GyRixqQ613A) | [Samples](https://github.com/ar1st0crat/NWaves.Samples)  |  [Benchmarks](https://github.com/ar1st0crat/NWaves/tree/master/NWaves.Benchmarks) | [Playground](https://ar1st0crat.github.io/NWaves.Playground/) ([code](https://github.com/ar1st0crat/NWaves.Playground))
+[Watch survey video](https://www.youtube.com/watch?v=GyRixqQ613A) | [Playlist](https://www.youtube.com/playlist?list=PL1BjzwHbvgSWVbr32uA2ihdnVCLhVA8a5) | [Samples](https://github.com/ar1st0crat/NWaves.Samples)  |  [Benchmarks](https://github.com/ar1st0crat/NWaves/tree/master/NWaves.Benchmarks) | [Playground](https://ar1st0crat.github.io/NWaves.Playground/) ([code](https://github.com/ar1st0crat/NWaves.Playground))
 
 
 ## Main features
