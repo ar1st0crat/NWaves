@@ -188,10 +188,11 @@ namespace NWaves.Operations
             return sample * gain;
         }
 
+
         private float[] _ygMINUSxg = null;//                                                                      2022-05-18: Start    J.P.B.
         private float[] _envelope = null;
         /// <summary>
-        /// Processes a buffer of (possibly) interleaved samples for a single channel.                           
+        /// Processes a buffer of (possibly) interleaved samples for a single channel.                            
         /// </summary>
         /// <param name="sampleBuffer">audio sample buffer</param>
         /// <param name="Channel">Channel #: 1 to MAX_CHANNELS</param>
@@ -206,16 +207,16 @@ namespace NWaves.Operations
             float abs, xg, yg, gain;
 
             result = false;
-
+   
             if ((sampleBuffer == IntPtr.Zero)
-                || (frameCount <= 0)
+                || (frameCount <= 0) 
                 || (Channel < 1) || (Channel > nChannels)
                 || (nChannels < 1) || (nChannels > NWaves.Effects.Base.AudioEffect.MAX_CHANNELS))
             {
                 goto Finish;
             } //                                         we have a parameter error. Don't change the audio samples.
 
-            if (_ygMINUSxg == null || _ygMINUSxg.Length != frameCount)
+            if (_ygMINUSxg == null || _ygMINUSxg.Length != frameCount) 
             {
                 _ygMINUSxg = new float[frameCount];
                 _envelope = new float[frameCount];
@@ -281,6 +282,37 @@ namespace NWaves.Operations
             return result;
 
         } //                                                                                                      2022-05-18: End
+
+        /// <summary>
+        /// Processes a buffer of (possibly) interleaved samples for a single channel.                            2022-07-06: Start    J.P.B.
+        /// </summary>
+        /// <param name="sampleBuffer">audio sample buffer</param>
+        /// <param name="Channel">Channel #: 1 to MAX_CHANNELS</param>
+        /// <param name="nChannels"># of interleaved Channels in buffer: 1 to MAX_CHANNELS</param>
+        /// <param name="frameCount"># of frames (sample groups) in buffer: 1 to MAX_FRAME_COUNT </param>
+        public bool ProcessSampleBuffer(in float[] sampleBuffer, in int Channel, in int nChannels, in int frameCount)
+        {
+            bool result = false;
+
+            try
+            {
+                unsafe
+                {
+                    fixed (float* p = sampleBuffer)
+                    {
+                        IntPtr ptrSampleBuffer = (IntPtr)p;
+                        result = ProcessSampleBuffer(ptrSampleBuffer, Channel, nChannels, frameCount);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (Debugger.IsAttached) { Debugger.Break(); }
+            }
+
+            return result;
+
+        } //                                                                                                      2022-07-06: End    J.P.B.
 
         /// <summary>
         /// Resets dynamics processor.

@@ -187,7 +187,7 @@ namespace NWaves.Effects
             result = false;
 
             if ((sampleBuffer == IntPtr.Zero)
-                || (frameCount <= 0)
+                || (frameCount <= 0) 
                 || (Channel < 1) || (Channel > nChannels)
                 || (nChannels < 1) || (nChannels > MAX_CHANNELS))
             {
@@ -207,8 +207,8 @@ namespace NWaves.Effects
                         delayedSample = _delayLine.Read(delay); //            get _delayLine (Delay Effect's) sample
                         _delayLine.Write(*p + t_Feedback * delayedSample); //   add current sample from sampleBuffer to the _delayLine (Delay Effect's) samples
                         *p = Inverted ? t_Dry * *p - t_Wet * t_Depth * delayedSample  // apply effect to the current sample in the sampleBuffer
-                                      : t_Dry * *p + t_Wet * t_Depth * delayedSample;
-
+                                      : t_Dry * *p + t_Wet * t_Depth * delayedSample;   
+                        
                         p += nChannels; //                                    move to the next frame (sample group) in the buffer
                     }
                 }
@@ -225,6 +225,37 @@ namespace NWaves.Effects
             return result;
 
         } //                                                                                                      2022-04-20: End
+
+        /// <summary>
+        /// Processes a buffer of (possibly) interleaved samples for a single channel.                            2022-07-06: Start    J.P.B.
+        /// </summary>
+        /// <param name="sampleBuffer">audio sample buffer</param>
+        /// <param name="Channel">Channel #: 1 to MAX_CHANNELS</param>
+        /// <param name="nChannels"># of interleaved Channels in buffer: 1 to MAX_CHANNELS</param>
+        /// <param name="frameCount"># of frames (sample groups) in buffer: 1 to MAX_FRAME_COUNT </param>
+        public bool ProcessSampleBuffer(in float[] sampleBuffer, in int Channel, in int nChannels, in int frameCount)
+        {
+            bool result = false;
+
+            try
+            {
+                unsafe
+                {
+                    fixed (float* p = sampleBuffer)
+                    {
+                        IntPtr ptrSampleBuffer = (IntPtr)p;
+                        result = ProcessSampleBuffer(ptrSampleBuffer, Channel, nChannels, frameCount);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (Debugger.IsAttached) { Debugger.Break(); }
+            }
+
+            return result;
+
+        } //                                                                                                      2022-07-06: End    J.P.B.
 
         /// <summary>
         /// Resets effect.
