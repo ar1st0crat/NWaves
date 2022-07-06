@@ -2,6 +2,7 @@
 using NWaves.Signals;
 using NWaves.Utils;
 using System;
+using System.Diagnostics; //                                                                                      2022-04-20: J.P.B.
 
 namespace NWaves.Operations
 {
@@ -186,6 +187,100 @@ namespace NWaves.Operations
 
             return sample * gain;
         }
+
+        private float[] _ygMINUSxg = null;//                                                                      2022-05-18: Start    J.P.B.
+        private float[] _envelope = null;
+        /// <summary>
+        /// Processes a buffer of (possibly) interleaved samples for a single channel.                           
+        /// </summary>
+        /// <param name="sampleBuffer">audio sample buffer</param>
+        /// <param name="Channel">Channel #: 1 to MAX_CHANNELS</param>
+        /// <param name="nChannels"># of interleaved Channels in buffer: 1 to MAX_CHANNELS</param>
+        /// <param name="frameCount"># of frames (sample groups) in buffer: 1 to MAX_FRAME_COUNT </param>
+        public bool ProcessSampleBuffer(in IntPtr sampleBuffer, in int Channel, in int nChannels, in int frameCount)
+        {
+            bool result;
+            float t_Threshold = Threshold;
+            float t_Ratio = Ratio;
+            float t_MakeupGain = MakeupGain;
+            float abs, xg, yg, gain;
+
+            result = false;
+
+            if ((sampleBuffer == IntPtr.Zero)
+                || (frameCount <= 0)
+                || (Channel < 1) || (Channel > nChannels)
+                || (nChannels < 1) || (nChannels > NWaves.Effects.Base.AudioEffect.MAX_CHANNELS))
+            {
+                goto Finish;
+            } //                                         we have a parameter error. Don't change the audio samples.
+
+            if (_ygMINUSxg == null || _ygMINUSxg.Length != frameCount)
+            {
+                _ygMINUSxg = new float[frameCount];
+                _envelope = new float[frameCount];
+            }
+
+            try
+            { // parms are OK. process the buffer
+
+                unsafe
+                {
+                    float* p = (float*)sampleBuffer.ToPointer(); //           start with leftmost channel's first sample
+                    if (Channel != 1) p = p + (Channel - 1); //               reposition to correct channel's first sample
+                    for (int i = 0; i < (int)frameCount; i++) //              process each frame (sample group) in the buffer
+                    {
+                        abs = Math.Abs(*p);
+                        xg = abs > 1e-6f ? (float)Scale.ToDecibel(abs) : _minAmplitudeDb;
+                        yg = 0f;
+
+                        switch (_mode)
+                        {
+                            case DynamicsMode.Limiter:
+                            case DynamicsMode.Compressor:
+                                {
+                                    yg = xg < t_Threshold ? xg : t_Threshold + (xg - t_Threshold) / t_Ratio;
+                                    break;
+                                }
+
+                            case DynamicsMode.Expander:
+                            case DynamicsMode.NoiseGate:
+                                {
+                                    yg = xg > t_Threshold ? xg : t_Threshold + (xg - t_Threshold) * t_Ratio;
+                                    break;
+                                }
+                        }
+
+                        _ygMINUSxg[i] = yg - xg;
+                        p += nChannels; //                                    move to the next frame (sample group) in the buffer           
+                    }
+
+                    _envelopeFollower.ProcessArray(in _ygMINUSxg, ref _envelope);
+
+                    p = (float*)sampleBuffer.ToPointer(); //                  start with leftmost  channel's first sample
+                    if (Channel != 1) p = p + (Channel - 1); //               reposition to correct channel's first sample
+                    for (int i = 0; i < (int)frameCount; i++) //              process each frame (sample group) in the buffer
+                    {
+                        gain = (float)Scale.FromDecibel(t_MakeupGain - _envelope[i]);
+                        *p = *p * gain;
+
+                        p += nChannels; //                                    move to the next frame (sample group) in the buffer           
+                    }
+
+                }
+
+                result = true;
+
+            }
+            catch (Exception ex)
+            {
+                if (Debugger.IsAttached) { Debugger.Break(); }
+            }
+
+        Finish:
+            return result;
+
+        } //                                                                                                      2022-05-18: End
 
         /// <summary>
         /// Resets dynamics processor.

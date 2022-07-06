@@ -25,5 +25,11 @@ namespace NWaves.Effects.Base
         /// <param name="signal">Signal</param>
         /// <param name="method">Filtering method</param>
         public virtual DiscreteSignal ApplyTo(DiscreteSignal signal, FilteringMethod method = FilteringMethod.Auto) => this.FilterOnline(signal);
+
+        /// <summary>
+        /// Maximum number of interleaved channels in an audio buffer
+        /// </summary>
+        public const int MAX_CHANNELS = 16; //                                                                    2022-04-20 J.P.B.
+
     }
 }

@@ -86,6 +86,26 @@ namespace NWaves.Operations
         }
 
         /// <summary>
+        /// Processes an array of samples.
+        /// </summary>
+        /// <param name="input">Input sample array</param>
+        ///  <param name="output">Output sample array</param>
+        public void ProcessArray(in float[] input, ref float[] output)  //                                       2022-05-18: Start
+        {
+            // envelope following is essentially a low-pass filtering
+
+            float s;
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                s = Math.Abs(input[i]);
+                _env = _env < s ? _ga * _env + (1 - _ga) * s : _gr * _env + (1 - _gr) * s;
+                output[i] = _env;
+            }
+
+        } //                                                                                                      2022-05-18: End
+
+        /// <summary>
         /// Resets envelope follower.
         /// </summary>
         public void Reset()

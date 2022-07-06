@@ -2,6 +2,8 @@
 using NWaves.Effects.Base;
 using NWaves.Signals.Builders;
 using NWaves.Signals.Builders.Base;
+using System; //                                                                                                  2022-06-26: J.P.B.
+using System.Diagnostics; //                                                                                      2022-06-26: J.P.B.
 
 namespace NWaves.Effects
 {
@@ -120,6 +122,64 @@ namespace NWaves.Effects
 
             return _yb * Wet + sample * Dry;
         }
+
+        /// <summary>
+        /// Processes a buffer of (possibly) interleaved samples for a single channel.                            2022-06-26: Start    J.P.B.
+        /// </summary>
+        /// <param name="sampleBuffer">audio sample buffer</param>
+        /// <param name="Channel">Channel #: 1 to MAX_CHANNELS</param>
+        /// <param name="nChannels"># of interleaved Channels in buffer: 1 to MAX_CHANNELS</param>
+        /// <param name="frameCount"># of frames (sample groups) in buffer: 1 to MAX_FRAME_COUNT </param>
+        public bool ProcessSampleBuffer(in IntPtr sampleBuffer, in int Channel, in int nChannels, in int frameCount)
+        {
+            float delayed, output;
+            bool result;
+
+            result = false;
+            float t_Dry = Dry;
+            float t_Wet = Wet;
+            double fs2pi;
+            float f;
+
+            if ((sampleBuffer == IntPtr.Zero)
+                || (frameCount <= 0)
+                || (Channel < 1) || (Channel > nChannels)
+                || (nChannels < 1) || (nChannels > MAX_CHANNELS))
+            {
+                goto Finish;
+            } //                                         we have a parameter error. Don't change the audio samples.
+
+            try
+            { // parms are OK. process the buffer
+
+                unsafe
+                {
+                    float* p = (float*)sampleBuffer.ToPointer(); //           start with leftmost  channel's first sample
+                    if (Channel != 1) p = p + (Channel - 1); //               reposition to correct channel's first sample
+                    for (int i = 0; i < (int)frameCount; i++) //              process each frame (sample group) in the buffer
+                    {
+                        fs2pi = 2.0 * Math.PI / _fs;
+                        f = (float)(2 * Math.Sin(Lfo.NextSample() * fs2pi));
+                        _yh = *p - _yl - Q * _yb;
+                        _yb += f * _yh;
+                        _yl += f * _yb;
+                        *p = _yb * t_Wet + *p * t_Dry;
+                        p += nChannels; //                                    move to the next frame (sample group) in the buffer           
+                    }
+                }
+
+                result = true;
+
+            }
+            catch (Exception ex)
+            {
+                if (Debugger.IsAttached) { Debugger.Break(); }
+            }
+
+        Finish:
+            return result;
+
+        } //                                                                                                      2022-06-26: End
 
         /// <summary>
         /// Resets effect.
