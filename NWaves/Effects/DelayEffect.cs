@@ -120,18 +120,6 @@ namespace NWaves.Effects
 
                         delayed = _delayLine.Read(_delay);
                         _delayLine.Write(*p);
-
-
-
-                        //delayed = _delayLine.GetNext(_delay, *p); //          get _delayLine (Delay Effect's) next sample, and add current 2022-04-22
-                        //                                          //               sample from sampleBuffer to the _delayLine (Delay Effect's) samples
-
-
-
-
-
-
-
                         output = *p + delayed * t_Feedback;  //               apply delay effect to the current sample in the sampleBuffer
                         *p = *p * t_Dry + output * t_Wet; //                       "            "             "             "           "
                         p += nChannels; //                                    move to the next frame (sample group) in the buffer           
