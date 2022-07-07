@@ -90,7 +90,7 @@ namespace NWaves.Operations
         /// </summary>
         /// <param name="input">Input sample array</param>
         ///  <param name="output">Output sample array</param>
-        public void ProcessArray(in float[] input, ref float[] output)  //                                       2022-05-18: Start
+        public void ProcessArray(in float[] input, ref float[] output) 
         {
             // envelope following is essentially a low-pass filtering
 
@@ -103,7 +103,7 @@ namespace NWaves.Operations
                 output[i] = _env;
             }
 
-        } //                                                                                                      2022-05-18: End
+        } 
 
         /// <summary>
         /// Resets envelope follower.

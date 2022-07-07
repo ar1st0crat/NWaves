@@ -2,8 +2,8 @@
 using NWaves.Effects.Base;
 using NWaves.Signals.Builders;
 using NWaves.Signals.Builders.Base;
-using System; //                                                                                                  2022-06-26: J.P.B.
-using System.Diagnostics; //                                                                                      2022-06-26: J.P.B.
+using System; 
+using System.Diagnostics; 
 
 namespace NWaves.Effects
 {
@@ -124,7 +124,7 @@ namespace NWaves.Effects
         }
 
         /// <summary>
-        /// Processes a buffer of (possibly) interleaved samples for a single channel.                            2022-06-26: Start    J.P.B.
+        /// Processes a buffer of (possibly) interleaved samples for a single channel.
         /// </summary>
         /// <param name="sampleBuffer">audio sample buffer</param>
         /// <param name="Channel">Channel #: 1 to MAX_CHANNELS</param>
@@ -179,10 +179,10 @@ namespace NWaves.Effects
         Finish:
             return result;
 
-        } //                                                                                                      2022-06-26: End
+        } 
 
         /// <summary>
-        /// Processes a buffer of (possibly) interleaved samples for a single channel.                            2022-07-06: Start    J.P.B.
+        /// Processes a buffer of (possibly) interleaved samples for a single channel.
         /// </summary>
         /// <param name="sampleBuffer">audio sample buffer</param>
         /// <param name="Channel">Channel #: 1 to MAX_CHANNELS</param>
@@ -210,7 +210,7 @@ namespace NWaves.Effects
 
             return result;
 
-        } //                                                                                                      2022-07-06: End    J.P.B.
+        } 
 
         /// <summary>
         /// Resets effect.

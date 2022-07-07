@@ -29,7 +29,7 @@ namespace NWaves.Effects.Base
         /// <summary>
         /// Maximum number of interleaved channels in an audio buffer
         /// </summary>
-        public const int MAX_CHANNELS = 16; //                                                                    2022-04-20 J.P.B.
+        public const int MAX_CHANNELS = 16;
 
     }
 }

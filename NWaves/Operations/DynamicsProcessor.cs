@@ -2,7 +2,7 @@
 using NWaves.Signals;
 using NWaves.Utils;
 using System;
-using System.Diagnostics; //                                                                                      2022-04-20: J.P.B.
+using System.Diagnostics; 
 
 namespace NWaves.Operations
 {
@@ -189,7 +189,7 @@ namespace NWaves.Operations
         }
 
 
-        private float[] _ygMINUSxg = null;//                                                                      2022-05-18: Start    J.P.B.
+        private float[] _ygMINUSxg = null;
         private float[] _envelope = null;
         /// <summary>
         /// Processes a buffer of (possibly) interleaved samples for a single channel.                            
@@ -281,10 +281,10 @@ namespace NWaves.Operations
         Finish:
             return result;
 
-        } //                                                                                                      2022-05-18: End
+        } 
 
         /// <summary>
-        /// Processes a buffer of (possibly) interleaved samples for a single channel.                            2022-07-06: Start    J.P.B.
+        /// Processes a buffer of (possibly) interleaved samples for a single channel.
         /// </summary>
         /// <param name="sampleBuffer">audio sample buffer</param>
         /// <param name="Channel">Channel #: 1 to MAX_CHANNELS</param>
@@ -312,7 +312,7 @@ namespace NWaves.Operations
 
             return result;
 
-        } //                                                                                                      2022-07-06: End    J.P.B.
+        } 
 
         /// <summary>
         /// Resets dynamics processor.
