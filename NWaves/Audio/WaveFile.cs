@@ -129,7 +129,7 @@ namespace NWaves.Audio
                     // Additional info for the following:  https://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
                     // Here is a good link from that page for the Extension chunk: https://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
                     // Any non-16bit WAV file should include a format extension chunk describing how the data should be interpreted.
-                    var fmtUsedBitsPerSample = reader.ReasInt16(); // Number of bits-per-sample actually used of container-specified bits-per-sample
+                    var fmtUsedBitsPerSample = reader.ReadInt16(); // Number of bits-per-sample actually used of container-specified bits-per-sample
                     var fmtChannelSpeakerMap = reader.ReadInt32(); // Bitmask/flags indicating which channels are included in the file.
                     var fmtSubFormatCode = reader.ReadInt16(); // Similar to container-level format code (1 = PCM, 3 = IEEE, etc.).
                     var fmtSubFormatRemainder = reader.ReadBytes(14); // Remainder of SubFormat GUID.  Usually just "\x00\x00\x00\x00\x10\x00\x80\x00\x00\xAA\x00\x38\x9B\x71".
