@@ -126,18 +126,19 @@ namespace NWaves.Audio
                 if (fmtSize == 18 || fmtSize == 40)
                 {
                     var fmtExtraSize = reader.ReadInt16();
-                    // Additional info for the following:  https://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
-                    // Here is a good link from that page for the Extension chunk: https://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
                     // Any non-16bit WAV file should include a format extension chunk describing how the data should be interpreted.
                     var fmtUsedBitsPerSample = reader.ReadInt16(); // Number of bits-per-sample actually used of container-specified bits-per-sample
                     var fmtChannelSpeakerMap = reader.ReadInt32(); // Bitmask/flags indicating which channels are included in the file.
                     var fmtSubFormatCode = reader.ReadInt16(); // Similar to container-level format code (1 = PCM, 3 = IEEE, etc.).
                     var fmtSubFormatRemainder = reader.ReadBytes(14); // Remainder of SubFormat GUID.  Usually just "\x00\x00\x00\x00\x10\x00\x80\x00\x00\xAA\x00\x38\x9B\x71".
-                    // Above link says our AudioFormat dictates whether an extension chunk should actually exist, but we've been lenient to standards up to this point anyways.
                     if (waveFmt.AudioFormat == 0xFFFE)
+                    {
                         waveFmt.AudioFormat = fmtSubFormatCode;
+                    }
                     if (fmtExtraSize > 22)  // Read any leftovers
+                    {
                         reader.ReadBytes(fmtExtraSize - 22);
+                    }
                 }
                 
                 WaveFmt = waveFmt;
